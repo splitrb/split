@@ -1,0 +1,6 @@
+config object
+rails and sinatra mixins
+session storage of participation
+counting of participation and completion of experiments
+rack based web interface (sinatra app)
+documentation
