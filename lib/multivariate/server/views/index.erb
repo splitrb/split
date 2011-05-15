@@ -1,0 +1,19 @@
+<h1>Multivariate</h1>
+
+<ul>
+  <% @experiments.each do |experiment| %>
+    <li>
+      <h2><%= experiment.name %></h2>
+      <ul>
+        <% experiment.alternatives.each do |alternative| %>
+          <li>
+            <h3><%= alternative.name %></h3>
+            Participants: <%= alternative.participant_count %>
+            Completions: <%= alternative.completed_count %>
+            Conversion rate: <%= alternative.conversion_rate %>
+          </li>
+        <% end %>
+      </ul>
+    </li>
+  <% end %>
+</ul>
