@@ -23,5 +23,15 @@ module Multivariate
         raise 'Experiment not found'
       end
     end
+
+    def self.find_or_create(name, *alternatives)
+      if REDIS.exists(name)
+        return self.new(name, *REDIS.smembers(name))
+      else
+        experiment = self.new(name, *REDIS.smembers(name, *alternatives))
+        experiment.save
+        return experiment
+      end
+    end
   end
 end
