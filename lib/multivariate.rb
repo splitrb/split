@@ -23,13 +23,13 @@ module Multivariate
         redis = Redis.new(:host => host, :port => port,
           :thread_safe => true, :db => db)
       end
-      namespace ||= :resque
+      namespace ||= :multivariate
 
       @redis = Redis::Namespace.new(namespace, :redis => redis)
     elsif server.respond_to? :namespace=
         @redis = server
     else
-      @redis = Redis::Namespace.new(:resque, :redis => server)
+      @redis = Redis::Namespace.new(:multivariate, :redis => server)
     end
   end
 
