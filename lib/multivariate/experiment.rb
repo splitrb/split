@@ -21,6 +21,10 @@ module Multivariate
       @alternatives.each {|a| Multivariate.redis.sadd(name, a) }
     end
 
+    def self.all
+      Array(Multivariate.redis.smembers(:experiments)).map {|e| find(e)}
+    end
+
     def self.find(name)
       if Multivariate.redis.exists(name)
         self.new(name, *Multivariate.redis.smembers(name))
