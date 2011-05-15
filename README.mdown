@@ -1,4 +1,78 @@
 # Multivariate
 ## Rack based multivariate testing framework
 
-Work in progress!
+Multivariate is a rack based testing framework designed to work with Rails, Sinatra or any other rack based app.
+
+## Requirements
+
+Multivariate uses redis as a datastore.
+
+If you're on OS X, Homebrew is the simplest way to install Redis:
+
+    $ brew install redis
+    $ redis-server /usr/local/etc/redis.conf
+
+You now have a Redis daemon running on 6379.
+
+## Usage
+
+If you are using bundler: add multivariate to your Gemfile:
+
+    gem 'multivariate'
+
+Then run:
+
+    bundle install
+
+Otherwise install the gem:
+
+  gem install multivariate
+
+and require it in your project:
+
+  require 'multivariate'
+
+## Web Interface
+
+Multivariate comes with a Sinatra-based front end to get an overview of how your experiments are doing.
+
+You can mount this inside your app using Rack::URLMap in your `config.ru`
+
+    require 'multivariate/server'
+
+    run Rack::URLMap.new \
+      "/"       => Your::App.new,
+      "/multivariate" => Multivariate::Server.new
+
+## Configuration
+
+You may want to change the Redis host and port Resque connects to, or
+set various other options at startup.
+
+Resque has a `redis` setter which can be given a string or a Redis
+object. This means if you're already using Redis in your app, Resque
+can re-use the existing connection.
+
+String: `Resque.redis = 'localhost:6379'`
+
+Redis: `Resque.redis = $redis`
+
+For our rails app we have a `config/initializers/multivariate.rb` file where
+we load `config/multivariate.yml` by hand and set the Redis information
+appropriately.
+
+Here's our `config/multivariate.yml`:
+
+    development: localhost:6379
+    test: localhost:6379
+    staging: redis1.example.com:6379
+    fi: localhost:6379
+    production: redis1.example.com:6379
+
+And our initializer:
+
+    rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
+    rails_env = ENV['RAILS_ENV'] || 'development'
+
+    multivariate_config = YAML.load_file(rails_root + '/config/multivariate.yml')
+    Resque.redis = multivariate_config[rails_env]

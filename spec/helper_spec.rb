@@ -48,4 +48,19 @@ describe Multivariate::Helper do
       new_completion_count.should eql(previous_completion_count + 1)
     end
   end
+  
+  describe 'conversions' do
+    it 'should return a conversion rate for an alternative' do
+      experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = Multivariate::Helper.ab_test('link_color', 'blue', 'red')
+      
+      previous_convertion_rate = Multivariate::Alternative.find(alternative_name, 'link_color').conversion_rate
+      previous_convertion_rate.should eql(0.0)
+
+      Multivariate::Helper.finished('link_color')
+      
+      new_convertion_rate = Multivariate::Alternative.find(alternative_name, 'link_color').conversion_rate
+      new_convertion_rate.should eql(100.0)
+    end
+  end
 end
