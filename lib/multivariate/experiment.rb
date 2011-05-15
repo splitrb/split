@@ -13,7 +13,7 @@ module Multivariate
     end
 
     def random_alternative
-      alternatives.first
+      alternatives[rand(alternatives.size)]
     end
 
     def save

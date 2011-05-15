@@ -7,10 +7,6 @@ describe Multivariate::Helper do
   end
 
   describe "ab_test" do
-    it "should find or create an experiment from a name" do
-      Multivariate::Helper.ab_test('link_color', 'blue', 'red').should eql('blue')
-    end
-
     it "should assign a random alternative to a new user" do
       Multivariate::Helper.ab_test('link_color', 'blue', 'red')
       Multivariate::Helper.current_user['link_color'].should_not == nil
