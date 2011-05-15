@@ -1,6 +1,3 @@
-require 'redis'
-REDIS = Redis.new
-
 module Multivariate
   class Experiment
     attr_accessor :name
@@ -9,6 +6,14 @@ module Multivariate
     def initialize(name, *alternatives)
       @name = name
       @alternatives = alternatives
+    end
+
+    def alternatives
+      @alternatives.map {|a| Multivariate::Alternative.find_or_create(a, name)}
+    end
+
+    def random_alternative
+      alternatives.first
     end
 
     def save
@@ -28,7 +33,7 @@ module Multivariate
       if REDIS.exists(name)
         return self.new(name, *REDIS.smembers(name))
       else
-        experiment = self.new(name, *REDIS.smembers(name, *alternatives))
+        experiment = self.new(name, *alternatives)
         experiment.save
         return experiment
       end

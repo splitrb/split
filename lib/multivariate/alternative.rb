@@ -1,17 +1,48 @@
 module Multivariate
   class Alternative
     attr_accessor :name
+    attr_accessor :participant_count
+    attr_accessor :completed_count
+    attr_accessor :experiment_name
 
-    def initialize(name)
+    def initialize(name, experiment_name, counters = {})
+      @experiment_name = experiment_name
       @name = name
+      @participant_count = counters['participant_count'].to_i
+      @completed_count = counters['completed_count'].to_i
     end
 
-    def participant_count
-      # number of users who have been given this alternative
+    def increment_participation
+      @participant_count +=1
+      self.save
     end
 
-    def completed_count
-      # number of users who have finished an experiment with this alternative
+    def increment_completion
+      @participant_count +=1
+    end
+
+    def save
+      if REDIS.hgetall("#{experiment_name}:#{name}")
+        REDIS.hset "#{experiment_name}:#{name}", 'participant_count', @participant_count
+        REDIS.hset "#{experiment_name}:#{name}", 'completed_count', @completed_count
+      else
+        REDIS.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', @participant_count, @completed_count
+      end
+    end
+
+    def self.find(name, experiment_name)
+      counters = REDIS.hgetall "#{experiment_name}:#{name}"
+      self.new(name, experiment_name, counters)
+    end
+
+    def self.find_or_create(name, experiment_name)
+      self.find(name, experiment_name) || self.create(name, experiment_name)
+    end
+
+    def self.create(name, experiment_name)
+      alt = self.new(name, experiment_name)
+      alt.save
+      alt
     end
   end
 end

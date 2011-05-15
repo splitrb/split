@@ -9,9 +9,9 @@ describe Multivariate::Experiment do
     experiment.name.should eql('basket_text')
   end
   
-  it "should have an alternatives" do
+  it "should have alternatives" do
     experiment = Multivariate::Experiment.new('basket_text', 'Basket', "Cart")
-    experiment.alternatives.should eql(['Basket', "Cart"])
+    experiment.alternatives.length.should be 2
   end
   
   it "should save to redis" do
