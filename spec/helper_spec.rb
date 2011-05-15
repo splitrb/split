@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Multivariate::Helper do
   before(:each) do
-    REDIS.flushall
+    Multivariate.redis.flushall
     Multivariate::Helper.current_user = {}
   end
 

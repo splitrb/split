@@ -4,7 +4,7 @@ module Multivariate
     attr_accessor :alternatives
 
     def initialize(name, *alternatives)
-      @name = name
+      @name = name.to_s
       @alternatives = alternatives
     end
 
@@ -17,21 +17,21 @@ module Multivariate
     end
 
     def save
-      REDIS.del(@name)
-      @alternatives.each {|a| REDIS.sadd(name, a) }
+      Multivariate.redis.sadd(:experiments, name)
+      @alternatives.each {|a| Multivariate.redis.sadd(name, a) }
     end
 
     def self.find(name)
-      if REDIS.exists(name)
-        self.new(name, *REDIS.smembers(name))
+      if Multivariate.redis.exists(name)
+        self.new(name, *Multivariate.redis.smembers(name))
       else
         raise 'Experiment not found'
       end
     end
 
     def self.find_or_create(name, *alternatives)
-      if REDIS.exists(name)
-        return self.new(name, *REDIS.smembers(name))
+      if Multivariate.redis.exists(name)
+        return self.new(name, *Multivariate.redis.smembers(name))
       else
         experiment = self.new(name, *alternatives)
         experiment.save

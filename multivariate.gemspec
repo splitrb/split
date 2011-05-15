@@ -19,5 +19,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency(%q<redis>, ["~>  2.1"])
+  s.add_dependency(%q<redis-namespace>, ["~>  0.10.0"])
   s.add_development_dependency(%q<rspec>, ["~>  2.6"])
 end

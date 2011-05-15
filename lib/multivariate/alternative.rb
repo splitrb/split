@@ -23,16 +23,16 @@ module Multivariate
     end
 
     def save
-      if REDIS.hgetall("#{experiment_name}:#{name}")
-        REDIS.hset "#{experiment_name}:#{name}", 'participant_count', @participant_count
-        REDIS.hset "#{experiment_name}:#{name}", 'completed_count', @completed_count
+      if Multivariate.redis.hgetall("#{experiment_name}:#{name}")
+        Multivariate.redis.hset "#{experiment_name}:#{name}", 'participant_count', @participant_count
+        Multivariate.redis.hset "#{experiment_name}:#{name}", 'completed_count', @completed_count
       else
-        REDIS.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', @participant_count, @completed_count
+        Multivariate.redis.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', @participant_count, @completed_count
       end
     end
 
     def self.find(name, experiment_name)
-      counters = REDIS.hgetall "#{experiment_name}:#{name}"
+      counters = Multivariate.redis.hgetall "#{experiment_name}:#{name}"
       self.new(name, experiment_name, counters)
     end
 
