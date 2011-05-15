@@ -1,5 +1,3 @@
-config object
 rails and sinatra mixins
-session storage of participation
 rack based web interface (sinatra app)
 documentation
