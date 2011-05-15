@@ -2,6 +2,8 @@ require 'spec_helper'
 require 'multivariate/experiment'
 
 describe Multivariate::Experiment do
+  before(:each) { REDIS.flushall }
+
   it "should have a name" do
     experiment = Multivariate::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.name.should eql('basket_text')
