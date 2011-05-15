@@ -22,11 +22,19 @@ module Multivariate
     end
 
     def self.current_user
-      @session ||= {}
+      self.session_store ||= {}
     end
 
     def self.current_user=(hash)
-      @session = hash
+      @@session_store = hash
+    end
+
+    def self.session_store
+      @@session_store
+    end
+
+    def self.session_store=(cookie)
+      @@session_store = cookie
     end
   end
 end
