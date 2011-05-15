@@ -37,4 +37,19 @@ describe Multivariate::Helper do
       alternative.should eql repeat_alternative
     end
   end
+
+  describe 'finished' do
+    it 'should increment the counter for the completed alternative' do
+      experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = Multivariate::Helper.ab_test('link_color', 'blue', 'red')
+
+      previous_completion_count = Multivariate::Alternative.find(alternative_name, 'link_color').completed_count
+
+      Multivariate::Helper.finished('link_color')
+
+      new_completion_count = Multivariate::Alternative.find(alternative_name, 'link_color').completed_count
+
+      new_completion_count.should eql(previous_completion_count + 1)
+    end
+  end
 end

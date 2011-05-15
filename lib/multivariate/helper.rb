@@ -16,11 +16,9 @@ module Multivariate
     end
   
     def self.finished(experiment_name)
-      experiment = Multivariate::Experiment.find(experiment_name)
-      # find the experiment
-      # find the current user
-      # find the alternative that the current user is seeing for that experiment
-      # increment the finished counter for that alternative of that experiment
+      alternative_name = current_user[experiment_name]
+      alternative = Multivariate::Alternative.find(alternative_name, experiment_name)
+      alternative.increment_completion
     end
 
     def self.current_user

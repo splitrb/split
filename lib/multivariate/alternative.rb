@@ -18,7 +18,8 @@ module Multivariate
     end
 
     def increment_completion
-      @participant_count +=1
+      @completed_count +=1
+      self.save
     end
 
     def save
