@@ -22,6 +22,11 @@ module Multivariate
       self.save
     end
 
+    def conversion_rate
+      return 0 if participant_count.zero?
+      (completed_count.to_f/participant_count.to_f)*100
+    end
+
     def save
       if Multivariate.redis.hgetall("#{experiment_name}:#{name}")
         Multivariate.redis.hset "#{experiment_name}:#{name}", 'participant_count', @participant_count
