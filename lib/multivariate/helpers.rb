@@ -3,7 +3,7 @@
 module Multivariate
   module Helpers
     def ab_test(experiment_name, *alternatives)
-      # find or create an experiment with the name: experiment_name
+      experiment = Multivariate::Experiment.find_or_create(experiment_name, *alternatives)
     
       # find current user
     
@@ -16,6 +16,7 @@ module Multivariate
     end
   
     def finished(experiment_name)
+      experiment = Multivariate::Experiment.find(experiment_name)
       # find the experiment
       # find the current user
       # find the alternative that the current user is seeing for that experiment
