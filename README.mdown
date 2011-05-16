@@ -3,6 +3,8 @@
 
 Multivariate is a rack based testing framework designed to work with Rails, Sinatra or any other rack based app.
 
+Multivariate is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
+
 ## Requirements
 
 Multivariate uses redis as a datastore.
@@ -46,16 +48,16 @@ You can mount this inside your app using Rack::URLMap in your `config.ru`
 
 ## Configuration
 
-You may want to change the Redis host and port Resque connects to, or
+You may want to change the Redis host and port Multivariate connects to, or
 set various other options at startup.
 
-Resque has a `redis` setter which can be given a string or a Redis
-object. This means if you're already using Redis in your app, Resque
+Multivariate has a `redis` setter which can be given a string or a Redis
+object. This means if you're already using Redis in your app, Multivariate
 can re-use the existing connection.
 
-String: `Resque.redis = 'localhost:6379'`
+String: `Multivariate.redis = 'localhost:6379'`
 
-Redis: `Resque.redis = $redis`
+Redis: `Multivariate.redis = $redis`
 
 For our rails app we have a `config/initializers/multivariate.rb` file where
 we load `config/multivariate.yml` by hand and set the Redis information
@@ -75,4 +77,36 @@ And our initializer:
     rails_env = ENV['RAILS_ENV'] || 'development'
 
     multivariate_config = YAML.load_file(rails_root + '/config/multivariate.yml')
-    Resque.redis = multivariate_config[rails_env]
+    Multivariate.redis = multivariate_config[rails_env]
+
+
+## Namespaces
+
+If you're running multiple, separate instances of Multivariate you may want
+to namespace the keyspaces so they do not overlap. This is not unlike
+the approach taken by many memcached clients.
+
+This feature is provided by the [redis-namespace][rs] library, which
+Multivariate uses by default to separate the keys it manages from other keys
+in your Redis server.
+
+Simply use the `Multivariate.redis.namespace` accessor:
+
+    Multivariate.redis.namespace = "resque:GitHub"
+
+We recommend sticking this in your initializer somewhere after Redis
+is configured.
+
+## Note on Patches/Pull Requests
+
+ * Fork the project.
+ * Make your feature addition or bug fix.
+ * Add tests for it. This is important so I don't break it in a
+   future version unintentionally.
+ * Commit, do not mess with rakefile, version, or history.
+   (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
+ * Send me a pull request. Bonus points for topic branches.
+
+## Copyright
+
+Copyright (c) 2011 Andrew Nesbitt. See LICENSE for details.
