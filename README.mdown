@@ -101,7 +101,6 @@ And our initializer:
     multivariate_config = YAML.load_file(rails_root + '/config/multivariate.yml')
     Multivariate.redis = multivariate_config[rails_env]
 
-
 ## Namespaces
 
 If you're running multiple, separate instances of Multivariate you may want
@@ -118,6 +117,13 @@ Simply use the `Multivariate.redis.namespace` accessor:
 
 We recommend sticking this in your initializer somewhere after Redis
 is configured.
+
+## Contributors
+
+Special thanks to the following people for submitting patches:
+
+* Lloyd Pick
+* Jeffery Chupp
 
 ## Note on Patches/Pull Requests
 
