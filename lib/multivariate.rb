@@ -42,9 +42,10 @@ module Multivariate
   end
 end
 
-# detect if its been loaded by rails
-  # hook helpers into action controller and action view
-# else detect if loaded by sinatra
-  # and add mixin code for sinatra
-
-# the loaded framework also needs to define a method for loading and storing the session of the user
+if defined?(Rails)
+  class ActionController::Base
+    ActionController::Base.send :include, Multivariate::Helper
+    ActionView::Base.send :include, Multivariate::Helper
+    Multivariate::Helper.session_store=({})
+  end
+end
