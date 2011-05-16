@@ -32,7 +32,23 @@ Otherwise install the gem:
 
 and require it in your project:
 
-  require 'multivariate'
+    require 'multivariate'
+
+### Rails
+
+Multivariate is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
+
+### Sinatra
+
+To configure sinatra with Multivariate you need to enable sessions and mix in the helper methods. Add the following lines at the top of your sinatra app:
+
+    class MySinatraApp < Sinatra::Base
+      enable :sessions
+      helpers Multivariate::Helper
+
+      get '/' do
+      ...
+    end
 
 ## Web Interface
 
