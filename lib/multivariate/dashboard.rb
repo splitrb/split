@@ -2,12 +2,11 @@ require 'sinatra/base'
 require 'multivariate'
 
 module Multivariate
-  class Server < Sinatra::Base
-    enable :sessions
+  class Dashboard < Sinatra::Base
     dir = File.dirname(File.expand_path(__FILE__))
 
-    set :views,  "#{dir}/server/views"
-    set :public, "#{dir}/server/public"
+    set :views,  "#{dir}/dashboard/views"
+    set :public, "#{dir}/dashboard/public"
     set :static, true
 
     helpers do

@@ -1,4 +1,4 @@
-<h1>Multivariate</h1>
+<h1>Multivariate Dashboard</h1>
 <p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
 
 <% @experiments.each do |experiment| %>
@@ -11,7 +11,7 @@
       <th>Completed</th>
       <th>Conversion Rate</th>
     </tr>
-    
+
     <% total_participants = total_completed = 0 %>
     <% experiment.alternatives.each do |alternative| %>
       <tr>
@@ -21,11 +21,11 @@
         <td><%= alternative.completed_count %></td>
         <td><%= alternative.conversion_rate %>%</td>
       </tr>
-      
+
       <% total_participants += alternative.participant_count %>
       <% total_completed += alternative.completed_count %>
     <% end %>
-    
+
     <tr class="totals">
       <td>Totals</td>
       <td><%= total_participants %></td>
@@ -34,5 +34,4 @@
       <td>N/A</td>
     </tr>
   </table>
-  <hr>
 <% end %>

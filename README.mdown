@@ -90,15 +90,15 @@ Multivariate comes with a Sinatra-based front end to get an overview of how your
 
 You can mount this inside your app using Rack::URLMap in your `config.ru`
 
-    require 'multivariate/server'
+    require 'multivariate/dashboard'
 
     run Rack::URLMap.new \
       "/"       => Your::App.new,
-      "/multivariate" => Multivariate::Server.new
+      "/multivariate" => Multivariate::Dashboard.new
 
 You may want to password protect that page, you can do so with `Rack::Auth::Basic`
 
-    Multivariate::Server.use Rack::Auth::Basic do |username, password|
+    Multivariate::Dashboard.use Rack::Auth::Basic do |username, password|
       username == 'admin' && password == 'p4s5w0rd'
     end
 
