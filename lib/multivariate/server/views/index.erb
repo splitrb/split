@@ -7,17 +7,17 @@
     <tr>
       <th>Alternative Name</th>
       <th>Participants</th>
+      <th>Non-finished</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
     </tr>
     
-    <% total_participants = 0 %>
-    <% total_completed = 0 %>
-    
+    <% total_participants = total_completed = 0 %>
     <% experiment.alternatives.each do |alternative| %>
       <tr>
         <td><%= alternative.name %></td>
         <td><%= alternative.participant_count %></td>
+        <td><%= alternative.participant_count - alternative.completed_count %></td>
         <td><%= alternative.completed_count %></td>
         <td><%= alternative.conversion_rate %>%</td>
       </tr>
@@ -29,6 +29,7 @@
     <tr class="totals">
       <td>Totals</td>
       <td><%= total_participants %></td>
+      <td><%= total_participants - total_completed %></td>
       <td><%= total_completed %></td>
       <td>N/A</td>
     </tr>
