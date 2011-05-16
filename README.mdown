@@ -1,7 +1,7 @@
 # Multivariate
 ## Rack based multivariate testing framework
 
-Multivariate is a rack based testing framework designed to work with Rails, Sinatra or any other rack based app.
+Multivariate is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
 
 Multivariate is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
 
@@ -49,6 +49,40 @@ To configure sinatra with Multivariate you need to enable sessions and mix in th
       get '/' do
       ...
     end
+
+## Usage
+
+To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different variants which you wish to test on as the other arguments.
+
+`ab_test` returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on.
+
+It can be used to render different templates, show different text or any other case based logic.
+
+`finished` is used to make a completion of an experiment, or conversion.
+
+Example: View
+
+    <% ab_test("login_button", "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
+      <%= img_tag(button_file, :alt => "Login!") %>
+    <% end %>
+
+Example: Controller
+
+    def register_new_user
+      #See what level of free points maximizes users' decision to buy replacement points.
+      @starter_points = ab_test("new_user_free_points", 100, 200, 300)
+    end
+
+Example: Conversion tracking (in a controller!)
+
+    def buy_new_points
+      #some business logic
+      finished("buy_new_points")  #Either a conversion named with :conversion or a test name.
+    end
+
+Example: Conversion tracking (in a view)
+
+    Thanks for signing up, dude! <% finished("signup_page_redesign") >
 
 ## Web Interface
 
