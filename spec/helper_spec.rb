@@ -9,9 +9,19 @@ describe Multivariate::Helper do
   end
 
   describe "ab_test" do
-    it "should assign a random alternative to a new user" do
+    it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
       ab_test('link_color', 'blue', 'red')
-      ab_user['link_color'].should_not == nil
+      ['red', 'blue'].should include(ab_user['link_color'])
+    end
+
+    it "should assign the alternative with the least participants to a user" do
+      experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
+
+      Multivariate::Alternative.find('blue', 'link_color').increment_participation
+      Multivariate::Alternative.find('red', 'link_color').increment_participation
+
+      color = ab_test('link_color', 'blue', 'red', 'green')
+      color.should == 'green'
     end
 
     it "should increment the participation counter after assignment to a new user" do

@@ -12,8 +12,8 @@ module Multivariate
       @alternatives.map {|a| Multivariate::Alternative.find_or_create(a, name)}
     end
 
-    def random_alternative
-      alternatives[rand(alternatives.size)]
+    def next_alternative
+      alternatives.sort_by{|a| a.participant_count + rand}.first
     end
 
     def save

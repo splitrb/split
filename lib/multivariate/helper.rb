@@ -8,7 +8,7 @@ module Multivariate
       if ab_user[experiment_name]
         return ab_user[experiment_name]
       else
-        alternative = experiment.random_alternative
+        alternative = experiment.next_alternative
         alternative.increment_participation
         ab_user[experiment_name] = alternative.name
         return alternative.name
