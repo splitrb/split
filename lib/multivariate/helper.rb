@@ -1,5 +1,3 @@
-# this file needs to be mixed in to each framework
-# ie Rails: action controller methods
 module Multivariate
   module Helper
     def ab_test(experiment_name, *alternatives)
