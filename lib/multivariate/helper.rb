@@ -14,11 +14,12 @@ module Multivariate
         return alternative.name
       end
     end
-  
+
     def finished(experiment_name)
       alternative_name = ab_user[experiment_name]
       alternative = Multivariate::Alternative.find(alternative_name, experiment_name)
       alternative.increment_completion
+      session[:multivariate].delete(experiment_name)
     end
 
     def ab_user

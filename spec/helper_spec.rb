@@ -59,6 +59,17 @@ describe Multivariate::Helper do
 
       new_completion_count.should eql(previous_completion_count + 1)
     end
+
+    it "should clear out the user's participation from their session" do
+      experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color', 'blue', 'red')
+
+      previous_completion_count = Multivariate::Alternative.find(alternative_name, 'link_color').completed_count
+
+      session[:multivariate].should == {"link_color" => alternative_name}
+      finished('link_color')
+      session[:multivariate].should == {}
+    end
   end
   
   describe 'conversions' do
