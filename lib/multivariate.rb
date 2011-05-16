@@ -45,7 +45,6 @@ end
 if defined?(Rails)
   class ActionController::Base
     ActionController::Base.send :include, Multivariate::Helper
-    ActionView::Base.send :include, Multivariate::Helper
-    Multivariate::Helper.session_store=({})
+    ActionController::Base.helper Multivariate::Helper
   end
 end
