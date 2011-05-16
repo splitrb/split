@@ -20,8 +20,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency(%q<redis>, ["~>  2.1"])
   s.add_dependency(%q<redis-namespace>, ["~>  0.10.0"])
-  s.add_dependency(%q<sinatra>, ["~>  1.1.2"])
+  s.add_dependency(%q<sinatra>, ["~>  1.2.6"])
   
   # Development Dependencies
-  s.add_development_dependency(%q<rspec>, ["~>  2.5"])
+  s.add_development_dependency(%q<rspec>, ["~>  2.6"])
 end
