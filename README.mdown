@@ -16,9 +16,9 @@ If you're on OS X, Homebrew is the simplest way to install Redis:
 
 You now have a Redis daemon running on 6379.
 
-## Usage
+## Setup
 
-If you are using bundler: add multivariate to your Gemfile:
+If you are using bundler add multivariate to your Gemfile:
 
     gem 'multivariate'
 
@@ -28,7 +28,7 @@ Then run:
 
 Otherwise install the gem:
 
-  gem install multivariate
+    gem install multivariate
 
 and require it in your project:
 
