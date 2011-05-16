@@ -1,15 +1,15 @@
-require 'rubygems'
-require 'sinatra'
-require 'bundler/setup'
+require 'sinatra/base'
 require 'multivariate'
 
+module Multivariate
+  class Server < Sinatra::Base
+    enable :sessions
+    dir = File.dirname(File.expand_path(__FILE__))
+    set :views,  "#{dir}/server/views"
 
-class TestApp < Sinatra::Base
-  enable :sessions
-  set :root, File.dirname(__FILE__)
-
-  get '/' do
-    @experiments = Multivariate::Experiment.all
-    erb :index
+    get '/' do
+      @experiments = Multivariate::Experiment.all
+      render 'hello'
+    end
   end
 end
