@@ -83,7 +83,7 @@ describe Multivariate::Helper do
       finished('link_color')
       
       new_convertion_rate = Multivariate::Alternative.find(alternative_name, 'link_color').conversion_rate
-      new_convertion_rate.should eql(100.0)
+      new_convertion_rate.should eql(1.0)
     end
   end
 end
