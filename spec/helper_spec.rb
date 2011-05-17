@@ -14,16 +14,6 @@ describe Multivariate::Helper do
       ['red', 'blue'].should include(ab_user['link_color'])
     end
 
-    it "should assign the alternative with the least participants to a user" do
-      experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
-
-      Multivariate::Alternative.find('blue', 'link_color').increment_participation
-      Multivariate::Alternative.find('red', 'link_color').increment_participation
-
-      color = ab_test('link_color', 'blue', 'red', 'green')
-      color.should == 'green'
-    end
-
     it "should increment the participation counter after assignment to a new user" do
       experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
 
@@ -43,6 +33,14 @@ describe Multivariate::Helper do
       alternative = ab_test('link_color', 'blue', 'red')
       repeat_alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql repeat_alternative
+    end
+
+    it 'should always return the winner if one is present' do
+      experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
+      experiment.winner = Multivariate::Alternative.find_or_create("orange", 'link_color')
+      experiment.save
+
+      ab_test('link_color', 'blue', 'red').should == 'orange'
     end
   end
 

@@ -2,6 +2,7 @@ module Multivariate
   module Helper
     def ab_test(experiment_name, *alternatives)
       experiment = Multivariate::Experiment.find_or_create(experiment_name, *alternatives)
+      return experiment.winner.name if experiment.winner
 
       if ab_user[experiment_name]
         return ab_user[experiment_name]
