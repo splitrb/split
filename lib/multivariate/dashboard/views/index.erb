@@ -11,6 +11,7 @@
       <th>Completed</th>
       <th>Conversion Rate</th>
       <th>Z-Score</th>
+      <th>Winner</th>
     </tr>
 
     <% total_participants = total_completed = 0 %>
@@ -22,6 +23,20 @@
         <td><%= alternative.completed_count %></td>
         <td><%= (alternative.conversion_rate * 100).round(2) %>%</td>
         <td><%= alternative.z_score %></td>
+        <td>
+          <% if experiment.winner %>
+            <% if experiment.winner.name == alternative.name %>
+              Winner
+            <% else %>
+              Loser
+            <% end %>
+          <% else %>
+            <form action="<%= url experiment.name %>" method='post'>
+              <input type='hidden' name='alternative' value='<%= alternative.name %>'>
+              <input type="submit" value="Use this">
+            </form>
+          <% end %>
+        </td>
       </tr>
 
       <% total_participants += alternative.participant_count %>
@@ -33,6 +48,7 @@
       <td><%= total_participants %></td>
       <td><%= total_participants - total_completed %></td>
       <td><%= total_completed %></td>
+      <td>N/A</td>
       <td>N/A</td>
       <td>N/A</td>
     </tr>

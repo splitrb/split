@@ -7,13 +7,18 @@ module Multivariate
     def initialize(name, *alternatives)
       @name = name.to_s
       @alternatives = alternatives
-      @winner = winner
     end
 
     def winner
       if w = Multivariate.redis.hget(:experiment_winner, name)
-        Multivariate::Alternative.find(w, name)
+        return Multivariate::Alternative.find(w, name)
+      else
+        nil
       end
+    end
+
+    def winner=(winner_name)
+      Multivariate.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
 
     def alternatives
@@ -21,15 +26,12 @@ module Multivariate
     end
 
     def next_alternative
-      @winner || alternatives.sort_by{|a| a.participant_count + rand}.first
+      winner || alternatives.sort_by{|a| a.participant_count + rand}.first
     end
 
     def save
       Multivariate.redis.sadd(:experiments, name)
       @alternatives.each {|a| Multivariate.redis.sadd(name, a) }
-      if @winner
-        Multivariate.redis.hset(:experiment_winner, name, @winner.name)
-      end
     end
 
     def self.all

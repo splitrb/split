@@ -23,5 +23,13 @@ module Multivariate
       @experiments = Multivariate::Experiment.all
       erb :index
     end
+
+    post '/:experiment' do
+      @experiment = Multivariate::Experiment.find(params[:experiment])
+      @alternative = Multivariate::Alternative.find(params[:alternative], params[:experiment])
+      @experiment.winner = @alternative.name
+      @experiment.save
+      redirect url('/')
+    end
   end
 end

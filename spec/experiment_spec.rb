@@ -34,8 +34,7 @@ describe Multivariate::Experiment do
 
     it "should allow you to specify a winner" do
       experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
-      experiment.winner = Multivariate::Alternative.find_or_create('red', 'link_color')
-      experiment.save
+      experiment.winner = 'red'
 
       experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.winner.name.should == 'red'
@@ -55,8 +54,7 @@ describe Multivariate::Experiment do
     it "should always return the winner if one exists" do
       experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
       green = Multivariate::Alternative.find('green', 'link_color')
-      experiment.winner = green
-      experiment.save
+      experiment.winner = 'green'
 
       experiment.next_alternative.name.should == 'green'
       green.increment_participation

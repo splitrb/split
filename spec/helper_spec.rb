@@ -37,8 +37,7 @@ describe Multivariate::Helper do
 
     it 'should always return the winner if one is present' do
       experiment = Multivariate::Experiment.find_or_create('link_color', 'blue', 'red')
-      experiment.winner = Multivariate::Alternative.find_or_create("orange", 'link_color')
-      experiment.save
+      experiment.winner = "orange"
 
       ab_test('link_color', 'blue', 'red').should == 'orange'
     end
