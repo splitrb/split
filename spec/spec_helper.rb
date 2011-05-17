@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'bundler/setup'
-require 'multivariate'
+require 'split'
 
 def session
   @session ||= {}

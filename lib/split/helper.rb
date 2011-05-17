@@ -1,7 +1,7 @@
-module Multivariate
+module Split
   module Helper
     def ab_test(experiment_name, *alternatives)
-      experiment = Multivariate::Experiment.find_or_create(experiment_name, *alternatives)
+      experiment = Split::Experiment.find_or_create(experiment_name, *alternatives)
       return experiment.winner.name if experiment.winner
 
       if ab_user[experiment_name]
@@ -16,13 +16,13 @@ module Multivariate
 
     def finished(experiment_name)
       alternative_name = ab_user[experiment_name]
-      alternative = Multivariate::Alternative.find(alternative_name, experiment_name)
+      alternative = Split::Alternative.find(alternative_name, experiment_name)
       alternative.increment_completion
-      session[:multivariate].delete(experiment_name)
+      session[:split].delete(experiment_name)
     end
 
     def ab_user
-      session[:multivariate] ||= {}
+      session[:split] ||= {}
     end
   end
 end

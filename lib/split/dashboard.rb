@@ -1,7 +1,7 @@
 require 'sinatra/base'
-require 'multivariate'
+require 'split'
 
-module Multivariate
+module Split
   class Dashboard < Sinatra::Base
     dir = File.dirname(File.expand_path(__FILE__))
 
@@ -20,13 +20,13 @@ module Multivariate
     end
 
     get '/' do
-      @experiments = Multivariate::Experiment.all
+      @experiments = Split::Experiment.all
       erb :index
     end
 
     post '/:experiment' do
-      @experiment = Multivariate::Experiment.find(params[:experiment])
-      @alternative = Multivariate::Alternative.find(params[:alternative], params[:experiment])
+      @experiment = Split::Experiment.find(params[:experiment])
+      @alternative = Split::Alternative.find(params[:alternative], params[:experiment])
       @experiment.winner = @alternative.name
       @experiment.save
       redirect url('/')

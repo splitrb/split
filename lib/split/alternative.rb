@@ -1,4 +1,4 @@
-module Multivariate
+module Split
   class Alternative
     attr_accessor :name
     attr_accessor :participant_count
@@ -33,7 +33,7 @@ module Multivariate
       # E = the number of impressions within the experiment split
       # C = the number of impressions within the control split
       
-      experiment = Multivariate::Experiment.find(@experiment_name)
+      experiment = Split::Experiment.find(@experiment_name)
       control = experiment.alternatives[0]
       alternative = self
       
@@ -51,16 +51,16 @@ module Multivariate
     end
 
     def save
-      if Multivariate.redis.hgetall("#{experiment_name}:#{name}")
-        Multivariate.redis.hset "#{experiment_name}:#{name}", 'participant_count', @participant_count
-        Multivariate.redis.hset "#{experiment_name}:#{name}", 'completed_count', @completed_count
+      if Split.redis.hgetall("#{experiment_name}:#{name}")
+        Split.redis.hset "#{experiment_name}:#{name}", 'participant_count', @participant_count
+        Split.redis.hset "#{experiment_name}:#{name}", 'completed_count', @completed_count
       else
-        Multivariate.redis.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', @participant_count, @completed_count
+        Split.redis.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', @participant_count, @completed_count
       end
     end
 
     def self.find(name, experiment_name)
-      counters = Multivariate.redis.hgetall "#{experiment_name}:#{name}"
+      counters = Split.redis.hgetall "#{experiment_name}:#{name}"
       self.new(name, experiment_name, counters)
     end
 

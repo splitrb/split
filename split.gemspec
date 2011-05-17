@@ -1,17 +1,17 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "multivariate/version"
+require "split/version"
 
 Gem::Specification.new do |s|
-  s.name        = "multivariate"
-  s.version     = Multivariate::VERSION
+  s.name        = "split"
+  s.version     = Split::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Andrew Nesbitt"]
   s.email       = ["andrewnez@gmail.com"]
   s.homepage    = ""
-  s.summary     = %q{Rack based multivariate testing framework}
+  s.summary     = %q{Rack based split testing framework}
 
-  s.rubyforge_project = "multivariate"
+  s.rubyforge_project = "split"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

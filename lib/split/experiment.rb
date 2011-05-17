@@ -1,4 +1,4 @@
-module Multivariate
+module Split
   class Experiment
     attr_accessor :name
     attr_accessor :alternatives
@@ -10,19 +10,19 @@ module Multivariate
     end
 
     def winner
-      if w = Multivariate.redis.hget(:experiment_winner, name)
-        return Multivariate::Alternative.find(w, name)
+      if w = Split.redis.hget(:experiment_winner, name)
+        return Split::Alternative.find(w, name)
       else
         nil
       end
     end
 
     def winner=(winner_name)
-      Multivariate.redis.hset(:experiment_winner, name, winner_name.to_s)
+      Split.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
 
     def alternatives
-      @alternatives.map {|a| Multivariate::Alternative.find_or_create(a, name)}
+      @alternatives.map {|a| Split::Alternative.find_or_create(a, name)}
     end
 
     def next_alternative
@@ -30,25 +30,25 @@ module Multivariate
     end
 
     def save
-      Multivariate.redis.sadd(:experiments, name)
-      @alternatives.each {|a| Multivariate.redis.sadd(name, a) }
+      Split.redis.sadd(:experiments, name)
+      @alternatives.each {|a| Split.redis.sadd(name, a) }
     end
 
     def self.all
-      Array(Multivariate.redis.smembers(:experiments)).map {|e| find(e)}
+      Array(Split.redis.smembers(:experiments)).map {|e| find(e)}
     end
 
     def self.find(name)
-      if Multivariate.redis.exists(name)
-        self.new(name, *Multivariate.redis.smembers(name))
+      if Split.redis.exists(name)
+        self.new(name, *Split.redis.smembers(name))
       else
         raise 'Experiment not found'
       end
     end
 
     def self.find_or_create(name, *alternatives)
-      if Multivariate.redis.exists(name)
-        return self.new(name, *Multivariate.redis.smembers(name))
+      if Split.redis.exists(name)
+        return self.new(name, *Split.redis.smembers(name))
       else
         experiment = self.new(name, *alternatives)
         experiment.save

@@ -1,10 +1,10 @@
 require 'rubygems'
-require 'multivariate/experiment'
-require 'multivariate/alternative'
-require 'multivariate/helper'
+require 'split/experiment'
+require 'split/alternative'
+require 'split/helper'
 require 'redis/namespace'
 
-module Multivariate
+module Split
   extend self
   # Accepts:
   #   1. A 'hostname:port' string
@@ -23,13 +23,13 @@ module Multivariate
         redis = Redis.new(:host => host, :port => port,
           :thread_safe => true, :db => db)
       end
-      namespace ||= :multivariate
+      namespace ||= :split
 
       @redis = Redis::Namespace.new(namespace, :redis => redis)
     elsif server.respond_to? :namespace=
         @redis = server
     else
-      @redis = Redis::Namespace.new(:multivariate, :redis => server)
+      @redis = Redis::Namespace.new(:split, :redis => server)
     end
   end
 
@@ -44,7 +44,7 @@ end
 
 if defined?(Rails)
   class ActionController::Base
-    ActionController::Base.send :include, Multivariate::Helper
-    ActionController::Base.helper Multivariate::Helper
+    ActionController::Base.send :include, Split::Helper
+    ActionController::Base.helper Split::Helper
   end
 end

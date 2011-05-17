@@ -1,13 +1,13 @@
-# Multivariate
-## Rack based multivariate testing framework
+# Split
+## Rack based split testing framework
 
-Multivariate is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
+Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
 
-Multivariate is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
+Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
 
 ## Requirements
 
-Multivariate uses redis as a datastore.
+Split uses redis as a datastore.
 
 If you're on OS X, Homebrew is the simplest way to install Redis:
 
@@ -18,9 +18,9 @@ You now have a Redis daemon running on 6379.
 
 ## Setup
 
-If you are using bundler add multivariate to your Gemfile:
+If you are using bundler add split to your Gemfile:
 
-    gem 'multivariate'
+    gem 'split'
 
 Then run:
 
@@ -28,23 +28,23 @@ Then run:
 
 Otherwise install the gem:
 
-    gem install multivariate
+    gem install split
 
 and require it in your project:
 
-    require 'multivariate'
+    require 'split'
 
 ### Rails
 
-Multivariate is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
+Split is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
 
 ### Sinatra
 
-To configure sinatra with Multivariate you need to enable sessions and mix in the helper methods. Add the following lines at the top of your sinatra app:
+To configure sinatra with Split you need to enable sessions and mix in the helper methods. Add the following lines at the top of your sinatra app:
 
     class MySinatraApp < Sinatra::Base
       enable :sessions
-      helpers Multivariate::Helper
+      helpers Split::Helper
 
       get '/' do
       ...
@@ -86,40 +86,40 @@ Example: Conversion tracking (in a view)
 
 ## Web Interface
 
-Multivariate comes with a Sinatra-based front end to get an overview of how your experiments are doing.
+Split comes with a Sinatra-based front end to get an overview of how your experiments are doing.
 
 You can mount this inside your app using Rack::URLMap in your `config.ru`
 
-    require 'multivariate/dashboard'
+    require 'split/dashboard'
 
     run Rack::URLMap.new \
       "/"       => Your::App.new,
-      "/multivariate" => Multivariate::Dashboard.new
+      "/split" => Split::Dashboard.new
 
 You may want to password protect that page, you can do so with `Rack::Auth::Basic`
 
-    Multivariate::Dashboard.use Rack::Auth::Basic do |username, password|
+    Split::Dashboard.use Rack::Auth::Basic do |username, password|
       username == 'admin' && password == 'p4s5w0rd'
     end
 
 ## Configuration
 
-You may want to change the Redis host and port Multivariate connects to, or
+You may want to change the Redis host and port Split connects to, or
 set various other options at startup.
 
-Multivariate has a `redis` setter which can be given a string or a Redis
-object. This means if you're already using Redis in your app, Multivariate
+Split has a `redis` setter which can be given a string or a Redis
+object. This means if you're already using Redis in your app, Split
 can re-use the existing connection.
 
-String: `Multivariate.redis = 'localhost:6379'`
+String: `Split.redis = 'localhost:6379'`
 
-Redis: `Multivariate.redis = $redis`
+Redis: `Split.redis = $redis`
 
-For our rails app we have a `config/initializers/multivariate.rb` file where
-we load `config/multivariate.yml` by hand and set the Redis information
+For our rails app we have a `config/initializers/split.rb` file where
+we load `config/split.yml` by hand and set the Redis information
 appropriately.
 
-Here's our `config/multivariate.yml`:
+Here's our `config/split.yml`:
 
     development: localhost:6379
     test: localhost:6379
@@ -132,22 +132,22 @@ And our initializer:
     rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
     rails_env = ENV['RAILS_ENV'] || 'development'
 
-    multivariate_config = YAML.load_file(rails_root + '/config/multivariate.yml')
-    Multivariate.redis = multivariate_config[rails_env]
+    split_config = YAML.load_file(rails_root + '/config/split.yml')
+    Split.redis = split_config[rails_env]
 
 ## Namespaces
 
-If you're running multiple, separate instances of Multivariate you may want
+If you're running multiple, separate instances of Split you may want
 to namespace the keyspaces so they do not overlap. This is not unlike
 the approach taken by many memcached clients.
 
 This feature is provided by the [redis-namespace][rs] library, which
-Multivariate uses by default to separate the keys it manages from other keys
+Split uses by default to separate the keys it manages from other keys
 in your Redis server.
 
-Simply use the `Multivariate.redis.namespace` accessor:
+Simply use the `Split.redis.namespace` accessor:
 
-    Multivariate.redis.namespace = "resque:GitHub"
+    Split.redis.namespace = "resque:GitHub"
 
 We recommend sticking this in your initializer somewhere after Redis
 is configured.
@@ -172,3 +172,6 @@ Special thanks to the following people for submitting patches:
 ## Copyright
 
 Copyright (c) 2011 Andrew Nesbitt. See LICENSE for details.
+
+
+n.b don't pass the same alternative twice!
