@@ -2,6 +2,7 @@ require 'rubygems'
 require 'split/experiment'
 require 'split/alternative'
 require 'split/helper'
+require 'split/version'
 require 'redis/namespace'
 
 module Split
