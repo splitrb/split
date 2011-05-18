@@ -1,5 +1,6 @@
 require 'sinatra/base'
 require 'split'
+require 'bigdecimal'
 
 module Split
   class Dashboard < Sinatra::Base
@@ -16,6 +17,10 @@ module Split
 
       def path_prefix
         request.env['SCRIPT_NAME']
+      end
+
+      def number_to_percentage(number, precision = 2)
+        BigDecimal.new((number * 100).to_s).round(precision).to_f
       end
     end
 

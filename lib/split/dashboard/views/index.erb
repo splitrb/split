@@ -21,7 +21,7 @@
         <td><%= alternative.participant_count %></td>
         <td><%= alternative.participant_count - alternative.completed_count %></td>
         <td><%= alternative.completed_count %></td>
-        <td><%= (alternative.conversion_rate * 100).round(2) %>%</td>
+        <td><%= number_to_percentage(alternative.conversion_rate) %>%</td>
         <td><%= alternative.z_score %></td>
         <td>
           <% if experiment.winner %>
