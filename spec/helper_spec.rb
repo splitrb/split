@@ -71,7 +71,7 @@ describe Split::Helper do
 
       previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
 
-      session[:split].should == {"link_color" => alternative_name}
+      session[:split].should eql("link_color" => alternative_name)
       finished('link_color')
       session[:split].should == {}
     end
