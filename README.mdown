@@ -84,6 +84,17 @@ Example: Conversion tracking (in a view)
 
     Thanks for signing up, dude! <% finished("signup_page_redesign") >
 
+### Overriding alternatives
+
+For development and testing, you may wish to force your app to always return an alternative.
+You can do this by passing it as a parameter in the url.
+
+If you have an experiment called `button_color` with alternatives called `red` and `blue` used on your homepage, a url such as:
+
+    http://myawesomesite.com?button_color=red
+
+will always have red buttons. This won't be stored in your session or count towards to results.
+
 ## Web Interface
 
 Split comes with a Sinatra-based front end to get an overview of how your experiments are doing.
