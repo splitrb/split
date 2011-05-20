@@ -1,56 +1,61 @@
 <h1>Split Dashboard</h1>
-<p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
+<% if @experiments.any? %>
+  <p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
 
-<% @experiments.each do |experiment| %>
-  <h2><%= experiment.name %></h2>
-  <table class="queues">
-    <tr>
-      <th>Alternative Name</th>
-      <th>Participants</th>
-      <th>Non-finished</th>
-      <th>Completed</th>
-      <th>Conversion Rate</th>
-      <th>Z-Score</th>
-      <th>Winner</th>
-    </tr>
-
-    <% total_participants = total_completed = 0 %>
-    <% experiment.alternatives.each do |alternative| %>
+  <% @experiments.each do |experiment| %>
+    <h2><%= experiment.name %></h2>
+    <table class="queues">
       <tr>
-        <td><%= alternative.name %></td>
-        <td><%= alternative.participant_count %></td>
-        <td><%= alternative.participant_count - alternative.completed_count %></td>
-        <td><%= alternative.completed_count %></td>
-        <td><%= number_to_percentage(alternative.conversion_rate) %>%</td>
-        <td><%= alternative.z_score %></td>
-        <td>
-          <% if experiment.winner %>
-            <% if experiment.winner.name == alternative.name %>
-              Winner
-            <% else %>
-              Loser
-            <% end %>
-          <% else %>
-            <form action="<%= url experiment.name %>" method='post'>
-              <input type='hidden' name='alternative' value='<%= alternative.name %>'>
-              <input type="submit" value="Use this">
-            </form>
-          <% end %>
-        </td>
+        <th>Alternative Name</th>
+        <th>Participants</th>
+        <th>Non-finished</th>
+        <th>Completed</th>
+        <th>Conversion Rate</th>
+        <th>Z-Score</th>
+        <th>Winner</th>
       </tr>
 
-      <% total_participants += alternative.participant_count %>
-      <% total_completed += alternative.completed_count %>
-    <% end %>
+      <% total_participants = total_completed = 0 %>
+      <% experiment.alternatives.each do |alternative| %>
+        <tr>
+          <td><%= alternative.name %></td>
+          <td><%= alternative.participant_count %></td>
+          <td><%= alternative.participant_count - alternative.completed_count %></td>
+          <td><%= alternative.completed_count %></td>
+          <td><%= number_to_percentage(alternative.conversion_rate) %>%</td>
+          <td><%= alternative.z_score %></td>
+          <td>
+            <% if experiment.winner %>
+              <% if experiment.winner.name == alternative.name %>
+                Winner
+              <% else %>
+                Loser
+              <% end %>
+            <% else %>
+              <form action="<%= url experiment.name %>" method='post'>
+                <input type='hidden' name='alternative' value='<%= alternative.name %>'>
+                <input type="submit" value="Use this">
+              </form>
+            <% end %>
+          </td>
+        </tr>
 
-    <tr class="totals">
-      <td>Totals</td>
-      <td><%= total_participants %></td>
-      <td><%= total_participants - total_completed %></td>
-      <td><%= total_completed %></td>
-      <td>N/A</td>
-      <td>N/A</td>
-      <td>N/A</td>
-    </tr>
-  </table>
+        <% total_participants += alternative.participant_count %>
+        <% total_completed += alternative.completed_count %>
+      <% end %>
+
+      <tr class="totals">
+        <td>Totals</td>
+        <td><%= total_participants %></td>
+        <td><%= total_participants - total_completed %></td>
+        <td><%= total_completed %></td>
+        <td>N/A</td>
+        <td>N/A</td>
+        <td>N/A</td>
+      </tr>
+    </table>
+  <% end %>
+<% else %>
+  <p class="intro">No experiments have started yet, you need to define them in your code and introduce them to your users.</p>
+  <p class="intro">Check out the <a href='https://github.com/andrew/split#readme'>Readme</a> for more help getting started.</p>
 <% end %>
