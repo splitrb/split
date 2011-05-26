@@ -1,12 +1,12 @@
 module Split
   class Experiment
     attr_accessor :name
-    attr_accessor :alternatives
+    attr_accessor :alternative_names
     attr_accessor :winner
 
-    def initialize(name, *alternatives)
+    def initialize(name, *alternative_names)
       @name = name.to_s
-      @alternatives = alternatives
+      @alternative_names = alternative_names
     end
 
     def winner
@@ -30,7 +30,7 @@ module Split
     end
 
     def alternatives
-      @alternatives.map {|a| Split::Alternative.find_or_create(a, name)}
+      @alternative_names.map {|a| Split::Alternative.find_or_create(a, name)}
     end
 
     def next_alternative
@@ -46,7 +46,7 @@ module Split
 
     def save
       Split.redis.sadd(:experiments, name)
-      @alternatives.each {|a| Split.redis.sadd(name, a) }
+      @alternative_names.each {|a| Split.redis.sadd(name, a) }
     end
 
     def self.all
