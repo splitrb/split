@@ -26,6 +26,14 @@ describe Split::Experiment do
     Split::Experiment.find('basket_text').name.should eql('basket_text')
   end
 
+  describe 'control' do
+    it 'should be the first alternative' do
+      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment.save
+      experiment.control.name.should eql('Basket')
+    end
+  end
+
   describe 'winner' do
     it "should have no winner initially" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
