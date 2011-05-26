@@ -46,7 +46,7 @@ module Split
 
     def save
       Split.redis.sadd(:experiments, name)
-      @alternative_names.each {|a| Split.redis.sadd(name, a) }
+      @alternative_names.reverse.each {|a| Split.redis.lpush(name, a) }
     end
 
     def self.all
@@ -55,7 +55,7 @@ module Split
 
     def self.find(name)
       if Split.redis.exists(name)
-        self.new(name, *Split.redis.smembers(name))
+        self.new(name, *Split.redis.lrange(name, 0, -1))
       else
         raise 'Experiment not found'
       end
@@ -63,7 +63,7 @@ module Split
 
     def self.find_or_create(name, *alternatives)
       if Split.redis.exists(name)
-        return self.new(name, *Split.redis.smembers(name))
+        return self.new(name, *Split.redis.lrange(name, 0, -1))
       else
         experiment = self.new(name, *alternatives)
         experiment.save
