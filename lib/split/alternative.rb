@@ -62,7 +62,9 @@ module Split
     end
 
     def reset
-      Split.redis.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', 0, 0
+      @participant_count = 0
+      @completed_count = 0
+      save
     end
 
     def self.find(name, experiment_name)
