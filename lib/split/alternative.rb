@@ -37,8 +37,8 @@ module Split
       # E = the number of impressions within the experiment split
       # C = the number of impressions within the control split
 
-      experiment = Split::Experiment.find(@experiment_name)
-      control = experiment.alternatives[0]
+      control = experiment.control
+
       alternative = self
 
       return 'N/A' if control.name == alternative.name
