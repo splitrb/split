@@ -26,19 +26,19 @@ module Split
       return 0 if participant_count.zero?
       (completed_count.to_f/participant_count.to_f)
     end
-    
+
     def z_score      
       # CTR_E = the CTR within the experiment split
       # CTR_C = the CTR within the control split
       # E = the number of impressions within the experiment split
       # C = the number of impressions within the control split
-      
+
       experiment = Split::Experiment.find(@experiment_name)
       control = experiment.alternatives[0]
       alternative = self
-      
+
       return 'N/A' if control.name == alternative.name
-      
+
       ctr_e = alternative.conversion_rate
       ctr_c = control.conversion_rate
 
@@ -46,7 +46,7 @@ module Split
       c = control.participant_count
 
       standard_deviation = ((ctr_e / ctr_c**3) * ((e*ctr_e)+(c*ctr_c)-(ctr_c*ctr_e)*(c+e))/(c*e)) ** 0.5
-      
+
       z_score = ((ctr_e / ctr_c) - 1) / standard_deviation
     end
 
