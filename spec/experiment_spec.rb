@@ -78,7 +78,7 @@ describe Split::Experiment do
       Split::Alternative.find('blue', 'link_color').increment_participation
       Split::Alternative.find('red', 'link_color').increment_participation
 
-      experiment.next_alternative.name.should == 'green'
+      experiment.next_alternative.name.should eql('green')
     end
 
     it "should always return the winner if one exists" do
@@ -86,11 +86,11 @@ describe Split::Experiment do
       green = Split::Alternative.find('green', 'link_color')
       experiment.winner = 'green'
 
-      experiment.next_alternative.name.should == 'green'
+      experiment.next_alternative.name.should eql('green')
       green.increment_participation
 
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
-      experiment.next_alternative.name.should == 'green'
+      experiment.next_alternative.name.should eql('green')
     end
   end
 end
