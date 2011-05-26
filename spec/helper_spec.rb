@@ -45,7 +45,7 @@ describe Split::Helper do
 
     it "should allow the alternative to be force by passing it in the params" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-      params = {'link_color' => 'blue'}
+      @params = {'link_color' => 'blue'}
       alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql('blue')
     end
