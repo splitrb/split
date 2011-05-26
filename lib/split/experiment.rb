@@ -17,6 +17,10 @@ module Split
       end
     end
 
+    def control
+      alternatives.first
+    end
+
     def reset_winner
       Split.redis.hdel(:experiment_winner, name)
     end
