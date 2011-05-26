@@ -61,6 +61,10 @@ module Split
       end
     end
 
+    def reset
+      Split.redis.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', 0, 0
+    end
+
     def self.find(name, experiment_name)
       counters = Split.redis.hgetall "#{experiment_name}:#{name}"
       self.new(name, experiment_name, counters)

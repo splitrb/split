@@ -17,6 +17,10 @@ module Split
       end
     end
 
+    def reset_winner
+      Split.redis.hdel(:experiment_winner, name)
+    end
+
     def winner=(winner_name)
       Split.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
@@ -27,6 +31,13 @@ module Split
 
     def next_alternative
       winner || alternatives.sort_by{|a| a.participant_count + rand}.first
+    end
+
+    def reset
+      alternatives.each do |alternative|
+        alternative.reset
+      end
+      reset_winner
     end
 
     def save

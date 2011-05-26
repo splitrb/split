@@ -41,6 +41,36 @@ describe Split::Experiment do
     end
   end
 
+  describe 'reset' do
+    it 'should reset all alternatives' do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
+      green = Split::Alternative.find('green', 'link_color')
+      experiment.winner = 'green'
+
+      experiment.next_alternative.name.should eql('green')
+      green.increment_participation
+
+      experiment.reset
+
+      reset_green = Split::Alternative.find('green', 'link_color')
+      reset_green.participant_count.should eql(0)
+      reset_green.completed_count.should eql(0)
+    end
+
+    it 'should reset the winner' do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
+      green = Split::Alternative.find('green', 'link_color')
+      experiment.winner = 'green'
+
+      experiment.next_alternative.name.should eql('green')
+      green.increment_participation
+
+      experiment.reset
+
+      experiment.winner.should be_nil
+    end
+  end
+
   describe 'next_alternative' do
     it "should return a random alternative from those with the least participants" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')

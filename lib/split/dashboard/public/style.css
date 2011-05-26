@@ -30,5 +30,21 @@ body { padding:0; margin:0; }
 #footer { padding:10px 5%; background:#efefef; color:#999; font-size:85%; line-height:1.5; border-top:5px solid #ccc; padding-top:10px;}
 #footer p a { color:#999;}
 
+h2{
+  float:left;
+}
+
+.reset{
+  font-size:10px;
+  line-height:38px;
+}
+
+.reset input{
+  margin-left:10px;
+}
+
+.queues{
+  clear:both;
+}
 
 

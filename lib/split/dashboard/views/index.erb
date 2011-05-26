@@ -4,6 +4,9 @@
 
   <% @experiments.each do |experiment| %>
     <h2><%= experiment.name %></h2>
+    <form action="<%= url "/reset/#{experiment.name}" %>" method='post' class='reset' onclick="return confirmReset()">
+      <input type="submit" value="Reset Data">
+    </form>
     <table class="queues">
       <tr>
         <th>Alternative Name</th>
