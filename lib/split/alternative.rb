@@ -27,6 +27,10 @@ module Split
       (completed_count.to_f/participant_count.to_f)
     end
 
+    def experiment
+      Split::Experiment.find(experiment_name)
+    end
+
     def z_score      
       # CTR_E = the CTR within the experiment split
       # CTR_C = the CTR within the control split
