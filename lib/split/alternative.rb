@@ -45,6 +45,8 @@ module Split
       e = alternative.participant_count
       c = control.participant_count
 
+      return 0 if ctr_c.zero?
+
       standard_deviation = ((ctr_e / ctr_c**3) * ((e*ctr_e)+(c*ctr_c)-(ctr_c*ctr_e)*(c+e))/(c*e)) ** 0.5
 
       z_score = ((ctr_e / ctr_c) - 1) / standard_deviation
