@@ -1,5 +1,4 @@
 # Split
-## Rack based split testing framework
 
 Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
 
@@ -183,6 +182,3 @@ Special thanks to the following people for submitting patches:
 ## Copyright
 
 Copyright (c) 2011 Andrew Nesbitt. See LICENSE for details.
-
-
-n.b don't pass the same alternative twice!
