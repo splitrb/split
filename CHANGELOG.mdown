@@ -1,0 +1,25 @@
+## 0.2.0 (May 29, 2011)
+
+Features:
+
+  - Override an alternative via a url parameter
+  - Experiments can now be reset from the dashboard
+  - The first alternative is now considered the control
+  - General dashboard usability improvements
+  - Robots are ignored and given the control alternative
+
+Bugfixes:
+
+  - Alternatives are now store in a list rather than a set to ensure consistent ordering
+  - Fixed diving by zero errors
+
+## 0.1.1 (May 18, 2011)
+
+Bugfixes:
+
+  - More Robust conversion rate display on dashboard
+  - Ensure `Split::Version` is available everywhere, fixed dashboard
+
+## 0.1.0 (May 17, 2011)
+
+Initial Release
