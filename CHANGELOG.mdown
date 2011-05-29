@@ -1,3 +1,9 @@
+## 0.2.1 (May 29, 2011)
+
+Bugfixes:
+
+  - Convert legacy sets to lists to avoid exceptions during upgrades from 0.1.x
+
 ## 0.2.0 (May 29, 2011)
 
 Features:
