@@ -8,6 +8,8 @@ module Split
         return forced_alternative
       end
 
+      ab_user[experiment_name] = experiment.control.name if is_robot?
+
       if ab_user[experiment_name]
         return ab_user[experiment_name]
       else
@@ -19,6 +21,7 @@ module Split
     end
 
     def finished(experiment_name)
+      return if is_robot?
       alternative_name = ab_user[experiment_name]
       alternative = Split::Alternative.find(alternative_name, experiment_name)
       alternative.increment_completion
@@ -31,6 +34,10 @@ module Split
 
     def ab_user
       session[:split] ||= {}
+    end
+
+    def is_robot?
+      request.user_agent =~ /\b(Baidu|Gigabot|Googlebot|libwww-perl|lwp-trivial|msnbot|SiteUptime|Slurp|WordPress|ZIBB|ZyBorg)\b/i
     end
   end
 end
