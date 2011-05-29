@@ -49,13 +49,25 @@ module Split
       @alternative_names.reverse.each {|a| Split.redis.lpush(name, a) }
     end
 
+    def self.load_alternatives_for(name)
+      case Split.redis.type(name)
+      when 'set' # convert legacy sets to lists
+        alts = Split.redis.smembers(name)
+        Split.redis.del(name)
+        alts.reverse.each {|a| Split.redis.lpush(name, a) }
+        Split.redis.lrange(name, 0, -1)
+      else
+        Split.redis.lrange(name, 0, -1)
+      end
+    end
+
     def self.all
       Array(Split.redis.smembers(:experiments)).map {|e| find(e)}
     end
 
     def self.find(name)
       if Split.redis.exists(name)
-        self.new(name, *Split.redis.lrange(name, 0, -1))
+        self.new(name, *load_alternatives_for(name))
       else
         raise 'Experiment not found'
       end
@@ -63,7 +75,7 @@ module Split
 
     def self.find_or_create(name, *alternatives)
       if Split.redis.exists(name)
-        return self.new(name, *Split.redis.lrange(name, 0, -1))
+        return self.new(name, *load_alternatives_for(name))
       else
         experiment = self.new(name, *alternatives)
         experiment.save
