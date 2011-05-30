@@ -33,7 +33,6 @@ module Split
       @experiment = Split::Experiment.find(params[:experiment])
       @alternative = Split::Alternative.find(params[:alternative], params[:experiment])
       @experiment.winner = @alternative.name
-      @experiment.save
       redirect url('/')
     end
 
