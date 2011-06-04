@@ -33,6 +33,14 @@ and require it in your project:
 
     require 'split'
 
+### SystemTimer
+
+If you are using Redis on Ruby 1.8.x then you will likely want to also use the SystemTimer gem if you want to make sure the Redis client will not hang.
+
+Put the following in your gemfile as well:
+
+    gem 'SystemTimer'
+
 ### Rails
 
 Split is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
