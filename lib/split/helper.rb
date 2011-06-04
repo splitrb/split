@@ -37,7 +37,7 @@ module Split
     end
 
     def is_robot?
-      request.user_agent =~ /\b(Baidu|Gigabot|Googlebot|libwww-perl|lwp-trivial|msnbot|SiteUptime|Slurp|WordPress|ZIBB|ZyBorg)\b/i
+      request.user_agent =~ Split.configuration.robot_regex
     end
   end
 end

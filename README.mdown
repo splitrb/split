@@ -114,6 +114,14 @@ You may want to password protect that page, you can do so with `Rack::Auth::Basi
 
 ## Configuration
 
+You can override the default configuration options of Split like so:
+
+    Split.configure do |config|
+      config.robot_regex = /my_custom_robot_regex/
+    end
+
+### Redis
+
 You may want to change the Redis host and port Split connects to, or
 set various other options at startup.
 

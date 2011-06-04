@@ -3,10 +3,13 @@ require 'split/experiment'
 require 'split/alternative'
 require 'split/helper'
 require 'split/version'
+require 'split/configuration'
 require 'redis/namespace'
 
 module Split
   extend self
+  attr_accessor :configuration
+
   # Accepts:
   #   1. A 'hostname:port' string
   #   2. A 'hostname:port:db' string (to select the Redis db)
@@ -41,7 +44,20 @@ module Split
     self.redis = 'localhost:6379'
     self.redis
   end
+
+  # Call this method to modify defaults in your initializers.
+  #
+  # @example
+  #   Split.configure do |config|
+  #     config.ignore_ips = '192.168.2.1'
+  #   end
+  def configure
+     self.configuration ||= Configuration.new
+     yield(configuration)
+   end
 end
+
+Split.configure {}
 
 if defined?(Rails)
   class ActionController::Base
