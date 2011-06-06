@@ -8,7 +8,7 @@ module Split
         return forced_alternative
       end
 
-      ab_user[experiment_name] = experiment.control.name if is_robot?
+      ab_user[experiment_name] = experiment.control.name if exclude_visitor?
 
       if ab_user[experiment_name]
         return ab_user[experiment_name]
@@ -21,7 +21,7 @@ module Split
     end
 
     def finished(experiment_name)
-      return if is_robot?
+      return if exclude_visitor?
       alternative_name = ab_user[experiment_name]
       alternative = Split::Alternative.find(alternative_name, experiment_name)
       alternative.increment_completion
@@ -36,8 +36,20 @@ module Split
       session[:split] ||= {}
     end
 
+    def exclude_visitor?
+      is_robot? or is_ignored_ip_address?
+    end
+
     def is_robot?
       request.user_agent =~ Split.configuration.robot_regex
+    end
+
+    def is_ignored_ip_address?
+      if Split.configuration.ignore_ip_addresses.any?
+        Split.configuration.ignore_ip_addresses.include?(request.ip)
+      else
+        false
+      end
     end
   end
 end

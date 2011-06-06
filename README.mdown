@@ -126,6 +126,7 @@ You can override the default configuration options of Split like so:
 
     Split.configure do |config|
       config.robot_regex = /my_custom_robot_regex/
+      config.ignore_ip_addresses << '81.19.48.130'
     end
 
 ### Redis

@@ -133,4 +133,48 @@ describe Split::Helper do
       end
     end
   end
+  describe 'when ip address is ignored' do
+    before(:each) do
+      @request = OpenStruct.new(:ip => '81.19.48.130')
+      Split.configure do |c|
+        c.ignore_ip_addresses << '81.19.48.130'
+      end
+    end
+
+    describe 'ab_test' do
+      it 'should return the control' do
+        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+        alternative = ab_test('link_color', 'blue', 'red')
+        alternative.should eql experiment.control.name
+      end
+
+      it "should not increment the participation count" do
+        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+
+        previous_red_count = Split::Alternative.find('red', 'link_color').participant_count
+        previous_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+
+        ab_test('link_color', 'blue', 'red')
+
+        new_red_count = Split::Alternative.find('red', 'link_color').participant_count
+        new_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+
+        (new_red_count + new_blue_count).should eql(previous_red_count + previous_blue_count)
+      end
+    end
+    describe 'finished' do
+      it "should not increment the completed count" do
+        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+        alternative_name = ab_test('link_color', 'blue', 'red')
+
+        previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+
+        finished('link_color')
+
+        new_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+
+        new_completion_count.should eql(previous_completion_count)
+      end
+    end
+  end
 end
