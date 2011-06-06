@@ -174,7 +174,7 @@ in your Redis server.
 
 Simply use the `Split.redis.namespace` accessor:
 
-    Split.redis.namespace = "resque:GitHub"
+    Split.redis.namespace = "split:blog"
 
 We recommend sticking this in your initializer somewhere after Redis
 is configured.
