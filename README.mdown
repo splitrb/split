@@ -8,6 +8,8 @@ Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and 
 
 Split uses redis as a datastore.
 
+Split only supports redis 2.0 or greater.
+
 If you're on OS X, Homebrew is the simplest way to install Redis:
 
     $ brew install redis
