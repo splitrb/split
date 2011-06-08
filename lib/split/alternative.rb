@@ -22,6 +22,10 @@ module Split
       self.save
     end
 
+    def control?
+      experiment.control.name == self.name
+    end
+
     def conversion_rate
       return 0 if participant_count.zero?
       (completed_count.to_f/participant_count.to_f)

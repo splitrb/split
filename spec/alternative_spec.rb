@@ -59,6 +59,15 @@ describe Split::Alternative do
     alternative.completed_count.should eql(0)
   end
 
+  it "should know if it is the control of an experiment" do
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
+    alternative = Split::Alternative.find('Basket', 'basket_text')
+    alternative.control?.should be_true
+    alternative = Split::Alternative.find('Cart', 'basket_text')
+    alternative.control?.should be_false
+  end
+
   describe 'conversion rate' do
     it "should be 0 if there are no conversions" do
       alternative = Split::Alternative.new('Basket', 'basket_text')
