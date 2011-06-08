@@ -188,7 +188,14 @@ Special thanks to the following people for submitting patches:
 * Lloyd Pick
 * Jeffery Chupp
 
-## Note on Patches/Pull Requests
+## Development
+
+Source hosted at [GitHub](http://github.com/andrew/split).
+Report Issues/Feature requests on [GitHub Issues](http://github.com/andrew/split/issues).
+
+Tests can be ran with `rake spec`
+
+### Note on Patches/Pull Requests
 
  * Fork the project.
  * Make your feature addition or bug fix.
