@@ -25,8 +25,21 @@
           <td><%= alternative.participant_count %></td>
           <td><%= alternative.participant_count - alternative.completed_count %></td>
           <td><%= alternative.completed_count %></td>
-          <td><%= number_to_percentage(alternative.conversion_rate) %>%</td>
-          <td><%= alternative.z_score %></td>
+          <td>
+            <%= number_to_percentage(alternative.conversion_rate) %>%
+            <% if experiment.control.conversion_rate > 0 && !alternative.control? %>
+              <% if alternative.conversion_rate > experiment.control.conversion_rate %>
+                <span class='better'>
+                  +<%= number_to_percentage((alternative.conversion_rate/experiment.control.conversion_rate)-1) %>%
+                </span>
+              <% elsif alternative.conversion_rate < experiment.control.conversion_rate %>
+                <span class='worse'>
+                  <%= number_to_percentage((alternative.conversion_rate/experiment.control.conversion_rate)-1) %>%
+                </span>
+              <% end  %>
+            <% end %>
+          </td>
+          <td><%= round(alternative.z_score, 3) %></td>
           <td>
             <% if experiment.winner %>
               <% if experiment.winner.name == alternative.name %>

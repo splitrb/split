@@ -48,4 +48,11 @@ h2{
   clear:both;
 }
 
+.worse, .better{
+  color:#F00;
+  font-size:10px;
+}
 
+.better{
+  color:#00D500;
+}

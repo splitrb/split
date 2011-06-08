@@ -20,7 +20,11 @@ module Split
       end
 
       def number_to_percentage(number, precision = 2)
-        BigDecimal.new((number * 100).to_s).round(precision).to_f
+        round(number * 100)
+      end
+
+      def round(number, precision = 2)
+        BigDecimal.new(number.to_s).round(precision).to_f
       end
     end
 
