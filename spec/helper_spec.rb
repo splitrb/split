@@ -1,5 +1,7 @@
 require 'spec_helper'
 
+# TODO change some of these tests to use Rack::Test
+
 describe Split::Helper do
   include Split::Helper
 
