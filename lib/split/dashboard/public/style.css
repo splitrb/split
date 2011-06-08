@@ -35,6 +35,7 @@ h2{
 }
 
 .reset{
+  display:inline-block;
   font-size:10px;
   line-height:38px;
 }
