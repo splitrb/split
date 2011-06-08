@@ -35,7 +35,7 @@
                 Loser
               <% end %>
             <% else %>
-              <form action="<%= url experiment.name %>" method='post'>
+              <form action="<%= url experiment.name %>" method='post' onclick="return confirmWinner()">
                 <input type='hidden' name='alternative' value='<%= alternative.name %>'>
                 <input type="submit" value="Use this">
               </form>
