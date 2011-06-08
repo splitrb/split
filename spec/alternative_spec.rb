@@ -50,7 +50,7 @@ describe Split::Alternative do
     alternative.increment_completion
     alternative.completed_count.should eql(old_completed_count+1)
   end
-  
+
   it "can be reset" do
     alternative = Split::Alternative.new('Basket', 'basket_text', {'participant_count' => 10, 'completed_count' =>4})
     alternative.save
@@ -93,7 +93,7 @@ describe Split::Alternative do
       alternative = Split::Alternative.find('red', 'link_color')
       alternative.z_score.should eql(0)
     end
-    
+
     it "should be N/A for the control" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
