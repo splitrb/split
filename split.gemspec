@@ -24,4 +24,5 @@ Gem::Specification.new do |s|
 
   # Development Dependencies
   s.add_development_dependency(%q<rspec>, ["~>  2.6"])
+  s.add_development_dependency(%q<rack-test>, ["~> 0.6"])
 end
