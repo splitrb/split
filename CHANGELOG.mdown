@@ -1,3 +1,18 @@
+## 0.2.2 (June 11, 2011)
+
+Features:
+
+  - Updated redis-namespace requirement to 1.0.3
+  - Added a configuration object for changing options
+  - Robot regex can now be changed via a configuration options
+  - Added ability to ignore visits from specified IP addresses
+  - Dashboard now shows percentage improvement of alternatives compared to the control
+  - If the alternatives of an experiment are changed it resets the experiment and uses the new alternatives
+
+Bugfixes:
+
+  - Saving an experiment multiple times no longer creates duplicate alternatives
+
 ## 0.2.1 (May 29, 2011)
 
 Bugfixes:
