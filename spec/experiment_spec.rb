@@ -8,12 +8,12 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.name.should eql('basket_text')
   end
-  
+
   it "should have alternatives" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.alternatives.length.should be 2
   end
-  
+
   it "should save to redis" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
@@ -40,7 +40,7 @@ describe Split::Experiment do
       experiment.new_record?.should be_false
     end
   end
-  
+
   it "should return an existing experiment" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
