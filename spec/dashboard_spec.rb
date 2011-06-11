@@ -35,4 +35,14 @@ describe Split::Dashboard do
     new_blue_count.should eql(0)
     new_red_count.should eql(0)
   end
+
+  it "should mark an alternative as the winner" do
+    experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+    experiment.winner.should be_nil
+
+    post '/link_color', :alternative => 'red'
+
+    last_response.should be_redirect
+    experiment.winner.name.should eql('red')
+  end
 end
