@@ -38,9 +38,7 @@ module Split
     end
 
     def reset
-      alternatives.each do |alternative|
-        alternative.reset
-      end
+      alternatives.each(&:reset)
       reset_winner
     end
 
@@ -81,12 +79,20 @@ module Split
 
     def self.find_or_create(name, *alternatives)
       if Split.redis.exists(name)
-        return self.new(name, *load_alternatives_for(name))
+        if load_alternatives_for(name) == alternatives
+          experiment = self.new(name, *load_alternatives_for(name))
+        else
+          exp = self.new(name, *load_alternatives_for(name))
+          exp.reset
+          exp.alternatives.each(&:delete)
+          experiment = self.new(name, *alternatives)
+          experiment.save
+        end
       else
         experiment = self.new(name, *alternatives)
         experiment.save
-        return experiment
       end
+      return experiment
     end
   end
 end

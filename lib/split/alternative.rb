@@ -12,6 +12,10 @@ module Split
       @completed_count = counters['completed_count'].to_i
     end
 
+    def to_s
+      name
+    end
+
     def increment_participation
       @participant_count +=1
       self.save
@@ -73,6 +77,10 @@ module Split
       @participant_count = 0
       @completed_count = 0
       save
+    end
+
+    def delete
+      Split.redis.del("#{experiment_name}:#{name}")
     end
 
     def self.find(name, experiment_name)
