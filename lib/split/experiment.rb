@@ -44,9 +44,15 @@ module Split
       reset_winner
     end
 
+    def new_record?
+      !Split.redis.exists(name)
+    end
+
     def save
-      Split.redis.sadd(:experiments, name)
-      @alternative_names.reverse.each {|a| Split.redis.lpush(name, a) }
+      if new_record?
+        Split.redis.sadd(:experiments, name)
+        @alternative_names.reverse.each {|a| Split.redis.lpush(name, a) }
+      end
     end
 
     def self.load_alternatives_for(name)

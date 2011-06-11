@@ -19,6 +19,27 @@ describe Split::Experiment do
     experiment.save
     Split.redis.exists('basket_text').should be true
   end
+
+  it "should not create duplicates when saving multiple times" do
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
+    experiment.save
+    Split.redis.exists('basket_text').should be true
+    Split.redis.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+  end
+
+  describe 'new record?' do
+    it "should know if it hasn't been saved yet" do
+      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment.new_record?.should be_true
+    end
+
+    it "should know if it has been saved yet" do
+      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment.save
+      experiment.new_record?.should be_false
+    end
+  end
   
   it "should return an existing experiment" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
