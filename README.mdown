@@ -181,6 +181,10 @@ Simply use the `Split.redis.namespace` accessor:
 We recommend sticking this in your initializer somewhere after Redis
 is configured.
 
+## Extensions
+
+  - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
+
 ## Contributors
 
 Special thanks to the following people for submitting patches:
