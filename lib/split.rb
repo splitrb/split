@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'split/experiment'
 require 'split/alternative'
 require 'split/helper'
