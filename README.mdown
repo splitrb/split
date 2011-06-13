@@ -4,6 +4,8 @@ Split is a rack based ab testing framework designed to work with Rails, Sinatra 
 
 Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
 
+Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
+
 ## Requirements
 
 Split uses redis as a datastore.
