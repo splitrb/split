@@ -27,6 +27,14 @@ describe Split::Experiment do
     Split.redis.exists('basket_text').should be true
     Split.redis.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
   end
+  
+  it 'should delete itself' do
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
+    
+    experiment.delete
+    Split.redis.exists('basket_text').should be false
+  end
 
   describe 'new record?' do
     it "should know if it hasn't been saved yet" do

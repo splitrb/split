@@ -34,13 +34,13 @@ h2{
   float:left;
 }
 
-.reset{
+.inline-controls{
   display:inline-block;
   font-size:10px;
   line-height:38px;
 }
 
-.reset input{
+.inline-controls input{
   margin-left:10px;
 }
 
