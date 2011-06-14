@@ -9,6 +9,7 @@ module Split
     set :views,  "#{dir}/dashboard/views"
     set :public, "#{dir}/dashboard/public"
     set :static, true
+    set :method_override, true
 
     helpers do
       def url(*path_parts)
@@ -43,6 +44,12 @@ module Split
     post '/reset/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
       @experiment.reset
+      redirect url('/')
+    end
+    
+    delete '/:experiment' do
+      @experiment = Split::Experiment.find(params[:experiment])
+      @experiment.delete
       redirect url('/')
     end
   end
