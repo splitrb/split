@@ -4,8 +4,12 @@
 
   <% @experiments.each do |experiment| %>
     <h2><%= experiment.name %></h2>
-    <form action="<%= url "/reset/#{experiment.name}" %>" method='post' class='reset' onclick="return confirmReset()">
+    <form action="<%= url "/reset/#{experiment.name}" %>" method='post' class='inline-controls' onclick="return confirmReset()">
       <input type="submit" value="Reset Data">
+    </form>
+    <form action="<%= url "/#{experiment.name}" %>" method='post' class='inline-controls' onclick="return confirmDelete()">
+      <input type="hidden" name="_method" value="delete"/>
+      <input type="submit" value="Delete">
     </form>
     <table class="queues">
       <tr>

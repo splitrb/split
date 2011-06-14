@@ -41,6 +41,13 @@ module Split
       alternatives.each(&:reset)
       reset_winner
     end
+    
+    def delete
+      alternatives.each(&:delete)
+      reset_winner
+      Split.redis.srem(:experiments, name)
+      Split.redis.del(name)
+    end
 
     def new_record?
       !Split.redis.exists(name)
