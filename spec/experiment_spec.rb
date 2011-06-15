@@ -34,6 +34,7 @@ describe Split::Experiment do
     
     experiment.delete
     Split.redis.exists('basket_text').should be false
+    lambda { Split::Experiment.find('link_color') }.should raise_error
   end
 
   describe 'new record?' do
