@@ -51,6 +51,12 @@ describe Split::Helper do
       alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql('blue')
     end
+
+    it "should allow passing a block" do
+      alt = ab_test('link_color', 'blue', 'red')
+      ret = ab_test('link_color', 'blue', 'red') { |alternative| "shared/#{alternative}" }
+      ret.should eql("shared/#{alt}")
+    end
   end
 
   describe 'finished' do

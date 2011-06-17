@@ -1,23 +1,28 @@
 module Split
   module Helper
-    def ab_test(experiment_name, *alternatives)
+    def ab_test(experiment_name, *alternatives, &block)
       experiment = Split::Experiment.find_or_create(experiment_name, *alternatives)
-      return experiment.winner.name if experiment.winner
-
-      if forced_alternative = override(experiment_name, alternatives)
-        return forced_alternative
-      end
-
-      ab_user[experiment_name] = experiment.control.name if exclude_visitor?
-
-      if ab_user[experiment_name]
-        return ab_user[experiment_name]
+      if experiment.winner
+        ret = experiment.winner.name
       else
-        alternative = experiment.next_alternative
-        alternative.increment_participation
-        ab_user[experiment_name] = alternative.name
-        return alternative.name
+        if forced_alternative = override(experiment_name, alternatives)
+          ret = forced_alternative
+        else
+          ab_user[experiment_name] = experiment.control.name if exclude_visitor?
+
+          if ab_user[experiment_name]
+            ret = ab_user[experiment_name]
+          else
+            alternative = experiment.next_alternative
+            alternative.increment_participation
+            ab_user[experiment_name] = alternative.name
+            ret = alternative.name
+          end
+        end
       end
+
+      ret = yield(ret) if block_given?
+      ret
     end
 
     def finished(experiment_name)
