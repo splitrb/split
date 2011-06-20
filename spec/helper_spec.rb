@@ -185,4 +185,63 @@ describe Split::Helper do
       end
     end
   end
+
+  describe 'versioned experiments' do
+    it "should use version zero if no version is present" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color', 'blue', 'red')
+      experiment.version.should eql(0)
+      session[:split].should eql({'link_color' => alternative_name})
+    end
+
+    it "should save the version of the experiment to the session" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      experiment.reset
+      experiment.version.should eql(1)
+      alternative_name = ab_test('link_color', 'blue', 'red')
+      session[:split].should eql({'link_color:1' => alternative_name})
+    end
+
+    it "should load the experiment even if the version is not 0" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      experiment.reset
+      experiment.version.should eql(1)
+      alternative_name = ab_test('link_color', 'blue', 'red')
+      session[:split].should eql({'link_color:1' => alternative_name})
+      return_alternative_name = ab_test('link_color', 'blue', 'red')
+      return_alternative_name.should eql(alternative_name)
+    end
+
+    it "should reset the session of a user on an older version of the experiment" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color', 'blue', 'red')
+      session[:split].should eql({'link_color' => alternative_name})
+      alternative = Split::Alternative.find(alternative_name, 'link_color')
+      alternative.participant_count.should eql(1)
+
+      experiment.reset
+      experiment.version.should eql(1)
+      alternative = Split::Alternative.find(alternative_name, 'link_color')
+      alternative.participant_count.should eql(0)
+
+      new_alternative_name = ab_test('link_color', 'blue', 'red')
+      session[:split]['link_color:1'].should eql(new_alternative_name)
+      new_alternative = Split::Alternative.find(new_alternative_name, 'link_color')
+      new_alternative.participant_count.should eql(1)
+    end
+
+    it "should only count completion of users on the current version" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color', 'blue', 'red')
+      session[:split].should eql({'link_color' => alternative_name})
+      alternative = Split::Alternative.find(alternative_name, 'link_color')
+
+      experiment.reset
+      experiment.version.should eql(1)
+
+      finished('link_color')
+      alternative = Split::Alternative.find(alternative_name, 'link_color')
+      alternative.completed_count.should eql(0)
+    end
+  end
 end

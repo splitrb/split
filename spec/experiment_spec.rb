@@ -107,6 +107,13 @@ describe Split::Experiment do
 
       experiment.winner.should be_nil
     end
+
+    it "should increment the version" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
+      experiment.version.should eql(0)
+      experiment.reset
+      experiment.version.should eql(1)
+    end
   end
 
   describe 'next_alternative' do

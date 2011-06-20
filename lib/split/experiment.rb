@@ -3,10 +3,12 @@ module Split
     attr_accessor :name
     attr_accessor :alternative_names
     attr_accessor :winner
+    attr_accessor :version
 
     def initialize(name, *alternative_names)
       @name = name.to_s
       @alternative_names = alternative_names
+      @version = (Split.redis.get("#{name.to_s}:version") || 0)
     end
 
     def winner
@@ -37,9 +39,27 @@ module Split
       winner || alternatives.sort_by{|a| a.participant_count + rand}.first
     end
 
+    def version
+      @version ||= 0
+    end
+
+    def increment_version
+      @version += 1
+      Split.redis.set("#{name}:version", @version)
+    end
+
+    def key
+      if version.to_i > 0
+        "#{name}:#{version}"
+      else
+        name
+      end
+    end
+
     def reset
       alternatives.each(&:reset)
       reset_winner
+      increment_version
     end
     
     def delete
@@ -84,7 +104,8 @@ module Split
       end
     end
 
-    def self.find_or_create(name, *alternatives)
+    def self.find_or_create(key, *alternatives)
+      name = key.split(':')[0]
       if Split.redis.exists(name)
         if load_alternatives_for(name) == alternatives
           experiment = self.new(name, *load_alternatives_for(name))

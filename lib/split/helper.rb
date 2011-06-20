@@ -5,17 +5,17 @@ module Split
       if experiment.winner
         ret = experiment.winner.name
       else
-        if forced_alternative = override(experiment_name, alternatives)
+        if forced_alternative = override(experiment.key, alternatives)
           ret = forced_alternative
         else
-          ab_user[experiment_name] = experiment.control.name if exclude_visitor?
+          begin_experiment(experiment, experiment.control.name) if exclude_visitor?
 
-          if ab_user[experiment_name]
-            ret = ab_user[experiment_name]
+          if ab_user[experiment.key]
+            ret = ab_user[experiment.key]
           else
             alternative = experiment.next_alternative
             alternative.increment_participation
-            ab_user[experiment_name] = alternative.name
+            begin_experiment(experiment, alternative.name)
             ret = alternative.name
           end
         end
@@ -27,14 +27,20 @@ module Split
 
     def finished(experiment_name)
       return if exclude_visitor?
-      alternative_name = ab_user[experiment_name]
-      alternative = Split::Alternative.find(alternative_name, experiment_name)
-      alternative.increment_completion
-      session[:split].delete(experiment_name)
+      experiment = Split::Experiment.find(experiment_name)
+      if alternative_name = ab_user[experiment.key]
+        alternative = Split::Alternative.find(alternative_name, experiment_name)
+        alternative.increment_completion
+        session[:split].delete(experiment_name)
+      end
     end
 
     def override(experiment_name, alternatives)
       return params[experiment_name] if defined?(params) && alternatives.include?(params[experiment_name])
+    end
+
+    def begin_experiment(experiment, alternative_name)
+      ab_user[experiment.key] = alternative_name
     end
 
     def ab_user
