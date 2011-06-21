@@ -186,6 +186,7 @@ is configured.
 ## Extensions
 
   - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
+  - [Split::Analytics](http://github.com/andrew/split-analytics) - push test data to google analytics
 
 ## Contributors
 
