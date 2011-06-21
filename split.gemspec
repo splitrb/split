@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Andrew Nesbitt"]
   s.email       = ["andrewnez@gmail.com"]
-  s.homepage    = ""
+  s.homepage    = "https://github.com/andrew/split"
   s.summary     = %q{Rack based split testing framework}
 
   s.rubyforge_project = "split"
