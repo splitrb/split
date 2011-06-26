@@ -1,3 +1,15 @@
+## 0.2.3 (Unreleased)
+
+Features:
+
+  - Experiments can now be deleted from the dashboard
+  - ab_test helper now accepts a block
+  - Improved dashboard
+
+Bugfixes:
+
+  - After resetting an experiment, existing users of that experiment will also be reset
+
 ## 0.2.2 (June 11, 2011)
 
 Features:
