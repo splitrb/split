@@ -135,6 +135,13 @@ body {
   float:left;
 }
 
+.experiment h2 .version{
+  font-style:italic;
+  font-size:0.8em;
+  color:#bbb;
+  font-weight:normal;
+}
+
 .experiment table em{
   font-style:italic;
   font-size:0.9em;
