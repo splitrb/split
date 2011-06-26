@@ -8,7 +8,7 @@ module Split
     def initialize(name, *alternative_names)
       @name = name.to_s
       @alternative_names = alternative_names
-      @version = (Split.redis.get("#{name.to_s}:version") || 0)
+      @version = (Split.redis.get("#{name.to_s}:version").to_i || 0)
     end
 
     def winner
