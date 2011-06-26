@@ -1,4 +1,4 @@
-## 0.2.3 (Unreleased)
+## 0.2.3 (June 26, 2011)
 
 Features:
 
