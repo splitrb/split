@@ -67,6 +67,7 @@ module Split
       reset_winner
       Split.redis.srem(:experiments, name)
       Split.redis.del(name)
+      increment_version
     end
 
     def new_record?

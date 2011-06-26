@@ -27,14 +27,23 @@ describe Split::Experiment do
     Split.redis.exists('basket_text').should be true
     Split.redis.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
   end
-  
-  it 'should delete itself' do
-    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
-    experiment.save
+
+  describe 'deleting' do
+    it 'should delete itself' do
+      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment.save
+
+      experiment.delete
+      Split.redis.exists('basket_text').should be false
+      lambda { Split::Experiment.find('link_color') }.should raise_error
+    end
     
-    experiment.delete
-    Split.redis.exists('basket_text').should be false
-    lambda { Split::Experiment.find('link_color') }.should raise_error
+    it "should increment the version" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
+      experiment.version.should eql(0)
+      experiment.delete
+      experiment.version.should eql(1)
+    end
   end
 
   describe 'new record?' do
