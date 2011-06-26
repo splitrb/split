@@ -16,8 +16,8 @@
       <th>Non-finished</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
-      <th>Z-Score</th>
-      <th>Winner</th>
+      <th>Confidence</th>
+      <th>Finish</th>
     </tr>
 
     <% total_participants = total_completed = 0 %>
@@ -46,7 +46,9 @@
             <% end  %>
           <% end %>
         </td>
-        <td><%= round(alternative.z_score, 3) %></td>
+        <td>
+          <span title='z-score: <%= round(alternative.z_score, 3) %>'><%= confidence_level(alternative.z_score) %></span>
+        </td>
         <td>
           <% if experiment.winner %>
             <% if experiment.winner.name == alternative.name %>
