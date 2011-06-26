@@ -135,7 +135,13 @@ body {
   float:left;
 }
 
-#main table .totals td {
+.experiment table em{
+  font-style:italic;
+  font-size:0.9em;
+  color:#bbb;
+}
+
+.experiment table .totals td {
   background: #eee;
   font-weight: bold;
 }
