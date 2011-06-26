@@ -1,6 +1,6 @@
 module Split
   module Helper
-    def ab_test(experiment_name, *alternatives, &block)
+    def ab_test(experiment_name, *alternatives)
       experiment = Split::Experiment.find_or_create(experiment_name, *alternatives)
       if experiment.winner
         ret = experiment.winner.name
@@ -21,8 +21,17 @@ module Split
         end
       end
 
-      ret = yield(ret) if block_given?
-      ret
+      if block_given?
+        if defined?(capture) # a block in a rails view
+          block = Proc.new { yield(ret) }
+          concat(capture(ret, &block))
+          false
+        else
+           yield(ret)
+        end
+      else
+        ret
+      end
     end
 
     def finished(experiment_name)
