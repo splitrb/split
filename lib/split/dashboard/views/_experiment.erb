@@ -1,13 +1,15 @@
 <div class="experiment">
-  <h2><%= experiment.name %></h2>
-  <form action="<%= url "/reset/#{experiment.name}" %>" method='post' class='inline-controls' onclick="return confirmReset()">
-    <input type="submit" value="Reset Data">
-  </form>
-  <form action="<%= url "/#{experiment.name}" %>" method='post' class='inline-controls' onclick="return confirmDelete()">
-    <input type="hidden" name="_method" value="delete"/>
-    <input type="submit" value="Delete">
-  </form>
-  <table class="queues">
+  <h2>Experiment: <%= experiment.name %></h2>
+  <div class='inline-controls'>
+    <form action="<%= url "/reset/#{experiment.name}" %>" method='post' onclick="return confirmReset()">
+      <input type="submit" value="Reset Data">
+    </form>
+    <form action="<%= url "/#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
+      <input type="hidden" name="_method" value="delete"/>
+      <input type="submit" value="Delete">
+    </form>
+  </div>
+  <table>
     <tr>
       <th>Alternative Name</th>
       <th>Participants</th>

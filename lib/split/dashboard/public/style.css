@@ -72,11 +72,6 @@ body {
   color: #0080FF;
 }
 
-#main h2 {
-  margin: 10px 0;
-  font-size: 130%;
-}
-
 #main table {
   width: 100%;
   margin: 10px 0;
@@ -127,8 +122,17 @@ body {
   color: #999;
 }
 
-#main table.queues {
+.experiment {
   width: 60%;
+  border-top:1px solid #eee;
+  margin:15px 0;
+}
+
+.experiment h2 {
+  margin: 10px 0;
+  font-size: 130%;
+  font-weight:bold;
+  float:left;
 }
 
 #main table .totals td {
@@ -150,11 +154,11 @@ body {
   color: #999;
 }
 
-h2 {
-  float: left;
+.inline-controls {
+  float:right;
 }
 
-.inline-controls {
+.inline-controls form {
   display: inline-block;
   font-size: 10px;
   line-height: 38px;
@@ -162,10 +166,6 @@ h2 {
 
 .inline-controls input {
   margin-left: 10px;
-}
-
-.queues {
-  clear: both;
 }
 
 .worse, .better {
