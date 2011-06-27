@@ -9,6 +9,8 @@ describe Split::Dashboard do
     @app ||= Split::Dashboard
   end
 
+  before(:each) { Split.redis.flushall }
+
   it "should respond to /" do
     get '/'
     last_response.should be_ok
