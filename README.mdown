@@ -95,6 +95,8 @@ Example: Conversion tracking (in a view)
 
     Thanks for signing up, dude! <% finished("signup_page_redesign") >
 
+You can find more examples, tutorials and guides on the [wiki](https://github.com/andrew/split/wiki).
+
 ### Overriding alternatives
 
 For development and testing, you may wish to force your app to always return an alternative.
