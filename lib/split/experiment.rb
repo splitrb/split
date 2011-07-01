@@ -106,7 +106,7 @@ module Split
     end
 
     def self.find_or_create(key, *alternatives)
-      name = key.split(':')[0]
+      name = key.to_s.split(':')[0]
       if Split.redis.exists(name)
         if load_alternatives_for(name) == alternatives
           experiment = self.new(name, *load_alternatives_for(name))
