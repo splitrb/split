@@ -34,13 +34,13 @@ module Split
       end
     end
 
-    def finished(experiment_name)
+    def finished(experiment_name, options = {:reset => true})
       return if exclude_visitor?
       experiment = Split::Experiment.find(experiment_name)
       if alternative_name = ab_user[experiment.key]
         alternative = Split::Alternative.find(alternative_name, experiment_name)
         alternative.increment_completion
-        session[:split].delete(experiment_name)
+        session[:split].delete(experiment_name) if options[:reset]
       end
     end
 

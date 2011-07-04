@@ -83,6 +83,17 @@ describe Split::Helper do
       finished('link_color')
       session[:split].should == {}
     end
+
+    it "should not clear out the users session if reset is false" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color', 'blue', 'red')
+
+      previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+
+      session[:split].should eql("link_color" => alternative_name)
+      finished('link_color', :reset => false)
+      session[:split].should eql("link_color" => alternative_name)
+    end
   end
   
   describe 'conversions' do
