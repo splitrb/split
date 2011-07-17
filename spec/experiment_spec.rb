@@ -160,4 +160,11 @@ describe Split::Experiment do
       new_blue.participant_count.should eql(0)
     end
   end
+
+  describe 'alternatives passed as non-strings' do
+    it "should throw an exception if an alternative is passed that is not a string" do
+      lambda { Split::Experiment.find_or_create('link_color', :blue, :red) }.should raise_error
+      lambda { Split::Experiment.find_or_create('link_enabled', true, false) }.should raise_error
+    end
+  end
 end

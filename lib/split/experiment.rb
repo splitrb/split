@@ -107,6 +107,9 @@ module Split
 
     def self.find_or_create(key, *alternatives)
       name = key.to_s.split(':')[0]
+
+      raise InvalidArgument, 'Alternatives must be strings' if alternatives.map(&:class).uniq != [String]
+
       if Split.redis.exists(name)
         if load_alternatives_for(name) == alternatives
           experiment = self.new(name, *load_alternatives_for(name))
