@@ -1,3 +1,13 @@
+## 0.2.4 (July 18, 2011)
+
+Features:
+
+  - Added option to finished to not reset the users session
+
+Bugfixes:
+
+  - Only allow strings as alternatives, fixes strange errors when passing true/false or symbols
+
 ## 0.2.3 (June 26, 2011)
 
 Features:
