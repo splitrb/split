@@ -112,13 +112,13 @@ will always have red buttons. This won't be stored in your session or count towa
 
 Split comes with a Sinatra-based front end to get an overview of how your experiments are doing.
 
-You can mount this inside your app using Rack::URLMap in your `config.ru`
+You can mount this inside your app routes by first adding this to the `Gemfile`:
 
-    require 'split/dashboard'
+    gem 'split', :require => 'split/dashboard'
 
-    run Rack::URLMap.new \
-      "/"       => Your::App.new,
-      "/split" => Split::Dashboard.new
+Then adding this to `config/routes.rb`
+
+    mount Split::Dashboard, :at => 'split'
 
 You may want to password protect that page, you can do so with `Rack::Auth::Basic`
 
