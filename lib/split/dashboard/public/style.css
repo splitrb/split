@@ -21,6 +21,13 @@ body {
   background: -ms-linear-gradient    (top, #576a76 0%, #414e58 100%);
   background: linear-gradient        (top, #576a76 0%, #414e58 100%);
   border-bottom: 1px solid #fff;
+  -moz-border-radius-topleft:     5px;
+  -webkit-border-top-left-radius: 5px;
+  border-top-left-radius:         5px;
+  -moz-border-radius-topright:    5px;
+  -webkit-border-top-right-radius:5px;
+  border-top-right-radius:        5px;
+
   overflow:hidden;
   padding: 10px 5%;
   text-shadow:0 1px 0 #000;
@@ -73,9 +80,9 @@ body {
   background: #f9f9f9;
   border:1px solid #ccc;
   border-top:none;
-    -moz-box-shadow:   0 3px 10px rgba(0,0,0,0.2);
-    -webkit-box-shadow:0 3px 10px rgba(0,0,0,0.2);
-  box-shadow:          0 3px 10px rgba(0,0,0,0.2);
+  -moz-box-shadow:   0 3px 10px rgba(0,0,0,0.2);
+  -webkit-box-shadow:0 3px 10px rgba(0,0,0,0.2);
+  box-shadow:        0 3px 10px rgba(0,0,0,0.2);
   overflow: hidden;
 }
 
