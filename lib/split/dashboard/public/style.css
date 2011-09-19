@@ -19,8 +19,9 @@ body {
   background: -o-linear-gradient     (top, #6a7176 0%, #4d5256 100%);
   background: -ms-linear-gradient    (top, #6a7176 0%, #4d5256 100%);
   background: linear-gradient        (top, #6a7176 0%, #4d5256 100%);
-  padding: 10px 5%;
   border-bottom: 1px solid #fff;
+  overflow:hidden;
+  padding: 10px 5%;
   text-shadow:0 1px 0 #000;
 }
 
@@ -91,7 +92,7 @@ body {
 
 #main table {
   width: 100%;
-  margin: 10px 0;
+  margin:0 0 10px;
 }
 
 #main table tr td, #main table tr th {
@@ -141,15 +142,33 @@ body {
 
 .experiment {
   width: 60%;
+  background:#fff;
   border-top:1px solid #eee;
   margin:15px 0;
 }
 
+.experiment .experiment-header {
+  background: #f4f4f4;
+  background: -webkit-gradient(linear, left top, left bottom,
+                color-stop(0%,#f4f4f4),
+                color-stop(100%,#e0e0e0));
+  background: -moz-linear-gradient   (top, #f4f4f4 0%, #e0e0e0 100%);
+  background: -webkit-linear-gradient(top, #f4f4f4 0%, #e0e0e0 100%);
+  background: -o-linear-gradient     (top, #f4f4f4 0%, #e0e0e0 100%);
+  background: -ms-linear-gradient    (top, #f4f4f4 0%, #e0e0e0 100%);
+  background: linear-gradient        (top, #f4f4f4 0%, #e0e0e0 100%);
+  border-top:1px solid #fff;
+  overflow:hidden;
+  padding:0 10px;
+}
+
 .experiment h2 {
-  margin: 10px 0;
-  font-size: 130%;
+  color:#888;
+  margin: 12px 0 0;
+  font-size: 1em;
   font-weight:bold;
   float:left;
+  text-shadow:0 1px 0 rgba(255,255,255,0.8);
 }
 
 .experiment h2 .version{
@@ -201,6 +220,7 @@ body {
 .worse, .better {
   color: #773F3F;
   font-size: 10px;
+  font-weight:bold;
 }
 
 .better {
@@ -236,6 +256,8 @@ a.button:active, button:active, input[type="submit"]:active{
   -moz-box-shadow:   inset 0 0 4px #484d57;
   -webkit-box-shadow:inset 0 0 4px #484d57;
   box-shadow:        inset 0 0 4px #484d57;
+  position:relative;
+  top:1px;
 }
 
 a.button.red,   button.red,   input[type="submit"].red,
@@ -247,7 +269,16 @@ a.button.green, button.green, input[type="submit"].green {
 a.button.red, button.red, input[type="submit"].red {
   background:#a56d6d;
 }
+a.button.red:hover, button.red:hover, input[type="submit"].red:hover,
+a.button.red:focus, button.red:focus, input[type="submit"].red:focus {
+  background:#895C5C;
+}
 a.button.green, button.green, input[type="submit"].green {
   background:#8daa92;
 }
+a.button.green:hover, button.green:hover, input[type="submit"].green:hover,
+a.button.green:focus, button.green:focus, input[type="submit"].green:focus {
+  background:#768E7A;
+}
+
 
