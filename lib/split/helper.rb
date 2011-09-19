@@ -5,7 +5,7 @@ module Split
       if experiment.winner
         ret = experiment.winner.name
       else
-        if forced_alternative = override(experiment.key, alternatives)
+        if forced_alternative = override(experiment.name, alternatives)
           ret = forced_alternative
         else
           begin_experiment(experiment, experiment.control.name) if exclude_visitor?
