@@ -5,20 +5,21 @@ html {
 }
 
 body {
-  padding: 0;
-  margin: 0;
+  padding: 0 10px;
+  margin: 10px auto 0;
+  max-width:800px;
 }
 
 .header {
   background: #ededed;
   background: -webkit-gradient(linear, left top, left bottom,
-                color-stop(0%,#6a7176),
+                color-stop(0%,#576a76),
                 color-stop(100%,#4d5256));
-  background: -moz-linear-gradient   (top, #6a7176 0%, #4d5256 100%);
-  background: -webkit-linear-gradient(top, #6a7176 0%, #4d5256 100%);
-  background: -o-linear-gradient     (top, #6a7176 0%, #4d5256 100%);
-  background: -ms-linear-gradient    (top, #6a7176 0%, #4d5256 100%);
-  background: linear-gradient        (top, #6a7176 0%, #4d5256 100%);
+  background: -moz-linear-gradient   (top, #576a76 0%, #414e58 100%);
+  background: -webkit-linear-gradient(top, #576a76 0%, #414e58 100%);
+  background: -o-linear-gradient     (top, #576a76 0%, #414e58 100%);
+  background: -ms-linear-gradient    (top, #576a76 0%, #414e58 100%);
+  background: linear-gradient        (top, #576a76 0%, #414e58 100%);
   border-bottom: 1px solid #fff;
   overflow:hidden;
   padding: 10px 5%;
@@ -70,6 +71,11 @@ body {
 #main {
   padding: 10px 5%;
   background: #f9f9f9;
+  border:1px solid #ccc;
+  border-top:none;
+    -moz-box-shadow:   0 3px 10px rgba(0,0,0,0.2);
+    -webkit-box-shadow:0 3px 10px rgba(0,0,0,0.2);
+  box-shadow:          0 3px 10px rgba(0,0,0,0.2);
   overflow: hidden;
 }
 
@@ -141,7 +147,6 @@ body {
 }
 
 .experiment {
-  width: 60%;
   background:#fff;
   border: 1px solid #eee;
   border-bottom:none;
@@ -192,11 +197,9 @@ body {
 
 #footer {
   padding: 10px 5%;
-  background: #efefef;
   color: #999;
   font-size: 85%;
   line-height: 1.5;
-  border-top: 5px solid #ccc;
   padding-top: 10px;
 }
 
