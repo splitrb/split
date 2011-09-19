@@ -6,7 +6,7 @@
     </form>
     <form action="<%= url "/#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
       <input type="hidden" name="_method" value="delete"/>
-      <input type="submit" value="Delete">
+      <input type="submit" value="Delete" class="red">
     </form>
   </div>
   <table>
@@ -59,7 +59,7 @@
           <% else %>
             <form action="<%= url experiment.name %>" method='post' onclick="return confirmWinner()">
               <input type='hidden' name='alternative' value='<%= alternative.name %>'>
-              <input type="submit" value="Use this">
+              <input type="submit" value="Use this" class="green">
             </form>
           <% end %>
         </td>
