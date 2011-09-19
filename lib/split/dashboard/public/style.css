@@ -96,7 +96,7 @@ body {
 }
 
 #main table tr td, #main table tr th {
-  border: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   padding: 6px;
 }
 
@@ -104,7 +104,7 @@ body {
   background: #efefef;
   color: #888;
   font-size: 80%;
-  font-weight: bold;
+  text-transform:uppercase;
 }
 
 #main table tr td.no-data {
@@ -143,8 +143,9 @@ body {
 .experiment {
   width: 60%;
   background:#fff;
-  border-top:1px solid #eee;
-  margin:15px 0;
+  border: 1px solid #eee;
+  border-bottom:none;
+  margin:30px 0;
 }
 
 .experiment .experiment-header {
