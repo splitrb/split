@@ -1,26 +1,44 @@
 html {
   background: #efefef;
-  font-family: Arial, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 13px;
 }
 
 body {
-  padding: 0;
-  margin: 0;
+  padding: 0 10px;
+  margin: 10px auto 0;
+  max-width:800px;
 }
 
 .header {
-  background: #000;
-  padding: 8px 5% 0 5%;
-  border-bottom: 1px solid #444;
-  border-bottom: 5px solid #0080FF;
+  background: #ededed;
+  background: -webkit-gradient(linear, left top, left bottom,
+                color-stop(0%,#576a76),
+                color-stop(100%,#4d5256));
+  background: -moz-linear-gradient   (top, #576a76 0%, #414e58 100%);
+  background: -webkit-linear-gradient(top, #576a76 0%, #414e58 100%);
+  background: -o-linear-gradient     (top, #576a76 0%, #414e58 100%);
+  background: -ms-linear-gradient    (top, #576a76 0%, #414e58 100%);
+  background: linear-gradient        (top, #576a76 0%, #414e58 100%);
+  border-bottom: 1px solid #fff;
+  -moz-border-radius-topleft:     5px;
+  -webkit-border-top-left-radius: 5px;
+  border-top-left-radius:         5px;
+  -moz-border-radius-topright:    5px;
+  -webkit-border-top-right-radius:5px;
+  border-top-right-radius:        5px;
+
+  overflow:hidden;
+  padding: 10px 5%;
+  text-shadow:0 1px 0 #000;
 }
 
 .header h1 {
-  color: #333;
-  font-size: 90%;
-  font-weight: bold;
-  margin-bottom: 6px;
+  color: #eee;
+  float:left;
+  font-size:1.2em;
+  font-weight:normal;
+  margin:2px 30px 0 0;
 }
 
 .header ul li {
@@ -28,30 +46,43 @@ body {
 }
 
 .header ul li a {
-  color: #fff;
+  color: #eee;
   text-decoration: none;
   margin-right: 10px;
   display: inline-block;
-  padding: 8px;
-  -webkit-border-top-right-radius: 6px;
-  -webkit-border-top-left-radius: 6px;
-  -moz-border-radius-topleft: 6px;
-  -moz-border-radius-topright: 6px;
+  padding: 4px 8px;
+  -moz-border-radius:   10px;
+  -webkit-border-radius:10px;
+  border-radius:        10px;
+
 }
 
 .header ul li a:hover {
-  background: #333;
+  background: rgba(255,255,255,0.1);
+}
+
+.header ul li a:active {
+  -moz-box-shadow:   inset 0 1px 0 rgba(0,0,0,0.2);
+  -webkit-box-shadow:inset 0 1px 0 rgba(0,0,0,0.2);
+  box-shadow:        inset 0 1px 0 rgba(0,0,0,0.2);
 }
 
 .header ul li.current a {
-  background: #0080FF;
-  font-weight: bold;
+  background: rgba(255,255,255,0.1);
+  -moz-box-shadow:   inset 0 1px 0 rgba(0,0,0,0.2);
+  -webkit-box-shadow:inset 0 1px 0 rgba(0,0,0,0.2);
+  box-shadow:        inset 0 1px 0 rgba(0,0,0,0.2);
   color: #fff;
 }
 
 #main {
   padding: 10px 5%;
-  background: #fff;
+  background: #f9f9f9;
+  border:1px solid #ccc;
+  border-top:none;
+  -moz-box-shadow:   0 3px 10px rgba(0,0,0,0.2);
+  -webkit-box-shadow:0 3px 10px rgba(0,0,0,0.2);
+  box-shadow:        0 3px 10px rgba(0,0,0,0.2);
   overflow: hidden;
 }
 
@@ -74,11 +105,11 @@ body {
 
 #main table {
   width: 100%;
-  margin: 10px 0;
+  margin:0 0 10px;
 }
 
 #main table tr td, #main table tr th {
-  border: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
   padding: 6px;
 }
 
@@ -86,7 +117,7 @@ body {
   background: #efefef;
   color: #888;
   font-size: 80%;
-  font-weight: bold;
+  text-transform:uppercase;
 }
 
 #main table tr td.no-data {
@@ -123,16 +154,34 @@ body {
 }
 
 .experiment {
-  width: 60%;
-  border-top:1px solid #eee;
-  margin:15px 0;
+  background:#fff;
+  border: 1px solid #eee;
+  border-bottom:none;
+  margin:30px 0;
+}
+
+.experiment .experiment-header {
+  background: #f4f4f4;
+  background: -webkit-gradient(linear, left top, left bottom,
+                color-stop(0%,#f4f4f4),
+                color-stop(100%,#e0e0e0));
+  background: -moz-linear-gradient   (top, #f4f4f4 0%, #e0e0e0 100%);
+  background: -webkit-linear-gradient(top, #f4f4f4 0%, #e0e0e0 100%);
+  background: -o-linear-gradient     (top, #f4f4f4 0%, #e0e0e0 100%);
+  background: -ms-linear-gradient    (top, #f4f4f4 0%, #e0e0e0 100%);
+  background: linear-gradient        (top, #f4f4f4 0%, #e0e0e0 100%);
+  border-top:1px solid #fff;
+  overflow:hidden;
+  padding:0 10px;
 }
 
 .experiment h2 {
-  margin: 10px 0;
-  font-size: 130%;
+  color:#888;
+  margin: 12px 0 0;
+  font-size: 1em;
   font-weight:bold;
   float:left;
+  text-shadow:0 1px 0 rgba(255,255,255,0.8);
 }
 
 .experiment h2 .version{
@@ -155,11 +204,9 @@ body {
 
 #footer {
   padding: 10px 5%;
-  background: #efefef;
   color: #999;
   font-size: 85%;
   line-height: 1.5;
-  border-top: 5px solid #ccc;
   padding-top: 10px;
 }
 
@@ -182,10 +229,67 @@ body {
 }
 
 .worse, .better {
-  color: #F00;
+  color: #773F3F;
   font-size: 10px;
+  font-weight:bold;
 }
 
 .better {
-  color: #00D500;
+  color: #408C48;
 }
+
+a.button, button, input[type="submit"] {
+  padding: 4px 10px;
+  overflow: hidden;
+  background: #d8dae0;
+  -moz-box-shadow:   0 1px 0 rgba(0,0,0,0.5);
+  -webkit-box-shadow:0 1px 0 rgba(0,0,0,0.5);
+  box-shadow:        0 1px 0 rgba(0,0,0,0.5);
+  border:none;
+  -moz-border-radius:   30px;
+  -webkit-border-radius:30px;
+  border-radius:        30px;
+  color:#2e3035;
+  cursor: pointer;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  text-shadow:0 1px 0 rgba(255,255,255,0.8);
+  -moz-user-select:   none;
+  -webkit-user-select:none;
+  user-select:        none;
+  white-space: nowrap;
+}
+a.button:hover, button:hover, input[type="submit"]:hover,
+a.button:focus, button:focus, input[type="submit"]:focus{
+  background:#bbbfc7;
+}
+a.button:active, button:active, input[type="submit"]:active{
+  -moz-box-shadow:   inset 0 0 4px #484d57;
+  -webkit-box-shadow:inset 0 0 4px #484d57;
+  box-shadow:        inset 0 0 4px #484d57;
+  position:relative;
+  top:1px;
+}
+
+a.button.red,   button.red,   input[type="submit"].red,
+a.button.green, button.green, input[type="submit"].green {
+  color:#fff;
+  text-shadow:0 1px 0 rgba(0,0,0,0.4);
+}
+
+a.button.red, button.red, input[type="submit"].red {
+  background:#a56d6d;
+}
+a.button.red:hover, button.red:hover, input[type="submit"].red:hover,
+a.button.red:focus, button.red:focus, input[type="submit"].red:focus {
+  background:#895C5C;
+}
+a.button.green, button.green, input[type="submit"].green {
+  background:#8daa92;
+}
+a.button.green:hover, button.green:hover, input[type="submit"].green:hover,
+a.button.green:focus, button.green:focus, input[type="submit"].green:focus {
+  background:#768E7A;
+}
+
+
