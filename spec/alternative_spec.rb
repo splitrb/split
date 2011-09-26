@@ -40,6 +40,8 @@ describe Split::Alternative do
     old_participant_count = alternative.participant_count
     alternative.increment_participation
     alternative.participant_count.should eql(old_participant_count+1)
+
+    Split::Alternative.find('Basket', 'basket_text').participant_count.should eql(old_participant_count+1)
   end
 
   it "should increment completed count" do
@@ -49,6 +51,8 @@ describe Split::Alternative do
     old_completed_count = alternative.participant_count
     alternative.increment_completion
     alternative.completed_count.should eql(old_completed_count+1)
+
+    Split::Alternative.find('Basket', 'basket_text').completed_count.should eql(old_completed_count+1)
   end
 
   it "can be reset" do
