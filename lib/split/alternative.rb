@@ -18,12 +18,12 @@ module Split
 
     def increment_participation
       @participant_count +=1
-      self.save
+      Split.redis.hincrby "#{experiment_name}:#{name}", 'participant_count', 1
     end
 
     def increment_completion
       @completed_count +=1
-      self.save
+      Split.redis.hincrby "#{experiment_name}:#{name}", 'completed_count', 1
     end
 
     def control?
