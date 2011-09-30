@@ -97,6 +97,8 @@ Example: Conversion tracking (in a view)
 
 You can find more examples, tutorials and guides on the [wiki](https://github.com/andrew/split/wiki).
 
+## Extras
+
 ### Overriding alternatives
 
 For development and testing, you may wish to force your app to always return an alternative.
@@ -107,6 +109,16 @@ If you have an experiment called `button_color` with alternatives called `red` a
     http://myawesomesite.com?button_color=red
 
 will always have red buttons. This won't be stored in your session or count towards to results.
+
+### Reset after completion
+
+When a user completes a test their session is reset so that they may start the test again in the future.
+
+To stop this behaviour you can pass the following option to the `finished` method:
+
+    finished('experiment_name', :reset => false)
+
+The user will then always see the alternative they started with.
 
 ## Web Interface
 
