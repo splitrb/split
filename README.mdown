@@ -80,15 +80,15 @@ Example: View
 Example: Controller
 
     def register_new_user
-      #See what level of free points maximizes users' decision to buy replacement points.
+      # See what level of free points maximizes users' decision to buy replacement points.
       @starter_points = ab_test("new_user_free_points", 100, 200, 300)
     end
 
 Example: Conversion tracking (in a controller!)
 
     def buy_new_points
-      #some business logic
-      finished("buy_new_points")  #Either a conversion named with :conversion or a test name.
+      # some business logic
+      finished("buy_new_points")
     end
 
 Example: Conversion tracking (in a view)
