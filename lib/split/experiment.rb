@@ -16,7 +16,7 @@ module Split
 
     def winner
       if w = Split.redis.hget(:experiment_winner, name)
-        return Split::Alternative.find(w, name)
+        Split::Alternative.find(w, name)
       else
         nil
       end
@@ -45,7 +45,7 @@ module Split
     def random_alternative
       weights = alternatives.map(&:weight)
 
-      total = weights.inject(0.0) {|t,w| t+w}
+      total = weights.inject(:+)
       point = rand * total
 
       alternatives.zip(weights).each do |n,w|
@@ -148,12 +148,12 @@ module Split
         experiment.save
       end
       return experiment
-      
+
     end
 
     def self.initialize_alternatives(alternatives, name)
 
-      if alternatives.reject {|a| Split::Alternative.valid? a}.any?
+      unless alternatives.all? { |a| Split::Alternative.valid?(a) }
         raise InvalidArgument, 'Alternatives must be strings'
       end
 
