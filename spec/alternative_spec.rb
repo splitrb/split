@@ -9,6 +9,12 @@ describe Split::Alternative do
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.name.should eql('Basket')
   end
+  
+  it "return only the name" do
+    experiment = Split::Experiment.new('basket_text', {'Basket' => 0.6}, {"Cart" => 0.4})
+    alternative = Split::Alternative.new('Basket', 'basket_text')
+    alternative.name.should eql('Basket')
+  end
 
   it "should have a default participation count of 0" do
     alternative = Split::Alternative.new('Basket', 'basket_text')

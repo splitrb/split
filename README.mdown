@@ -99,6 +99,20 @@ You can find more examples, tutorials and guides on the [wiki](https://github.co
 
 ## Extras
 
+### Weighted alternatives
+
+Perhaps you only want to show an alternative to 10% of your visitors because it is very experimental or not yet fully load tested.
+
+To do this you can pass a weight with each alternative in the following ways:
+
+    ab_test('homepage design', 'Old' => 20, 'New' => 2)
+
+    ab_test('homepage design', 'Old', {'New' => 0.1})
+
+    ab_test('homepage design', {'Old' => 10}, 'New')
+
+This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
+
 ### Overriding alternatives
 
 For development and testing, you may wish to force your app to always return an alternative.

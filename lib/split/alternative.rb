@@ -4,12 +4,19 @@ module Split
     attr_accessor :participant_count
     attr_accessor :completed_count
     attr_accessor :experiment_name
+    attr_accessor :weight
 
     def initialize(name, experiment_name, counters = {})
       @experiment_name = experiment_name
-      @name = name
       @participant_count = counters['participant_count'].to_i
       @completed_count = counters['completed_count'].to_i
+      if name.class == Hash
+        @name = name.keys.first
+        @weight = name.values.first
+      else
+        @name = name
+        @weight = 1
+      end
     end
 
     def to_s
@@ -96,6 +103,18 @@ module Split
       alt = self.new(name, experiment_name)
       alt.save
       alt
+    end
+
+    def self.valid?(name)
+       string?(name) or hash_with_correct_values?(name)
+    end
+
+    def self.string?(name)
+      name.class == String
+    end
+
+    def self.hash_with_correct_values?(name)
+      name.class == Hash && name.keys.first.class == String && Float(name.values.first) rescue false
     end
   end
 end

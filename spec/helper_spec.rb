@@ -57,6 +57,17 @@ describe Split::Helper do
       ret = ab_test('link_color', 'blue', 'red') { |alternative| "shared/#{alternative}" }
       ret.should eql("shared/#{alt}")
     end
+    
+    it  "should allow the share of visitors see an alternative to be specificed" do
+      ab_test('link_color', {'blue' => 0.8}, {'red' => 20})
+      ['red', 'blue'].should include(ab_user['link_color'])
+    end
+    
+    it  "should allow alternative weighting interface as a single hash" do
+      ab_test('link_color', 'blue' => 0.01, 'red' => 0.2)
+      experiment = Split::Experiment.find('link_color')
+      experiment.alternative_names.should eql(['blue', 'red'])
+    end
   end
 
   describe 'finished' do

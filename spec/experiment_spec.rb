@@ -126,15 +126,6 @@ describe Split::Experiment do
   end
 
   describe 'next_alternative' do
-    it "should return a random alternative from those with the least participants" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
-
-      Split::Alternative.find('blue', 'link_color').increment_participation
-      Split::Alternative.find('red', 'link_color').increment_participation
-
-      experiment.next_alternative.name.should eql('green')
-    end
-
     it "should always return the winner if one exists" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
       green = Split::Alternative.find('green', 'link_color')
