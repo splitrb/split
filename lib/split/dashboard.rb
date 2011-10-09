@@ -73,7 +73,7 @@ module Split
       @experiment.reset
       redirect url('/')
     end
-    
+
     delete '/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
       @experiment.delete

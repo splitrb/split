@@ -39,7 +39,7 @@ module Split
       Split::Experiment.find(experiment_name)
     end
 
-    def z_score      
+    def z_score
       # CTR_E = the CTR within the experiment split
       # CTR_C = the CTR within the control split
       # E = the number of impressions within the experiment split

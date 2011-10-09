@@ -95,17 +95,17 @@ describe Split::Helper do
       session[:split].should eql("link_color" => alternative_name)
     end
   end
-  
+
   describe 'conversions' do
     it 'should return a conversion rate for an alternative' do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
-      
+
       previous_convertion_rate = Split::Alternative.find(alternative_name, 'link_color').conversion_rate
       previous_convertion_rate.should eql(0.0)
 
       finished('link_color')
-      
+
       new_convertion_rate = Split::Alternative.find(alternative_name, 'link_color').conversion_rate
       new_convertion_rate.should eql(1.0)
     end

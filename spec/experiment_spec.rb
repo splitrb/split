@@ -37,7 +37,7 @@ describe Split::Experiment do
       Split.redis.exists('basket_text').should be false
       lambda { Split::Experiment.find('link_color') }.should raise_error
     end
-    
+
     it "should increment the version" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
       experiment.version.should eql(0)

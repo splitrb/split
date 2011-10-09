@@ -61,7 +61,7 @@ module Split
       reset_winner
       increment_version
     end
-    
+
     def delete
       alternatives.each(&:delete)
       reset_winner
