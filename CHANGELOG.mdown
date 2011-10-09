@@ -1,3 +1,16 @@
+## 0.3.0 (October 9, 2011)
+
+Features:
+
+  - Redesigned dashboard (@mrappleton, #17)
+  - Use atomic increments in redis for better concurrency (@lautis, #18)
+  - Weighted alternatives
+
+Bugfixes:
+
+  - Fix to allow overriding of experiments that aren't on version 1
+
+
 ## 0.2.4 (July 18, 2011)
 
 Features:
