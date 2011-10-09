@@ -45,7 +45,7 @@ module Split
     end
 
     def override(experiment_name, alternatives)
-      return params[experiment_name] if defined?(params) && alternatives.include?(params[experiment_name])
+      params[experiment_name] if defined?(params) && alternatives.include?(params[experiment_name])
     end
 
     def begin_experiment(experiment, alternative_name)
