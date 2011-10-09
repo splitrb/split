@@ -10,7 +10,7 @@ module Split
       @experiment_name = experiment_name
       @participant_count = counters['participant_count'].to_i
       @completed_count = counters['completed_count'].to_i
-      if name.class == Hash
+      if Hash === name
         @name = name.keys.first
         @weight = name.values.first
       else
@@ -72,11 +72,12 @@ module Split
     end
 
     def save
-      if Split.redis.hgetall("#{experiment_name}:#{name}")
-        Split.redis.hset "#{experiment_name}:#{name}", 'participant_count', @participant_count
-        Split.redis.hset "#{experiment_name}:#{name}", 'completed_count', @completed_count
+      key = "#{experiment_name}:#{name}"
+      if Split.redis.hgetall(key)
+        Split.redis.hset key, 'participant_count', @participant_count
+        Split.redis.hset key, 'completed_count', @completed_count
       else
-        Split.redis.hmset "#{experiment_name}:#{name}", 'participant_count', 'completed_count', @participant_count, @completed_count
+        Split.redis.hmset key, 'participant_count', 'completed_count', @participant_count, @completed_count
       end
     end
 
@@ -106,15 +107,11 @@ module Split
     end
 
     def self.valid?(name)
-       string?(name) or hash_with_correct_values?(name)
-    end
-
-    def self.string?(name)
-      name.class == String
+       String === name || hash_with_correct_values?(name)
     end
 
     def self.hash_with_correct_values?(name)
-      name.class == Hash && name.keys.first.class == String && Float(name.values.first) rescue false
+      Hash === name && String === name.keys.first && Float(name.values.first) rescue false
     end
   end
 end
