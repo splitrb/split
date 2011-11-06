@@ -16,7 +16,7 @@ module Split
 
     def winner
       if w = Split.redis.hget(:experiment_winner, name)
-        Split::Alternative.find(w, name)
+        Split::Alternative.new(w, name)
       else
         nil
       end
@@ -35,7 +35,7 @@ module Split
     end
 
     def alternatives
-      @alternative_names.map {|a| Split::Alternative.find_or_create(a, name)}
+      @alternative_names.map {|a| Split::Alternative.new(a, name)}
     end
 
     def next_alternative

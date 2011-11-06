@@ -94,11 +94,6 @@ describe Split::Alternative do
     end
   end
 
-  it "should return an existing alternative" do
-    alternative = Split::Alternative.create('Basket', 'basket_text')
-    Split::Alternative.find('Basket', 'basket_text').name.should eql('Basket')
-  end
-
   describe 'z score' do
     it 'should be zero when the control has no conversions' do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')

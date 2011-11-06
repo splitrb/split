@@ -98,16 +98,6 @@ module Split
       self.new(name, experiment_name)
     end
 
-    def self.find_or_create(name, experiment_name)
-      self.find(name, experiment_name) || self.create(name, experiment_name)
-    end
-
-    def self.create(name, experiment_name)
-      alt = self.new(name, experiment_name)
-      alt.save
-      alt
-    end
-
     def self.valid?(name)
        String === name || hash_with_correct_values?(name)
     end
