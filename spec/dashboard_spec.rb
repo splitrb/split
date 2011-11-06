@@ -18,10 +18,10 @@ describe Split::Dashboard do
 
   it "should reset an experiment" do
     experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-    red = Split::Alternative.find('red', 'link_color').participant_count
+    red = Split::Alternative.new('red', 'link_color').participant_count
 
-    red = Split::Alternative.find('red', 'link_color')
-    blue = Split::Alternative.find('blue', 'link_color')
+    red = Split::Alternative.new('red', 'link_color')
+    blue = Split::Alternative.new('blue', 'link_color')
     red.participant_count = 5
     blue.participant_count = 6
 
@@ -29,8 +29,8 @@ describe Split::Dashboard do
 
     last_response.should be_redirect
 
-    new_red_count = Split::Alternative.find('red', 'link_color').participant_count
-    new_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+    new_red_count = Split::Alternative.new('red', 'link_color').participant_count
+    new_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
     new_blue_count.should eql(0)
     new_red_count.should eql(0)

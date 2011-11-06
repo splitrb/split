@@ -94,10 +94,6 @@ module Split
       Split.redis.del(key)
     end
 
-    def self.find(name, experiment_name)
-      self.new(name, experiment_name)
-    end
-
     def self.valid?(name)
        String === name || hash_with_correct_values?(name)
     end

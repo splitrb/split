@@ -91,7 +91,7 @@ describe Split::Experiment do
   describe 'reset' do
     it 'should reset all alternatives' do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
-      green = Split::Alternative.find('green', 'link_color')
+      green = Split::Alternative.new('green', 'link_color')
       experiment.winner = 'green'
 
       experiment.next_alternative.name.should eql('green')
@@ -99,14 +99,14 @@ describe Split::Experiment do
 
       experiment.reset
 
-      reset_green = Split::Alternative.find('green', 'link_color')
+      reset_green = Split::Alternative.new('green', 'link_color')
       reset_green.participant_count.should eql(0)
       reset_green.completed_count.should eql(0)
     end
 
     it 'should reset the winner' do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
-      green = Split::Alternative.find('green', 'link_color')
+      green = Split::Alternative.new('green', 'link_color')
       experiment.winner = 'green'
 
       experiment.next_alternative.name.should eql('green')
@@ -128,7 +128,7 @@ describe Split::Experiment do
   describe 'next_alternative' do
     it "should always return the winner if one exists" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
-      green = Split::Alternative.find('green', 'link_color')
+      green = Split::Alternative.new('green', 'link_color')
       experiment.winner = 'green'
 
       experiment.next_alternative.name.should eql('green')
@@ -142,12 +142,12 @@ describe Split::Experiment do
   describe 'changing an existing experiment' do
     it "should reset an experiment if it is loaded with different alternatives" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
-      blue = Split::Alternative.find('blue', 'link_color')
+      blue = Split::Alternative.new('blue', 'link_color')
       blue.participant_count = 5
       blue.save
       same_experiment = Split::Experiment.find_or_create('link_color', 'blue', 'yellow', 'orange')
       same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
-      new_blue = Split::Alternative.find('blue', 'link_color')
+      new_blue = Split::Alternative.new('blue', 'link_color')
       new_blue.participant_count.should eql(0)
     end
   end

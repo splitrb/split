@@ -20,13 +20,13 @@ describe Split::Helper do
     it "should increment the participation counter after assignment to a new user" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
-      previous_red_count = Split::Alternative.find('red', 'link_color').participant_count
-      previous_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+      previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
+      previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
       ab_test('link_color', 'blue', 'red')
 
-      new_red_count = Split::Alternative.find('red', 'link_color').participant_count
-      new_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+      new_red_count = Split::Alternative.new('red', 'link_color').participant_count
+      new_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
       (new_red_count + new_blue_count).should eql(previous_red_count + previous_blue_count + 1)
     end
@@ -75,11 +75,11 @@ describe Split::Helper do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
 
-      previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
       finished('link_color')
 
-      new_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+      new_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
       new_completion_count.should eql(previous_completion_count + 1)
     end
@@ -88,7 +88,7 @@ describe Split::Helper do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
 
-      previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
       session[:split].should eql("link_color" => alternative_name)
       finished('link_color')
@@ -99,7 +99,7 @@ describe Split::Helper do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
 
-      previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
       session[:split].should eql("link_color" => alternative_name)
       finished('link_color', :reset => false)
@@ -112,12 +112,12 @@ describe Split::Helper do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
 
-      previous_convertion_rate = Split::Alternative.find(alternative_name, 'link_color').conversion_rate
+      previous_convertion_rate = Split::Alternative.new(alternative_name, 'link_color').conversion_rate
       previous_convertion_rate.should eql(0.0)
 
       finished('link_color')
 
-      new_convertion_rate = Split::Alternative.find(alternative_name, 'link_color').conversion_rate
+      new_convertion_rate = Split::Alternative.new(alternative_name, 'link_color').conversion_rate
       new_convertion_rate.should eql(1.0)
     end
   end
@@ -137,13 +137,13 @@ describe Split::Helper do
       it "should not increment the participation count" do
         experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
-        previous_red_count = Split::Alternative.find('red', 'link_color').participant_count
-        previous_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+        previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
+        previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
         ab_test('link_color', 'blue', 'red')
 
-        new_red_count = Split::Alternative.find('red', 'link_color').participant_count
-        new_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+        new_red_count = Split::Alternative.new('red', 'link_color').participant_count
+        new_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
         (new_red_count + new_blue_count).should eql(previous_red_count + previous_blue_count)
       end
@@ -153,11 +153,11 @@ describe Split::Helper do
         experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative_name = ab_test('link_color', 'blue', 'red')
 
-        previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+        previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
         finished('link_color')
 
-        new_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+        new_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
         new_completion_count.should eql(previous_completion_count)
       end
@@ -181,13 +181,13 @@ describe Split::Helper do
       it "should not increment the participation count" do
         experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
-        previous_red_count = Split::Alternative.find('red', 'link_color').participant_count
-        previous_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+        previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
+        previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
         ab_test('link_color', 'blue', 'red')
 
-        new_red_count = Split::Alternative.find('red', 'link_color').participant_count
-        new_blue_count = Split::Alternative.find('blue', 'link_color').participant_count
+        new_red_count = Split::Alternative.new('red', 'link_color').participant_count
+        new_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
         (new_red_count + new_blue_count).should eql(previous_red_count + previous_blue_count)
       end
@@ -197,11 +197,11 @@ describe Split::Helper do
         experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative_name = ab_test('link_color', 'blue', 'red')
 
-        previous_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+        previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
         finished('link_color')
 
-        new_completion_count = Split::Alternative.find(alternative_name, 'link_color').completed_count
+        new_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
         new_completion_count.should eql(previous_completion_count)
       end
@@ -238,17 +238,17 @@ describe Split::Helper do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       session[:split].should eql({'link_color' => alternative_name})
-      alternative = Split::Alternative.find(alternative_name, 'link_color')
+      alternative = Split::Alternative.new(alternative_name, 'link_color')
       alternative.participant_count.should eql(1)
 
       experiment.reset
       experiment.version.should eql(1)
-      alternative = Split::Alternative.find(alternative_name, 'link_color')
+      alternative = Split::Alternative.new(alternative_name, 'link_color')
       alternative.participant_count.should eql(0)
 
       new_alternative_name = ab_test('link_color', 'blue', 'red')
       session[:split]['link_color:1'].should eql(new_alternative_name)
-      new_alternative = Split::Alternative.find(new_alternative_name, 'link_color')
+      new_alternative = Split::Alternative.new(new_alternative_name, 'link_color')
       new_alternative.participant_count.should eql(1)
     end
 
@@ -256,13 +256,13 @@ describe Split::Helper do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       session[:split].should eql({'link_color' => alternative_name})
-      alternative = Split::Alternative.find(alternative_name, 'link_color')
+      alternative = Split::Alternative.new(alternative_name, 'link_color')
 
       experiment.reset
       experiment.version.should eql(1)
 
       finished('link_color')
-      alternative = Split::Alternative.find(alternative_name, 'link_color')
+      alternative = Split::Alternative.new(alternative_name, 'link_color')
       alternative.completed_count.should eql(0)
     end
   end
