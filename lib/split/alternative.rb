@@ -25,12 +25,12 @@ module Split
 
     def increment_participation
       @participant_count +=1
-      Split.redis.hincrby "#{experiment_name}:#{name}", 'participant_count', 1
+      Split.redis.hincrby key, 'participant_count', 1
     end
 
     def increment_completion
       @completed_count +=1
-      Split.redis.hincrby "#{experiment_name}:#{name}", 'completed_count', 1
+      Split.redis.hincrby key, 'completed_count', 1
     end
 
     def control?
@@ -72,7 +72,6 @@ module Split
     end
 
     def save
-      key = "#{experiment_name}:#{name}"
       if Split.redis.hgetall(key)
         Split.redis.hset key, 'participant_count', @participant_count
         Split.redis.hset key, 'completed_count', @completed_count
@@ -88,7 +87,7 @@ module Split
     end
 
     def delete
-      Split.redis.del("#{experiment_name}:#{name}")
+      Split.redis.del(key)
     end
 
     def self.find(name, experiment_name)
@@ -112,6 +111,12 @@ module Split
 
     def self.hash_with_correct_values?(name)
       Hash === name && String === name.keys.first && Float(name.values.first) rescue false
+    end
+
+    private
+
+    def key
+      "#{experiment_name}:#{name}"
     end
   end
 end
