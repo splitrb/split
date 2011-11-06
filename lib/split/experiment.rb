@@ -1,14 +1,13 @@
 module Split
   class Experiment
     attr_accessor :name
-    attr_accessor :alternative_names
     attr_accessor :winner
 
     def initialize(name, *alternative_names)
       @name = name.to_s
-      @alternative_names = alternative_names.map do |alternative|
-                             Split::Alternative.new(alternative, name)
-                           end.map(&:name)
+      @alternatives = alternative_names.map do |alternative|
+                        Split::Alternative.new(alternative, name)
+                      end
     end
 
     def winner
@@ -33,7 +32,11 @@ module Split
     end
 
     def alternatives
-      @alternative_names.map {|a| Split::Alternative.new(a, name)}
+      @alternatives.dup
+    end
+
+    def alternative_names
+      @alternatives.map(&:name)
     end
 
     def next_alternative
@@ -89,7 +92,7 @@ module Split
     def save
       if new_record?
         Split.redis.sadd(:experiments, name)
-        @alternative_names.reverse.each {|a| Split.redis.lpush(name, a) }
+        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       end
     end
 
