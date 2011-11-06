@@ -3,15 +3,12 @@ module Split
     attr_accessor :name
     attr_accessor :alternative_names
     attr_accessor :winner
-    attr_accessor :version
 
     def initialize(name, *alternative_names)
       @name = name.to_s
       @alternative_names = alternative_names.map do |alternative|
                              Split::Alternative.new(alternative, name)
                            end.map(&:name)
-
-      @version = (Split.redis.get("#{name.to_s}:version").to_i || 0)
     end
 
     def winner
@@ -29,6 +26,7 @@ module Split
     def reset_winner
       Split.redis.hdel(:experiment_winner, name)
     end
+
 
     def winner=(winner_name)
       Split.redis.hset(:experiment_winner, name, winner_name.to_s)
@@ -55,12 +53,11 @@ module Split
     end
 
     def version
-      @version ||= 0
+      @version ||= (Split.redis.get("#{name.to_s}:version").to_i || 0)
     end
 
     def increment_version
-      @version += 1
-      Split.redis.set("#{name}:version", @version)
+      @version = Split.redis.incr("#{name}:version")
     end
 
     def key
