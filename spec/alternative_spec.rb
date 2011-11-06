@@ -62,8 +62,9 @@ describe Split::Alternative do
   end
 
   it "can be reset" do
-    alternative = Split::Alternative.new('Basket', 'basket_text', {'participant_count' => 10, 'completed_count' =>4})
-    alternative.save
+    alternative = Split::Alternative.new('Basket', 'basket_text')
+    alternative.participant_count = 10
+    alternative.completed_count = 4
     alternative.reset
     alternative.participant_count.should eql(0)
     alternative.completed_count.should eql(0)
@@ -86,7 +87,9 @@ describe Split::Alternative do
     end
 
     it "does something" do
-      alternative = Split::Alternative.new('Basket', 'basket_text', {'participant_count' => 10, 'completed_count' =>4})
+      alternative = Split::Alternative.new('Basket', 'basket_text')
+      alternative.stub(:participant_count).and_return(10)
+      alternative.stub(:completed_count).and_return(4)
       alternative.conversion_rate.should eql(0.4)
     end
   end

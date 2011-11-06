@@ -23,9 +23,7 @@ describe Split::Dashboard do
     red = Split::Alternative.find('red', 'link_color')
     blue = Split::Alternative.find('blue', 'link_color')
     red.participant_count = 5
-    red.save
     blue.participant_count = 6
-    blue.save
 
     post '/reset/link_color'
 

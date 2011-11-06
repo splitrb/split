@@ -1,15 +1,11 @@
 module Split
   class Alternative
     attr_accessor :name
-    attr_accessor :participant_count
-    attr_accessor :completed_count
     attr_accessor :experiment_name
     attr_accessor :weight
 
-    def initialize(name, experiment_name, counters = {})
+    def initialize(name, experiment_name)
       @experiment_name = experiment_name
-      @participant_count = counters['participant_count'].to_i
-      @completed_count = counters['completed_count'].to_i
       if Hash === name
         @name = name.keys.first
         @weight = name.values.first
@@ -23,13 +19,27 @@ module Split
       name
     end
 
+    def participant_count
+      Split.redis.hget(key, 'participant_count').to_i
+    end
+
+    def participant_count=(count)
+      Split.redis.hset(key, 'participant_count', count.to_i)
+    end
+
+    def completed_count
+      Split.redis.hget(key, 'completed_count').to_i
+    end
+
+    def completed_count=(count)
+      Split.redis.hset(key, 'completed_count', count.to_i)
+    end
+
     def increment_participation
-      @participant_count +=1
       Split.redis.hincrby key, 'participant_count', 1
     end
 
     def increment_completion
-      @completed_count +=1
       Split.redis.hincrby key, 'completed_count', 1
     end
 
@@ -72,18 +82,12 @@ module Split
     end
 
     def save
-      if Split.redis.hgetall(key)
-        Split.redis.hset key, 'participant_count', @participant_count
-        Split.redis.hset key, 'completed_count', @completed_count
-      else
-        Split.redis.hmset key, 'participant_count', 'completed_count', @participant_count, @completed_count
-      end
+      Split.redis.hsetnx key, 'participant_count', 0
+      Split.redis.hsetnx key, 'completed_count', 0
     end
 
     def reset
-      @participant_count = 0
-      @completed_count = 0
-      save
+      Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
     end
 
     def delete
@@ -91,8 +95,7 @@ module Split
     end
 
     def self.find(name, experiment_name)
-      counters = Split.redis.hgetall "#{experiment_name}:#{name}"
-      self.new(name, experiment_name, counters)
+      self.new(name, experiment_name)
     end
 
     def self.find_or_create(name, experiment_name)
