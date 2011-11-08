@@ -1,22 +1,18 @@
 module Split
   class Experiment
     attr_accessor :name
-    attr_accessor :alternative_names
     attr_accessor :winner
-    attr_accessor :version
 
     def initialize(name, *alternative_names)
       @name = name.to_s
-      @alternative_names = alternative_names.map do |alternative|
-                             Split::Alternative.new(alternative, name)
-                           end.map(&:name)
-
-      @version = (Split.redis.get("#{name.to_s}:version").to_i || 0)
+      @alternatives = alternative_names.map do |alternative|
+                        Split::Alternative.new(alternative, name)
+                      end
     end
 
     def winner
       if w = Split.redis.hget(:experiment_winner, name)
-        Split::Alternative.find(w, name)
+        Split::Alternative.new(w, name)
       else
         nil
       end
@@ -30,12 +26,17 @@ module Split
       Split.redis.hdel(:experiment_winner, name)
     end
 
+
     def winner=(winner_name)
       Split.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
 
     def alternatives
-      @alternative_names.map {|a| Split::Alternative.find_or_create(a, name)}
+      @alternatives.dup
+    end
+
+    def alternative_names
+      @alternatives.map(&:name)
     end
 
     def next_alternative
@@ -55,12 +56,11 @@ module Split
     end
 
     def version
-      @version ||= 0
+      @version ||= (Split.redis.get("#{name.to_s}:version").to_i || 0)
     end
 
     def increment_version
-      @version += 1
-      Split.redis.set("#{name}:version", @version)
+      @version = Split.redis.incr("#{name}:version")
     end
 
     def key
@@ -92,7 +92,7 @@ module Split
     def save
       if new_record?
         Split.redis.sadd(:experiments, name)
-        @alternative_names.reverse.each {|a| Split.redis.lpush(name, a) }
+        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       end
     end
 
