@@ -105,6 +105,11 @@ describe Split::Helper do
       finished('link_color', :reset => false)
       session[:split].should eql("link_color" => alternative_name)
     end
+
+    it "should do nothing where the experiment was not started by this user" do
+      session[:split] = nil
+      lambda { finished('some_experiment_not_started_by_the_user') }.should_not raise_exception
+    end
   end
 
   describe 'conversions' do
