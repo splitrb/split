@@ -29,7 +29,7 @@ describe Split::Alternative do
   it "should belong to an experiment" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
-    alternative = Split::Alternative.find('Basket', 'basket_text')
+    alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.experiment.name.should eql(experiment.name)
   end
 
@@ -42,28 +42,29 @@ describe Split::Alternative do
   it "should increment participation count" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
-    alternative = Split::Alternative.find('Basket', 'basket_text')
+    alternative = Split::Alternative.new('Basket', 'basket_text')
     old_participant_count = alternative.participant_count
     alternative.increment_participation
     alternative.participant_count.should eql(old_participant_count+1)
 
-    Split::Alternative.find('Basket', 'basket_text').participant_count.should eql(old_participant_count+1)
+    Split::Alternative.new('Basket', 'basket_text').participant_count.should eql(old_participant_count+1)
   end
 
   it "should increment completed count" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
-    alternative = Split::Alternative.find('Basket', 'basket_text')
+    alternative = Split::Alternative.new('Basket', 'basket_text')
     old_completed_count = alternative.participant_count
     alternative.increment_completion
     alternative.completed_count.should eql(old_completed_count+1)
 
-    Split::Alternative.find('Basket', 'basket_text').completed_count.should eql(old_completed_count+1)
+    Split::Alternative.new('Basket', 'basket_text').completed_count.should eql(old_completed_count+1)
   end
 
   it "can be reset" do
-    alternative = Split::Alternative.new('Basket', 'basket_text', {'participant_count' => 10, 'completed_count' =>4})
-    alternative.save
+    alternative = Split::Alternative.new('Basket', 'basket_text')
+    alternative.participant_count = 10
+    alternative.completed_count = 4
     alternative.reset
     alternative.participant_count.should eql(0)
     alternative.completed_count.should eql(0)
@@ -72,9 +73,9 @@ describe Split::Alternative do
   it "should know if it is the control of an experiment" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
-    alternative = Split::Alternative.find('Basket', 'basket_text')
+    alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.control?.should be_true
-    alternative = Split::Alternative.find('Cart', 'basket_text')
+    alternative = Split::Alternative.new('Cart', 'basket_text')
     alternative.control?.should be_false
   end
 
@@ -86,21 +87,18 @@ describe Split::Alternative do
     end
 
     it "does something" do
-      alternative = Split::Alternative.new('Basket', 'basket_text', {'participant_count' => 10, 'completed_count' =>4})
+      alternative = Split::Alternative.new('Basket', 'basket_text')
+      alternative.stub(:participant_count).and_return(10)
+      alternative.stub(:completed_count).and_return(4)
       alternative.conversion_rate.should eql(0.4)
     end
-  end
-
-  it "should return an existing alternative" do
-    alternative = Split::Alternative.create('Basket', 'basket_text')
-    Split::Alternative.find('Basket', 'basket_text').name.should eql('Basket')
   end
 
   describe 'z score' do
     it 'should be zero when the control has no conversions' do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
-      alternative = Split::Alternative.find('red', 'link_color')
+      alternative = Split::Alternative.new('red', 'link_color')
       alternative.z_score.should eql(0)
     end
 
