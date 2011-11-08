@@ -42,7 +42,7 @@ describe Split::Dashboard do
     experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
     delete '/link_color'
     last_response.should be_redirect
-    lambda { Split::Experiment.find('link_color') }.should raise_error
+    Split::Experiment.find('link_color').should be_nil
   end
 
   it "should mark an alternative as the winner" do

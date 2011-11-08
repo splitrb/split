@@ -35,7 +35,7 @@ describe Split::Experiment do
 
       experiment.delete
       Split.redis.exists('basket_text').should be false
-      lambda { Split::Experiment.find('link_color') }.should raise_error
+      Split::Experiment.find('link_color').should be_nil
     end
 
     it "should increment the version" do
@@ -59,10 +59,16 @@ describe Split::Experiment do
     end
   end
 
-  it "should return an existing experiment" do
-    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
-    experiment.save
-    Split::Experiment.find('basket_text').name.should eql('basket_text')
+  describe 'find' do
+    it "should return an existing experiment" do
+      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment.save
+      Split::Experiment.find('basket_text').name.should eql('basket_text')
+    end
+
+    it "should return an existing experiment" do
+      Split::Experiment.find('non_existent_experiment').should be_nil
+    end
   end
 
   describe 'control' do
