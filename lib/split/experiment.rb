@@ -115,8 +115,6 @@ module Split
     def self.find(name)
       if Split.redis.exists(name)
         self.new(name, *load_alternatives_for(name))
-      else
-        raise 'Experiment not found'
       end
     end
 
