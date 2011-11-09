@@ -27,7 +27,7 @@ module Split
           concat(capture(ret, &block))
           false
         else
-           yield(ret)
+          yield(ret)
         end
       else
         ret

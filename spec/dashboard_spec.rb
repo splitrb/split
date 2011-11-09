@@ -18,7 +18,6 @@ describe Split::Dashboard do
 
   it "should reset an experiment" do
     experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-    red = Split::Alternative.new('red', 'link_color').participant_count
 
     red = Split::Alternative.new('red', 'link_color')
     blue = Split::Alternative.new('blue', 'link_color')
