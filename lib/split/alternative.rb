@@ -95,7 +95,7 @@ module Split
     end
 
     def self.valid?(name)
-       String === name || hash_with_correct_values?(name)
+      String === name || hash_with_correct_values?(name)
     end
 
     def self.hash_with_correct_values?(name)
