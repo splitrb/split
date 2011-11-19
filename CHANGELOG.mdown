@@ -1,3 +1,16 @@
+## 0.3.1 (November 19, 2011)
+
+Features:
+
+  - General code tidy up (@ryanlecompte, #22, @mocoso, #28)
+  - Lazy loading data from Redis (@lautis, #25)
+
+Bugfixes:
+
+  - Handle unstarted experiments (@mocoso, #27)
+  - Relaxed Sinatra version requirement (@martinclu, #24)
+
+
 ## 0.3.0 (October 9, 2011)
 
 Features:
