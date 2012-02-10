@@ -6,5 +6,7 @@ describe Split::Configuration do
 
     config.ignore_ip_addresses.should eql([])
     config.robot_regex.should eql(/\b(Baidu|Gigabot|Googlebot|libwww-perl|lwp-trivial|msnbot|SiteUptime|Slurp|WordPress|ZIBB|ZyBorg)\b/i)
+    config.db_failover.should be_false
+    config.db_failover_on_db_error.should be_a Proc
   end
 end

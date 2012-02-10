@@ -68,6 +68,7 @@ describe Split::Helper do
       experiment = Split::Experiment.find('link_color')
       experiment.alternative_names.should eql(['blue', 'red'])
     end
+
   end
 
   describe 'finished' do
@@ -271,4 +272,87 @@ describe Split::Helper do
       alternative.completed_count.should eql(0)
     end
   end
+
+  context 'when redis is not available' do
+
+    before(:each) do
+      Split.stub(:redis).and_raise(Errno::ECONNREFUSED)
+    end
+
+    context 'and db_failover config option is turned off' do
+
+      describe 'ab_test' do
+        it 'should raise an exception' do
+          lambda {
+            ab_test('link_color', 'blue', 'red')
+          }.should raise_error(Errno::ECONNREFUSED)
+        end
+      end
+
+      describe 'finished' do
+        it 'should raise an exception' do
+          lambda {
+            finished('link_color')
+          }.should raise_error(Errno::ECONNREFUSED)
+        end
+      end
+
+    end
+
+    context 'and db_failover config option is turned on' do
+
+      before(:each) do
+        Split.configure do |config|
+          config.db_failover = true
+        end
+      end
+
+      describe 'ab_test' do
+        it 'should not raise an exception' do
+          lambda {
+            ab_test('link_color', 'blue', 'red')
+          }.should_not raise_error(Errno::ECONNREFUSED)
+        end
+        it 'should call db_failover_on_db_error proc with error as parameter' do
+          Split.configure do |config|
+            config.db_failover_on_db_error = proc do |error|
+              error.should be_a(Errno::ECONNREFUSED)
+            end
+          end
+          Split.configuration.db_failover_on_db_error.should_receive(:call)
+          ab_test('link_color', 'blue', 'red')
+        end
+        it 'should always use first alternative' do
+          10.times do
+            ab_test('link_color', 'blue', 'red').should eq('blue')
+            ab_test('link_color', 'blue' => 0.01, 'red' => 0.2).should eq('blue')
+            ab_test('link_color', {'blue' => 0.8}, {'red' => 20}).should eq('blue')
+            ab_test('link_color', 'blue', 'red') do |link_color|
+              link_color.should eq('blue')
+            end
+          end
+        end
+      end
+
+      describe 'finished' do
+        it 'should not raise an exception' do
+          lambda {
+            finished('link_color')
+          }.should_not raise_error(Errno::ECONNREFUSED)
+        end
+        it 'should call db_failover_on_db_error proc with error as parameter' do
+          Split.configure do |config|
+            config.db_failover_on_db_error = proc do |error|
+              error.should be_a(Errno::ECONNREFUSED)
+            end
+          end
+          Split.configuration.db_failover_on_db_error.should_receive(:call)
+          finished('link_color')
+        end
+      end
+
+    end
+
+  end
+
 end
