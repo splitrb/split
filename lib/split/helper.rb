@@ -32,6 +32,12 @@ module Split
       else
         ret
       end
+    rescue Errno::ECONNREFUSED => e
+      raise unless Split.configuration.db_failover
+      Split.configuration.db_failover_on_db_error.call(e)
+      ret = Hash === (a0 = alternatives.first) ? a0.keys.first : a0
+      yield(ret) if block_given?
+      ret
     end
 
     def finished(experiment_name, options = {:reset => true})
@@ -42,6 +48,9 @@ module Split
         alternative.increment_completion
         session[:split].delete(experiment_name) if options[:reset]
       end
+    rescue Errno::ECONNREFUSED => e
+      raise unless Split.configuration.db_failover
+      Split.configuration.db_failover_on_db_error.call(e)
     end
 
     def override(experiment_name, alternatives)
