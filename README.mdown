@@ -167,7 +167,19 @@ You can override the default configuration options of Split like so:
     Split.configure do |config|
       config.robot_regex = /my_custom_robot_regex/
       config.ignore_ip_addresses << '81.19.48.130'
+      config.db_failover = true # handle redis errors gracefully
+      config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
     end
+
+### DB failover solution
+
+Due to the fact that Redis has no autom. failover mechanism, it's
+possible to switch on the `db_failover` config option, so that `ab_test`
+and `finished` will not crash in case of a db failure. `ab_test` always
+delivers alternative A (the first one) in that case.
+
+It's also possible to set a `db_failover_on_db_error` callback (proc)
+for example to log these errors via Rails.logger.
 
 ### Redis
 
