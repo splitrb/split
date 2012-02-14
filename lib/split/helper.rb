@@ -1,26 +1,31 @@
 module Split
   module Helper
     def ab_test(experiment_name, *alternatives)
-      experiment = Split::Experiment.find_or_create(experiment_name, *alternatives)
-      if experiment.winner
-        ret = experiment.winner.name
-      else
-        if forced_alternative = override(experiment.name, alternatives)
-          ret = forced_alternative
+      begin
+        experiment = Split::Experiment.find_or_create(experiment_name, *alternatives)
+        if experiment.winner
+          ret = experiment.winner.name
         else
-          begin_experiment(experiment, experiment.control.name) if exclude_visitor?
-
-          if ab_user[experiment.key]
-            ret = ab_user[experiment.key]
+          if forced_alternative = override(experiment.name, alternatives)
+            ret = forced_alternative
           else
-            alternative = experiment.next_alternative
-            alternative.increment_participation
-            begin_experiment(experiment, alternative.name)
-            ret = alternative.name
+            begin_experiment(experiment, experiment.control.name) if exclude_visitor?
+
+            if ab_user[experiment.key]
+              ret = ab_user[experiment.key]
+            else
+              alternative = experiment.next_alternative
+              alternative.increment_participation
+              begin_experiment(experiment, alternative.name)
+              ret = alternative.name
+            end
           end
         end
+      rescue Errno::ECONNREFUSED => e
+        raise unless Split.configuration.db_failover
+        Split.configuration.db_failover_on_db_error.call(e)
+        ret = Hash === (a0 = alternatives.first) ? a0.keys.first : a0
       end
-
       if block_given?
         if defined?(capture) # a block in a rails view
           block = Proc.new { yield(ret) }
@@ -32,12 +37,6 @@ module Split
       else
         ret
       end
-    rescue Errno::ECONNREFUSED => e
-      raise unless Split.configuration.db_failover
-      Split.configuration.db_failover_on_db_error.call(e)
-      ret = Hash === (a0 = alternatives.first) ? a0.keys.first : a0
-      yield(ret) if block_given?
-      ret
     end
 
     def finished(experiment_name, options = {:reset => true})

@@ -281,6 +281,12 @@ describe Split::Helper do
 
     context 'and db_failover config option is turned off' do
 
+      before(:each) do
+        Split.configure do |config|
+          config.db_failover = false
+        end
+      end
+
       describe 'ab_test' do
         it 'should raise an exception' do
           lambda {
@@ -327,9 +333,9 @@ describe Split::Helper do
             ab_test('link_color', 'blue', 'red').should eq('blue')
             ab_test('link_color', 'blue' => 0.01, 'red' => 0.2).should eq('blue')
             ab_test('link_color', {'blue' => 0.8}, {'red' => 20}).should eq('blue')
-            ab_test('link_color', 'blue', 'red') do |link_color|
-              link_color.should eq('blue')
-            end
+            ab_test('link_color', 'blue', 'red') do |alternative|
+              "shared/#{alternative}"
+            end.should eq('shared/blue')
           end
         end
       end
