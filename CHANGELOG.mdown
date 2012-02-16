@@ -1,3 +1,9 @@
+## 0.3.3 (February 16, 2012)
+
+Bugfixes:
+
+  - Fixed redis failover when a block was passed to ab_test (@layflags, #33)
+
 ## 0.3.2 (February 12, 2012)
 
 Features:
