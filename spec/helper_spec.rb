@@ -50,6 +50,13 @@ describe Split::Helper do
       @params = {'link_color' => 'blue'}
       alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql('blue')
+      alternative = ab_test('link_color', 'blue' => 1, 'red' => 5)
+      alternative.should eql('blue')
+      @params = {'link_color' => 'red'}
+      alternative = ab_test('link_color', 'blue', 'red')
+      alternative.should eql('red')
+      alternative = ab_test('link_color', 'blue' => 5, 'red' => 1)
+      alternative.should eql('red')
     end
 
     it "should allow passing a block" do
