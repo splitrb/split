@@ -26,9 +26,12 @@ module Split
       Split.redis.hdel(:experiment_winner, name)
     end
 
-
     def winner=(winner_name)
       Split.redis.hset(:experiment_winner, name, winner_name.to_s)
+    end
+
+    def start_time
+      Time.parse(Split.redis.hget(:experiment_start_times, @name))
     end
 
     def alternatives
@@ -92,6 +95,7 @@ module Split
     def save
       if new_record?
         Split.redis.sadd(:experiments, name)
+        Split.redis.hset(:experiment_start_times, @name, Time.now)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       end
     end
