@@ -372,14 +372,12 @@ describe Split::Helper do
           ab_test('link_color', 'blue', 'red')
         end
         it 'should always use first alternative' do
-          10.times do
-            ab_test('link_color', 'blue', 'red').should eq('blue')
-            ab_test('link_color', 'blue' => 0.01, 'red' => 0.2).should eq('blue')
-            ab_test('link_color', {'blue' => 0.8}, {'red' => 20}).should eq('blue')
-            ab_test('link_color', 'blue', 'red') do |alternative|
-              "shared/#{alternative}"
-            end.should eq('shared/blue')
-          end
+          ab_test('link_color', 'blue', 'red').should eq('blue')
+          ab_test('link_color', 'blue' => 0.01, 'red' => 0.2).should eq('blue')
+          ab_test('link_color', {'blue' => 0.8}, {'red' => 20}).should eq('blue')
+          ab_test('link_color', 'blue', 'red') do |alternative|
+            "shared/#{alternative}"
+          end.should eq('shared/blue')
         end
       end
 
