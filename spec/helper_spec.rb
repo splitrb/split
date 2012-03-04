@@ -265,6 +265,22 @@ describe Split::Helper do
       new_alternative.participant_count.should eql(1)
     end
 
+    it "should cleanup old versions of experiments from the session" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color', 'blue', 'red')
+      session[:split].should eql({'link_color' => alternative_name})
+      alternative = Split::Alternative.new(alternative_name, 'link_color')
+      alternative.participant_count.should eql(1)
+
+      experiment.reset
+      experiment.version.should eql(1)
+      alternative = Split::Alternative.new(alternative_name, 'link_color')
+      alternative.participant_count.should eql(0)
+
+      new_alternative_name = ab_test('link_color', 'blue', 'red')
+      session[:split].should eql({'link_color:1' => new_alternative_name})
+    end
+
     it "should only count completion of users on the current version" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')

@@ -4,12 +4,14 @@ module Split
     attr_accessor :ignore_ip_addresses
     attr_accessor :db_failover
     attr_accessor :db_failover_on_db_error
+    attr_accessor :allow_multiple_experiments
 
     def initialize
       @robot_regex = /\b(Baidu|Gigabot|Googlebot|libwww-perl|lwp-trivial|msnbot|SiteUptime|Slurp|WordPress|ZIBB|ZyBorg)\b/i
       @ignore_ip_addresses = []
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
+      @allow_multiple_experiments = false
     end
   end
 end

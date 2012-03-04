@@ -10,6 +10,7 @@ module Split
             ret = forced_alternative
           else
             begin_experiment(experiment, experiment.control.name) if exclude_visitor?
+            clean_old_versions(experiment)
 
             if ab_user[experiment.key]
               ret = ab_user[experiment.key]
@@ -68,6 +69,19 @@ module Split
       is_robot? or is_ignored_ip_address?
     end
 
+    def clean_old_versions(experiment)
+      old_versions(experiment).each do |old_key|
+        ab_user.delete old_key
+      end
+    end
+
+    def old_versions(experiment)
+      if experiment.version > 0
+        ab_user.keys.select{|k| k.match(Regexp.new(experiment.name))}.reject{|k| k == experiment.key}
+      else
+        []
+      end
+    end
     def is_robot?
       request.user_agent =~ Split.configuration.robot_regex
     end
