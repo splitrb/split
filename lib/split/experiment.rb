@@ -31,7 +31,8 @@ module Split
     end
 
     def start_time
-      Time.parse(Split.redis.hget(:experiment_start_times, @name))
+      t = Split.redis.hget(:experiment_start_times, @name)
+      Time.parse(t) if t
     end
 
     def alternatives

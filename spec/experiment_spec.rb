@@ -28,6 +28,17 @@ describe Split::Experiment do
 
     Split::Experiment.find('basket_text').start_time.should == experiment_start_time
   end
+  
+  it "should handle not having a start time" do
+    experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
+    Time.stub(:now => experiment_start_time)
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
+
+    Split.redis.hdel(:experiment_start_times, experiment.name)
+
+    Split::Experiment.find('basket_text').start_time.should == nil
+  end
 
   it "should not create duplicates when saving multiple times" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")

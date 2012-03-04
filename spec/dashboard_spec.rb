@@ -61,4 +61,16 @@ describe Split::Dashboard do
 
     last_response.body.should include('<small>2011-07-07</small>')
   end
+
+  it "should handle experiments without a start date" do
+    experiment_start_time = Time.parse('2011-07-07')
+    Time.stub(:now => experiment_start_time)
+    experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+
+    Split.redis.hdel(:experiment_start_times, experiment.name)
+
+    get '/'
+
+    last_response.body.should include('<small>Unknown</small>')
+  end
 end
