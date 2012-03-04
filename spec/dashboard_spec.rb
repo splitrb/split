@@ -51,4 +51,14 @@ describe Split::Dashboard do
     last_response.should be_redirect
     experiment.winner.name.should eql('red')
   end
+
+  it "should display the start date" do
+    experiment_start_time = Time.parse('2011-07-07')
+    Time.stub(:now => experiment_start_time)
+    experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+
+    get '/'
+
+    last_response.body.should include('<small>2011-07-07</small>')
+  end
 end

@@ -218,6 +218,11 @@ body {
   float:right;
 }
 
+.inline-controls small {
+  color: #888;
+  font-size: 11px;
+}
+
 .inline-controls form {
   display: inline-block;
   font-size: 10px;

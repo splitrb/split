@@ -20,6 +20,15 @@ describe Split::Experiment do
     Split.redis.exists('basket_text').should be true
   end
 
+  it "should save the start time to redis" do
+    experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
+    Time.stub(:now => experiment_start_time)
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
+
+    Split::Experiment.find('basket_text').start_time.should == experiment_start_time
+  end
+
   it "should not create duplicates when saving multiple times" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
