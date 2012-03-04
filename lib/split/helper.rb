@@ -9,10 +9,10 @@ module Split
           if forced_alternative = override(experiment.name, experiment.alternative_names)
             ret = forced_alternative
           else
-            begin_experiment(experiment, experiment.control.name) if exclude_visitor?
             clean_old_versions(experiment)
+            begin_experiment(experiment) if exclude_visitor? or not_allowed_to_test?(experiment.key)
 
-            if ab_user[experiment.key]
+            if ab_user[experiment.key] 
               ret = ab_user[experiment.key]
             else
               alternative = experiment.next_alternative
@@ -57,7 +57,8 @@ module Split
       params[experiment_name] if defined?(params) && alternatives.include?(params[experiment_name])
     end
 
-    def begin_experiment(experiment, alternative_name)
+    def begin_experiment(experiment, alternative_name = nil)
+      alternative_name ||= experiment.control.name
       ab_user[experiment.key] = alternative_name
     end
 
@@ -67,6 +68,14 @@ module Split
 
     def exclude_visitor?
       is_robot? or is_ignored_ip_address?
+    end
+
+    def not_allowed_to_test?(experiment_key)
+      !Split.configuration.allow_multiple_experiments && doing_other_tests?(experiment_key)
+    end
+
+    def doing_other_tests?(experiment_key)
+      ab_user.keys.reject{|k| k == experiment_key}.length > 0
     end
 
     def clean_old_versions(experiment)
@@ -82,6 +91,7 @@ module Split
         []
       end
     end
+
     def is_robot?
       request.user_agent =~ Split.configuration.robot_regex
     end

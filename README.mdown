@@ -134,6 +134,16 @@ To stop this behaviour you can pass the following option to the `finished` metho
 
 The user will then always see the alternative they started with.
 
+### Multiple experiments at once
+
+By default Split will avoid users participating in multiple experiments at once. This means you are less likely to skew results by adding in more variation to your tests.
+
+To stop this behaviour and allow users to participate in multiple experiments at once enable the `allow_multiple_experiments` config option like so:
+
+    Split.configure do |config|
+      config.allow_multiple_experiments = true
+    end
+
 ## Web Interface
 
 Split comes with a Sinatra-based front end to get an overview of how your experiments are doing.
@@ -169,6 +179,7 @@ You can override the default configuration options of Split like so:
       config.ignore_ip_addresses << '81.19.48.130'
       config.db_failover = true # handle redis errors gracefully
       config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
+      config.allow_multiple_experiments = true
     end
 
 ### DB failover solution

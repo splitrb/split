@@ -65,17 +65,37 @@ describe Split::Helper do
       ret.should eql("shared/#{alt}")
     end
 
-    it  "should allow the share of visitors see an alternative to be specificed" do
+    it "should allow the share of visitors see an alternative to be specificed" do
       ab_test('link_color', {'blue' => 0.8}, {'red' => 20})
       ['red', 'blue'].should include(ab_user['link_color'])
     end
 
-    it  "should allow alternative weighting interface as a single hash" do
+    it "should allow alternative weighting interface as a single hash" do
       ab_test('link_color', 'blue' => 0.01, 'red' => 0.2)
       experiment = Split::Experiment.find('link_color')
       experiment.alternative_names.should eql(['blue', 'red'])
     end
 
+    it "should only let a user participate in one experiment at a time" do
+      ab_test('link_color', 'blue', 'red')
+      ab_test('button_size', 'small', 'big')
+      ab_user['button_size'].should eql('small')
+      big = Split::Alternative.new('big', 'button_size')
+      big.participant_count.should eql(0)
+      small = Split::Alternative.new('small', 'button_size')
+      small.participant_count.should eql(0)
+    end
+    
+    it "should let a user participate in many experiment with allow_multiple_experiments option" do
+      Split.configure do |config|
+        config.allow_multiple_experiments = true
+      end
+      link_color = ab_test('link_color', 'blue', 'red')
+      button_size = ab_test('button_size', 'small', 'big')
+      ab_user['button_size'].should eql(button_size)
+      button_size_alt = Split::Alternative.new(button_size, 'button_size')
+      button_size_alt.participant_count.should eql(1)
+    end
   end
 
   describe 'finished' do
