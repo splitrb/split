@@ -1,8 +1,9 @@
 module Split
   module Helper
-    def ab_test(experiment_name, *alternatives)
+    def ab_test(experiment_name, control, *alternatives)
+      puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8' if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero?
       begin
-        experiment = Split::Experiment.find_or_create(experiment_name, *alternatives)
+        experiment = Split::Experiment.find_or_create(experiment_name, *([control] + alternatives))
         if experiment.winner
           ret = experiment.winner.name
         else
@@ -25,7 +26,7 @@ module Split
       rescue Errno::ECONNREFUSED => e
         raise unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
-        ret = Hash === (a0 = alternatives.first) ? a0.keys.first : a0
+        ret = Hash === control ? control.keys.first : control
       end
       if block_given?
         if defined?(capture) # a block in a rails view

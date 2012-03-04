@@ -50,12 +50,12 @@ describe Split::Helper do
       @params = {'link_color' => 'blue'}
       alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql('blue')
-      alternative = ab_test('link_color', 'blue' => 1, 'red' => 5)
+      alternative = ab_test('link_color', {'blue' => 1}, 'red' => 5)
       alternative.should eql('blue')
       @params = {'link_color' => 'red'}
       alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql('red')
-      alternative = ab_test('link_color', 'blue' => 5, 'red' => 1)
+      alternative = ab_test('link_color', {'blue' => 5}, 'red' => 1)
       alternative.should eql('red')
     end
 
@@ -71,7 +71,7 @@ describe Split::Helper do
     end
 
     it "should allow alternative weighting interface as a single hash" do
-      ab_test('link_color', 'blue' => 0.01, 'red' => 0.2)
+      ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)
       experiment = Split::Experiment.find('link_color')
       experiment.alternative_names.should eql(['blue', 'red'])
     end
@@ -373,7 +373,7 @@ describe Split::Helper do
         end
         it 'should always use first alternative' do
           ab_test('link_color', 'blue', 'red').should eq('blue')
-          ab_test('link_color', 'blue' => 0.01, 'red' => 0.2).should eq('blue')
+          ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2).should eq('blue')
           ab_test('link_color', {'blue' => 0.8}, {'red' => 20}).should eq('blue')
           ab_test('link_color', 'blue', 'red') do |alternative|
             "shared/#{alternative}"
