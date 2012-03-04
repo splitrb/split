@@ -1,7 +1,12 @@
 <div class="experiment">
   <div class="experiment-header">
-    <h2>Experiment: <%= experiment.name %> <% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %></h2>
+    <h2>
+      Experiment: <%= experiment.name %>
+      <% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
+    </h2>
+
     <div class='inline-controls'>
+      <small><%= experiment.start_time.strftime('%Y-%m-%d') %></small>
       <form action="<%= url "/reset/#{experiment.name}" %>" method='post' onclick="return confirmReset()">
         <input type="submit" value="Reset Data">
       </form>
