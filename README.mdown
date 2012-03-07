@@ -249,6 +249,10 @@ is configured.
   - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
   - [Split::Analytics](http://github.com/andrew/split-analytics) - push test data to google analytics
 
+## Screencast
+
+Ryan bates has produced an excellent 10 minute screencast about split on the Railscasts site: [A/B Testing with Split](http://railscasts.com/episodes/331-a-b-testing-with-split)
+
 ## Contributors
 
 Special thanks to the following people for submitting patches:
