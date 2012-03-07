@@ -111,7 +111,7 @@ To do this you can pass a weight with each alternative in the following ways:
 
     ab_test('homepage design', {'Old' => 10}, 'New')
 
-Note: If using ruby 1.8 you should always pass the control alternative through as the second argument with any other alternatives because the order of the hash is not preserved in ruby 1.8
+Note: If using ruby 1.8.x and weighted alternatives you should always pass the control alternative through as the second argument with any other alternatives as a third argument because the order of the hash is not preserved in ruby 1.8, ruby 1.9.1+ users are not affected by this bug.
 
 This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
 
