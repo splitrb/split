@@ -1,3 +1,20 @@
+## 0.4.0 (March 7, 2012)
+
+**IMPORTANT**
+
+If using ruby 1.8.x and weighted alternatives you should always pass the control alternative through as the second argument with any other alternatives as a third argument because the order of the hash is not preserved in ruby 1.8, ruby 1.9 users are not affected by this bug.
+
+Features:
+
+  - Experiments now record when they were started (@vrish88, #35)
+  - Old versions of experiments in sessions are now cleaned up
+  - Avoid users participating in multiple experiments at once (#21)
+
+Bugfixes:
+
+  - Overriding alternatives doesn't work for weighted alternatives (@layflags, #34)
+  - confidence_level helper should handle tiny z-scores (#23)
+
 ## 0.3.3 (February 16, 2012)
 
 Bugfixes:
