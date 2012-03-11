@@ -268,7 +268,7 @@ Report Issues/Feature requests on [GitHub Issues](http://github.com/andrew/split
 
 Tests can be ran with `rake spec`
 
-[![Build Status](https://secure.travis-ci.org/andrew/split.png?branch=master)](http://travis-ci.org/andrew/split)
+[![Build Status](https://secure.travis-ci.org/andrew/split.png?branch=master)](http://travis-ci.org/andrew/split) [![Dependency Status](https://gemnasium.com/andrew/split.png)](https://gemnasium.com/andrew/split)
 
 ### Note on Patches/Pull Requests
 
