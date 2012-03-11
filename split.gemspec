@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency 'redis',           '~> 2.1'
-  s.add_dependency 'redis-namespace', '~> 1.0.3'
+  s.add_dependency 'redis-namespace', '~> 1.1.0'
   s.add_dependency 'sinatra',         '>= 1.2.6'
 
   s.add_development_dependency 'rake'
