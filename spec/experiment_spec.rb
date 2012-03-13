@@ -184,4 +184,20 @@ describe Split::Experiment do
       lambda { Split::Experiment.find_or_create('link_enabled', true, false) }.should raise_error
     end
   end
+
+  describe 'specifying weights' do
+    it "should work for a new experiment" do
+      experiment = Split::Experiment.find_or_create('link_color', { 'blue' => 1, 'red' => 2 })
+
+      experiment.alternatives.map(&:weight).should == [1, 2]
+    end
+
+    it "should work for an existing experiment" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      experiment.save
+
+      same_experiment = Split::Experiment.find_or_create('link_color', { 'blue' => 1, 'red' => 2 })
+      same_experiment.alternatives.map(&:weight).should == [1, 2]
+    end
+  end
 end

@@ -138,7 +138,7 @@ module Split
 
       if Split.redis.exists(name)
         if load_alternatives_for(name) == alts.map(&:name)
-          experiment = self.new(name, *load_alternatives_for(name))
+          experiment = self.new(name, *alternatives)
         else
           exp = self.new(name, *load_alternatives_for(name))
           exp.reset
