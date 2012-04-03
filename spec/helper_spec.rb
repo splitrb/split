@@ -85,7 +85,7 @@ describe Split::Helper do
       small = Split::Alternative.new('small', 'button_size')
       small.participant_count.should eql(0)
     end
-    
+
     it "should let a user participate in many experiment with allow_multiple_experiments option" do
       Split.configure do |config|
         config.allow_multiple_experiments = true
@@ -346,6 +346,37 @@ describe Split::Helper do
         end
       end
 
+      describe "disable split testing" do
+
+        before(:each) do
+          Split.configure do |config|
+            config.enabled = false
+          end
+        end
+
+        after(:each) do
+          Split.configure do |config|
+            config.enabled = true
+          end
+        end
+
+        it "should not attempt to connect to redis" do
+
+          lambda {
+            ab_test('link_color', 'blue', 'red')
+          }.should_not raise_error(Errno::ECONNREFUSED)
+        end
+
+        it "should return control variable" do
+          ab_test('link_color', 'blue', 'red').should eq('blue')
+          lambda {
+            finished('link_color')
+          }.should_not raise_error(Errno::ECONNREFUSED)
+        end
+
+      end
+
+
     end
 
     context 'and db_failover config option is turned on' do
@@ -397,6 +428,7 @@ describe Split::Helper do
           finished('link_color')
         end
       end
+
 
     end
 

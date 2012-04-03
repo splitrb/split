@@ -28,7 +28,7 @@ describe Split::Experiment do
 
     Split::Experiment.find('basket_text').start_time.should == experiment_start_time
   end
-  
+
   it "should handle not having a start time" do
     experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
     Time.stub(:now => experiment_start_time)
@@ -200,4 +200,7 @@ describe Split::Experiment do
       same_experiment.alternatives.map(&:weight).should == [1, 2]
     end
   end
+
+
+
 end
