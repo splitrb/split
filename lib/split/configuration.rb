@@ -5,7 +5,7 @@ module Split
     attr_accessor :db_failover
     attr_accessor :db_failover_on_db_error
     attr_accessor :allow_multiple_experiments
-    attr_accessor :disable_split
+    attr_accessor :enabled
 
     def initialize
       @robot_regex = /\b(Baidu|Gigabot|Googlebot|libwww-perl|lwp-trivial|msnbot|SiteUptime|Slurp|WordPress|ZIBB|ZyBorg)\b/i
@@ -13,7 +13,7 @@ module Split
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
       @allow_multiple_experiments = false
-      @disable_split = false
+      @enabled = true
     end
   end
 end

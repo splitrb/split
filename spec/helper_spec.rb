@@ -350,13 +350,13 @@ describe Split::Helper do
 
         before(:each) do
           Split.configure do |config|
-            config.disable_split = true
+            config.enabled = false
           end
         end
 
         after(:each) do
           Split.configure do |config|
-            config.disable_split = false
+            config.enabled = true
           end
         end
 

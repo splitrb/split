@@ -9,6 +9,6 @@ describe Split::Configuration do
     config.db_failover.should be_false
     config.db_failover_on_db_error.should be_a Proc
     config.allow_multiple_experiments.should be_false
-    config.disable_split.should be_false
+    config.enabled.should be_true
   end
 end

@@ -3,10 +3,10 @@ module Split
     def ab_test(experiment_name, control, *alternatives)
 
       puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8' if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero?
-      ret = if Split.configuration.disable_split
-              control_variable(control)
-            else
+      ret = if Split.configuration.enabled
               experiment_variable(alternatives, control, experiment_name)
+            else
+              control_variable(control)
             end
 
       if block_given?
@@ -23,7 +23,7 @@ module Split
     end
 
     def finished(experiment_name, options = {:reset => true})
-      return if exclude_visitor? or Split.configuration.disable_split
+      return if exclude_visitor? or !Split.configuration.enabled
       return unless (experiment = Split::Experiment.find(experiment_name))
       if alternative_name = ab_user[experiment.key]
         alternative = Split::Alternative.new(alternative_name, experiment_name)
