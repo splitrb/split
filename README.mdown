@@ -182,6 +182,7 @@ You can override the default configuration options of Split like so:
       config.db_failover = true # handle redis errors gracefully
       config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
       config.allow_multiple_experiments = true
+      config.enabled = true
     end
 
 ### DB failover solution
