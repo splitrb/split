@@ -19,7 +19,7 @@ module Split
     def confidence_level(z_score)
       return z_score if z_score.is_a? String
 
-      z = round(z_score.to_f, 3)
+      z = round(z_score.to_s.to_f, 3)
       if z > 0.0
         if z < 1.96
           'no confidence'
