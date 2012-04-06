@@ -4,6 +4,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'split'
 require 'ostruct'
+require 'complex' if RUBY_VERSION.match(/1\.8/)
 
 def session
   @session ||= {}
