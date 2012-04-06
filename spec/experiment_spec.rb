@@ -187,7 +187,7 @@ describe Split::Experiment do
 
   describe 'specifying weights' do
     it "should work for a new experiment" do
-      experiment = Split::Experiment.find_or_create('link_color', { 'blue' => 1, 'red' => 2 })
+      experiment = Split::Experiment.find_or_create('link_color', {'blue' => 1}, {'red' => 2 })
 
       experiment.alternatives.map(&:weight).should == [1, 2]
     end
@@ -196,7 +196,7 @@ describe Split::Experiment do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.save
 
-      same_experiment = Split::Experiment.find_or_create('link_color', { 'blue' => 1, 'red' => 2 })
+      same_experiment = Split::Experiment.find_or_create('link_color', {'blue' => 1}, {'red' => 2 })
       same_experiment.alternatives.map(&:weight).should == [1, 2]
     end
   end
