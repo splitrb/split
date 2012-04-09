@@ -1,0 +1,349 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Split by andrew</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Split</h1>
+<p>Rack Based AB testing framework</p>
+        <p class="view"><a href="https://github.com/andrew/split">View the Project on GitHub <small>andrew/split</small></a></p>
+        <ul>
+          <li><a href="https://github.com/andrew/split/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/andrew/split/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/andrew/split">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Split</h1>
+
+<p>Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.</p>
+
+<p>Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.</p>
+
+<p>Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.</p>
+
+<h2>Requirements</h2>
+
+<p>Split uses redis as a datastore.</p>
+
+<p>Split only supports redis 2.0 or greater.</p>
+
+<p>If you're on OS X, Homebrew is the simplest way to install Redis:</p>
+
+<pre><code>$ brew install redis
+$ redis-server /usr/local/etc/redis.conf
+</code></pre>
+
+<p>You now have a Redis daemon running on 6379.</p>
+
+<h2>Setup</h2>
+
+<p>If you are using bundler add split to your Gemfile:</p>
+
+<pre><code>gem 'split'
+</code></pre>
+
+<p>Then run:</p>
+
+<pre><code>bundle install
+</code></pre>
+
+<p>Otherwise install the gem:</p>
+
+<pre><code>gem install split
+</code></pre>
+
+<p>and require it in your project:</p>
+
+<pre><code>require 'split'
+</code></pre>
+
+<h3>SystemTimer</h3>
+
+<p>If you are using Redis on Ruby 1.8.x then you will likely want to also use the SystemTimer gem if you want to make sure the Redis client will not hang.</p>
+
+<p>Put the following in your gemfile as well:</p>
+
+<pre><code>gem 'SystemTimer'
+</code></pre>
+
+<h3>Rails</h3>
+
+<p>Split is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.</p>
+
+<h3>Sinatra</h3>
+
+<p>To configure sinatra with Split you need to enable sessions and mix in the helper methods. Add the following lines at the top of your sinatra app:</p>
+
+<pre><code>class MySinatraApp &lt; Sinatra::Base
+  enable :sessions
+  helpers Split::Helper
+
+  get '/' do
+  ...
+end
+</code></pre>
+
+<h2>Usage</h2>
+
+<p>To begin your ab test use the <code>ab_test</code> method, naming your experiment with the first argument and then the different variants which you wish to test on as the other arguments.</p>
+
+<p><code>ab_test</code> returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on.</p>
+
+<p>It can be used to render different templates, show different text or any other case based logic.</p>
+
+<p><code>finished</code> is used to make a completion of an experiment, or conversion.</p>
+
+<p>Example: View</p>
+
+<pre><code>&lt;% ab_test("login_button", "/images/button1.jpg", "/images/button2.jpg") do |button_file| %&gt;
+  &lt;%= img_tag(button_file, :alt =&gt; "Login!") %&gt;
+&lt;% end %&gt;
+</code></pre>
+
+<p>Example: Controller</p>
+
+<pre><code>def register_new_user
+  # See what level of free points maximizes users' decision to buy replacement points.
+  @starter_points = ab_test("new_user_free_points", '100', '200', '300')
+end
+</code></pre>
+
+<p>Example: Conversion tracking (in a controller!)</p>
+
+<pre><code>def buy_new_points
+  # some business logic
+  finished("new_user_free_points")
+end
+</code></pre>
+
+<p>Example: Conversion tracking (in a view)</p>
+
+<pre><code>Thanks for signing up, dude! &lt;% finished("signup_page_redesign") &gt;
+</code></pre>
+
+<p>You can find more examples, tutorials and guides on the <a href="https://github.com/andrew/split/wiki">wiki</a>.</p>
+
+<h2>Extras</h2>
+
+<h3>Weighted alternatives</h3>
+
+<p>Perhaps you only want to show an alternative to 10% of your visitors because it is very experimental or not yet fully load tested.</p>
+
+<p>To do this you can pass a weight with each alternative in the following ways:</p>
+
+<pre><code>ab_test('homepage design', {'Old' =&gt; 20}, {'New' =&gt; 2})
+
+ab_test('homepage design', 'Old', {'New' =&gt; 0.1})
+
+ab_test('homepage design', {'Old' =&gt; 10}, 'New')
+</code></pre>
+
+<p>Note: If using ruby 1.8.x and weighted alternatives you should always pass the control alternative through as the second argument with any other alternatives as a third argument because the order of the hash is not preserved in ruby 1.8, ruby 1.9.1+ users are not affected by this bug.</p>
+
+<p>This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.</p>
+
+<h3>Overriding alternatives</h3>
+
+<p>For development and testing, you may wish to force your app to always return an alternative.
+You can do this by passing it as a parameter in the url.</p>
+
+<p>If you have an experiment called <code>button_color</code> with alternatives called <code>red</code> and <code>blue</code> used on your homepage, a url such as:</p>
+
+<pre><code><a href="http://myawesomesite.com?button_color=red">http://myawesomesite.com?button_color=red</a>
+</code></pre>
+
+<p>will always have red buttons. This won't be stored in your session or count towards to results.</p>
+
+<h3>Reset after completion</h3>
+
+<p>When a user completes a test their session is reset so that they may start the test again in the future.</p>
+
+<p>To stop this behaviour you can pass the following option to the <code>finished</code> method:</p>
+
+<pre><code>finished('experiment_name', :reset =&gt; false)
+</code></pre>
+
+<p>The user will then always see the alternative they started with.</p>
+
+<h3>Multiple experiments at once</h3>
+
+<p>By default Split will avoid users participating in multiple experiments at once. This means you are less likely to skew results by adding in more variation to your tests.</p>
+
+<p>To stop this behaviour and allow users to participate in multiple experiments at once enable the <code>allow_multiple_experiments</code> config option like so:</p>
+
+<pre><code>Split.configure do |config|
+  config.allow_multiple_experiments = true
+end
+</code></pre>
+
+<h2>Web Interface</h2>
+
+<p>Split comes with a Sinatra-based front end to get an overview of how your experiments are doing.</p>
+
+<p>If you are running Rails 2: You can mount this inside your app using Rack::URLMap in your <code>config.ru</code></p>
+
+<pre><code>require 'split/dashboard'
+
+run Rack::URLMap.new \
+  "/"       =&gt; Your::App.new,
+  "/split" =&gt; Split::Dashboard.new
+</code></pre>
+
+<p>However, if you are using Rails 3: You can mount this inside your app routes by first adding this to the Gemfile:</p>
+
+<pre><code>gem 'split', :require =&gt; 'split/dashboard'
+</code></pre>
+
+<p>Then adding this to config/routes.rb</p>
+
+<pre><code>mount Split::Dashboard, :at =&gt; 'split'
+</code></pre>
+
+<p>You may want to password protect that page, you can do so with <code>Rack::Auth::Basic</code></p>
+
+<pre><code>Split::Dashboard.use Rack::Auth::Basic do |username, password|
+  username == 'admin' &amp;&amp; password == 'p4s5w0rd'
+end
+</code></pre>
+
+<h2>Configuration</h2>
+
+<p>You can override the default configuration options of Split like so:</p>
+
+<pre><code>Split.configure do |config|
+  config.robot_regex = /my_custom_robot_regex/
+  config.ignore_ip_addresses &lt;&lt; '81.19.48.130'
+  config.db_failover = true # handle redis errors gracefully
+  config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
+  config.allow_multiple_experiments = true
+  config.enabled = true
+end
+</code></pre>
+
+<h3>DB failover solution</h3>
+
+<p>Due to the fact that Redis has no autom. failover mechanism, it's
+possible to switch on the <code>db_failover</code> config option, so that <code>ab_test</code>
+and <code>finished</code> will not crash in case of a db failure. <code>ab_test</code> always
+delivers alternative A (the first one) in that case.</p>
+
+<p>It's also possible to set a <code>db_failover_on_db_error</code> callback (proc)
+for example to log these errors via Rails.logger.</p>
+
+<h3>Redis</h3>
+
+<p>You may want to change the Redis host and port Split connects to, or
+set various other options at startup.</p>
+
+<p>Split has a <code>redis</code> setter which can be given a string or a Redis
+object. This means if you're already using Redis in your app, Split
+can re-use the existing connection.</p>
+
+<p>String: <code>Split.redis = 'localhost:6379'</code></p>
+
+<p>Redis: <code>Split.redis = $redis</code></p>
+
+<p>For our rails app we have a <code>config/initializers/split.rb</code> file where
+we load <code>config/split.yml</code> by hand and set the Redis information
+appropriately.</p>
+
+<p>Here's our <code>config/split.yml</code>:</p>
+
+<pre><code>development: localhost:6379
+test: localhost:6379
+staging: redis1.example.com:6379
+fi: localhost:6379
+production: redis1.example.com:6379
+</code></pre>
+
+<p>And our initializer:</p>
+
+<pre><code>rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
+rails_env = ENV['RAILS_ENV'] || 'development'
+
+split_config = YAML.load_file(rails_root + '/config/split.yml')
+Split.redis = split_config[rails_env]
+</code></pre>
+
+<h2>Namespaces</h2>
+
+<p>If you're running multiple, separate instances of Split you may want
+to namespace the keyspaces so they do not overlap. This is not unlike
+the approach taken by many memcached clients.</p>
+
+<p>This feature is provided by the [redis-namespace][rs] library, which
+Split uses by default to separate the keys it manages from other keys
+in your Redis server.</p>
+
+<p>Simply use the <code>Split.redis.namespace</code> accessor:</p>
+
+<pre><code>Split.redis.namespace = "split:blog"
+</code></pre>
+
+<p>We recommend sticking this in your initializer somewhere after Redis
+is configured.</p>
+
+<h2>Extensions</h2>
+
+<ul>
+<li>
+<a href="http://github.com/andrew/split-export">Split::Export</a> - easily export ab test data out of Split</li>
+<li>
+<a href="http://github.com/andrew/split-analytics">Split::Analytics</a> - push test data to google analytics</li>
+</ul><h2>Screencast</h2>
+
+<p>Ryan bates has produced an excellent 10 minute screencast about split on the Railscasts site: <a href="http://railscasts.com/episodes/331-a-b-testing-with-split">A/B Testing with Split</a></p>
+
+<h2>Contributors</h2>
+
+<p>Special thanks to the following people for submitting patches:</p>
+
+<ul>
+<li>Lloyd Pick</li>
+<li>Jeffery Chupp</li>
+<li>Andrew Appleton</li>
+</ul><h2>Development</h2>
+
+<p>Source hosted at <a href="http://github.com/andrew/split">GitHub</a>.
+Report Issues/Feature requests on <a href="http://github.com/andrew/split/issues">GitHub Issues</a>.</p>
+
+<p>Tests can be ran with <code>rake spec</code></p>
+
+<p><a href="http://travis-ci.org/andrew/split"><img src="https://secure.travis-ci.org/andrew/split.png?branch=master" alt="Build Status"></a> <a href="https://gemnasium.com/andrew/split"><img src="https://gemnasium.com/andrew/split.png" alt="Dependency Status"></a></p>
+
+<h3>Note on Patches/Pull Requests</h3>
+
+<ul>
+<li>Fork the project.</li>
+<li>Make your feature addition or bug fix.</li>
+<li>Add tests for it. This is important so I don't break it in a
+future version unintentionally.</li>
+<li>Commit, do not mess with rakefile, version, or history.
+(if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)</li>
+<li>Send me a pull request. Bonus points for topic branches.</li>
+</ul><h2>Copyright</h2>
+
+<p>Copyright (c) 2012 Andrew Nesbitt. See <a href="https://github.com/andrew/split/blob/master/LICENSE">LICENSE</a> for details.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/andrew">andrew</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
