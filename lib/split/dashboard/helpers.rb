@@ -19,29 +19,18 @@ module Split
     def confidence_level(z_score)
       return z_score if z_score.is_a? String
 
-      z = round(z_score.to_s.to_f, 3)
-      if z > 0.0
-        if z < 1.96
-          'no confidence'
-        elsif z < 2.57
-          '95% confidence'
-        elsif z < 3.29
-          '99% confidence'
-        else
-          '99.9% confidence'
-        end
-      elsif z < 0.0
-        if z > -1.96
-          'no confidence'
-        elsif z > -2.57
-          '95% confidence'
-        elsif z > -3.29
-          '99% confidence'
-        else
-          '99.9% confidence'
-        end
+      z = round(z_score.to_s.to_f, 3).abs
+
+      if z == 0.0
+        'No Change'
+      elsif z < 1.96
+        'no confidence'
+      elsif z < 2.57
+        '95% confidence'
+      elsif z < 3.29
+        '99% confidence'
       else
-        "No Change"
+        '99.9% confidence'
       end
     end
   end
