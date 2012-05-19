@@ -1,5 +1,7 @@
 # Split
 
+[![Build Status](https://secure.travis-ci.org/andrew/split.png?branch=master)](http://travis-ci.org/andrew/split)
+
 Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
 
 Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
