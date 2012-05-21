@@ -6,6 +6,8 @@ Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and 
 
 Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
 
+[![Build Status](https://secure.travis-ci.org/andrew/split.png?branch=master)](http://travis-ci.org/andrew/split) [![Dependency Status](https://gemnasium.com/andrew/split.png)](https://gemnasium.com/andrew/split)
+
 ## Requirements
 
 Split uses redis as a datastore.
@@ -268,8 +270,6 @@ Source hosted at [GitHub](http://github.com/andrew/split).
 Report Issues/Feature requests on [GitHub Issues](http://github.com/andrew/split/issues).
 
 Tests can be ran with `rake spec`
-
-[![Build Status](https://secure.travis-ci.org/andrew/split.png?branch=master)](http://travis-ci.org/andrew/split) [![Dependency Status](https://gemnasium.com/andrew/split.png)](https://gemnasium.com/andrew/split)
 
 ### Note on Patches/Pull Requests
 
