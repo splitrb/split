@@ -1,3 +1,13 @@
+## 0.4.2 (June 1, 2012)
+
+Features:
+
+  - Now works with v3.0 of redis gem
+
+Bugfixes:
+
+  - Fixed redis failover on Rubinius
+
 ## 0.4.1 (April 6, 2012)
 
 Features:
