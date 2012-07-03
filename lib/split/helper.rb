@@ -30,7 +30,7 @@ module Split
         alternative.increment_completion
         session[:split].delete(experiment_name) if options[:reset]
       end
-    rescue Errno::ECONNREFUSED => e
+    rescue => e
       raise unless Split.configuration.db_failover
       Split.configuration.db_failover_on_db_error.call(e)
     end
@@ -115,7 +115,7 @@ module Split
             end
           end
         end
-      rescue Errno::ECONNREFUSED => e
+      rescue => e
         raise unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
         ret = control_variable(control)
