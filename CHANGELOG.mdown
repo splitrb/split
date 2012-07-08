@@ -1,3 +1,9 @@
+## 0.4.3 (July 8, 2012)
+
+Features:
+
+  - redis failover now recovers from all redis-related exceptions
+
 ## 0.4.2 (June 1, 2012)
 
 Features:
