@@ -118,7 +118,14 @@ module Split
       rescue => e
         raise unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
-        ret = control_variable(control)
+        if Split.configuration.db_failover_allow_parameter_override
+          all_alternatives = *([control] + alternatives)
+          alternative_names = all_alternatives.map{|a| a.is_a?(Hash) ? a.keys : a}.flatten
+          ret = override(experiment_name, alternative_names)
+        end
+        unless ret
+          ret = control_variable(control)
+        end
       end
       ret
     end
