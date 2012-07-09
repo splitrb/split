@@ -410,6 +410,27 @@ describe Split::Helper do
             "shared/#{alternative}"
           end.should eq('shared/blue')
         end
+
+        context 'and db_failover_allow_parameter_override config option is turned on' do
+          before(:each) do
+            Split.configure do |config|
+              config.db_failover_allow_parameter_override = true
+            end
+          end
+
+          context 'and given an override parameter' do
+            it 'should use given override instead of the first alternative' do
+              @params = {'link_color' => 'red'}
+              ab_test('link_color', 'blue', 'red').should eq('red')
+              ab_test('link_color', 'blue', 'red', 'green').should eq('red')
+              ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2).should eq('red')
+              ab_test('link_color', {'blue' => 0.8}, {'red' => 20}).should eq('red')
+              ab_test('link_color', 'blue', 'red') do |alternative|
+                "shared/#{alternative}"
+              end.should eq('shared/red')
+            end
+          end
+        end
       end
 
       describe 'finished' do
