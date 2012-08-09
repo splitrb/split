@@ -98,6 +98,9 @@ module Split
         Split.redis.sadd(:experiments, name)
         Split.redis.hset(:experiment_start_times, @name, Time.now)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
+      else
+        Split.redis.del(name)
+        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       end
     end
 
@@ -137,10 +140,11 @@ module Split
       alts = initialize_alternatives(alternatives, name)
 
       if Split.redis.exists(name)
-        if load_alternatives_for(name) == alts.map(&:name)
+        existing_alternatives = load_alternatives_for(name)
+        if existing_alternatives == alts.map(&:name)
           experiment = self.new(name, *alternatives)
         else
-          exp = self.new(name, *load_alternatives_for(name))
+          exp = self.new(name, *existing_alternatives)
           exp.reset
           exp.alternatives.each(&:delete)
           experiment = self.new(name, *alternatives)
