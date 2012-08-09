@@ -1,3 +1,14 @@
+## 0.4.4 (August 9, 2012)
+
+Features:
+
+  - Allow parameter overrides, even without Redis. (@bhcarpenter, #62)
+
+Bugfixes:
+
+  - Fixes version number always increasing when alternatives are changed (@philnash, #63)
+  - updated guard-rspec to version 1.2
+
 ## 0.4.3 (July 8, 2012)
 
 Features:
