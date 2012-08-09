@@ -176,6 +176,15 @@ describe Split::Experiment do
       new_blue = Split::Alternative.new('blue', 'link_color')
       new_blue.participant_count.should eql(0)
     end
+
+    it "should only reset once" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
+      experiment.version.should eql(0)
+      same_experiment = Split::Experiment.find_or_create('link_color', 'blue', 'yellow', 'orange')
+      same_experiment.version.should eql(1)
+      same_experiment_again = Split::Experiment.find_or_create('link_color', 'blue', 'yellow', 'orange')
+      same_experiment_again.version.should eql(1)
+    end
   end
 
   describe 'alternatives passed as non-strings' do
