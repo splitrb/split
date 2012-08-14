@@ -103,6 +103,23 @@ describe Split::Helper do
       small.participant_count.should eql(0)
     end
 
+    it 'should not raise the completion rate of an experiment that the user is not participating in' do
+      ab_test('link_color', 'blue', 'red')
+      ab_test('button_size', 'small', 'big')
+
+      # So, user should be participating in the link_color experiment and
+      # receive the control for button_size. As the user is not participating in
+      # the button size experiment, finishing it should not increase the
+      # completion count for that alternative.
+      ab_user['button_size'].should eql('small')
+      previous_completion_count = Split::Alternative.new('small', 'button_size').completed_count
+
+      finished('button_size')
+
+      new_completion_count = Split::Alternative.new('small', 'button_size').completed_count
+      previous_completion_count.should eql(new_completion_count)
+    end
+
     it "should let a user participate in many experiment with allow_multiple_experiments option" do
       Split.configure do |config|
         config.allow_multiple_experiments = true
