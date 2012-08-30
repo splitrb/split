@@ -134,6 +134,29 @@ describe Split::Helper do
       session[:split].should eql("link_color" => alternative_name)
     end
 
+    it "should reset the users session when experiment is not versioned" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color', 'blue', 'red')
+
+      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
+
+      session[:split].should eql(experiment.key => alternative_name)
+      finished('link_color', :reset => true)
+      session[:split].should eql({})
+    end
+
+    it "should reset the users session when experiment is versioned" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      experiment.increment_version
+      alternative_name = ab_test('link_color', 'blue', 'red')
+
+      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
+
+      session[:split].should eql(experiment.key => alternative_name)
+      finished('link_color', :reset => true)
+      session[:split].should eql({})
+    end
+
     it "should do nothing where the experiment was not started by this user" do
       session[:split] = nil
       lambda { finished('some_experiment_not_started_by_the_user') }.should_not raise_exception
