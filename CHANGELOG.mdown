@@ -1,3 +1,10 @@
+## 0.4.5 (August 30, 2012)
+
+Bugfixes:
+
+  - Fixed header gradient in FF/Opera (@philnash, #69)
+  - Fixed reseting of experiment in session (@apsoto, #43)
+
 ## 0.4.4 (August 9, 2012)
 
 Features:
