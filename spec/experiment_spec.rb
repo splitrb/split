@@ -55,7 +55,7 @@ describe Split::Experiment do
 
       experiment.delete
       Split.redis.exists('basket_text').should be false
-      Split::Experiment.find('link_color').should be_nil
+      Split::Experiment.find('basket_text').should be_nil
     end
 
     it "should increment the version" do
