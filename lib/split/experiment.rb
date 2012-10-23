@@ -1,7 +1,6 @@
 module Split
   class Experiment
     attr_accessor :name
-    attr_accessor :winner
 
     def initialize(name, *alternative_names)
       @name = name.to_s
