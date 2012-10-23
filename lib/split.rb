@@ -19,7 +19,7 @@ module Split
   #      or `Redis::Namespace`.
   def redis=(server)
     if server.respond_to? :split
-      if server =~ /redis\:\/\//
+      if server["redis://"]
         redis = Redis.connect(:url => server, :thread_safe => true)
       else
         server, namespace = server.split('/', 2)
