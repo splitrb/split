@@ -3,6 +3,7 @@ require 'split/alternative'
 require 'split/helper'
 require 'split/version'
 require 'split/configuration'
+require 'split/engine' if defined?(Rails)
 require 'redis/namespace'
 
 module Split
@@ -57,10 +58,3 @@ module Split
 end
 
 Split.configure {}
-
-if defined?(Rails)
-  class ActionController::Base
-    ActionController::Base.send :include, Split::Helper
-    ActionController::Base.helper Split::Helper
-  end
-end
