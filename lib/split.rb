@@ -58,5 +58,3 @@ module Split
 end
 
 Split.configure {}
-
-end
