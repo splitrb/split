@@ -99,61 +99,55 @@ describe Split::Helper do
   end
 
   describe 'finished' do
+    before(:each) do
+      @experiment_name = 'link_color'
+      @alternatives = ['blue', 'red']
+      @experiment = Split::Experiment.find_or_create(@experiment_name, *@alternatives)
+      @alternative_name = ab_test(@experiment_name, *@alternatives)
+      @previous_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
+    end
+
     it 'should increment the counter for the completed alternative' do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      finished(@experiment_name)
+      new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
+      new_completion_count.should eql(@previous_completion_count + 1)
+    end
 
-      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
+    it "should set experiment's finished key if reset is false" do
+      finished(@experiment_name, :reset => false)
+      session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+    end
 
-      finished('link_color')
-
-      new_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
-
-      new_completion_count.should eql(previous_completion_count + 1)
+    it 'should not increment the counter if reset is false and the experiment has been already finished' do
+      2.times { finished(@experiment_name, :reset => false) }
+      new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
+      new_completion_count.should eql(@previous_completion_count + 1)
     end
 
     it "should clear out the user's participation from their session" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-      alternative_name = ab_test('link_color', 'blue', 'red')
-
-      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
-
-      session[:split].should eql("link_color" => alternative_name)
-      finished('link_color')
+      session[:split].should eql(@experiment.key => @alternative_name)
+      finished(@experiment_name)
       session[:split].should == {}
     end
 
     it "should not clear out the users session if reset is false" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-      alternative_name = ab_test('link_color', 'blue', 'red')
-
-      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
-
-      session[:split].should eql("link_color" => alternative_name)
-      finished('link_color', :reset => false)
-      session[:split].should eql("link_color" => alternative_name)
+      session[:split].should eql(@experiment.key => @alternative_name)
+      finished(@experiment_name, :reset => false)
+      session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
     end
 
     it "should reset the users session when experiment is not versioned" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-      alternative_name = ab_test('link_color', 'blue', 'red')
-
-      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
-
-      session[:split].should eql(experiment.key => alternative_name)
-      finished('link_color', :reset => true)
+      session[:split].should eql(@experiment.key => @alternative_name)
+      finished(@experiment_name)
       session[:split].should eql({})
     end
 
     it "should reset the users session when experiment is versioned" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
-      experiment.increment_version
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      @experiment.increment_version
+      @alternative_name = ab_test(@experiment_name, *@alternatives)
 
-      previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
-
-      session[:split].should eql(experiment.key => alternative_name)
-      finished('link_color', :reset => true)
+      session[:split].should eql(@experiment.key => @alternative_name)
+      finished(@experiment_name)
       session[:split].should eql({})
     end
 

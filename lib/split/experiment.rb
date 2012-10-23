@@ -75,6 +75,10 @@ module Split
       end
     end
 
+    def finished_key
+      "#{key}:finished"
+    end
+
     def reset
       alternatives.each(&:reset)
       reset_winner
