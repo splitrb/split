@@ -25,10 +25,17 @@ module Split
     def finished(experiment_name, options = {:reset => true})
       return if exclude_visitor? or !Split.configuration.enabled
       return unless (experiment = Split::Experiment.find(experiment_name))
+      return if !options[:reset] && ab_user[experiment.finished_key]
+
       if alternative_name = ab_user[experiment.key]
         alternative = Split::Alternative.new(alternative_name, experiment_name)
         alternative.increment_completion
-        ab_user.delete(experiment.key) if options[:reset]
+
+        if options[:reset]
+          ab_user.delete(experiment.key)
+        else
+          ab_user[experiment.finished_key] = true
+        end
       end
     rescue => e
       raise unless Split.configuration.db_failover
