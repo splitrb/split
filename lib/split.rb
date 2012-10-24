@@ -1,8 +1,7 @@
-require 'split/experiment'
-require 'split/alternative'
-require 'split/helper'
-require 'split/version'
-require 'split/configuration'
+%w[experiment alternative helper version configuration].each do |f|
+  require "split/#{f}"
+end
+
 require 'split/engine' if defined?(Rails)
 require 'redis/namespace'
 
