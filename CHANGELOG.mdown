@@ -1,3 +1,14 @@
+## 0.4.6 (October 28, 2012)
+
+Features:
+
+  - General code quality improvements (@buddhamagnet, #79)
+
+Bugfixes:
+
+  - Don't increment the experiment counter if user has finished (@dimko, #78)
+  - Fixed an incorrect test (@jaywengrow, #74)
+
 ## 0.4.5 (August 30, 2012)
 
 Bugfixes:
