@@ -136,7 +136,7 @@ module Split
         if alternatives[0].is_a? Hash
           alternatives = alternatives[0].map{|k,v| {k => v} }
         else
-          raise InvalidArgument, 'You must declare at least 2 alternatives'
+          raise ArgumentError, 'You must declare at least 2 alternatives'
         end
       end
 
@@ -164,7 +164,7 @@ module Split
     def self.initialize_alternatives(alternatives, name)
 
       unless alternatives.all? { |a| Split::Alternative.valid?(a) }
-        raise InvalidArgument, 'Alternatives must be strings'
+        raise ArgumentError, 'Alternatives must be strings'
       end
 
       alternatives.map do |alternative|
