@@ -12,6 +12,19 @@ describe Split::Helper do
   end
 
   describe "ab_test" do
+
+    it "should not raise an error when passed strings for alternatives" do
+      lambda { ab_test('xyz', '1', '2', '3') }.should_not raise_error
+    end
+
+    it "should raise the appropriate error when passed integers for alternatives" do
+      lambda { ab_test('xyz', 1, 2, 3) }.should raise_error(ArgumentError)
+    end
+
+    it "should raise the appropriate error when passed symbols for alternatives" do
+      lambda { ab_test('xyz', :a, :b, :c) }.should raise_error(ArgumentError)
+    end
+
     it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
       ab_test('link_color', 'blue', 'red')
       ['red', 'blue'].should include(ab_user['link_color'])
