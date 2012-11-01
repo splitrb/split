@@ -1,3 +1,10 @@
+## 0.4.7 (November 1, 2012)
+
+Bugfixes:
+
+  - Amended ab_test method to raise ArgumentError if passed ints or symbols as
+    alternatives (@buddhamagnet, #81)
+
 ## 0.4.6 (October 28, 2012)
 
 Features:
