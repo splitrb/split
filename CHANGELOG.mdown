@@ -2,7 +2,7 @@
 
 Bugfixes:
 
-  - Amended ab_test method to raise ArgumentError if passed ints or symbols as
+  - Amended ab_test method to raise ArgumentError if passed integers or symbols as
     alternatives (@buddhamagnet, #81)
 
 ## 0.4.6 (October 28, 2012)
