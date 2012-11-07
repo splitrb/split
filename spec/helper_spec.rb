@@ -109,6 +109,15 @@ describe Split::Helper do
       button_size_alt = Split::Alternative.new(button_size, 'button_size')
       button_size_alt.participant_count.should eql(1)
     end
+
+    it "should not over-write a finished key when an experiment is on a later version" do
+      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+      experiment.increment_version
+      session[:split] = { experiment.key => 'blue', experiment.finished_key => true }
+      finshed_session = session[:split].dup
+      ab_test('link_color', 'blue', 'red')
+      session[:split].should eql(finshed_session)
+    end
   end
 
   describe 'finished' do
