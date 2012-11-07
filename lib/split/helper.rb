@@ -78,7 +78,8 @@ module Split
 
     def old_versions(experiment)
       if experiment.version > 0
-        ab_user.keys.select { |k| k.match(Regexp.new(experiment.name)) }.reject { |k| k == experiment.key }
+        ab_user.keys.select { |k| k.match(Regexp.new(experiment.name)) }.
+          reject { |k| k.match(Regexp.new("^#{experiment.key}(:finished)?$")) }
       else
         []
       end
