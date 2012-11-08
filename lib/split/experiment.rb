@@ -97,14 +97,18 @@ module Split
     end
 
     def save
-      if new_record?
-        Split.redis.sadd(:experiments, name)
-        Split.redis.hset(:experiment_start_times, @name, Time.now)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
-      else
-        Split.redis.del(name)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
-      end
+      new_record? ? persist : overwrite
+    end
+
+    def persist
+      Split.redis.sadd(:experiments, name)
+      Split.redis.hset(:experiment_start_times, @name, Time.now)
+      @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
+    end
+
+    def overwrite
+      Split.redis.del(name)
+      @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
     end
 
     def self.load_alternatives_for(name)
