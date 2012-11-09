@@ -4,6 +4,8 @@ end
 
 require 'split/engine' if defined?(Rails)
 require 'redis/namespace'
+require 'time'
+
 
 module Split
   extend self
