@@ -4,17 +4,12 @@ module Split
 
     def initialize(name, *alternative_names)
       @name = name.to_s
-      @alternatives = alternative_names.map do |alternative|
-                        Split::Alternative.new(alternative, name)
-                      end
+      @alternatives = Split::Alternative.new_from_collection(name, *alternative_names)
     end
 
     def winner
-      if w = Split.redis.hget(:experiment_winner, name)
-        Split::Alternative.new(w, name)
-      else
-        nil
-      end
+      w = Split.redis.hget(:experiment_winner, name)
+      w ? Split::Alternative.new(w, name) : nil
     end
 
     def control
@@ -97,30 +92,22 @@ module Split
     end
 
     def save
-      if new_record?
-        Split.redis.sadd(:experiments, name)
-        Split.redis.hset(:experiment_start_times, @name, Time.now)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
-      else
-        Split.redis.del(name)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
-      end
+      new_record? ? persist : overwrite
     end
 
-    def self.load_alternatives_for(name)
-      case Split.redis.type(name)
-      when 'set' # convert legacy sets to lists
-        alts = Split.redis.smembers(name)
-        Split.redis.del(name)
-        alts.reverse.each {|a| Split.redis.lpush(name, a) }
-        Split.redis.lrange(name, 0, -1)
-      else
-        Split.redis.lrange(name, 0, -1)
-      end
+    def persist
+      Split.redis.sadd(:experiments, name)
+      Split.redis.hset(:experiment_start_times, @name, Time.now)
+      @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
+    end
+
+    def overwrite
+      Split.redis.del(name)
+      @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
     end
 
     def self.all
-      Array(Split.redis.smembers(:experiments)).map {|e| find(e)}
+      Array(Split.redis.smembers(:experiments)).map { |e| find(e) }
     end
 
     def self.find(name)
@@ -128,20 +115,47 @@ module Split
         self.new(name, *load_alternatives_for(name))
       end
     end
-
+    
     def self.find_or_create(key, *alternatives)
-      name = key.to_s.split(':')[0]
+      name = name_from_key(key)
+      alternatives = process_alternatives(*alternatives)
+      alts = initialize_alternatives(alternatives, name)
+      return_alternatives(name, alts, *alternatives)
+    end
+    
+    def self.name_from_key(key)
+      key.to_s.split(':')[0]
+    end
+    
+    def self.load_alternatives_for(name)
+      case Split.redis.type(name)
+      when 'set'
+        convert_legacy_sets(name)
+      else
+        Split.redis.lrange(name, 0, -1)
+      end
+    end
 
+    def self.convert_legacy_sets(name)
+      alts = Split.redis.smembers(name)
+      Split.redis.del(name)
+      alts.reverse.each {|a| Split.redis.lpush(name, a) }
+      Split.redis.lrange(name, 0, -1)
+    end
+    
+    def self.process_alternatives(*alternatives)
       if alternatives.length == 1
         if alternatives[0].is_a? Hash
           alternatives = alternatives[0].map{|k,v| {k => v} }
+          return alternatives
         else
           raise ArgumentError, 'You must declare at least 2 alternatives'
         end
       end
-
-      alts = initialize_alternatives(alternatives, name)
-
+      alternatives
+    end
+    
+    def self.return_alternatives(name, alts, *alternatives)
       if Split.redis.exists(name)
         existing_alternatives = load_alternatives_for(name)
         if existing_alternatives == alts.map(&:name)
@@ -157,19 +171,14 @@ module Split
         experiment = self.new(name, *alternatives)
         experiment.save
       end
-      return experiment
-
+      experiment
     end
 
     def self.initialize_alternatives(alternatives, name)
-
       unless alternatives.all? { |a| Split::Alternative.valid?(a) }
         raise ArgumentError, 'Alternatives must be strings'
       end
-
-      alternatives.map do |alternative|
-        Split::Alternative.new(alternative, name)
-      end
+      Split::Alternative.new_from_collection(name, *alternatives)
     end
   end
 end
