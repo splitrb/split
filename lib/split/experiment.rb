@@ -106,22 +106,6 @@ module Split
       @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
     end
 
-    def self.load_alternatives_for(name)
-      case Split.redis.type(name)
-      when 'set'
-        convert_legacy_sets(name)
-      else
-        Split.redis.lrange(name, 0, -1)
-      end
-    end
-    
-    def self.convert_legacy_sets(name)
-      alts = Split.redis.smembers(name)
-      Split.redis.del(name)
-      alts.reverse.each {|a| Split.redis.lpush(name, a) }
-      Split.redis.lrange(name, 0, -1)
-    end
-
     def self.all
       Array(Split.redis.smembers(:experiments)).map { |e| find(e) }
     end
@@ -132,8 +116,31 @@ module Split
       end
     end
     
+    def self.find_or_create(key, *alternatives)
+      name = name_from_key(key)
+      alternatives = process_alternatives(*alternatives)
+      alts = initialize_alternatives(alternatives, name)
+      return_alternatives(name, alts, *alternatives)
+    end
+    
     def self.name_from_key(key)
       key.to_s.split(':')[0]
+    end
+    
+    def self.load_alternatives_for(name)
+      case Split.redis.type(name)
+      when 'set'
+        convert_legacy_sets(name)
+      else
+        Split.redis.lrange(name, 0, -1)
+      end
+    end
+
+    def self.convert_legacy_sets(name)
+      alts = Split.redis.smembers(name)
+      Split.redis.del(name)
+      alts.reverse.each {|a| Split.redis.lpush(name, a) }
+      Split.redis.lrange(name, 0, -1)
     end
     
     def self.process_alternatives(*alternatives)
@@ -167,19 +174,10 @@ module Split
       experiment
     end
 
-    def self.find_or_create(key, *alternatives)
-      name = name_from_key(key)
-      alternatives = process_alternatives(*alternatives)
-      alts = initialize_alternatives(alternatives, name)
-      return_alternatives(name, alts, *alternatives)
-    end
-
     def self.initialize_alternatives(alternatives, name)
-
       unless alternatives.all? { |a| Split::Alternative.valid?(a) }
         raise ArgumentError, 'Alternatives must be strings'
       end
-
       alternatives.map do |alternative|
         Split::Alternative.new(alternative, name)
       end
