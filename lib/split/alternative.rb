@@ -20,7 +20,7 @@ module Split
     end
 
     def participant_count
-      Split.backend.hget(key, 'participant_count').to_i
+      Split.backend.alternative_participant_count(experiment_name, name)
     end
 
     def participant_count=(count)
@@ -28,7 +28,7 @@ module Split
     end
 
     def completed_count
-      Split.backend.hget(key, 'completed_count').to_i
+      Split.backend.alternative_completed_count(experiment_name, name)
     end
 
     def completed_count=(count)
@@ -36,11 +36,11 @@ module Split
     end
 
     def increment_participation
-      Split.backend.hincrby key, 'participant_count', 1
+      Split.backend.incr_alternative_participant_count(experiment_name, name)
     end
 
     def increment_completion
-      Split.backend.hincrby key, 'completed_count', 1
+      Split.backend.incr_alternative_completed_count(experiment_name, name)
     end
 
     def control?
@@ -87,11 +87,11 @@ module Split
     end
 
     def reset
-      Split.backend.hmset key, 'participant_count', 0, 'completed_count', 0
+      Split.backend.reset(experiment_name, name)
     end
 
     def delete
-      Split.backend.del(key)
+      Split.backend.delete(key)
     end
 
     def self.valid?(name)
