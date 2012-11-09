@@ -24,7 +24,7 @@ module Split
     end
 
     def participant_count=(count)
-      Split.backend.hset(key, 'participant_count', count.to_i)
+      Split.backend.alternative_participant_count = count
     end
 
     def completed_count

@@ -11,7 +11,7 @@ module Split
       #      or `Redis::Namespace`.
       def server=(server)
         if server.respond_to? :split
-          if server =~ /redis\:\/\//
+          if server["redis://"]
             redis = ::Redis.connect(:url => server, :thread_safe => true)
           else
             server, namespace = server.split('/', 2)
@@ -69,6 +69,10 @@ module Split
       
       def alternative_participant_count(experiment_name, alternative)
         self.server.hget("#{experiment_name}:#{alternative}", 'participant_count').to_i
+      end
+      
+      def alternative_participant_count=(count)
+        self.server.hset(:participant_count, count.to_i)
       end
 
       def alternative_completed_count(experiment_name, alternative)

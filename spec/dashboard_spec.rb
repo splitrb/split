@@ -67,7 +67,7 @@ describe Split::Dashboard do
     Time.stub(:now => experiment_start_time)
     experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
-    Split.backend.hdel(:experiment_start_times, experiment.name)
+    Split.backend.stub(:start_time => nil)
 
     get '/'
 
