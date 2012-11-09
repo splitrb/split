@@ -140,18 +140,22 @@ module Split
     def self.name_from_key(key)
       key.to_s.split(':')[0]
     end
-
-    def self.find_or_create(key, *alternatives)
-      name = name_from_key(key)
-
+    
+    def self.process_alternatives(*alternatives)
       if alternatives.length == 1
         if alternatives[0].is_a? Hash
           alternatives = alternatives[0].map{|k,v| {k => v} }
+          return alternatives
         else
           raise ArgumentError, 'You must declare at least 2 alternatives'
         end
       end
+      alternatives
+    end
 
+    def self.find_or_create(key, *alternatives)
+      name = name_from_key(key)
+      alternatives = process_alternatives(*alternatives)
       alts = initialize_alternatives(alternatives, name)
 
       if Split.redis.exists(name)
