@@ -45,7 +45,7 @@ describe Split::Experiment do
     experiment.save
     experiment.save
     Split.backend.exists?('basket_text').should be true
-    Split.backend.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+    Split::Experiment.find('link_color').should be_nil
   end
 
   describe 'deleting' do
