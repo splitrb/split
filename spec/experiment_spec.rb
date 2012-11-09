@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'split/experiment'
 
 describe Split::Experiment do
-  before(:each) { Split.redis.flushall }
+  before(:each) { Split.backend.clean }
 
   it "should have a name" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
@@ -17,7 +17,7 @@ describe Split::Experiment do
   it "should save to redis" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
-    Split.redis.exists('basket_text').should be true
+    Split.backend.exists('basket_text').should be true
   end
 
   it "should save the start time to redis" do
@@ -35,7 +35,7 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
 
-    Split.redis.hdel(:experiment_start_times, experiment.name)
+    Split.backend.hdel(:experiment_start_times, experiment.name)
 
     Split::Experiment.find('basket_text').start_time.should == nil
   end
@@ -44,8 +44,8 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
     experiment.save
-    Split.redis.exists('basket_text').should be true
-    Split.redis.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+    Split.backend.exists('basket_text').should be true
+    Split.backend.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
   end
 
   describe 'deleting' do
@@ -54,7 +54,7 @@ describe Split::Experiment do
       experiment.save
 
       experiment.delete
-      Split.redis.exists('basket_text').should be false
+      Split.backend.exists('basket_text').should be false
       Split::Experiment.find('basket_text').should be_nil
     end
 

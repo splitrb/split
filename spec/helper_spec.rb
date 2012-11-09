@@ -6,7 +6,7 @@ describe Split::Helper do
   include Split::Helper
 
   before(:each) do
-    Split.redis.flushall
+    Split.backend.clean
     @session = {}
     params = nil
   end

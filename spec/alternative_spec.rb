@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'split/alternative'
 
 describe Split::Alternative do
-  before(:each) { Split.redis.flushall }
+  before(:each) { Split.backend.clean }
 
   it "should have a name" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
@@ -36,7 +36,7 @@ describe Split::Alternative do
   it "should save to redis" do
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.save
-    Split.redis.exists('basket_text:Basket').should be true
+    Split.backend.exists('basket_text:Basket').should be true
   end
 
   it "should increment participation count" do
