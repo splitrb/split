@@ -150,12 +150,8 @@ module Split
       end
       alternatives
     end
-
-    def self.find_or_create(key, *alternatives)
-      name = name_from_key(key)
-      alternatives = process_alternatives(*alternatives)
-      alts = initialize_alternatives(alternatives, name)
-
+    
+    def self.return_alternatives(name, alts, *alternatives)
       if Split.redis.exists(name)
         existing_alternatives = load_alternatives_for(name)
         if existing_alternatives == alts.map(&:name)
@@ -171,8 +167,14 @@ module Split
         experiment = self.new(name, *alternatives)
         experiment.save
       end
-      return experiment
+      experiment
+    end
 
+    def self.find_or_create(key, *alternatives)
+      name = name_from_key(key)
+      alternatives = process_alternatives(*alternatives)
+      alts = initialize_alternatives(alternatives, name)
+      return_alternatives(name, alts, *alternatives)
     end
 
     def self.initialize_alternatives(alternatives, name)
