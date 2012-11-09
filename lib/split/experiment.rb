@@ -10,7 +10,7 @@ module Split
     end
 
     def winner
-      if w = Split.redis.hget(:experiment_winner, name)
+      if w = Split.backend.winner(name)
         Split::Alternative.new(w, name)
       else
         nil
@@ -22,16 +22,15 @@ module Split
     end
 
     def reset_winner
-      Split.redis.hdel(:experiment_winner, name)
+      Split.backend.reset_winner(name)
     end
 
     def winner=(winner_name)
-      Split.redis.hset(:experiment_winner, name, winner_name.to_s)
+      Split.backend.set_winner(name, winner_name)
     end
 
     def start_time
-      t = Split.redis.hget(:experiment_start_times, @name)
-      Time.parse(t) if t
+      Split.backend.start_time(name)
     end
 
     def alternatives
@@ -59,11 +58,11 @@ module Split
     end
 
     def version
-      @version ||= (Split.redis.get("#{name.to_s}:version").to_i || 0)
+      @version ||= (Split.backend.version(name) || 0)
     end
 
     def increment_version
-      @version = Split.redis.incr("#{name}:version")
+      @version = Split.backend.increment_version(name)
     end
 
     def key
@@ -87,44 +86,30 @@ module Split
     def delete
       alternatives.each(&:delete)
       reset_winner
-      Split.redis.srem(:experiments, name)
-      Split.redis.del(name)
+      Split.backend.delete(name)
       increment_version
     end
 
     def new_record?
-      !Split.redis.exists(name)
+      !Split.backend.exists?(name)
     end
 
     def save
       if new_record?
-        Split.redis.sadd(:experiments, name)
-        Split.redis.hset(:experiment_start_times, @name, Time.now)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
-      else
-        Split.redis.del(name)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
+        Split.backend.save(name, @alternatives, Time.now)
       end
     end
 
     def self.load_alternatives_for(name)
-      case Split.redis.type(name)
-      when 'set' # convert legacy sets to lists
-        alts = Split.redis.smembers(name)
-        Split.redis.del(name)
-        alts.reverse.each {|a| Split.redis.lpush(name, a) }
-        Split.redis.lrange(name, 0, -1)
-      else
-        Split.redis.lrange(name, 0, -1)
-      end
+      Split.backend.alternatives(name)
     end
 
     def self.all
-      Array(Split.redis.smembers(:experiments)).map {|e| find(e)}
+      Split.backend.all_experiments.map {|e| find(e)}
     end
 
     def self.find(name)
-      if Split.redis.exists(name)
+      if Split.backend.exists?(name)
         self.new(name, *load_alternatives_for(name))
       end
     end
@@ -142,12 +127,11 @@ module Split
 
       alts = initialize_alternatives(alternatives, name)
 
-      if Split.redis.exists(name)
-        existing_alternatives = load_alternatives_for(name)
-        if existing_alternatives == alts.map(&:name)
-          experiment = self.new(name, *alternatives)
+      if Split.backend.exists?(name)
+        if load_alternatives_for(name) == alts.map(&:name)
+          experiment = self.new(name, *load_alternatives_for(name))
         else
-          exp = self.new(name, *existing_alternatives)
+          exp = self.new(name, *load_alternatives_for(name))
           exp.reset
           exp.alternatives.each(&:delete)
           experiment = self.new(name, *alternatives)
@@ -160,7 +144,7 @@ module Split
       return experiment
 
     end
-
+    
     def self.initialize_alternatives(alternatives, name)
 
       unless alternatives.all? { |a| Split::Alternative.valid?(a) }
