@@ -8,11 +8,8 @@ module Split
     end
 
     def winner
-      if w = Split.redis.hget(:experiment_winner, name)
-        Split::Alternative.new(w, name)
-      else
-        nil
-      end
+      w = Split.redis.hget(:experiment_winner, name)
+      w ? Split::Alternative.new(w, name) : nil
     end
 
     def control
