@@ -136,9 +136,13 @@ module Split
         self.new(name, *load_alternatives_for(name))
       end
     end
+    
+    def self.name_from_key(key)
+      key.to_s.split(':')[0]
+    end
 
     def self.find_or_create(key, *alternatives)
-      name = key.to_s.split(':')[0]
+      name = name_from_key(key)
 
       if alternatives.length == 1
         if alternatives[0].is_a? Hash
