@@ -70,10 +70,6 @@ module Split
       def alternative_participant_count(experiment_name, alternative)
         self.server.hget("#{experiment_name}:#{alternative}", 'participant_count').to_i
       end
-      
-      def alternative_participant_count=(count)
-        self.server.hset(:participant_count, count.to_i)
-      end
 
       def alternative_completed_count(experiment_name, alternative)
         self.server.hget("#{experiment_name}:#{alternative}", 'completed_count').to_i
