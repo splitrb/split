@@ -4,9 +4,7 @@ module Split
 
     def initialize(name, *alternative_names)
       @name = name.to_s
-      @alternatives = alternative_names.map do |alternative|
-                        Split::Alternative.new(alternative, name)
-                      end
+      @alternatives = Split::Alternative.name_from_collection(name, *alternative_names)
     end
 
     def winner

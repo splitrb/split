@@ -101,6 +101,10 @@ module Split
     def self.hash_with_correct_values?(name)
       Hash === name && String === name.keys.first && Float(name.values.first) rescue false
     end
+    
+    def self.name_from_collection(name, *alternative_names)
+      alternative_names.map { |alternative| self.new(alternative, name) }
+    end
 
     private
 
