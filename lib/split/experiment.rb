@@ -108,7 +108,7 @@ module Split
 
     def self.load_alternatives_for(name)
       case Split.redis.type(name)
-      when 'set' # convert legacy sets to lists
+      when 'set'
         convert_legacy_sets(name)
       else
         Split.redis.lrange(name, 0, -1)
