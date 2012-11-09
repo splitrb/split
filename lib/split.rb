@@ -1,4 +1,4 @@
-%w[experiment alternative helper version configuration backend].each do |f|
+%w[experiment alternative helper version configuration backend error].each do |f|
   require "split/#{f}"
 end
 
