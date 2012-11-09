@@ -102,7 +102,7 @@ module Split
       Hash === name && String === name.keys.first && Float(name.values.first) rescue false
     end
     
-    def self.name_from_collection(name, *alternative_names)
+    def self.new_from_collection(name, *alternative_names)
       alternative_names.map { |alternative| self.new(alternative, name) }
     end
 

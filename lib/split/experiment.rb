@@ -4,7 +4,7 @@ module Split
 
     def initialize(name, *alternative_names)
       @name = name.to_s
-      @alternatives = Split::Alternative.name_from_collection(name, *alternative_names)
+      @alternatives = Split::Alternative.new_from_collection(name, *alternative_names)
     end
 
     def winner
@@ -178,9 +178,7 @@ module Split
       unless alternatives.all? { |a| Split::Alternative.valid?(a) }
         raise ArgumentError, 'Alternatives must be strings'
       end
-      alternatives.map do |alternative|
-        Split::Alternative.new(alternative, name)
-      end
+      Split::Alternative.new_from_collection(name, *alternatives)
     end
   end
 end
