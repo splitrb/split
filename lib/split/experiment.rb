@@ -123,7 +123,7 @@ module Split
     end
 
     def self.all
-      Array(Split.redis.smembers(:experiments)).map {|e| find(e)}
+      Array(Split.redis.smembers(:experiments)).map { |e| find(e) }
     end
 
     def self.find(name)
