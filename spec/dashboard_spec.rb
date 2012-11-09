@@ -21,8 +21,8 @@ describe Split::Dashboard do
 
     red = Split::Alternative.new('red', 'link_color')
     blue = Split::Alternative.new('blue', 'link_color')
-    red.participant_count = 5
-    blue.participant_count = 6
+    red.increment_participation
+    blue.increment_participation
 
     post '/reset/link_color'
 

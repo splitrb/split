@@ -23,16 +23,8 @@ module Split
       Split.backend.alternative_participant_count(experiment_name, name)
     end
 
-    def participant_count=(count)
-      Split.backend.alternative_participant_count = count
-    end
-
     def completed_count
       Split.backend.alternative_completed_count(experiment_name, name)
-    end
-
-    def completed_count=(count)
-      Split.backend.hset(key, 'completed_count', count.to_i)
     end
 
     def increment_participation

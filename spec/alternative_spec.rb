@@ -63,8 +63,8 @@ describe Split::Alternative do
 
   it "can be reset" do
     alternative = Split::Alternative.new('Basket', 'basket_text')
-    alternative.participant_count = 10
-    alternative.completed_count = 4
+    alternative.increment_participation
+    alternative.increment_completion
     alternative.reset
     alternative.participant_count.should eql(0)
     alternative.completed_count.should eql(0)
