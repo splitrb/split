@@ -114,13 +114,17 @@ module Split
     def self.load_alternatives_for(name)
       case Split.redis.type(name)
       when 'set' # convert legacy sets to lists
-        alts = Split.redis.smembers(name)
-        Split.redis.del(name)
-        alts.reverse.each {|a| Split.redis.lpush(name, a) }
-        Split.redis.lrange(name, 0, -1)
+        convert_legacy_sets(name)
       else
         Split.redis.lrange(name, 0, -1)
       end
+    end
+    
+    def self.convert_legacy_sets(name)
+      alts = Split.redis.smembers(name)
+      Split.redis.del(name)
+      alts.reverse.each {|a| Split.redis.lpush(name, a) }
+      Split.redis.lrange(name, 0, -1)
     end
 
     def self.all
