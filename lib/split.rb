@@ -1,4 +1,4 @@
-%w[experiment alternative helper version configuration].each do |f|
+%w[experiment alternative helper version configuration backend].each do |f|
   require "split/#{f}"
 end
 
@@ -22,8 +22,8 @@ module Split
      yield(configuration)
    end
    
-   def db
-     @db ||= Split::Database.new
+   def backend
+     @backend ||= Split::Backend.new
    end
 end
 
