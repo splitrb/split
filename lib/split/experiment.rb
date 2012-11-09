@@ -128,10 +128,11 @@ module Split
       alts = initialize_alternatives(alternatives, name)
 
       if Split.backend.exists?(name)
-        if load_alternatives_for(name) == alts.map(&:name)
-          experiment = self.new(name, *load_alternatives_for(name))
+        existing_alternatives = load_alternatives_for(name)
+        if existing_alternatives == alts.map(&:name)
+          experiment = self.new(name, *alternatives)
         else
-          exp = self.new(name, *load_alternatives_for(name))
+          exp = self.new(name, *existing_alternatives)
           exp.reset
           exp.alternatives.each(&:delete)
           experiment = self.new(name, *alternatives)
@@ -142,7 +143,6 @@ module Split
         experiment.save
       end
       return experiment
-
     end
     
     def self.initialize_alternatives(alternatives, name)
