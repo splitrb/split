@@ -355,10 +355,10 @@ describe Split::Helper do
     end
   end
 
-  context 'when redis is not available' do
+  context 'when backend is not available' do
 
     before(:each) do
-      Split.stub(:redis).and_raise(Errno::ECONNREFUSED.new)
+      Split.stub(:backend).and_raise(Errno::ECONNREFUSED.new)
     end
 
     context 'and db_failover config option is turned off' do

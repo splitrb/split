@@ -35,7 +35,7 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
 
-    Split.backend.hdel(:experiment_start_times, experiment.name)
+    Split.backend.stub(:start_time => nil)
 
     Split::Experiment.find('basket_text').start_time.should == nil
   end
@@ -44,7 +44,7 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
     experiment.save
-    Split.backend.exists('basket_text').should be true
+    Split.backend.exists?('basket_text').should be true
     Split.backend.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
   end
 
@@ -54,7 +54,7 @@ describe Split::Experiment do
       experiment.save
 
       experiment.delete
-      Split.backend.exists('basket_text').should be false
+      Split.backend.exists?('basket_text').should be false
       Split::Experiment.find('basket_text').should be_nil
     end
 
