@@ -14,13 +14,13 @@ describe Split::Experiment do
     experiment.alternatives.length.should be 2
   end
 
-  it "should save to redis" do
+  it "should save to backend" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
-    Split.backend.exists('basket_text').should be true
+    Split.backend.exists?('basket_text').should be true
   end
 
-  it "should save the start time to redis" do
+  it "should save the start time to backend" do
     experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
     Time.stub(:now => experiment_start_time)
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")

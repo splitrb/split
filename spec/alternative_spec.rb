@@ -33,10 +33,10 @@ describe Split::Alternative do
     alternative.experiment.name.should eql(experiment.name)
   end
 
-  it "should save to redis" do
+  it "should save to backend" do
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.save
-    Split.backend.exists('basket_text:Basket').should be true
+    Split.backend.exists?('basket_text:Basket').should be true
   end
 
   it "should increment participation count" do
