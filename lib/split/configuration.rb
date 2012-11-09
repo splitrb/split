@@ -1,5 +1,18 @@
 module Split
   class Configuration
+    BOTS = {
+      'Baidu' => 'Chinese spider',
+      'Gigabot' => 'Gigabot spider', 
+      'Googlebot' => 'Google spider',
+      'libwww-perl' => 'Perl client-server library loved by script kids',
+      'lwp-trivial' => 'Another Perl library loved by script kids',
+      'msnbot' => 'Microsoft bot', 
+      'SiteUpTime' => 'Site monitoring services', 
+      'Slurp' => 'Yahoo spider',
+      'WordPress' => 'WordPress spider', 
+      'ZIBB' => 'ZIBB spider',
+      'Zyborg' => 'Zyborg? Hmmm....'
+    }
     attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses
     attr_accessor :db_failover
@@ -9,7 +22,7 @@ module Split
     attr_accessor :enabled
 
     def initialize
-      @robot_regex = /\b(Baidu|Gigabot|Googlebot|libwww-perl|lwp-trivial|msnbot|SiteUptime|Slurp|WordPress|ZIBB|ZyBorg)\b/i
+      @robot_regex = /\b(#{BOTS.keys.join('|')})\b/i
       @ignore_ip_addresses = []
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
