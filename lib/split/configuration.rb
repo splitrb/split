@@ -7,7 +7,7 @@ module Split
       'libwww-perl' => 'Perl client-server library loved by script kids',
       'lwp-trivial' => 'Another Perl library loved by script kids',
       'msnbot' => 'Microsoft bot', 
-      'SiteUpTime' => 'Site monitoring services', 
+      'SiteUptime' => 'Site monitoring services', 
       'Slurp' => 'Yahoo spider',
       'WordPress' => 'WordPress spider', 
       'ZIBB' => 'ZIBB spider',
