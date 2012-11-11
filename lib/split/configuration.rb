@@ -11,7 +11,7 @@ module Split
       'Slurp' => 'Yahoo spider',
       'WordPress' => 'WordPress spider', 
       'ZIBB' => 'ZIBB spider',
-      'Zyborg' => 'Zyborg? Hmmm....'
+      'ZyBorg' => 'Zyborg? Hmmm....'
     }
     attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses
