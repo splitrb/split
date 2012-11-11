@@ -13,14 +13,6 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.alternatives.length.should be 2
   end
-  
-  it "should be able to save a set to redis" do
-    Split.redis.sadd(:test, 'test')
-  end
-  
-  it "should be able to save a hash to redis" do
-    Split.redis.hset(:test, 'test', 'dummy data')
-  end
 
   it "should save to redis" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
