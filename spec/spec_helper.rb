@@ -3,16 +3,9 @@ ENV['RACK_ENV'] = "test"
 require 'rubygems'
 require 'bundler/setup'
 require 'split'
-require 'mock_redis'
 require 'ostruct'
 require 'complex' if RUBY_VERSION.match(/1\.8/)
 
-module Split
-  def redis
-    @redis ||= MockRedis.new
-  end
-end
-  
 def session
   @session ||= {}
 end
