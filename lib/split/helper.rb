@@ -1,7 +1,6 @@
 module Split
   module Helper
     def ab_test(experiment_name, control, *alternatives)
-
       if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
@@ -67,7 +66,7 @@ module Split
     end
 
     def doing_other_tests?(experiment_key)
-      ab_user.keys.reject { |k| k == experiment_key }.length > 0
+      keys_without_experiment(ab_user.keys, experiment_key).length > 0
     end
 
     def clean_old_versions(experiment)
@@ -78,8 +77,8 @@ module Split
 
     def old_versions(experiment)
       if experiment.version > 0
-        ab_user.keys.select { |k| k.match(Regexp.new(experiment.name)) }.
-          reject { |k| k.match(Regexp.new("^#{experiment.key}(:finished)?$")) }
+        keys = ab_user.keys.select { |k| k.match(Regexp.new(experiment.name)) }
+        keys_without_experiment(keys, experiment.key)
       else
         []
       end
@@ -141,6 +140,9 @@ module Split
       ret
     end
 
+    def keys_without_experiment(keys, experiment_key)
+      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+    end
   end
 
 end
