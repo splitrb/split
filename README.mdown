@@ -263,6 +263,8 @@ Special thanks to the following people for submitting patches:
 * Lloyd Pick
 * Jeffery Chupp
 * Andrew Appleton
+* Phil Nash
+* Dave Goodchild
 
 ## Development
 

@@ -177,6 +177,12 @@ describe Split::Helper do
       session[:split] = nil
       lambda { finished('some_experiment_not_started_by_the_user') }.should_not raise_exception
     end
+
+    it 'should not be doing other tests when it has completed one that has :reset => false' do
+      ab_user[@experiment.key] = @alternative_name
+      ab_user[@experiment.finished_key] = true
+      doing_other_tests?(@experiment.key).should be false
+    end
   end
 
   describe 'conversions' do
