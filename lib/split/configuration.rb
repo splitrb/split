@@ -31,4 +31,12 @@ module Split
       @enabled = true
     end
   end
+
+  if defined?(Rails)
+    class Railtie < Rails::Railtie
+      initializer "mobile_detect.insert_middleware" do |app|
+        app.config.middleware.use "Rack::MobileDetect"
+      end
+    end
+  end
 end

@@ -96,6 +96,22 @@ module Split
       end
     end
 
+    def mobile_device_type
+      if request.headers["X_MOBILE_DEVICE"]
+        return request.headers["X_MOBILE_DEVICE"]
+      else
+        return "none"
+      end
+    end
+
+    # for convenience, if you only want a yes or no
+    def is_mobile_device?
+      if request.headers["X_MOBILE_DEVICE"]
+        return true
+      else
+        return false
+      end
+    end
 
     protected
 
