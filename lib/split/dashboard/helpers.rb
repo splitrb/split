@@ -23,11 +23,11 @@ module Split
 
       if z == 0.0
         'No Change'
-      elsif z < 1.96
+      elsif z < 1.645
         'no confidence'
-      elsif z < 2.57
+      elsif z < 1.96
         '95% confidence'
-      elsif z < 3.29
+      elsif z < 2.57
         '99% confidence'
       else
         '99.9% confidence'
