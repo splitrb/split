@@ -20,6 +20,7 @@ module Split
     attr_accessor :db_failover_allow_parameter_override
     attr_accessor :allow_multiple_experiments
     attr_accessor :enabled
+    attr_accessor :detect_mobile
 
     def initialize
       @robot_regex = /\b(#{BOTS.keys.join('|')})\b/i
@@ -29,6 +30,7 @@ module Split
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true
+      @detect_mobile = false
     end
   end
 end
