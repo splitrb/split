@@ -31,7 +31,20 @@ module Split
 
     def finished(experiment_name, options = {:reset => true})
       return if exclude_visitor? or !Split.configuration.enabled
-      return unless (experiment = Split::Experiment.find(experiment_name))
+
+      experiment = Split::Experiment.find(experiment_name)
+      if experiment.nil?
+        return unless Split.configuration.experiments
+        Split.configuration.experiments.each do |name,exp|
+          if exp[:metric] == experiment_name
+            local_opts = {}
+            local_opts[:reset] = exp[:resettable] unless exp[:resettable].nil?
+            finished name, options.merge(local_opts)
+          end
+        end
+        return
+      end
+
       return if !options[:reset] && ab_user[experiment.finished_key]
 
       if alternative_name = ab_user[experiment.key]
