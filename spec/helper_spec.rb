@@ -184,6 +184,17 @@ describe Split::Helper do
       doing_other_tests?(@experiment.key).should be false
     end
 
+    it "passes reset option from config" do
+      Split.configuration.experiments = {
+        @experiment_name => {
+          :variants => @alternatives,
+          :resettable => false,
+        }
+      }
+      finished @experiment_name
+      session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+    end
+
     context "with metric name" do
       before { Split.configuration.experiments = {} }
       before { Split::Alternative.stub(:new).and_call_original }

@@ -45,6 +45,11 @@ module Split
         return
       end
 
+      if Split.configuration.experiments && Split.configuration.experiments[experiment_name]
+        reset = Split.configuration.experiments[experiment_name][:resettable]
+        options[:reset] = reset unless reset.nil?
+      end
+
       return if !options[:reset] && ab_user[experiment.finished_key]
 
       if alternative_name = ab_user[experiment.key]
