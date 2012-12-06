@@ -9,7 +9,7 @@ describe Split::Dashboard do
     @app ||= Split::Dashboard
   end
 
-  before(:each) { Split.redis.flushall }
+  before(:each) { Split.backend.clean }
 
   it "should respond to /" do
     get '/'
@@ -21,8 +21,8 @@ describe Split::Dashboard do
 
     red = Split::Alternative.new('red', 'link_color')
     blue = Split::Alternative.new('blue', 'link_color')
-    red.participant_count = 5
-    blue.participant_count = 6
+    red.increment_participation
+    blue.increment_participation
 
     post '/reset/link_color'
 
@@ -67,7 +67,7 @@ describe Split::Dashboard do
     Time.stub(:now => experiment_start_time)
     experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
-    Split.redis.hdel(:experiment_start_times, experiment.name)
+    Split.backend.stub(:start_time => nil)
 
     get '/'
 

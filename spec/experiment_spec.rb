@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'split/experiment'
 
 describe Split::Experiment do
-  before(:each) { Split.redis.flushall }
+  before(:each) { Split.backend.clean }
 
   it "should have a name" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
@@ -14,13 +14,13 @@ describe Split::Experiment do
     experiment.alternatives.length.should be 2
   end
 
-  it "should save to redis" do
+  it "should save to backend" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
-    Split.redis.exists('basket_text').should be true
+    Split.backend.exists?('basket_text').should be true
   end
 
-  it "should save the start time to redis" do
+  it "should save the start time to backend" do
     experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
     Time.stub(:now => experiment_start_time)
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
@@ -35,7 +35,7 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
 
-    Split.redis.hdel(:experiment_start_times, experiment.name)
+    Split.backend.stub(:start_time => nil)
 
     Split::Experiment.find('basket_text').start_time.should == nil
   end
@@ -44,8 +44,8 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
     experiment.save
-    Split.redis.exists('basket_text').should be true
-    Split.redis.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+    Split.backend.exists?('basket_text').should be true
+    Split::Experiment.find('link_color').should be_nil
   end
 
   describe 'deleting' do
@@ -54,7 +54,7 @@ describe Split::Experiment do
       experiment.save
 
       experiment.delete
-      Split.redis.exists('basket_text').should be false
+      Split.backend.exists?('basket_text').should be false
       Split::Experiment.find('basket_text').should be_nil
     end
 
@@ -169,7 +169,7 @@ describe Split::Experiment do
     it "should reset an experiment if it is loaded with different alternatives" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
       blue = Split::Alternative.new('blue', 'link_color')
-      blue.participant_count = 5
+      blue.increment_participation
       blue.save
       same_experiment = Split::Experiment.find_or_create('link_color', 'blue', 'yellow', 'orange')
       same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
