@@ -5,8 +5,8 @@ end
 module Split
   module Persistence
     ADAPTERS = {
-      cookie: Split::Persistence::CookieAdapter,
-      session: Split::Persistence::SessionAdapter
+      :cookie => Split::Persistence::CookieAdapter,
+      :session => Split::Persistence::SessionAdapter
     }
 
     def self.adapter

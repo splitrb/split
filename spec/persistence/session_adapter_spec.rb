@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Split::Persistence::SessionAdapter do
 
-  let(:context) { mock(session: {}) }
+  let(:context) { mock(:session => {}) }
   subject { Split::Persistence::SessionAdapter.new(context) }
 
   describe "#[] and #[]=" do
