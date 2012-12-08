@@ -24,7 +24,7 @@ describe Split::Persistence::SessionAdapter do
     it "should return an array of the session's stored keys" do
       subject["my_key"] = "my_value"
       subject["my_second_key"] = "my_second_value"
-      subject.keys.should eq(["my_key", "my_second_key"])
+      subject.keys.should =~ ["my_key", "my_second_key"]
     end
   end
 
