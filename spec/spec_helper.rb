@@ -6,6 +6,8 @@ require 'split'
 require 'ostruct'
 require 'complex' if RUBY_VERSION.match(/1\.8/)
 
+Dir['./spec/support/*.rb'].each { |f| require f }
+
 def session
   @session ||= {}
 end
