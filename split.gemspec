@@ -22,6 +22,11 @@ Gem::Specification.new do |s|
   s.add_dependency 'redis-namespace', '>= 1.1.0'
   s.add_dependency 'sinatra',         '>= 1.2.6'
 
+  # Ruby 1.8 doesn't include JSON in the std lib
+  if RUBY_VERSION < "1.9"
+    s.add_dependency 'json',            '>= 1.7.5'
+  end
+
   s.add_development_dependency 'rake'
   s.add_development_dependency 'bundler',     '~> 1.0'
   s.add_development_dependency 'rspec',       '~> 2.6'

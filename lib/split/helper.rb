@@ -54,7 +54,7 @@ module Split
     end
 
     def ab_user
-      session[:split] ||= {}
+      @ab_user ||= Split::Persistence.adapter.new(self)
     end
 
     def exclude_visitor?

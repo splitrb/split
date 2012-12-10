@@ -1,4 +1,4 @@
-%w[experiment alternative helper version configuration].each do |f|
+%w[experiment alternative helper version configuration persistence exceptions].each do |f|
   require "split/#{f}"
 end
 
@@ -51,9 +51,9 @@ module Split
   #     config.ignore_ips = '192.168.2.1'
   #   end
   def configure
-     self.configuration ||= Configuration.new
-     yield(configuration)
-   end
+    self.configuration ||= Configuration.new
+    yield(configuration)
+  end
 end
 
 Split.configure {}
