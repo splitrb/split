@@ -192,7 +192,7 @@ describe Split::Helper do
         }
       }
       finished @experiment_name
-      session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+      ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
     end
 
     context "with metric name" do
@@ -249,7 +249,7 @@ describe Split::Helper do
           :resettable => false,
         }
         finished :my_metric
-        session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+        ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
       end
 
       it "passes through options" do
@@ -258,7 +258,7 @@ describe Split::Helper do
           :metric => :my_metric,
         }
         finished :my_metric, :reset => false
-        session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+        ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
       end
     end
   end
