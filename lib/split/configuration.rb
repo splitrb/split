@@ -21,6 +21,7 @@ module Split
     attr_accessor :allow_multiple_experiments
     attr_accessor :enabled
     attr_accessor :persistence
+    attr_accessor :experiments
 
     def initialize
       @robot_regex = /\b(#{BOTS.keys.join('|')})\b/i

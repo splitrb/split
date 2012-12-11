@@ -183,6 +183,84 @@ describe Split::Helper do
       ab_user[@experiment.finished_key] = true
       doing_other_tests?(@experiment.key).should be false
     end
+
+    it "passes reset option from config" do
+      Split.configuration.experiments = {
+        @experiment_name => {
+          :variants => @alternatives,
+          :resettable => false,
+        }
+      }
+      finished @experiment_name
+      session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+    end
+
+    context "with metric name" do
+      before { Split.configuration.experiments = {} }
+      before { Split::Alternative.stub(:new).and_call_original }
+
+      def should_finish_experiment(experiment_name, should_finish=true)
+        alts = Split.configuration.experiments[experiment_name][:variants]
+        experiment = Split::Experiment.find_or_create(experiment_name, *alts)
+        alt_name = ab_user[experiment.key] = alts.first
+        alt = double
+        Split::Alternative.stub(:new).with(alt_name, experiment_name).and_return(alt)
+        if should_finish
+          alt.should_receive(:increment_completion)
+        else
+          alt.should_not_receive(:increment_completion)
+        end
+      end
+
+      it "completes the test" do
+        Split.configuration.experiments[:my_experiment] = {
+          :variants => [ "control_opt", "other_opt" ],
+          :metric => :my_metric
+        }
+        should_finish_experiment :my_experiment
+        finished :my_metric
+      end
+
+      it "completes all relevant tests" do
+        Split.configuration.experiments = {
+          :exp_1 => {
+            :variants => [ "1-1", "1-2" ],
+            :metric => :my_metric
+          },
+          :exp_2 => {
+            :variants => [ "2-1", "2-2" ],
+            :metric => :another_metric
+          },
+          :exp_3 => {
+            :variants => [ "3-1", "3-2" ],
+            :metric => :my_metric
+          },
+        }
+        should_finish_experiment :exp_1
+        should_finish_experiment :exp_2, false
+        should_finish_experiment :exp_3
+        finished :my_metric
+      end
+
+      it "passes reset option" do
+        Split.configuration.experiments[@experiment_name] = {
+          :variants => @alternatives,
+          :metric => :my_metric,
+          :resettable => false,
+        }
+        finished :my_metric
+        session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+      end
+
+      it "passes through options" do
+        Split.configuration.experiments[@experiment_name] = {
+          :variants => @alternatives,
+          :metric => :my_metric,
+        }
+        finished :my_metric, :reset => false
+        session[:split].should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
+      end
+    end
   end
 
   describe 'conversions' do
@@ -500,4 +578,60 @@ describe Split::Helper do
 
   end
 
+  context "with preloaded config" do
+    before { Split.configuration.experiments = {} }
+
+    it "pulls options from config file" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "other_opt" ],
+      }
+      should_receive(:experiment_variable).with(["other_opt"], "control_opt", :my_experiment)
+      ab_test :my_experiment
+    end
+
+    it "accepts multiple variants" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "second_opt", "third_opt" ],
+      }
+      should_receive(:experiment_variable).with(["second_opt", "third_opt"], "control_opt", :my_experiment)
+      ab_test :my_experiment
+    end
+
+    it "accepts probability on variants" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [
+          { :name => "control_opt", :percent => 67 },
+          { :name => "second_opt", :percent => 10 },
+          { :name => "third_opt", :percent => 23 },
+        ],
+      }
+      should_receive(:experiment_variable).with({"second_opt" => 0.1, "third_opt" => 0.23}, {"control_opt" => 0.67}, :my_experiment)
+      ab_test :my_experiment
+    end
+
+    it "accepts probability on some variants" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [
+          { :name => "control_opt", :percent => 34 },
+          "second_opt",
+          { :name => "third_opt", :percent => 23 },
+          "fourth_opt",
+        ],
+      }
+      should_receive(:experiment_variable).with({"second_opt" => 0.215, "third_opt" => 0.23, "fourth_opt" => 0.215}, {"control_opt" => 0.34}, :my_experiment)
+      ab_test :my_experiment
+    end
+
+    it "allows name param without probability" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [
+          { :name => "control_opt" },
+          "second_opt",
+          { :name => "third_opt", :percent => 64 },
+        ],
+      }
+      should_receive(:experiment_variable).with({"second_opt" => 0.18, "third_opt" => 0.64}, {"control_opt" => 0.18}, :my_experiment)
+      ab_test :my_experiment
+    end
+  end
 end
