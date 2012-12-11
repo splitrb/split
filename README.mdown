@@ -255,6 +255,62 @@ Split.configure do |config|
 end
 ```
 
+### Experiment configuration
+
+Instead of providing the experiment options inline, you can store them
+in a hash or a configuration file:
+
+    Split.configure do |config|
+      config.experiments = YAML.load_file "config/experiments.yml"
+    end
+
+This hash can control your experiment's variants, weights, and if the
+experiment resets once finished:
+
+    Split.configure do |config|
+      config.experiments = {
+        :my_first_experiment => {
+          :variants => ["a", "b"],
+          :resettable => false,
+        },
+        :my_second_experiment => {
+          :variants => [
+            { :name => "a", :percent => 67 },
+            { :name => "b", :percent => 33 },
+          ]
+        }
+      }
+    end
+
+This simplifies the calls from your code:
+
+    ab_test(:my_first_experiment)
+
+and:
+
+    finished(:my_first_experiment)
+
+#### Metrics
+
+You might wish to track generic metrics, such as conversions, and use
+those to complete multiple different experiments without adding more to
+your code. You can use the configuration hash to do this, thanks to
+the `:metric` option.
+
+    Split.configure do |config|
+      config.experiments = {
+        :my_first_experiment => {
+          :variants => ["a", "b"],
+          :metric => :conversion,
+        }
+      }
+    end
+
+Your code may then track a completion using the metric instead of
+the experiment name:
+
+    finished(:conversion)
+
 ### DB failover solution
 
 Due to the fact that Redis has no autom. failover mechanism, it's

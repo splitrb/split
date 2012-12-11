@@ -1,7 +1,12 @@
 module Split
   module Helper
-    def ab_test(experiment_name, control, *alternatives)
-      if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero?
+    def ab_test(experiment_name, control=nil, *alternatives)
+      if control.nil? && alternatives.length.zero?
+        experiment_config = Split.configuration.experiments[experiment_name]
+        unless experiment_config.nil?
+          control, alternatives = normalize_variants experiment_config[:variants]
+        end
+      elsif RUBY_VERSION.match(/1\.8/) && alternatives.length.zero?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
@@ -26,7 +31,25 @@ module Split
 
     def finished(experiment_name, options = {:reset => true})
       return if exclude_visitor? or !Split.configuration.enabled
-      return unless (experiment = Split::Experiment.find(experiment_name))
+
+      experiment = Split::Experiment.find(experiment_name)
+      if experiment.nil?
+        return unless Split.configuration.experiments
+        Split.configuration.experiments.each do |name,exp|
+          if exp[:metric] == experiment_name
+            local_opts = {}
+            local_opts[:reset] = exp[:resettable] unless exp[:resettable].nil?
+            finished name, options.merge(local_opts)
+          end
+        end
+        return
+      end
+
+      if Split.configuration.experiments && Split.configuration.experiments[experiment_name]
+        reset = Split.configuration.experiments[experiment_name][:resettable]
+        options[:reset] = reset unless reset.nil?
+      end
+
       return if !options[:reset] && ab_user[experiment.finished_key]
 
       if alternative_name = ab_user[experiment.key]
@@ -142,6 +165,35 @@ module Split
 
     def keys_without_experiment(keys, experiment_key)
       keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+    end
+
+    def normalize_variants(variants)
+      given_probability, num_with_probability = variants.inject([0,0]) do |a,v|
+        p, n = a
+        if v.kind_of?(Hash) && v[:percent]
+          [p + v[:percent], n + 1]
+        else
+          a
+        end
+      end
+
+      num_without_probability = variants.length - num_with_probability
+      unassigned_probability = ((100.0 - given_probability) / num_without_probability / 100.0)
+
+      if num_with_probability.nonzero?
+        variants = variants.map do |v|
+          if v.kind_of?(Hash) && v[:name] && v[:percent]
+            { v[:name] => v[:percent] / 100.0 }
+          elsif v.kind_of?(Hash) && v[:name]
+            { v[:name] => unassigned_probability }
+          else
+            { v => unassigned_probability }
+          end
+        end
+        [variants.shift, variants.inject({}, :merge)]
+      else
+        [variants.shift, variants]
+      end
     end
   end
 
