@@ -5,12 +5,6 @@ require 'spec_helper'
 describe Split::Helper do
   include Split::Helper
 
-  before(:each) do
-    Split.redis.flushall
-    @ab_user = {}
-    params = nil
-  end
-
   describe "ab_test" do
 
     it "should not raise an error when passed strings for alternatives" do

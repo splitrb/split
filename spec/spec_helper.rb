@@ -10,6 +10,12 @@ Dir['./spec/support/*.rb'].each { |f| require f }
 
 RSpec.configure do |config|
   config.order = 'random'
+  config.before(:each) do
+    Split.configuration = Split::Configuration.new
+    Split.redis.flushall
+    @ab_user = {}
+    params = nil
+  end
 end
 
 def session

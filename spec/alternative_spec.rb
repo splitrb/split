@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'split/alternative'
 
 describe Split::Alternative do
-  before(:each) { Split.redis.flushall }
 
   it "should have a name" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
