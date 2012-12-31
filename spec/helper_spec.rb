@@ -634,4 +634,16 @@ describe Split::Helper do
       ab_test :my_experiment
     end
   end
+
+  it 'should handle multiple experiments correctly' do
+    experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
+    experiment2 = Split::Experiment.find_or_create('link_color2', 'blue', 'red')
+    alternative_name = ab_test('link_color', 'blue', 'red')
+    alternative_name2 = ab_test('link_color2', 'blue', 'red')
+    finished('link_color2')
+
+    experiment2.alternatives.each do |alt|
+      alt.unfinished_count.should eq(0)
+    end
+  end
 end
