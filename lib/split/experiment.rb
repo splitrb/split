@@ -47,15 +47,7 @@ module Split
     end
 
     def random_alternative
-      weights = alternatives.map(&:weight)
-
-      total = weights.inject(:+)
-      point = rand * total
-
-      alternatives.zip(weights).each do |n,w|
-        return n if w >= point
-        point -= w
-      end
+      Split.configuration.algorithm.choose_alternative(self)
     end
 
     def version

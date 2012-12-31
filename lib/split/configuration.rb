@@ -22,6 +22,7 @@ module Split
     attr_accessor :enabled
     attr_accessor :persistence
     attr_accessor :experiments
+    attr_accessor :algorithm
 
     def initialize
       @robot_regex = /\b(#{BOTS.keys.join('|')})\b/i
@@ -32,6 +33,7 @@ module Split
       @allow_multiple_experiments = false
       @enabled = true
       @persistence = Split::Persistence::SessionAdapter
+      @algorithm = Split::Algorithms::WeightedSample
     end
   end
 end

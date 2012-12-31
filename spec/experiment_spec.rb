@@ -150,8 +150,9 @@ describe Split::Experiment do
   end
 
   describe 'next_alternative' do
+    let(:experiment) { Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green') }
+    
     it "should always return the winner if one exists" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
       green = Split::Alternative.new('green', 'link_color')
       experiment.winner = 'green'
 
@@ -159,6 +160,11 @@ describe Split::Experiment do
       green.increment_participation
 
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
+      experiment.next_alternative.name.should eql('green')
+    end
+    
+    it "should use the specified algorithm if a winner does not exist" do
+      Split.configuration.algorithm.should_receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
       experiment.next_alternative.name.should eql('green')
     end
   end
