@@ -304,6 +304,7 @@ describe Split::Helper do
         (new_red_count + new_blue_count).should eql(previous_red_count + previous_blue_count)
       end
     end
+
     describe 'finished' do
       it "should not increment the completed count" do
         experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
@@ -319,6 +320,7 @@ describe Split::Helper do
       end
     end
   end
+
   describe 'when ip address is ignored' do
     before(:each) do
       @request = OpenStruct.new(:ip => '81.19.48.130')
@@ -348,6 +350,7 @@ describe Split::Helper do
         (new_red_count + new_blue_count).should eql(previous_red_count + previous_blue_count)
       end
     end
+
     describe 'finished' do
       it "should not increment the completed count" do
         experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
