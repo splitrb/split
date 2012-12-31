@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'split/experiment'
+require 'split/algorithms'
 
 describe Split::Experiment do
   it "should have a name" do
@@ -146,6 +147,19 @@ describe Split::Experiment do
       experiment.version.should eql(0)
       experiment.reset
       experiment.version.should eql(1)
+    end
+  end
+  
+  describe 'algorithm' do
+    let(:experiment) { Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green') }
+    
+    it 'should use the default algorithm if none is specified' do
+      experiment.algorithm.should == Split.configuration.algorithm
+    end
+    
+    it 'should use the user specified algorithm for this experiment if specified' do
+      experiment.algorithm = Split::Algorithms::Whiplash
+      experiment.algorithm.should == Split::Algorithms::Whiplash
     end
   end
 

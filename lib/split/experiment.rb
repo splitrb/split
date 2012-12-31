@@ -1,12 +1,17 @@
 module Split
   class Experiment
     attr_accessor :name
+    attr_writer :algorithm
 
     def initialize(name, *alternative_names)
       @name = name.to_s
       @alternatives = alternative_names.map do |alternative|
                         Split::Alternative.new(alternative, name)
                       end
+    end
+    
+    def algorithm
+      @algorithm ||= Split.configuration.algorithm
     end
 
     def winner
@@ -32,6 +37,10 @@ module Split
     def start_time
       t = Split.redis.hget(:experiment_start_times, @name)
       Time.parse(t) if t
+    end
+    
+    def [](name)
+      alternatives.find{|a| a.name == name} 
     end
 
     def alternatives
