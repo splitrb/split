@@ -119,7 +119,6 @@ module Split
       end
     end
 
-
     protected
 
     def control_variable(control)
@@ -136,15 +135,17 @@ module Split
             ret = forced_alternative
           else
             clean_old_versions(experiment)
-            begin_experiment(experiment) if exclude_visitor? or not_allowed_to_test?(experiment.key)
-
-            if ab_user[experiment.key]
-              ret = ab_user[experiment.key]
+            if exclude_visitor? or not_allowed_to_test?(experiment.key)
+              ret = experiment.control.name 
             else
-              alternative = experiment.next_alternative
-              alternative.increment_participation
-              begin_experiment(experiment, alternative.name)
-              ret = alternative.name
+              if ab_user[experiment.key]
+                ret = ab_user[experiment.key]
+              else
+                alternative = experiment.next_alternative
+                alternative.increment_participation
+                begin_experiment(experiment, alternative.name)
+                ret = alternative.name
+              end
             end
           end
         end

@@ -84,9 +84,9 @@ describe Split::Helper do
     end
 
     it "should only let a user participate in one experiment at a time" do
-      ab_test('link_color', 'blue', 'red')
+      link_color = ab_test('link_color', 'blue', 'red')
       ab_test('button_size', 'small', 'big')
-      ab_user['button_size'].should eql('small')
+      ab_user.should eql({'link_color' => link_color})
       big = Split::Alternative.new('big', 'button_size')
       big.participant_count.should eql(0)
       small = Split::Alternative.new('small', 'button_size')
@@ -99,7 +99,7 @@ describe Split::Helper do
       end
       link_color = ab_test('link_color', 'blue', 'red')
       button_size = ab_test('button_size', 'small', 'big')
-      ab_user['button_size'].should eql(button_size)
+      ab_user.should eql({'link_color' => link_color, 'button_size' => button_size})
       button_size_alt = Split::Alternative.new(button_size, 'button_size')
       button_size_alt.participant_count.should eql(1)
     end
