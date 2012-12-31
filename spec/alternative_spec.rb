@@ -86,7 +86,7 @@ describe Split::Alternative do
       alternative.conversion_rate.should eql(0)
     end
 
-    it "does something" do
+    it "calculate conversion rate" do
       alternative = Split::Alternative.new('Basket', 'basket_text')
       alternative.stub(:participant_count).and_return(10)
       alternative.stub(:completed_count).and_return(4)
