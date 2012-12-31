@@ -1,4 +1,4 @@
-%w[algorithms experiment alternative helper version configuration persistence exceptions].each do |f|
+%w[algorithms extensions experiment alternative helper version configuration persistence exceptions].each do |f|
   require "split/#{f}"
 end
 
