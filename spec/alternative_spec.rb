@@ -79,6 +79,16 @@ describe Split::Alternative do
     alternative.control?.should be_false
   end
 
+  describe 'unfinished_count' do
+    it "should be difference between participant and completed counts" do
+      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment.save
+      alternative = Split::Alternative.new('Basket', 'basket_text')
+      alternative.increment_participation
+      alternative.unfinished_count.should eql(alternative.participant_count)
+    end
+  end
+
   describe 'conversion rate' do
     it "should be 0 if there are no conversions" do
       alternative = Split::Alternative.new('Basket', 'basket_text')

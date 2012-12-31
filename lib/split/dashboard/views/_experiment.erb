@@ -37,7 +37,7 @@
           <% end %>
         </td>
         <td><%= alternative.participant_count %></td>
-        <td><%= alternative.participant_count - alternative.completed_count %></td>
+        <td><%= alternative.unfinished_count %></td>
         <td><%= alternative.completed_count %></td>
         <td>
           <%= number_to_percentage(alternative.conversion_rate) %>%

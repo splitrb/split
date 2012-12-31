@@ -30,6 +30,10 @@ module Split
     def completed_count
       Split.redis.hget(key, 'completed_count').to_i
     end
+    
+    def unfinished_count
+      participant_count - completed_count
+    end
 
     def completed_count=(count)
       Split.redis.hset(key, 'completed_count', count.to_i)
