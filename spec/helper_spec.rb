@@ -584,11 +584,11 @@ describe Split::Helper do
         @control ||= anything
         @alternatives ||= anything
         @times ||= 1
-        actual.should_receive(:experiment_variable).with([@alternatives].flatten, @control, name).exactly(@times).times
+        actual.should_receive(:experiment_variable).with(@alternatives, @control, name).exactly(@times).times
       end
-      chain :with do |control, alternatives|
+      chain :with do |control, *alternatives|
         @control = control
-        @alternatives = alternatives
+        @alternatives = alternatives.flatten
       end
       chain :exactly do |times|
         @times = times
@@ -628,7 +628,7 @@ describe Split::Helper do
           { :name => "third_opt", :percent => 23 },
         ],
       }
-      should start_experiment(:my_experiment).with({"control_opt" => 0.67}, {"second_opt" => 0.1, "third_opt" => 0.23})
+      should start_experiment(:my_experiment).with({"control_opt" => 0.67}, {"second_opt" => 0.1}, {"third_opt" => 0.23})
       ab_test :my_experiment
     end
 
@@ -641,7 +641,7 @@ describe Split::Helper do
           "fourth_opt",
         ],
       }
-      should start_experiment(:my_experiment).with({"control_opt" => 0.34}, {"second_opt" => 0.215, "third_opt" => 0.23, "fourth_opt" => 0.215})
+      should start_experiment(:my_experiment).with({"control_opt" => 0.34}, {"second_opt" => 0.215}, {"third_opt" => 0.23}, {"fourth_opt" => 0.215})
       ab_test :my_experiment
     end
 
@@ -653,7 +653,7 @@ describe Split::Helper do
           { :name => "third_opt", :percent => 64 },
         ],
       }
-      should start_experiment(:my_experiment).with({"control_opt" => 0.18}, {"second_opt" => 0.18, "third_opt" => 0.64})
+      should start_experiment(:my_experiment).with({"control_opt" => 0.18}, {"second_opt" => 0.18}, {"third_opt" => 0.64})
       ab_test :my_experiment
     end
   end
