@@ -191,7 +191,7 @@ module Split
             { v => unassigned_probability }
           end
         end
-        [variants.shift, variants.inject({}, :merge)]
+        [variants.shift, variants]
       else
         variants = variants.dup
         [variants.shift, variants]
