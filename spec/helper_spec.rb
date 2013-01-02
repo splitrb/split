@@ -578,11 +578,29 @@ describe Split::Helper do
   context "with preloaded config" do
     before { Split.configuration.experiments = {} }
 
+    subject { self }
+    RSpec::Matchers.define :start_experiment do |name|
+      match do |actual|
+        @control ||= anything
+        @alternatives ||= anything
+        @times ||= 1
+        actual.should_receive(:experiment_variable).with(@alternatives, @control, name).exactly(@times).times
+      end
+      chain :with do |control, *alternatives|
+        @control = control
+        @alternatives = alternatives.flatten
+      end
+      chain :exactly do |times|
+        @times = times
+      end
+      chain :times do end
+    end
+
     it "pulls options from config file" do
       Split.configuration.experiments[:my_experiment] = {
         :variants => [ "control_opt", "other_opt" ],
       }
-      should_receive(:experiment_variable).with(["other_opt"], "control_opt", :my_experiment)
+      should start_experiment(:my_experiment).with("control_opt", ["other_opt"])
       ab_test :my_experiment
     end
 
@@ -590,7 +608,7 @@ describe Split::Helper do
       Split.configuration.experiments[:my_experiment] = {
         :variants => [ "control_opt", "other_opt" ],
       }
-      should_receive(:experiment_variable).with(["other_opt"], "control_opt", :my_experiment).exactly(5).times
+      should start_experiment(:my_experiment).with("control_opt", ["other_opt"]).exactly(5).times
       5.times { ab_test :my_experiment }
     end
 
@@ -598,7 +616,7 @@ describe Split::Helper do
       Split.configuration.experiments[:my_experiment] = {
         :variants => [ "control_opt", "second_opt", "third_opt" ],
       }
-      should_receive(:experiment_variable).with(["second_opt", "third_opt"], "control_opt", :my_experiment)
+      should start_experiment(:my_experiment).with("control_opt", ["second_opt", "third_opt"])
       ab_test :my_experiment
     end
 
@@ -610,7 +628,7 @@ describe Split::Helper do
           { :name => "third_opt", :percent => 23 },
         ],
       }
-      should_receive(:experiment_variable).with({"second_opt" => 0.1, "third_opt" => 0.23}, {"control_opt" => 0.67}, :my_experiment)
+      should start_experiment(:my_experiment).with({"control_opt" => 0.67}, {"second_opt" => 0.1}, {"third_opt" => 0.23})
       ab_test :my_experiment
     end
 
@@ -623,7 +641,7 @@ describe Split::Helper do
           "fourth_opt",
         ],
       }
-      should_receive(:experiment_variable).with({"second_opt" => 0.215, "third_opt" => 0.23, "fourth_opt" => 0.215}, {"control_opt" => 0.34}, :my_experiment)
+      should start_experiment(:my_experiment).with({"control_opt" => 0.34}, {"second_opt" => 0.215}, {"third_opt" => 0.23}, {"fourth_opt" => 0.215})
       ab_test :my_experiment
     end
 
@@ -635,7 +653,7 @@ describe Split::Helper do
           { :name => "third_opt", :percent => 64 },
         ],
       }
-      should_receive(:experiment_variable).with({"second_opt" => 0.18, "third_opt" => 0.64}, {"control_opt" => 0.18}, :my_experiment)
+      should start_experiment(:my_experiment).with({"control_opt" => 0.18}, {"second_opt" => 0.18}, {"third_opt" => 0.64})
       ab_test :my_experiment
     end
   end
