@@ -193,6 +193,7 @@ module Split
         end
         [variants.shift, variants.inject({}, :merge)]
       else
+        variants = variants.dup
         [variants.shift, variants]
       end
     end

@@ -586,6 +586,14 @@ describe Split::Helper do
       ab_test :my_experiment
     end
 
+    it "can be called multiple times" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "other_opt" ],
+      }
+      should_receive(:experiment_variable).with(["other_opt"], "control_opt", :my_experiment).exactly(5).times
+      5.times { ab_test :my_experiment }
+    end
+
     it "accepts multiple variants" do
       Split.configuration.experiments[:my_experiment] = {
         :variants => [ "control_opt", "second_opt", "third_opt" ],
