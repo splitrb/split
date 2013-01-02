@@ -584,7 +584,7 @@ describe Split::Helper do
         @control ||= anything
         @alternatives ||= anything
         @times ||= 1
-        actual.should_receive(:experiment_variable).with(@alternatives, @control, name).exactly(@times).times
+        actual.should_receive(:experiment_variable).with([@alternatives].flatten, @control, name).exactly(@times).times
       end
       chain :with do |control, alternatives|
         @control = control
