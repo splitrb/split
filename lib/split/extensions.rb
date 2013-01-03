@@ -1,3 +1,3 @@
-%w[array].each do |f|
+%w[array string].each do |f|
   require "split/extensions/#{f}"
 end

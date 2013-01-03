@@ -24,6 +24,31 @@ module Split
     attr_accessor :experiments
     attr_accessor :algorithm
 
+    def disabled?
+      !enabled
+    end
+
+    def experiment_for(name)
+      if experiments
+        experiments[name]
+      end
+    end
+
+    def metrics
+      return @metrics if defined?(@metrics)
+      @metrics = {}
+      if self.experiments
+        self.experiments.each do |key, value|
+          metric_name = value[:metric]
+          if metric_name
+            @metrics[metric_name] ||= []
+            @metrics[metric_name] << Split::Experiment.load_from_configuration(key)
+          end
+        end
+      end
+      @metrics
+    end
+
     def initialize
       @robot_regex = /\b(#{BOTS.keys.join('|')})\b/i
       @ignore_ip_addresses = []

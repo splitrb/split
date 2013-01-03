@@ -27,6 +27,15 @@ describe Split::Experiment do
 
     Split::Experiment.find('basket_text').start_time.should == experiment_start_time
   end
+  
+  it "should save the selected algorithm to redis" do
+    experiment_algorithm = Split::Algorithms::Whiplash
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.algorithm = experiment_algorithm 
+    experiment.save
+
+    Split::Experiment.find('basket_text').algorithm.should == experiment_algorithm
+  end
 
   it "should handle not having a start time" do
     experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
@@ -160,6 +169,19 @@ describe Split::Experiment do
     it 'should use the user specified algorithm for this experiment if specified' do
       experiment.algorithm = Split::Algorithms::Whiplash
       experiment.algorithm.should == Split::Algorithms::Whiplash
+    end
+  end
+  
+  describe 'load_algorithm' do
+    let(:experiment) { Split::Experiment.new('basket_text', 'Basket', "Cart") }
+    
+    it "should load an algorithm if it exists" do
+      Split.redis.hset(:experiment_algorithms, experiment.name, Split::Algorithms::Whiplash.to_s)
+      experiment.load_algorithm.should == Split::Algorithms::Whiplash
+    end
+    
+    it "should return nil if algorithm has not been persisted" do
+      experiment.load_algorithm.should 
     end
   end
 

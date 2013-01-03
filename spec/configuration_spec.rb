@@ -21,6 +21,11 @@ describe Split::Configuration do
     @config.enabled.should be_true
   end
 
+  it "disabled is the opposite of enabled" do
+    @config.enabled = false
+    @config.disabled?.should be_true
+  end
+
   it "should provide a default pattern for robots" do
     %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg].each do |robot|
       @config.robot_regex.should =~ robot
@@ -29,5 +34,13 @@ describe Split::Configuration do
 
   it "should use the session adapter for persistence by default" do
     @config.persistence.should eq(Split::Persistence::SessionAdapter)
+  end
+
+  it "should load a metric" do
+    @config.experiments = {:my_experiment=>
+        {:variants=>["control_opt", "other_opt"], :metric=>:my_metric}}
+
+    @config.metrics.should_not be_nil
+    @config.metrics.keys.should ==  [:my_metric]
   end
 end
