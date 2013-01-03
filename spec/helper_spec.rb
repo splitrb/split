@@ -649,6 +649,21 @@ describe Split::Helper do
       names_and_weights.should ==  [['control_opt', 0.18], ['second_opt', 0.18], ['third_opt', 0.64]]
       names_and_weights.inject(0){|sum, nw| sum + nw[1]}.should == 1.0
     end
+
+    it "fails gracefully if config is missing experiment" do
+      Split.configuration.experiments = { :other_experiment => { :foo => "Bar" } }
+      lambda { ab_test :my_experiment }.should raise_error(/not found/i)
+    end
+
+    it "fails gracefully if config is missing" do
+      Split.configuration.experiments = nil
+      lambda { ab_test :my_experiment }.should raise_error(/not found/i)
+    end
+
+    it "fails gracefully if config is missing variants" do
+      Split.configuration.experiments[:my_experiment] = { :foo => "Bar" }
+      lambda { ab_test :my_experiment }.should raise_error(/variants/i)
+    end
   end
 
   it 'should handle multiple experiments correctly' do
