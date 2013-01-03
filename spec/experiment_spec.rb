@@ -204,6 +204,14 @@ describe Split::Experiment do
       experiment.next_alternative.name.should eql('green')
     end
   end
+  
+  describe 'single alternative' do
+    let(:experiment) { Split::Experiment.find_or_create('link_color', 'blue') }
+    
+    it "should always return the color blue" do
+      experiment.next_alternative.name.should eql('blue')
+    end 
+  end
 
   describe 'changing an existing experiment' do
     it "should reset an experiment if it is loaded with different alternatives" do
@@ -249,7 +257,4 @@ describe Split::Experiment do
       same_experiment.alternatives.map(&:weight).should == [1, 2]
     end
   end
-
-
-
 end

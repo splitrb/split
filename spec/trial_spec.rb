@@ -20,6 +20,7 @@ describe Split::Trial do
     it "should call select_alternative if nil" do
       trial = Split::Trial.new(experiment: experiment = mock('experiment'))
       trial.should_receive(:choose).and_return(alternative = mock('alternative'))
+      alternative.should_receive(:increment_participation)
       trial.choose!
 
       trial.alternative.should == alternative

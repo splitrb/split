@@ -71,7 +71,11 @@ module Split
     end
 
     def random_alternative
-      Split.configuration.algorithm.choose_alternative(self)
+      if alternatives.length > 1
+        Split.configuration.algorithm.choose_alternative(self)
+      else
+        alternatives.first
+      end
     end
 
     def version
@@ -204,8 +208,6 @@ module Split
       if alternatives.length == 1
         if alternatives[0].is_a? Hash
           alternatives = alternatives[0].map{|k,v| {k => v} }
-        else
-          raise ArgumentError, 'You must declare at least 2 alternatives'
         end
       end
 
