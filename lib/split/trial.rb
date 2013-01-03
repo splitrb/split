@@ -23,6 +23,11 @@ module Split
 
     def choose!
       self.alternative = choose
+      self.alternative.increment_participation      
+    end
+    
+    def record!
+      self.alternative.increment_participation
     end
 
     def alternative_name=(name)
@@ -34,7 +39,6 @@ module Split
         experiment.winner
       else
         alt = experiment.next_alternative
-        alt.increment_participation
         alt
       end
     end
