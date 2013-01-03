@@ -161,6 +161,7 @@ module Split
           if ab_user[experiment.key]
             ret = ab_user[experiment.key]
           else
+            trial.choose!
             ret = begin_experiment(experiment, trial.alternative.name)
           end
         end

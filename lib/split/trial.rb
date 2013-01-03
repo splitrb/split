@@ -1,7 +1,7 @@
 module Split
   class Trial
     attr_accessor :experiment
-    attr_writer   :alternative
+    attr_writer :alternative
 
     def initialize(attrs = {})
       attrs.each do |key,value|
@@ -12,20 +12,24 @@ module Split
     end
 
     def alternative
-      @alternative ||= select_alternative
+      @alternative ||=  if experiment.winner
+                          experiment.winner
+                        end
     end
 
     def complete!
-      alternative.increment_completion
+      alternative.increment_completion if alternative
+    end
+
+    def choose!
+      self.alternative = choose
     end
 
     def alternative_name=(name)
       self.alternative= experiment.alternatives.find{|a| a.name == name }
     end
 
-    private
-
-    def select_alternative
+    def choose
       if experiment.winner
         experiment.winner
       else

@@ -13,13 +13,15 @@ describe Split::Trial do
   describe "alternative" do
     it "should use the alternative if specified" do
       trial = Split::Trial.new(experiment: experiment = mock('experiment'), alternative: alternative = mock('alternative'))
-      trial.should_not_receive(:select_alternative)
+      trial.should_not_receive(:choose)
       trial.alternative.should == alternative
     end
 
     it "should call select_alternative if nil" do
       trial = Split::Trial.new(experiment: experiment = mock('experiment'))
-      trial.should_receive(:select_alternative).and_return(alternative = mock('alternative'))
+      trial.should_receive(:choose).and_return(alternative = mock('alternative'))
+      trial.choose!
+
       trial.alternative.should == alternative
     end
   end
