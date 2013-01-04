@@ -10,9 +10,15 @@ module Split
         }.merge(options)
        
       @name = name.to_s 
-      @resettable   = options[:resettable]   if !options[:resettable].nil?
-      @algorithm    = options[:algorithm]    if !options[:algorithm].nil?
-      @alternatives = options[:alternatives] if !options[:alternatives].nil?
+      @alternatives = options[:alternatives]  if !options[:alternatives].nil?
+      
+      if !options[:algorithm].nil?    
+        @algorithm = options[:algorithm].is_a?(String) ? options[:algorithm].constantize : options[:algorithm]
+      end
+      
+      if !options[:resettable].nil?
+        @resettable = options[:resettable].is_a?(String) ? options[:resettable] == 'true' : options[:resettable]
+      end
       
       if !options[:alternative_names].nil? 
         @alternatives = options[:alternative_names].map do |alternative|
@@ -20,24 +26,15 @@ module Split
                         end
       end
       
-        
+      
     end
     
     def algorithm
-      @algorithm ||= (load_algorithm || Split.configuration.algorithm)
+      @algorithm ||= Split.configuration.algorithm
     end
 
     def ==(obj)
       self.name == obj.name
-    end
-    
-    def load_algorithm
-      alg = Split.redis.hget(:experiment_algorithms, name) 
-      if alg
-        alg.constantize
-      else
-        nil
-      end
     end
 
     def winner
@@ -135,12 +132,15 @@ module Split
       if new_record?
         Split.redis.sadd(:experiments, name)
         Split.redis.hset(:experiment_start_times, @name, Time.now)
-        Split.redis.hset(:experiment_algorithms, @name, algorithm.to_s)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       else
         Split.redis.del(name)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       end
+      config_key = Split::Experiment.experiment_config_key(name)
+      Split.redis.hset(config_key, :resettable, resettable)
+      Split.redis.hset(config_key, :algorithm, algorithm.to_s)
+      self
     end
 
     def self.load_alternatives_for(name)
@@ -173,18 +173,21 @@ module Split
     end
 
     def self.load_from_configuration(name)
-      obj = self.new(name, :alternative_names => load_alternatives_for(name))
-      exp_config = Split.configuration.experiment_for(name)
-      if exp_config
-        obj.resettable = exp_config[:resettable] unless exp_config[:resettable].nil?
-      else
-        obj.resettable = true
-      end
-      obj
+      exp_config = Split.configuration.experiment_for(name) || {}     
+      self.new(name, :alternative_names => load_alternatives_for(name), 
+                           :resettable => exp_config[:resettable], 
+                           :algorithm => exp_config[:algorithm])
     end
 
     def self.load_from_redis(name)
-      self.new(name, :alternative_names => load_alternatives_for(name))
+      exp_config = Split.redis.hgetall(experiment_config_key(name))
+      self.new(name, :alternative_names => load_alternatives_for(name),
+                      :resettable => exp_config['resettable'], 
+                      :algorithm => exp_config['algorithm'])     
+    end
+    
+    def self.experiment_config_key(name)
+      "experiment_configurations/#{name}"
     end
 
     def self.all

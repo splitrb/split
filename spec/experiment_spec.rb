@@ -102,6 +102,31 @@ describe Split::Experiment do
     end
   end
   
+  describe 'persistent configuration' do
+  
+    it "should persist resettable in redis" do
+      experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"], :resettable => false)
+      experiment.save
+        
+      e = Split::Experiment.find('basket_text')
+      e.should == experiment
+      e.resettable.should be_false
+    
+    end
+    
+    it "should persist algorithm in redis" do
+      experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash)
+      experiment.save
+  
+      e = Split::Experiment.find('basket_text')
+      e.should == experiment
+      e.algorithm.should == Split::Algorithms::Whiplash
+    end
+  end
+
+  
+  
+  
   describe 'deleting' do
     it 'should delete itself' do
       experiment = Split::Experiment.new('basket_text', alternative_names: [ 'Basket', "Cart"])
@@ -185,19 +210,6 @@ describe Split::Experiment do
     end
   end
   
-  describe 'load_algorithm' do
-    let(:experiment) { Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"]) }
-    
-    it "should load an algorithm if it exists" do
-      Split.redis.hset(:experiment_algorithms, experiment.name, Split::Algorithms::Whiplash.to_s)
-      experiment.load_algorithm.should == Split::Algorithms::Whiplash
-    end
-    
-    it "should return nil if algorithm has not been persisted" do
-      experiment.load_algorithm.should 
-    end
-  end
-
   describe 'next_alternative' do
     let(:experiment) { Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green') }
     
