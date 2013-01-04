@@ -397,9 +397,14 @@ experiment = Split::Experiment.find_or_create('color', 'red', 'blue')
 trial = Trial.new(:experiment => experiment)
 # run trial
 trial.choose!
-# get the result
-trial.alternative
-# returns either red or blue
+# get the result, returns either red or blue
+trial.alternative.name
+
+# if the goal has been achieved, increment the successful completions for this alternative.
+if goal_acheived?
+  trial.complete!
+end
+
 ```
 
 ## Algorithms
@@ -407,6 +412,8 @@ trial.alternative
 By default, Split ships with an algorithm that randomly selects from possible alternatives for a traditional a/b test. 
 
 An implementation of a bandit algorithm is also provided. 
+
+Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file. 
 
 ## Extensions
 
