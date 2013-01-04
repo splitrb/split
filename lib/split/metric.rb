@@ -20,7 +20,7 @@ module Split
           Split::Experiment.find(experiment_name)
         end
 
-        Split::Metric.new(name: name, experiments: experiments)
+        Split::Metric.new(:name => name, :experiments => experiments)
       else
         nil
       end
@@ -29,14 +29,14 @@ module Split
     def self.load_from_configuration(name)
       metrics = Split.configuration.metrics
       if metrics && metrics[name]
-        Split::Metric.new(experiments: metrics[name], name: name)
+        Split::Metric.new(:experiments => metrics[name], :name => name)
       else
         nil
       end
     end
 
     def self.find(name)
-      name = name.intern
+      name = name.intern if name.is_a?(String)
       metric = load_from_configuration(name)
       metric = load_from_redis(name) if metric.nil?
       metric

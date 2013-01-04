@@ -4,11 +4,9 @@ module Split
     attr_writer :alternative
 
     def initialize(attrs = {})
-      attrs.each do |key,value|
-        if self.respond_to?("#{key}=")
-          self.send("#{key}=", value)
-        end
-      end
+      self.experiment = attrs[:experiment]  if !attrs[:experiment].nil?
+      self.alternative = attrs[:alternative] if !attrs[:alternative].nil?
+      self.alternative_name = attrs[:alternative_name] if !attrs[:alternative_name].nil?
     end
 
     def alternative
@@ -39,7 +37,7 @@ module Split
     end
     
     def alternative_name=(name)
-      self.alternative= experiment.alternatives.find{|a| a.name == name }
+      self.alternative= self.experiment.alternatives.find{|a| a.name == name }
     end
   end
 end

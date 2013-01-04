@@ -44,6 +44,10 @@ module Split
         nil
       end
     end
+    
+    def participant_count
+      alternatives.inject(0){|sum,a| sum + a.participant_count}
+    end
 
     def control
       alternatives.first
@@ -156,7 +160,7 @@ module Split
       if alts.is_a?(Hash)
         alts.keys
       else
-        alts
+        alts.flatten
       end
     end
 
@@ -173,7 +177,7 @@ module Split
     end
 
     def self.load_from_configuration(name)
-      exp_config = Split.configuration.experiment_for(name) || {}     
+      exp_config = Split.configuration.experiment_for(name) || {}
       self.new(name, :alternative_names => load_alternatives_for(name), 
                            :resettable => exp_config[:resettable], 
                            :algorithm => exp_config[:algorithm])

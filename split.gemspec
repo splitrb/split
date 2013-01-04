@@ -32,6 +32,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'bundler',     '~> 1.0'
   s.add_development_dependency 'rspec',       '~> 2.12'
   s.add_development_dependency 'rack-test',   '~> 0.6'
-  s.add_development_dependency 'pry'
-  s.add_development_dependency 'pry-debugger'
 end

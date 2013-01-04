@@ -129,7 +129,7 @@ describe Split::Experiment do
   
   describe 'deleting' do
     it 'should delete itself' do
-      experiment = Split::Experiment.new('basket_text', alternative_names: [ 'Basket', "Cart"])
+      experiment = Split::Experiment.new('basket_text', :alternative_names => [ 'Basket', "Cart"])
       experiment.save
 
       experiment.delete

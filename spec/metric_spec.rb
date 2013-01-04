@@ -12,7 +12,7 @@ describe Split::Metric do
       experiment1 = Split::Experiment.find_or_create('color', 'red', 'blue')
       experiment2 = Split::Experiment.find_or_create('size', 'big', 'small')
 
-      metric = Split::Metric.new(name: 'purchase', experiments: [experiment1, experiment2])
+      metric = Split::Metric.new(:name => 'purchase', :experiments => [experiment1, experiment2])
       metric.save
       Split::Metric.possible_experiments('purchase').should include(experiment1, experiment2)
     end
@@ -21,7 +21,7 @@ describe Split::Metric do
       experiment1 = Split::Experiment.find_or_create('purchase', 'red', 'blue')
       experiment2 = Split::Experiment.find_or_create('size', 'big', 'small')
 
-      metric = Split::Metric.new(name: 'purchase', experiments: [experiment2])
+      metric = Split::Metric.new(:name => 'purchase', :experiments => [experiment2])
       metric.save
       Split::Metric.possible_experiments('purchase').should include(experiment1, experiment2)
     end

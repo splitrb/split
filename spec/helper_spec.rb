@@ -81,6 +81,8 @@ describe Split::Helper do
       ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)
       experiment = Split::Experiment.find('link_color')
       experiment.alternative_names.should eql(['blue', 'red'])
+      # TODO: persist alternative weights
+      # experiment.alternatives.collect{|a| a.weight}.should == [0.01, 0.2]
     end
 
     it "should only let a user participate in one experiment at a time" do
@@ -570,94 +572,84 @@ describe Split::Helper do
           finished('link_color')
         end
       end
-
-
     end
-
   end
 
-  # context "with preloaded config" do
-  #   before { Split.configuration.experiments = {} }
-  # 
-  #   subject { self }
-  #   RSpec::Matchers.define :start_experiment do |name|
-  #     match do |actual|
-  #       @control ||= anything
-  #       @alternatives ||= anything
-  #       @times ||= 1
-  #       actual.should_receive(:experiment_variable).with(@alternatives, @control, name).exactly(@times).times
-  #     end
-  #     chain :with do |control, *alternatives|
-  #       @control = control
-  #       @alternatives = alternatives.flatten
-  #     end
-  #     chain :exactly do |times|
-  #       @times = times
-  #     end
-  #     chain :times do end
-  #   end
-  # 
-  #   it "pulls options from config file" do
-  #     Split.configuration.experiments[:my_experiment] = {
-  #       :variants => [ "control_opt", "other_opt" ],
-  #     }
-  #     should start_experiment(:my_experiment).with("control_opt", ["other_opt"])
-  #     ab_test :my_experiment
-  #   end
-  # 
-  #   it "can be called multiple times" do
-  #     Split.configuration.experiments[:my_experiment] = {
-  #       :variants => [ "control_opt", "other_opt" ],
-  #     }
-  #     should start_experiment(:my_experiment).with("control_opt", ["other_opt"]).exactly(5).times
-  #     5.times { ab_test :my_experiment }
-  #   end
-  # 
-  #   it "accepts multiple variants" do
-  #     Split.configuration.experiments[:my_experiment] = {
-  #       :variants => [ "control_opt", "second_opt", "third_opt" ],
-  #     }
-  #     should start_experiment(:my_experiment).with("control_opt", ["second_opt", "third_opt"])
-  #     ab_test :my_experiment
-  #   end
-  # 
-  #   it "accepts probability on variants" do
-  #     Split.configuration.experiments[:my_experiment] = {
-  #       :variants => [
-  #         { :name => "control_opt", :percent => 67 },
-  #         { :name => "second_opt", :percent => 10 },
-  #         { :name => "third_opt", :percent => 23 },
-  #       ],
-  #     }
-  #     should start_experiment(:my_experiment).with({"control_opt" => 0.67}, {"second_opt" => 0.1}, {"third_opt" => 0.23})
-  #     ab_test :my_experiment
-  #   end
-  # 
-  #   it "accepts probability on some variants" do
-  #     Split.configuration.experiments[:my_experiment] = {
-  #       :variants => [
-  #         { :name => "control_opt", :percent => 34 },
-  #         "second_opt",
-  #         { :name => "third_opt", :percent => 23 },
-  #         "fourth_opt",
-  #       ],
-  #     }
-  #     should start_experiment(:my_experiment).with({"control_opt" => 0.34}, {"second_opt" => 0.215}, {"third_opt" => 0.23}, {"fourth_opt" => 0.215})
-  #     ab_test :my_experiment
-  #   end
-  # 
-  #   it "allows name param without probability" do
-  #     Split.configuration.experiments[:my_experiment] = {
-  #       :variants => [
-  #         { :name => "control_opt" },
-  #         "second_opt",
-  #         { :name => "third_opt", :percent => 64 },
-  #       ],
-  #     }
-  #     should start_experiment(:my_experiment).with({"control_opt" => 0.18}, {"second_opt" => 0.18}, {"third_opt" => 0.64})
-  #     ab_test :my_experiment
-  #   end
-  # end
+  context "with preloaded config" do
+    before { Split.configuration.experiments = {}}
+  
+    it "pulls options from config file" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "other_opt" ],
+      }
+      ab_test :my_experiment
+      Split::Experiment.find(:my_experiment).alternative_names.should == [ "control_opt", "other_opt" ]
+    end
+  
+    it "can be called multiple times" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "other_opt" ],
+      }
+      5.times { ab_test :my_experiment }
+      experiment = Split::Experiment.find(:my_experiment)
+      experiment.alternative_names.should == [ "control_opt", "other_opt" ]
+      experiment.participant_count.should == 1
+    end
+  
+    it "accepts multiple variants" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "second_opt", "third_opt" ],
+      }
+      ab_test :my_experiment
+      experiment = Split::Experiment.find(:my_experiment)
+      experiment.alternative_names.should == [ "control_opt", "second_opt", "third_opt" ]
+    end
+  
+    it "accepts probability on variants" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [
+          { :name => "control_opt", :percent => 67 },
+          { :name => "second_opt", :percent => 10 },
+          { :name => "third_opt", :percent => 23 },
+        ],
+      }
+      ab_test :my_experiment
+      experiment = Split::Experiment.find(:my_experiment)
+      experiment.alternatives.collect{|a| [a.name, a.weight]}.should == [['control_opt', 0.67], ['second_opt', 0.1], ['third_opt', 0.23]]
+      
+    end
+  
+    it "accepts probability on some variants" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [
+          { :name => "control_opt", :percent => 34 },
+          "second_opt",
+          { :name => "third_opt", :percent => 23 },
+          "fourth_opt",
+        ],
+      }
+      ab_test :my_experiment
+      experiment = Split::Experiment.find(:my_experiment)
+      names_and_weights = experiment.alternatives.collect{|a| [a.name, a.weight]}
+      names_and_weights.should == [['control_opt', 0.34], ['second_opt', 0.215], ['third_opt', 0.23], ['fourth_opt', 0.215]]
+      names_and_weights.inject(0){|sum, nw| sum + nw[1]}.should == 1.0
+    end
+  
+    it "allows name param without probability" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [
+          { :name => "control_opt" },
+          "second_opt",
+          { :name => "third_opt", :percent => 64 },
+        ],
+      }
+      ab_test :my_experiment
+      experiment = Split::Experiment.find(:my_experiment)
+      names_and_weights = experiment.alternatives.collect{|a| [a.name, a.weight]}
+      names_and_weights.should ==  [['control_opt', 0.18], ['second_opt', 0.18], ['third_opt', 0.64]]
+      names_and_weights.inject(0){|sum, nw| sum + nw[1]}.should == 1.0
+    end
+  end
 
   it 'should handle multiple experiments correctly' do
     experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
