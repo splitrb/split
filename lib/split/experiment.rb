@@ -4,12 +4,23 @@ module Split
     attr_writer :algorithm
     attr_accessor :resettable
 
-    def initialize(name, *alternative_names)
-      @name = name.to_s
-      @resettable = true
-      @alternatives = alternative_names.map do |alternative|
-                        Split::Alternative.new(alternative, name)
-                      end
+    def initialize(name, options = {})      
+      options = {
+          :resettable => true,
+        }.merge(options)
+       
+      @name = name.to_s 
+      @resettable   = options[:resettable]   if !options[:resettable].nil?
+      @algorithm    = options[:algorithm]    if !options[:algorithm].nil?
+      @alternatives = options[:alternatives] if !options[:alternatives].nil?
+      
+      if !options[:alternative_names].nil? 
+        @alternatives = options[:alternative_names].map do |alternative|
+                          Split::Alternative.new(alternative, name)
+                        end
+      end
+      
+        
     end
     
     def algorithm
@@ -149,8 +160,6 @@ module Split
       end
     end
 
-
-
     def self.load_alternatives_from_redis_for(name)
       case Split.redis.type(name)
       when 'set' # convert legacy sets to lists
@@ -164,7 +173,7 @@ module Split
     end
 
     def self.load_from_configuration(name)
-      obj = self.new(name, *load_alternatives_for(name))
+      obj = self.new(name, :alternative_names => load_alternatives_for(name))
       exp_config = Split.configuration.experiment_for(name)
       if exp_config
         obj.resettable = exp_config[:resettable] unless exp_config[:resettable].nil?
@@ -175,7 +184,7 @@ module Split
     end
 
     def self.load_from_redis(name)
-      self.new(name, *load_alternatives_for(name))
+      self.new(name, :alternative_names => load_alternatives_for(name))
     end
 
     def self.all
@@ -216,16 +225,16 @@ module Split
       if Split.redis.exists(name)
         existing_alternatives = load_alternatives_for(name)
         if existing_alternatives == alts.map(&:name)
-          experiment = self.new(name, *alternatives)
+          experiment = self.new(name, :alternative_names => alternatives)
         else
-          exp = self.new(name, *existing_alternatives)
+          exp = self.new(name, :alternative_names => existing_alternatives)
           exp.reset
           exp.alternatives.each(&:delete)
-          experiment = self.new(name, *alternatives)
+          experiment = self.new(name, :alternative_names =>alternatives)
           experiment.save
         end
       else
-        experiment = self.new(name, *alternatives)
+        experiment = self.new(name, :alternative_names => alternatives)
         experiment.save
       end
       return experiment
