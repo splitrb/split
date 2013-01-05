@@ -12,12 +12,19 @@ describe Split::Alternative do
   }
 
   let(:experiment) {
-    Split::Experiment.find_or_create('basket_text', 'Basket', "Cart")
+    Split::Experiment.find_or_create({"basket_text" => ["purchase", "refund"]}, "Basket", "Cart")
   }
+
+  let(:goal1) { "purchase" }
+  let(:goal2) { "refund" }
 
   # setup experiment
   before do
     experiment
+  end
+
+  it "should have goals" do
+    alternative.goals.should eql(["purchase", "refund"])
   end
 
   it "should have a name" do
@@ -99,8 +106,10 @@ describe Split::Alternative do
     alternative.participant_count.should eql(0)
   end
 
-  it "should have a default completed count of 0" do
+  it "should have a default completed count of 0 for each goal" do
     alternative.completed_count.should eql(0)
+    alternative.completed_count(goal1).should eql(0)
+    alternative.completed_count(goal2).should eql(0)
   end
 
   it "should belong to an experiment" do
@@ -132,16 +141,23 @@ describe Split::Alternative do
     alternative = Split::Alternative.new('Basket', 'basket_text')
     old_completed_count = alternative.participant_count
     alternative.increment_completion
-    alternative.completed_count.should eql(old_completed_count+1)
+    alternative.increment_completion(goal1)
+    alternative.increment_completion(goal2)
 
-    alternative.completed_count.should eql(old_completed_count+1)
+    alternative.completed_count.should eql(old_default_completed_count+1)
+    alternative.completed_count(goal1).should eql(old_completed_count_for_goal1+1)
+    alternative.completed_count(goal2).should eql(old_completed_count_for_goal2+1)
   end
 
   it "can be reset" do
     alternative.participant_count = 10
-    alternative.completed_count = 4
+    alternative.set_completed_count(4, goal1)
+    alternative.set_completed_count(5, goal2)
+    alternative.set_completed_count(6)
     alternative.reset
     alternative.participant_count.should eql(0)
+    alternative.completed_count(goal1).should eql(0)
+    alternative.completed_count(goal2).should eql(0)
     alternative.completed_count.should eql(0)
   end
 
@@ -161,6 +177,15 @@ describe Split::Alternative do
       alternative.increment_participation
       alternative.unfinished_count.should eql(alternative.participant_count)
     end
+
+    it "should return the correct unfinished_count" do
+      alternative.participant_count = 10
+      alternative.set_completed_count(4, goal1)
+      alternative.set_completed_count(3, goal2)
+      alternative.set_completed_count(2)
+
+      alternative.unfinished_count.should eql(1)
+    end
   end
 
   describe 'conversion rate' do
@@ -173,17 +198,27 @@ describe Split::Alternative do
       alternative.stub(:participant_count).and_return(10)
       alternative.stub(:completed_count).and_return(4)
       alternative.conversion_rate.should eql(0.4)
+
+      alternative.stub(:completed_count).with(goal1).and_return(5)
+      alternative.conversion_rate(goal1).should eql(0.5)
+
+      alternative.stub(:completed_count).with(goal2).and_return(6)
+      alternative.conversion_rate(goal2).should eql(0.6)
     end
   end
 
   describe 'z score' do
     it 'should be zero when the control has no conversions' do
       alternative2.z_score.should eql(0)
+      alternative2.z_score(goal1).should eql(0)
+      alternative2.z_score(goal2).should eql(0)
     end
 
     it "should be N/A for the control" do
       control = experiment.control
       control.z_score.should eql('N/A')
+      control.z_score(goal1).should eql('N/A')
+      control.z_score(goal2).should eql('N/A')
     end
   end
 end

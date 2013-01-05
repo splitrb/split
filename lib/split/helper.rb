@@ -132,6 +132,16 @@ module Split
     end
 
     protected
+    def normalize_experiment(experiment)
+      if Hash === experiment
+        experiment_name = experiment.keys.first
+        goals = experiment.values.first
+      else
+        experiment_name = experiment
+        goals = []
+      end
+      return experiment_name, goals
+    end
 
     def control_variable(control)
       Hash === control ? control.keys.first : control

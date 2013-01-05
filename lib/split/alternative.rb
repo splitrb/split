@@ -19,6 +19,10 @@ module Split
       name
     end
 
+    def goals
+      self.experiment.goals
+    end
+
     def participant_count
       @participant_count ||= Split.redis.hget(key, 'participant_count').to_i
     end
@@ -28,41 +32,75 @@ module Split
       Split.redis.hset(key, 'participant_count', count.to_i)
     end
 
+<<<<<<< HEAD
     def completed_count
       @completed_count ||= Split.redis.hget(key, 'completed_count').to_i
-    end
-    
-    def unfinished_count
-      participant_count - completed_count
+=======
+    def completed_count(goal = nil)
+      field = set_field(goal)
+      Split.redis.hget(key, field).to_i
     end
 
+    def all_completed_count
+      if goals.empty?
+        completed_count
+      else
+        goals.inject(completed_count) do |sum, g|
+          sum + completed_count(g)
+        end
+      end
+>>>>>>> Implement multiple goals for an experiment
+    end
+
+    def unfinished_count
+      participant_count - all_completed_count
+    end
+
+    def set_field(goal)
+      field = "completed_count"
+      field += ":" + goal unless goal.nil?
+      return field
+    end
+
+<<<<<<< HEAD
     def completed_count=(count)
       @completed_count = count
       Split.redis.hset(key, 'completed_count', count.to_i)
+=======
+    def set_completed_count (count, goal = nil)
+      field = set_field(goal)
+      Split.redis.hset(key, field, count.to_i)
+>>>>>>> Implement multiple goals for an experiment
     end
 
     def increment_participation
       @participant_count = Split.redis.hincrby key, 'participant_count', 1
     end
 
+<<<<<<< HEAD
     def increment_completion
        @completed_count = Split.redis.hincrby key, 'completed_count', 1
+=======
+    def increment_completion(goal = nil)
+      field = set_field(goal)
+      Split.redis.hincrby(key, field, 1)
+>>>>>>> Implement multiple goals for an experiment
     end
 
     def control?
       experiment.control.name == self.name
     end
 
-    def conversion_rate
+    def conversion_rate(goal = nil)
       return 0 if participant_count.zero?
-      (completed_count.to_f/participant_count.to_f)
+      (completed_count(goal).to_f)/participant_count.to_f
     end
 
     def experiment
       Split::Experiment.find(experiment_name)
     end
 
-    def z_score
+    def z_score(goal = nil)
       # CTR_E = the CTR within the experiment split
       # CTR_C = the CTR within the control split
       # E = the number of impressions within the experiment split
@@ -74,8 +112,9 @@ module Split
 
       return 'N/A' if control.name == alternative.name
 
-      ctr_e = alternative.conversion_rate
-      ctr_c = control.conversion_rate
+      ctr_e = alternative.conversion_rate(goal)
+      ctr_c = control.conversion_rate(goal)
+
 
       e = alternative.participant_count
       c = control.participant_count
@@ -96,6 +135,12 @@ module Split
       @participant_count = nil
       @completed_count = nil
       Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
+      unless goals.empty?
+        goals.each do |g|
+          field = "completed_count:#{g}"
+          Split.redis.hset key, field, 0
+        end
+      end
     end
 
     def delete

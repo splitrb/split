@@ -1,20 +1,28 @@
-<div class="experiment">
+<% unless goal.nil? %>
+  <% experiment_class = "experiment experiment_with_goal" %>
+<% else %>
+  <% experiment_class = "experiment" %>
+<% end %>
+<div class="<%= experiment_class %>">
   <div class="experiment-header">
     <h2>
       Experiment: <%= experiment.name %>
       <% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
+      <% unless goal.nil? %><span class='goal'>Goal:<%= goal %></span><% end %>
     </h2>
 
-    <div class='inline-controls'>
-      <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
-      <form action="<%= url "/reset/#{experiment.name}" %>" method='post' onclick="return confirmReset()">
-        <input type="submit" value="Reset Data">
-      </form>
-      <form action="<%= url "/#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
-        <input type="hidden" name="_method" value="delete"/>
-        <input type="submit" value="Delete" class="red">
-      </form>
-    </div>
+    <% if goal.nil? %>
+      <div class='inline-controls'>
+        <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
+        <form action="<%= url "/reset/#{experiment.name}" %>" method='post' onclick="return confirmReset()">
+          <input type="submit" value="Reset Data">
+        </form>
+        <form action="<%= url "/#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
+          <input type="hidden" name="_method" value="delete"/>
+          <input type="submit" value="Delete" class="red">
+        </form>
+      </div>
+    <% end %>
   </div>
   <table>
     <tr>
@@ -27,7 +35,7 @@
       <th>Finish</th>
     </tr>
 
-    <% total_participants = total_completed = 0 %>
+    <% total_participants = total_completed = total_unfinished = 0 %>
     <% experiment.alternatives.each do |alternative| %>
       <tr>
         <td>
@@ -38,23 +46,23 @@
         </td>
         <td><%= alternative.participant_count %></td>
         <td><%= alternative.unfinished_count %></td>
-        <td><%= alternative.completed_count %></td>
+        <td><%= alternative.completed_count(goal) %></td>
         <td>
-          <%= number_to_percentage(alternative.conversion_rate) %>%
-          <% if experiment.control.conversion_rate > 0 && !alternative.control? %>
-            <% if alternative.conversion_rate > experiment.control.conversion_rate %>
+          <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
+          <% if experiment.control.conversion_rate(goal) > 0 && !alternative.control? %>
+            <% if alternative.conversion_rate(goal) > experiment.control.conversion_rate(goal) %>
               <span class='better'>
-                +<%= number_to_percentage((alternative.conversion_rate/experiment.control.conversion_rate)-1) %>%
+                +<%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
               </span>
-            <% elsif alternative.conversion_rate < experiment.control.conversion_rate %>
+            <% elsif alternative.conversion_rate(goal) < experiment.control.conversion_rate(goal) %>
               <span class='worse'>
-                <%= number_to_percentage((alternative.conversion_rate/experiment.control.conversion_rate)-1) %>%
+                <%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
               </span>
             <% end  %>
           <% end %>
         </td>
         <td>
-          <span title='z-score: <%= round(alternative.z_score, 3) %>'><%= confidence_level(alternative.z_score) %></span>
+          <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
         </td>
         <td>
           <% if experiment.winner %>
@@ -73,13 +81,14 @@
       </tr>
 
       <% total_participants += alternative.participant_count %>
-      <% total_completed += alternative.completed_count %>
+      <% total_unfinished += alternative.unfinished_count %>
+      <% total_completed += alternative.completed_count(goal) %>
     <% end %>
 
     <tr class="totals">
       <td>Totals</td>
       <td><%= total_participants %></td>
-      <td><%= total_participants - total_completed %></td>
+      <td><%= total_unfinished %></td>
       <td><%= total_completed %></td>
       <td>N/A</td>
       <td>N/A</td>

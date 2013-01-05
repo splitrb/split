@@ -230,14 +230,14 @@ describe Split::Experiment do
   end
 
   describe 'changing an existing experiment' do
-    def same_but_different
+    def same_but_different_alternative
       Split::Experiment.find_or_create('link_color', 'blue', 'yellow', 'orange')
     end
 
     it "should reset an experiment if it is loaded with different alternatives" do
       experiment.save
       blue.participant_count = 5
-      same_experiment = same_but_different
+      same_experiment = same_but_different_alternative
       same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
       blue.participant_count.should eql(0)
     end
@@ -245,9 +245,9 @@ describe Split::Experiment do
     it "should only reset once" do
       experiment.save
       experiment.version.should eql(0)
-      same_experiment = same_but_different
+      same_experiment = same_but_different_alternative
       same_experiment.version.should eql(1)
-      same_experiment_again = same_but_different
+      same_experiment_again = same_but_different_alternative
       same_experiment_again.version.should eql(1)
     end
   end
@@ -271,6 +271,34 @@ describe Split::Experiment do
     it "should work for an existing experiment" do
       experiment.save
       experiment_with_weight.alternatives.map(&:weight).should == [1, 2]
+    end
+  end
+
+  describe "specifying goals" do
+    let(:experiment) {
+      new_experiment(["purchase"])
+    }
+
+    context "saving experiment" do
+      def same_but_different_goals
+        Split::Experiment.find_or_create({'link_color' => ["purchase", "refund"]}, 'blue', 'red', 'green')
+      end
+
+      before { experiment.save }
+
+      it "can find existing experiment" do
+        Split::Experiment.find("link_color").name.should eql("link_color")
+      end
+
+      it "should reset an experiment if it is loaded with different goals" do
+        same_experiment = same_but_different_goals
+        Split::Experiment.load_goals_for("link_color").should == ["purchase", "refund"]
+      end
+
+    end
+
+    it "should have goals" do
+      experiment.goals.should eql(["purchase"])
     end
   end
 
