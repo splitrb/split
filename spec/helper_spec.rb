@@ -5,6 +5,10 @@ require 'spec_helper'
 describe Split::Helper do
   include Split::Helper
 
+  let(:experiment) {
+    Split::Experiment.find_or_create('link_color', 'blue', 'red')
+  }
+
   describe "ab_test" do
 
     it "should not raise an error when passed strings for alternatives" do
@@ -25,7 +29,6 @@ describe Split::Helper do
     end
 
     it "should increment the participation counter after assignment to a new user" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
       previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
       previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -39,21 +42,18 @@ describe Split::Helper do
     end
 
     it "should return the given alternative for an existing user" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative = ab_test('link_color', 'blue', 'red')
       repeat_alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql repeat_alternative
     end
 
     it 'should always return the winner if one is present' do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.winner = "orange"
 
       ab_test('link_color', 'blue', 'red').should == 'orange'
     end
 
     it "should allow the alternative to be force by passing it in the params" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       @params = {'link_color' => 'blue'}
       alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql('blue')
@@ -107,7 +107,6 @@ describe Split::Helper do
     end
 
     it "should not over-write a finished key when an experiment is on a later version" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.increment_version
       ab_user = { experiment.key => 'blue', experiment.finished_key => true }
       finshed_session = ab_user.dup
@@ -262,7 +261,6 @@ describe Split::Helper do
 
   describe 'conversions' do
     it 'should return a conversion rate for an alternative' do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
 
       previous_convertion_rate = Split::Alternative.new(alternative_name, 'link_color').conversion_rate
@@ -282,13 +280,11 @@ describe Split::Helper do
 
     describe 'ab_test' do
       it 'should return the control' do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative = ab_test('link_color', 'blue', 'red')
         alternative.should eql experiment.control.name
       end
 
       it "should not increment the participation count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -304,7 +300,6 @@ describe Split::Helper do
 
     describe 'finished' do
       it "should not increment the completed count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative_name = ab_test('link_color', 'blue', 'red')
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
@@ -328,13 +323,11 @@ describe Split::Helper do
 
     describe 'ab_test' do
       it 'should return the control' do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative = ab_test('link_color', 'blue', 'red')
         alternative.should eql experiment.control.name
       end
 
       it "should not increment the participation count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -350,7 +343,6 @@ describe Split::Helper do
 
     describe 'finished' do
       it "should not increment the completed count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative_name = ab_test('link_color', 'blue', 'red')
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
@@ -366,14 +358,12 @@ describe Split::Helper do
 
   describe 'versioned experiments' do
     it "should use version zero if no version is present" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       experiment.version.should eql(0)
       ab_user.should eql({'link_color' => alternative_name})
     end
 
     it "should save the version of the experiment to the session" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.reset
       experiment.version.should eql(1)
       alternative_name = ab_test('link_color', 'blue', 'red')
@@ -381,7 +371,6 @@ describe Split::Helper do
     end
 
     it "should load the experiment even if the version is not 0" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.reset
       experiment.version.should eql(1)
       alternative_name = ab_test('link_color', 'blue', 'red')
@@ -391,7 +380,6 @@ describe Split::Helper do
     end
 
     it "should reset the session of a user on an older version of the experiment" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       ab_user.should eql({'link_color' => alternative_name})
       alternative = Split::Alternative.new(alternative_name, 'link_color')
@@ -409,7 +397,6 @@ describe Split::Helper do
     end
 
     it "should cleanup old versions of experiments from the session" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       ab_user.should eql({'link_color' => alternative_name})
       alternative = Split::Alternative.new(alternative_name, 'link_color')
@@ -425,7 +412,6 @@ describe Split::Helper do
     end
 
     it "should only count completion of users on the current version" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       ab_user.should eql({'link_color' => alternative_name})
       alternative = Split::Alternative.new(alternative_name, 'link_color')
@@ -667,7 +653,6 @@ describe Split::Helper do
   end
 
   it 'should handle multiple experiments correctly' do
-    experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
     experiment2 = Split::Experiment.find_or_create('link_color2', 'blue', 'red')
     alternative_name = ab_test('link_color', 'blue', 'red')
     alternative_name2 = ab_test('link_color2', 'blue', 'red')
