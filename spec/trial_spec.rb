@@ -17,7 +17,26 @@ describe Split::Trial do
       trial.alternative.should == alternative
     end
 
-    it "should call select_alternative if nil" do
+    it "should populate alternative with a full alternative object after calling choose" do
+      experiment = Split::Experiment.new('basket_text', :alternative_names => ['basket', 'cart'])
+      experiment.save
+      trial = Split::Trial.new(:experiment => experiment)
+      trial.choose
+      trial.alternative.class.should == Split::Alternative
+      ['basket', 'cart'].should include(trial.alternative.name)
+    end
+
+    it "should populate an alternative when only one option is offerred" do
+      experiment = Split::Experiment.new('basket_text', :alternative_names => ['basket'])
+      experiment.save
+      trial = Split::Trial.new(:experiment => experiment)
+      trial.choose
+      trial.alternative.class.should == Split::Alternative
+      trial.alternative.name.should == 'basket'
+    end
+
+
+    it "should choose from the available alternatives" do
       trial = Split::Trial.new(:experiment => experiment = mock('experiment'))
       experiment.should_receive(:next_alternative).and_return(alternative = mock('alternative'))
       alternative.should_receive(:increment_participation)

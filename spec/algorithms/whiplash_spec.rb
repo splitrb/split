@@ -1,7 +1,12 @@
 require "spec_helper"
 
 describe Split::Algorithms::Whiplash do
-  
+
+  it "should return an algorithm" do
+    experiment = Split::Experiment.find_or_create('link_color', {'blue' => 1}, {'red' => 1 })
+    Split::Algorithms::Whiplash.choose_alternative(experiment).class.should == Split::Alternative
+  end
+
   it "should return one of the results" do
     experiment = Split::Experiment.find_or_create('link_color', {'blue' => 1}, {'red' => 1 })
     ['red', 'blue'].should include Split::Algorithms::Whiplash.choose_alternative(experiment).name
