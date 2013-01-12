@@ -1,12 +1,40 @@
 module Split
   class Experiment
     attr_accessor :name
+    attr_writer :algorithm
+    attr_accessor :resettable
 
-    def initialize(name, *alternative_names)
-      @name = name.to_s
-      @alternatives = alternative_names.map do |alternative|
-                        Split::Alternative.new(alternative, name)
-                      end
+    def initialize(name, options = {})      
+      options = {
+          :resettable => true,
+        }.merge(options)
+       
+      @name = name.to_s 
+      @alternatives = options[:alternatives]  if !options[:alternatives].nil?
+      
+      if !options[:algorithm].nil?    
+        @algorithm = options[:algorithm].is_a?(String) ? options[:algorithm].constantize : options[:algorithm]
+      end
+      
+      if !options[:resettable].nil?
+        @resettable = options[:resettable].is_a?(String) ? options[:resettable] == 'true' : options[:resettable]
+      end
+      
+      if !options[:alternative_names].nil? 
+        @alternatives = options[:alternative_names].map do |alternative|
+                          Split::Alternative.new(alternative, name)
+                        end
+      end
+      
+      
+    end
+    
+    def algorithm
+      @algorithm ||= Split.configuration.algorithm
+    end
+
+    def ==(obj)
+      self.name == obj.name
     end
 
     def winner
@@ -15,6 +43,10 @@ module Split
       else
         nil
       end
+    end
+    
+    def participant_count
+      alternatives.inject(0){|sum,a| sum + a.participant_count}
     end
 
     def control
@@ -33,6 +65,10 @@ module Split
       t = Split.redis.hget(:experiment_start_times, @name)
       Time.parse(t) if t
     end
+    
+    def [](name)
+      alternatives.find{|a| a.name == name} 
+    end
 
     def alternatives
       @alternatives.dup
@@ -47,14 +83,10 @@ module Split
     end
 
     def random_alternative
-      weights = alternatives.map(&:weight)
-
-      total = weights.inject(:+)
-      point = rand * total
-
-      alternatives.zip(weights).each do |n,w|
-        return n if w >= point
-        point -= w
+      if alternatives.length > 1
+        Split.configuration.algorithm.choose_alternative(self)
+      else
+        alternatives.first
       end
     end
 
@@ -76,6 +108,10 @@ module Split
 
     def finished_key
       "#{key}:finished"
+    end
+
+    def resettable?
+      resettable
     end
 
     def reset
@@ -105,9 +141,30 @@ module Split
         Split.redis.del(name)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       end
+      config_key = Split::Experiment.experiment_config_key(name)
+      Split.redis.hset(config_key, :resettable, resettable)
+      Split.redis.hset(config_key, :algorithm, algorithm.to_s)
+      self
     end
 
     def self.load_alternatives_for(name)
+      if Split.configuration.experiment_for(name)
+        load_alternatives_from_configuration_for(name)
+      else
+        load_alternatives_from_redis_for(name)
+      end
+    end
+
+    def self.load_alternatives_from_configuration_for(name)
+      alts = Split.configuration.experiment_for(name)[:variants]
+      if alts.is_a?(Hash)
+        alts.keys
+      else
+        alts.flatten
+      end
+    end
+
+    def self.load_alternatives_from_redis_for(name)
       case Split.redis.type(name)
       when 'set' # convert legacy sets to lists
         alts = Split.redis.smembers(name)
@@ -119,14 +176,46 @@ module Split
       end
     end
 
-    def self.all
-      Array(Split.redis.smembers(:experiments)).map {|e| find(e)}
+    def self.load_from_configuration(name)
+      exp_config = Split.configuration.experiment_for(name) || {}
+      self.new(name, :alternative_names => load_alternatives_for(name), 
+                           :resettable => exp_config[:resettable], 
+                           :algorithm => exp_config[:algorithm])
     end
 
+    def self.load_from_redis(name)
+      exp_config = Split.redis.hgetall(experiment_config_key(name))
+      self.new(name, :alternative_names => load_alternatives_for(name),
+                      :resettable => exp_config['resettable'], 
+                      :algorithm => exp_config['algorithm'])     
+    end
+    
+    def self.experiment_config_key(name)
+      "experiment_configurations/#{name}"
+    end
+
+    def self.all
+      Array(all_experiment_names_from_redis + all_experiment_names_from_configuration).map {|e| find(e)}
+    end
+
+    def self.all_experiment_names_from_redis
+      Split.redis.smembers(:experiments)
+    end
+
+    def self.all_experiment_names_from_configuration
+      Split.configuration.experiments ? Split.configuration.experiments.keys : []
+    end
+
+
     def self.find(name)
-      if Split.redis.exists(name)
-        self.new(name, *load_alternatives_for(name))
+      if Split.configuration.experiment_for(name)
+        obj = load_from_configuration(name)
+      elsif Split.redis.exists(name)
+        obj = load_from_redis(name)
+      else
+        obj = nil
       end
+      obj
     end
 
     def self.find_or_create(key, *alternatives)
@@ -135,8 +224,6 @@ module Split
       if alternatives.length == 1
         if alternatives[0].is_a? Hash
           alternatives = alternatives[0].map{|k,v| {k => v} }
-        else
-          raise ArgumentError, 'You must declare at least 2 alternatives'
         end
       end
 
@@ -145,16 +232,16 @@ module Split
       if Split.redis.exists(name)
         existing_alternatives = load_alternatives_for(name)
         if existing_alternatives == alts.map(&:name)
-          experiment = self.new(name, *alternatives)
+          experiment = self.new(name, :alternative_names => alternatives)
         else
-          exp = self.new(name, *existing_alternatives)
+          exp = self.new(name, :alternative_names => existing_alternatives)
           exp.reset
           exp.alternatives.each(&:delete)
-          experiment = self.new(name, *alternatives)
+          experiment = self.new(name, :alternative_names =>alternatives)
           experiment.save
         end
       else
-        experiment = self.new(name, *alternatives)
+        experiment = self.new(name, :alternative_names => alternatives)
         experiment.save
       end
       return experiment

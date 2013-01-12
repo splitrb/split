@@ -4,15 +4,78 @@ require 'split/alternative'
 describe Split::Alternative do
 
   it "should have a name" do
-    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.name.should eql('Basket')
   end
 
   it "return only the name" do
-    experiment = Split::Experiment.new('basket_text', {'Basket' => 0.6}, {"Cart" => 0.4})
+    experiment = Split::Experiment.new('basket_text', :alternative_names => [{'Basket' => 0.6}, {"Cart" => 0.4}])
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.name.should eql('Basket')
+  end
+  
+  describe 'weights' do
+  
+    it "should set the weights" do
+      experiment = Split::Experiment.new('basket_text', :alternative_names => [{'Basket' => 0.6}, {"Cart" => 0.4}])
+      first = experiment.alternatives[0]
+      first.name.should == 'Basket'
+      first.weight.should == 0.6
+    
+      second = experiment.alternatives[1]
+      second.name.should == 'Cart'
+      second.weight.should == 0.4  
+    end
+    
+    it "accepts probability on variants" do
+      Split.configuration.experiments = {
+        :my_experiment => {
+          :variants => [
+            { :name => "control_opt", :percent => 67 },
+            { :name => "second_opt", :percent => 10 },
+            { :name => "third_opt", :percent => 23 },
+          ],
+        }
+      }
+      experiment = Split::Experiment.find(:my_experiment)
+      first = experiment.alternatives[0]
+      first.name.should == 'control_opt'
+      first.weight.should == 0.67
+    
+      second = experiment.alternatives[1]
+      second.name.should == 'second_opt'
+      second.weight.should == 0.1
+    end
+  
+    # it "accepts probability on some variants" do
+    #   Split.configuration.experiments[:my_experiment] = {
+    #     :variants => [
+    #       { :name => "control_opt", :percent => 34 },
+    #       "second_opt",
+    #       { :name => "third_opt", :percent => 23 },
+    #       "fourth_opt",
+    #     ],
+    #   }
+    #   should start_experiment(:my_experiment).with({"control_opt" => 0.34}, {"second_opt" => 0.215}, {"third_opt" => 0.23}, {"fourth_opt" => 0.215})
+    #   ab_test :my_experiment
+    # end
+    #   
+    # it "allows name param without probability" do
+    #   Split.configuration.experiments[:my_experiment] = {
+    #     :variants => [
+    #       { :name => "control_opt" },
+    #       "second_opt",
+    #       { :name => "third_opt", :percent => 64 },
+    #     ],
+    #   }
+    #   should start_experiment(:my_experiment).with({"control_opt" => 0.18}, {"second_opt" => 0.18}, {"third_opt" => 0.64})
+    #   ab_test :my_experiment
+    # end
+  
+    it "should set the weights from a configuration file" do
+    
+    end
   end
 
   it "should have a default participation count of 0" do
@@ -26,7 +89,7 @@ describe Split::Alternative do
   end
 
   it "should belong to an experiment" do
-    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
     experiment.save
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.experiment.name.should eql(experiment.name)
@@ -39,7 +102,7 @@ describe Split::Alternative do
   end
 
   it "should increment participation count" do
-    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
     experiment.save
     alternative = Split::Alternative.new('Basket', 'basket_text')
     old_participant_count = alternative.participant_count
@@ -50,7 +113,7 @@ describe Split::Alternative do
   end
 
   it "should increment completed count" do
-    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
     experiment.save
     alternative = Split::Alternative.new('Basket', 'basket_text')
     old_completed_count = alternative.participant_count
@@ -70,7 +133,7 @@ describe Split::Alternative do
   end
 
   it "should know if it is the control of an experiment" do
-    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
     experiment.save
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.control?.should be_true
@@ -80,7 +143,7 @@ describe Split::Alternative do
 
   describe 'unfinished_count' do
     it "should be difference between participant and completed counts" do
-      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
       experiment.save
       alternative = Split::Alternative.new('Basket', 'basket_text')
       alternative.increment_participation

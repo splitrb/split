@@ -20,15 +20,16 @@ module Split
     end
 
     def participant_count
-      Split.redis.hget(key, 'participant_count').to_i
+      @participant_count ||= Split.redis.hget(key, 'participant_count').to_i
     end
 
     def participant_count=(count)
+      @participant_count = count
       Split.redis.hset(key, 'participant_count', count.to_i)
     end
 
     def completed_count
-      Split.redis.hget(key, 'completed_count').to_i
+      @completed_count ||= Split.redis.hget(key, 'completed_count').to_i
     end
     
     def unfinished_count
@@ -36,15 +37,16 @@ module Split
     end
 
     def completed_count=(count)
+      @completed_count = count
       Split.redis.hset(key, 'completed_count', count.to_i)
     end
 
     def increment_participation
-      Split.redis.hincrby key, 'participant_count', 1
+      @participant_count = Split.redis.hincrby key, 'participant_count', 1
     end
 
     def increment_completion
-      Split.redis.hincrby key, 'completed_count', 1
+       @completed_count = Split.redis.hincrby key, 'completed_count', 1
     end
 
     def control?
@@ -91,6 +93,8 @@ module Split
     end
 
     def reset
+      @participant_count = nil
+      @completed_count = nil
       Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
     end
 
