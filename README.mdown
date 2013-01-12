@@ -267,7 +267,7 @@ in a hash or a configuration file:
       config.experiments = YAML.load_file "config/experiments.yml"
     end
 
-This hash can control your experiment's variants, weights, and if the
+This hash can control your experiment's variants, weights, algorithm and if the
 experiment resets once finished:
 
     Split.configure do |config|
@@ -277,6 +277,7 @@ experiment resets once finished:
           :resettable => false,
         },
         :my_second_experiment => {
+          :algorithm => 'Split::Algorithms::Whiplash',
           :variants => [
             { :name => "a", :percent => 67 },
             { :name => "b", :percent => 33 },
@@ -313,6 +314,11 @@ Your code may then track a completion using the metric instead of
 the experiment name:
 
     finished(:conversion)
+    
+You can also create a new metric by instantiating and saving a new Metric object. 
+
+    Split::Metric.new(:conversion)
+    Split::Metric.save
 
 ### DB failover solution
 
@@ -379,6 +385,38 @@ Split.redis.namespace = "split:blog"
 
 We recommend sticking this in your initializer somewhere after Redis
 is configured.
+
+## Outside of a Web Session
+
+Split provides the Helper module to facilitate running experiments inside web sessions. 
+
+Alternatively, you can access the underlying Metric, Trial, Experiment and Alternative objects to
+conduct experiments that are not tied to a web session.
+
+```ruby
+# create a new experiment
+experiment = Split::Experiment.find_or_create('color', 'red', 'blue')
+# create a new trial
+trial = Trial.new(:experiment => experiment)
+# run trial
+trial.choose!
+# get the result, returns either red or blue
+trial.alternative.name
+
+# if the goal has been achieved, increment the successful completions for this alternative.
+if goal_acheived?
+  trial.complete!
+end
+
+```
+
+## Algorithms
+
+By default, Split ships with an algorithm that randomly selects from possible alternatives for a traditional a/b test. 
+
+An implementation of a bandit algorithm is also provided. 
+
+Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file. 
 
 ## Extensions
 
