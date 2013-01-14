@@ -16,14 +16,18 @@ module Split
     end
 
     def complete!
-      alternative.increment_completion if alternative
+      if experiment.goals.empty?
+        alternative.increment_completion
+      else
+        experiment.goals.each {|g| alternative.increment_completion(g)}
+      end
     end
 
     def choose!
       choose
       record!
     end
-    
+
     def record!
       alternative.increment_participation
     end
@@ -35,7 +39,7 @@ module Split
         self.alternative = experiment.next_alternative
       end
     end
-    
+
     def alternative_name=(name)
       self.alternative= self.experiment.alternatives.find{|a| a.name == name }
     end

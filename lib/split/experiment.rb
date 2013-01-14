@@ -3,6 +3,7 @@ module Split
     attr_accessor :name
     attr_writer :algorithm
     attr_accessor :resettable
+    attr_accessor :goals
 
     def initialize(name, options = {})
       options = {
@@ -11,6 +12,10 @@ module Split
 
       @name = name.to_s
       @alternatives = options[:alternatives]  if !options[:alternatives].nil?
+
+      if !options[:goals].nil?
+        @goals = options[:goals]
+      end
 
       if !options[:algorithm].nil?
         @algorithm = options[:algorithm].is_a?(String) ? options[:algorithm].constantize : options[:algorithm]
@@ -159,6 +164,23 @@ module Split
       self
     end
 
+    def self.load_goals_for(name)
+      if Split.configuration.experiment_for(name)
+        load_goals_from_configuration_for(name)
+      else
+        load_goals_from_redis_for(name)
+      end
+    end
+
+    def self.load_goals_from_configuration_for(name)
+      goals = Split.configuration.experiment_for(name)[:goals]
+      goals.flatten
+    end
+
+    def self.load_goals_from_redis_for(name)
+      Split.redis.lrange(goals_key(name), 0, -1)
+    end
+
     def self.load_alternatives_for(name)
       if Split.configuration.experiment_for(name)
         load_alternatives_from_configuration_for(name)
@@ -192,15 +214,17 @@ module Split
     def self.load_from_configuration(name)
       exp_config = Split.configuration.experiment_for(name) || {}
       self.new(name, :alternative_names => load_alternatives_for(name),
-                           :resettable => exp_config[:resettable],
-                           :algorithm => exp_config[:algorithm])
+                     :goals => load_goals_for(name),
+                     :resettable => exp_config[:resettable],
+                     :algorithm => exp_config[:algorithm])
     end
 
     def self.load_from_redis(name)
       exp_config = Split.redis.hgetall(experiment_config_key(name))
       self.new(name, :alternative_names => load_alternatives_for(name),
-                      :resettable => exp_config['resettable'],
-                      :algorithm => exp_config['algorithm'])
+                     :goals => load_goals_for(name),
+                     :resettable => exp_config['resettable'],
+                     :algorithm => exp_config['algorithm'])
     end
 
     def self.experiment_config_key(name)
@@ -231,10 +255,9 @@ module Split
       obj
     end
 
-    def self.find_or_create(name, *alternatives)
-      experiment_name_with_version, goals = normalize_experiment_name(name)
+    def self.find_or_create(label, *alternatives)
+      experiment_name_with_version, goals = normalize_experiment(label)
       name = experiment_name_with_version.to_s.split(':')[0]
-      experiment_label = {name => goals} # KLUDGE: sneak in goals along with name to maintain backward compatibility
 
       if alternatives.length == 1
         if alternatives[0].is_a? Hash
@@ -247,29 +270,30 @@ module Split
 
       if Split.redis.exists(name)
         existing_alternatives = load_alternatives_for(name)
-        if existing_alternatives == alts.map(&:name)
-          experiment = self.new(name, :alternative_names => alternatives)
+        existing_goals = load_goals_for(name)
+        if existing_alternatives == alts.map(&:name) && existing_goals == gls
+          experiment = self.new(name, :alternative_names => alternatives, :goals => goals)
         else
-          exp = self.new(name, :alternative_names => existing_alternatives)
+          exp = self.new(name, :alternative_names => existing_alternatives, :goals => goals)
           exp.reset
           exp.alternatives.each(&:delete)
-          experiment = self.new(name, :alternative_names =>alternatives)
+          experiment = self.new(name, :alternative_names =>alternatives, :goals => goals)
           experiment.save
         end
       else
-        experiment = self.new(name, :alternative_names => alternatives)
+        experiment = self.new(name, :alternative_names => alternatives, :goals => goals)
         experiment.save
       end
       return experiment
 
     end
 
-    def self.normalize_experiment_name(name)
-      if Hash === name
-        experiment_name = name.keys.first
-        goals = name.values.first
+    def self.normalize_experiment(label)
+      if Hash === label
+        experiment_name = label.keys.first
+        goals = label.values.first
       else
-        experiment_name = name
+        experiment_name = label
         goals = []
       end
       return experiment_name, goals

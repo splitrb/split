@@ -32,10 +32,6 @@ module Split
       Split.redis.hset(key, 'participant_count', count.to_i)
     end
 
-<<<<<<< HEAD
-    def completed_count
-      @completed_count ||= Split.redis.hget(key, 'completed_count').to_i
-=======
     def completed_count(goal = nil)
       field = set_field(goal)
       Split.redis.hget(key, field).to_i
@@ -49,7 +45,6 @@ module Split
           sum + completed_count(g)
         end
       end
->>>>>>> Implement multiple goals for an experiment
     end
 
     def unfinished_count
@@ -62,29 +57,18 @@ module Split
       return field
     end
 
-<<<<<<< HEAD
-    def completed_count=(count)
-      @completed_count = count
-      Split.redis.hset(key, 'completed_count', count.to_i)
-=======
     def set_completed_count (count, goal = nil)
       field = set_field(goal)
       Split.redis.hset(key, field, count.to_i)
->>>>>>> Implement multiple goals for an experiment
     end
 
     def increment_participation
       @participant_count = Split.redis.hincrby key, 'participant_count', 1
     end
 
-<<<<<<< HEAD
-    def increment_completion
-       @completed_count = Split.redis.hincrby key, 'completed_count', 1
-=======
     def increment_completion(goal = nil)
       field = set_field(goal)
       Split.redis.hincrby(key, field, 1)
->>>>>>> Implement multiple goals for an experiment
     end
 
     def control?

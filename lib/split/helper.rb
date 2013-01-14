@@ -1,14 +1,16 @@
 module Split
   module Helper
 
-    def ab_test(experiment_name, control=nil, *alternatives)
+    def ab_test(experiment_label, control=nil, *alternatives)
       if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
+      experiment_name, goals = normalize_experiment(experiment_label)
+
       begin
         ret = if Split.configuration.enabled
-          load_and_start_trial(experiment_name, control, alternatives)
+          load_and_start_trial(experiment_label, control, alternatives)
         else
           control_variable(control)
         end
@@ -132,12 +134,12 @@ module Split
     end
 
     protected
-    def normalize_experiment(experiment)
-      if Hash === experiment
-        experiment_name = experiment.keys.first
-        goals = experiment.values.first
+    def normalize_experiment(experiment_label)
+      if Hash === experiment_label
+        experiment_name = experiment_label.keys.first
+        goals = experiment_label.values.first
       else
-        experiment_name = experiment
+        experiment_name = experiment_label
         goals = []
       end
       return experiment_name, goals
@@ -147,13 +149,14 @@ module Split
       Hash === control ? control.keys.first : control
     end
 
-    def load_and_start_trial(experiment_name, control, alternatives)
+    def load_and_start_trial(experiment_label, control, alternatives)
+      experiment_name, goals = normalize_experiment(experiment_label)
       if control.nil? && alternatives.length.zero?
         experiment = Experiment.find(experiment_name)
 
         raise ExperimentNotFound.new("#{experiment_name} not found") if experiment.nil?
       else
-        experiment = Split::Experiment.find_or_create(experiment_name, *([control] + alternatives))
+        experiment = Split::Experiment.find_or_create(experiment_label, *([control] + alternatives))
       end
 
       start_trial( Trial.new(:experiment => experiment) )
