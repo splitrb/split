@@ -174,7 +174,7 @@ module Split
 
     def self.load_goals_from_configuration_for(name)
       goals = Split.configuration.experiment_for(name)[:goals]
-      goals.flatten
+      goals.flatten unless goals.nil?
     end
 
     def self.load_goals_from_redis_for(name)

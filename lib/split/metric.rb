@@ -43,6 +43,7 @@ module Split
     end
 
     def self.possible_experiments(metric_name)
+      metric_name, goals = normalize_metric(metric_name)
       experiments = []
       metric  = Split::Metric.find(metric_name)
       if metric
@@ -63,6 +64,19 @@ module Split
       experiments.each do |experiment|
         experiment.complete!
       end
+    end
+
+    private
+
+    def self.normalize_metric(label)
+      if Hash === label
+        metric_name = label.keys.first
+        goals = label.values.first
+      else
+        metric_name = label
+        goals = []
+      end
+      return metric_name, goals
     end
   end
 end

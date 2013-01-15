@@ -28,14 +28,10 @@ describe Split::Alternative do
   end
 
   it "should have a name" do
-    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
-    alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.name.should eql('Basket')
   end
 
   it "return only the name" do
-    experiment = Split::Experiment.new('basket_text', :alternative_names => [{'Basket' => 0.6}, {"Cart" => 0.4}])
-    alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.name.should eql('Basket')
   end
 
@@ -59,7 +55,7 @@ describe Split::Alternative do
             { :name => "control_opt", :percent => 67 },
             { :name => "second_opt", :percent => 10 },
             { :name => "third_opt", :percent => 23 },
-          ],
+          ]
         }
       }
       experiment = Split::Experiment.find(:my_experiment)
@@ -113,9 +109,6 @@ describe Split::Alternative do
   end
 
   it "should belong to an experiment" do
-    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
-    experiment.save
-    alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.experiment.name.should eql(experiment.name)
   end
 
@@ -125,21 +118,16 @@ describe Split::Alternative do
   end
 
   it "should increment participation count" do
-    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
-    experiment.save
-    alternative = Split::Alternative.new('Basket', 'basket_text')
     old_participant_count = alternative.participant_count
     alternative.increment_participation
     alternative.participant_count.should eql(old_participant_count+1)
-
-    alternative.participant_count.should eql(old_participant_count+1)
   end
 
-  it "should increment completed count" do
-    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
-    experiment.save
-    alternative = Split::Alternative.new('Basket', 'basket_text')
-    old_completed_count = alternative.participant_count
+  it "should increment completed count for each goal" do
+    old_default_completed_count = alternative.completed_count
+    old_completed_count_for_goal1 = alternative.completed_count(goal1)
+    old_completed_count_for_goal2 = alternative.completed_count(goal2)
+
     alternative.increment_completion
     alternative.increment_completion(goal1)
     alternative.increment_completion(goal2)
@@ -162,18 +150,12 @@ describe Split::Alternative do
   end
 
   it "should know if it is the control of an experiment" do
-    experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
-    experiment.save
-    alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.control?.should be_true
     alternative2.control?.should be_false
   end
 
   describe 'unfinished_count' do
     it "should be difference between participant and completed counts" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"])
-      experiment.save
-      alternative = Split::Alternative.new('Basket', 'basket_text')
       alternative.increment_participation
       alternative.unfinished_count.should eql(alternative.participant_count)
     end

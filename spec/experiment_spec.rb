@@ -4,6 +4,21 @@ require 'split/algorithms'
 require 'time'
 
 describe Split::Experiment do
+  def new_experiment(goals=[])
+    Split::Experiment.new('link_color', :alternative_names => ['blue', 'red', 'green'], :goals => goals)
+  end
+
+  def alternative(color)
+    Split::Alternative.new(color, 'link_color')
+  end
+
+  let(:experiment) {
+    new_experiment
+  }
+
+  let(:blue) { alternative("blue") }
+  let(:green) { alternative("green") }
+
   context "with an experiment" do
     let(:experiment) { Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"]) }
 
@@ -75,7 +90,8 @@ describe Split::Experiment do
     describe 'find' do
       it "should return an existing experiment" do
         experiment.save
-        Split::Experiment.find('basket_text').name.should eql('basket_text')
+        experiment = Split::Experiment.find('basket_text')
+        experiment.name.should eql('basket_text')
       end
 
       it "should return an existing experiment" do
@@ -90,6 +106,7 @@ describe Split::Experiment do
       end
     end
   end
+
   describe 'initialization' do
     it "should set the algorithm when passed as an option to the initializer" do
        experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"], :algorithm =>  Split::Algorithms::Whiplash)
@@ -123,9 +140,6 @@ describe Split::Experiment do
       e.algorithm.should == Split::Algorithms::Whiplash
     end
   end
-
-
-
 
   describe 'deleting' do
     it 'should delete itself' do
@@ -299,6 +313,15 @@ describe Split::Experiment do
 
     it "should have goals" do
       experiment.goals.should eql(["purchase"])
+    end
+
+    context "find or create experiment" do
+      it "should have correct goals"  do
+        experiment = Split::Experiment.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
+        experiment.goals.should == ["purchase", "refund"]
+        experiment = Split::Experiment.find_or_create('link_color3', 'blue', 'red', 'green')
+        experiment.goals.should == []
+      end
     end
   end
 

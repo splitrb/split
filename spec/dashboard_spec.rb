@@ -34,7 +34,7 @@ describe Split::Dashboard do
     experiment = link_color
 
     red_link.participant_count = 5
-    blue_link.participant_count = 6
+    blue_link.participant_count = 7
 
     post '/reset/link_color'
 

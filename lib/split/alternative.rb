@@ -24,11 +24,10 @@ module Split
     end
 
     def participant_count
-      @participant_count ||= Split.redis.hget(key, 'participant_count').to_i
+      Split.redis.hget(key, 'participant_count').to_i
     end
 
     def participant_count=(count)
-      @participant_count = count
       Split.redis.hset(key, 'participant_count', count.to_i)
     end
 
@@ -63,7 +62,7 @@ module Split
     end
 
     def increment_participation
-      @participant_count = Split.redis.hincrby key, 'participant_count', 1
+      Split.redis.hincrby key, 'participant_count', 1
     end
 
     def increment_completion(goal = nil)
@@ -116,8 +115,6 @@ module Split
     end
 
     def reset
-      @participant_count = nil
-      @completed_count = nil
       Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
       unless goals.empty?
         goals.each do |g|
