@@ -43,7 +43,6 @@ module Split
     end
 
     def self.possible_experiments(metric_name)
-      metric_name, goals = normalize_metric(metric_name)
       experiments = []
       metric  = Split::Metric.find(metric_name)
       if metric

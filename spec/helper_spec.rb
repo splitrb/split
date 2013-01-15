@@ -264,6 +264,7 @@ describe Split::Helper do
         finished :my_metric, :reset => false
         ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
       end
+
     end
   end
 
@@ -575,19 +576,41 @@ describe Split::Helper do
     it "pulls options from config file" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [ "control_opt", "other_opt" ],
+        :goals => ["goal1", "goal2"]
       }
       ab_test :my_experiment
       Split::Experiment.find(:my_experiment).alternative_names.should == [ "control_opt", "other_opt" ]
+      Split::Experiment.find(:my_experiment).goals.should == [ "goal1", "goal2" ]
     end
 
     it "can be called multiple times" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [ "control_opt", "other_opt" ],
+        :goals => ["goal1", "goal2"]
       }
       5.times { ab_test :my_experiment }
       experiment = Split::Experiment.find(:my_experiment)
       experiment.alternative_names.should == [ "control_opt", "other_opt" ]
+      experiment.goals.should == [ "goal1", "goal2" ]
       experiment.participant_count.should == 1
+    end
+
+    it "accepts multiple goals" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "other_opt" ],
+        :goals => [ "goal1", "goal2", "goal3" ]
+      }
+      ab_test :my_experiment
+      experiment = Split::Experiment.find(:my_experiment)
+      experiment.goals.should == [ "goal1", "goal2", "goal3" ]
+    end
+
+    it "allow specifying goals to be optional" do
+      Split.configuration.experiments[:my_experiment] = {
+        :variants => [ "control_opt", "other_opt" ]
+      }
+      experiment = Split::Experiment.find(:my_experiment)
+      experiment.goals.should == []
     end
 
     it "accepts multiple alternatives" do
@@ -701,11 +724,11 @@ describe Split::Helper do
       it "should increment the counter for the specified-goal completed alternative" do
         @previous_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
         @previous_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
-        finished(@experiment)
+        finished({"link_color" => ["purchase"]})
         new_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
         new_completion_count_for_goal1.should eql(@previous_completion_count_for_goal1 + 1)
         new_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
-        new_completion_count_for_goal2.should eql(@previous_completion_count_for_goal2 + 1)
+        new_completion_count_for_goal2.should eql(@previous_completion_count_for_goal2)
       end
     end
   end

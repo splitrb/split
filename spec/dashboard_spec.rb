@@ -35,6 +35,7 @@ describe Split::Dashboard do
 
     red_link.participant_count = 5
     blue_link.participant_count = 7
+    experiment.winner = 'blue'
 
     post '/reset/link_color'
 
@@ -45,6 +46,7 @@ describe Split::Dashboard do
 
     new_blue_count.should eql(0)
     new_red_count.should eql(0)
+    experiment.winner.should be_nil
   end
 
   it "should delete an experiment" do

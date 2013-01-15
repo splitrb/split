@@ -130,7 +130,6 @@ module Split
     def reset
       alternatives.each(&:reset)
       reset_winner
-      Split.redis.del(goals_key)
       increment_version
     end
 
@@ -139,8 +138,12 @@ module Split
       reset_winner
       Split.redis.srem(:experiments, name)
       Split.redis.del(name)
-      Split.redis.del(goals_key)
+      delete_goals
       increment_version
+    end
+
+    def delete_goals
+      Split.redis.del(goals_key)
     end
 
     def new_record?
@@ -174,7 +177,11 @@ module Split
 
     def self.load_goals_from_configuration_for(name)
       goals = Split.configuration.experiment_for(name)[:goals]
-      goals.flatten unless goals.nil?
+      if goals.nil?
+        goals = []
+      else
+        goals.flatten
+      end
     end
 
     def self.load_goals_from_redis_for(name)
@@ -277,6 +284,7 @@ module Split
           exp = self.new(name, :alternative_names => existing_alternatives, :goals => goals)
           exp.reset
           exp.alternatives.each(&:delete)
+          exp.delete_goals
           experiment = self.new(name, :alternative_names =>alternatives, :goals => goals)
           experiment.save
         end

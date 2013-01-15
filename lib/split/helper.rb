@@ -51,7 +51,7 @@ module Split
         return true
       else
         alternative_name = ab_user[experiment.key]
-        trial = Trial.new(:experiment => experiment, :alternative_name => alternative_name)
+        trial = Trial.new(:experiment => experiment, :alternative_name => alternative_name, :goals => options[:goals])
         trial.complete!
         if should_reset
           reset!(experiment)
@@ -64,11 +64,12 @@ module Split
 
     def finished(metric_name, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
+      metric_name, goals = normalize_experiment(metric_name)
       experiments = Metric.possible_experiments(metric_name)
 
       if experiments.any?
         experiments.each do |experiment|
-          finish_experiment(experiment, options)
+          finish_experiment(experiment, options.merge(:goals => goals))
         end
       end
     rescue => e

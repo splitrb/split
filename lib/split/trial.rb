@@ -2,11 +2,13 @@ module Split
   class Trial
     attr_accessor :experiment
     attr_writer :alternative
+    attr_accessor :goals
 
     def initialize(attrs = {})
       self.experiment = attrs[:experiment]  if !attrs[:experiment].nil?
       self.alternative = attrs[:alternative] if !attrs[:alternative].nil?
       self.alternative_name = attrs[:alternative_name] if !attrs[:alternative_name].nil?
+      self.goals = attrs[:goals] if !attrs[:goals].nil?
     end
 
     def alternative
@@ -16,10 +18,12 @@ module Split
     end
 
     def complete!
-      if experiment.goals.empty?
-        alternative.increment_completion
-      else
-        experiment.goals.each {|g| alternative.increment_completion(g)}
+      if alternative
+        if self.goals.empty?
+          alternative.increment_completion
+        else
+          self.goals.each {|g| alternative.increment_completion(g)}
+        end
       end
     end
 
