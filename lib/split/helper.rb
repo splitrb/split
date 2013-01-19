@@ -141,7 +141,7 @@ module Split
       if control.nil? && alternatives.length.zero?
         experiment = Experiment.find(experiment_name)
 
-        raise ExperimentNotFound("#{experiment_name} not found") if experiment.nil?
+        raise ExperimentNotFound.new("#{experiment_name} not found") if experiment.nil?
       else
         experiment = Split::Experiment.find_or_create(experiment_name, *([control] + alternatives))
       end
