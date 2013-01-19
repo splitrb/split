@@ -38,7 +38,7 @@ describe Split::Configuration do
 
   it "should load a metric" do
     @config.experiments = {:my_experiment=>
-        {:variants=>["control_opt", "other_opt"], :metric=>:my_metric}}
+        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
 
     @config.metrics.should_not be_nil
     @config.metrics.keys.should ==  [:my_metric]
@@ -46,14 +46,14 @@ describe Split::Configuration do
   
   it "should allow loading of experiment using experment_for" do
     @config.experiments = {:my_experiment=>
-        {:variants=>["control_opt", "other_opt"], :metric=>:my_metric}}
-    @config.experiment_for(:my_experiment).should == {:variants=>["control_opt", ["other_opt"]]}
+        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
+    @config.experiment_for(:my_experiment).should == {:alternatives=>["control_opt", ["other_opt"]]}
   end
   
   it "should normalize experiments" do
     @config.experiments = {
       :my_experiment => {
-        :variants => [
+        :alternatives => [
           { :name => "control_opt", :percent => 67 },
           { :name => "second_opt", :percent => 10 },
           { :name => "third_opt", :percent => 23 },
@@ -61,6 +61,6 @@ describe Split::Configuration do
       }
     }
     
-    @config.normalized_experiments.should == {:my_experiment=>{:variants=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}}
+    @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}}
   end
 end

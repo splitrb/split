@@ -156,8 +156,8 @@ module Split
     end
 
     def self.load_alternatives_from_configuration_for(name)
-      alts = Split.configuration.experiment_for(name)[:variants]
-      raise ArgumentError, "Experiment configuration is missing :variants array" if alts.nil?
+      alts = Split.configuration.experiment_for(name)[:alternatives]
+      raise ArgumentError, "Experiment configuration is missing :alternatives array" if alts.nil?
       if alts.is_a?(Hash)
         alts.keys
       else

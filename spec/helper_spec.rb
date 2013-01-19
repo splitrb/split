@@ -183,7 +183,7 @@ describe Split::Helper do
     it "passes reset option from config" do
       Split.configuration.experiments = {
         @experiment_name => {
-          :variants => @alternatives,
+          :alternatives => @alternatives,
           :resettable => false,
         }
       }
@@ -196,7 +196,7 @@ describe Split::Helper do
       before { Split::Alternative.stub(:new).and_call_original }
 
       def should_finish_experiment(experiment_name, should_finish=true)
-        alts = Split.configuration.experiments[experiment_name][:variants]
+        alts = Split.configuration.experiments[experiment_name][:alternatives]
         experiment = Split::Experiment.find_or_create(experiment_name, *alts)
         alt_name = ab_user[experiment.key] = alts.first
         alt = mock('alternative')
@@ -211,7 +211,7 @@ describe Split::Helper do
 
       it "completes the test" do
         Split.configuration.experiments[:my_experiment] = {
-          :variants => [ "control_opt", "other_opt" ],
+          :alternatives => [ "control_opt", "other_opt" ],
           :metric => :my_metric
         }
         should_finish_experiment :my_experiment
@@ -221,15 +221,15 @@ describe Split::Helper do
       it "completes all relevant tests" do
         Split.configuration.experiments = {
           :exp_1 => {
-            :variants => [ "1-1", "1-2" ],
+            :alternatives => [ "1-1", "1-2" ],
             :metric => :my_metric
           },
           :exp_2 => {
-            :variants => [ "2-1", "2-2" ],
+            :alternatives => [ "2-1", "2-2" ],
             :metric => :another_metric
           },
           :exp_3 => {
-            :variants => [ "3-1", "3-2" ],
+            :alternatives => [ "3-1", "3-2" ],
             :metric => :my_metric
           },
         }
@@ -241,7 +241,7 @@ describe Split::Helper do
 
       it "passes reset option" do
         Split.configuration.experiments[@experiment_name] = {
-          :variants => @alternatives,
+          :alternatives => @alternatives,
           :metric => :my_metric,
           :resettable => false,
         }
@@ -251,7 +251,7 @@ describe Split::Helper do
 
       it "passes through options" do
         Split.configuration.experiments[@experiment_name] = {
-          :variants => @alternatives,
+          :alternatives => @alternatives,
           :metric => :my_metric,
         }
         finished :my_metric, :reset => false
@@ -580,7 +580,7 @@ describe Split::Helper do
   
     it "pulls options from config file" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [ "control_opt", "other_opt" ],
+        :alternatives => [ "control_opt", "other_opt" ],
       }
       ab_test :my_experiment
       Split::Experiment.find(:my_experiment).alternative_names.should == [ "control_opt", "other_opt" ]
@@ -588,7 +588,7 @@ describe Split::Helper do
   
     it "can be called multiple times" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [ "control_opt", "other_opt" ],
+        :alternatives => [ "control_opt", "other_opt" ],
       }
       5.times { ab_test :my_experiment }
       experiment = Split::Experiment.find(:my_experiment)
@@ -596,18 +596,18 @@ describe Split::Helper do
       experiment.participant_count.should == 1
     end
   
-    it "accepts multiple variants" do
+    it "accepts multiple alternatives" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [ "control_opt", "second_opt", "third_opt" ],
+        :alternatives => [ "control_opt", "second_opt", "third_opt" ],
       }
       ab_test :my_experiment
       experiment = Split::Experiment.find(:my_experiment)
       experiment.alternative_names.should == [ "control_opt", "second_opt", "third_opt" ]
     end
   
-    it "accepts probability on variants" do
+    it "accepts probability on alternatives" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [
+        :alternatives => [
           { :name => "control_opt", :percent => 67 },
           { :name => "second_opt", :percent => 10 },
           { :name => "third_opt", :percent => 23 },
@@ -619,9 +619,9 @@ describe Split::Helper do
       
     end
   
-    it "accepts probability on some variants" do
+    it "accepts probability on some alternatives" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [
+        :alternatives => [
           { :name => "control_opt", :percent => 34 },
           "second_opt",
           { :name => "third_opt", :percent => 23 },
@@ -637,7 +637,7 @@ describe Split::Helper do
   
     it "allows name param without probability" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [
+        :alternatives => [
           { :name => "control_opt" },
           "second_opt",
           { :name => "third_opt", :percent => 64 },
@@ -660,9 +660,9 @@ describe Split::Helper do
       lambda { ab_test :my_experiment }.should raise_error(/not found/i)
     end
 
-    it "fails gracefully if config is missing variants" do
+    it "fails gracefully if config is missing alternatives" do
       Split.configuration.experiments[:my_experiment] = { :foo => "Bar" }
-      lambda { ab_test :my_experiment }.should raise_error(/variants/i)
+      lambda { ab_test :my_experiment }.should raise_error(/alternatives/i)
     end
   end
 
