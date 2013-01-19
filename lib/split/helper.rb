@@ -2,7 +2,7 @@ module Split
   module Helper
 
     def ab_test(experiment_name, control=nil, *alternatives)
-      if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero?
+      if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
@@ -141,7 +141,7 @@ module Split
       if control.nil? && alternatives.length.zero?
         experiment = Experiment.find(experiment_name)
 
-        raise ExperimentNotFound("#{experiment_name} not found") if experiment.nil?
+        raise ExperimentNotFound.new("#{experiment_name} not found") if experiment.nil?
       else
         experiment = Split::Experiment.find_or_create(experiment_name, *([control] + alternatives))
       end

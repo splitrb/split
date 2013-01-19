@@ -58,15 +58,15 @@ module Split
           experiment_config[name] = {}
         end
         @experiments.each do | experiment_name, settings|
-          experiment_config[experiment_name][:variants] = normalize_variants(settings[:variants]) if settings[:variants] 
+          experiment_config[experiment_name][:alternatives] = normalize_alternatives(settings[:alternatives]) if settings[:alternatives] 
         end
         experiment_config
       end
     end
     
     
-    def normalize_variants(variants)
-      given_probability, num_with_probability = variants.inject([0,0]) do |a,v|
+    def normalize_alternatives(alternatives)
+      given_probability, num_with_probability = alternatives.inject([0,0]) do |a,v|
         p, n = a
         if v.kind_of?(Hash) && v[:percent]
           [p + v[:percent], n + 1]
@@ -75,11 +75,11 @@ module Split
         end
       end
 
-      num_without_probability = variants.length - num_with_probability
+      num_without_probability = alternatives.length - num_with_probability
       unassigned_probability = ((100.0 - given_probability) / num_without_probability / 100.0)
 
       if num_with_probability.nonzero?
-        variants = variants.map do |v|
+        alternatives = alternatives.map do |v|
           if v.kind_of?(Hash) && v[:name] && v[:percent]
             { v[:name] => v[:percent] / 100.0 }
           elsif v.kind_of?(Hash) && v[:name]
@@ -88,10 +88,10 @@ module Split
             { v => unassigned_probability }
           end
         end
-        [variants.shift, variants]
+        [alternatives.shift, alternatives]
       else
-        variants = variants.dup
-        [variants.shift, variants]
+        alternatives = alternatives.dup
+        [alternatives.shift, alternatives]
       end
     end
 

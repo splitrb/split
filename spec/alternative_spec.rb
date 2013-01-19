@@ -28,10 +28,10 @@ describe Split::Alternative do
       second.weight.should == 0.4  
     end
     
-    it "accepts probability on variants" do
+    it "accepts probability on alternatives" do
       Split.configuration.experiments = {
         :my_experiment => {
-          :variants => [
+          :alternatives => [
             { :name => "control_opt", :percent => 67 },
             { :name => "second_opt", :percent => 10 },
             { :name => "third_opt", :percent => 23 },
@@ -48,9 +48,9 @@ describe Split::Alternative do
       second.weight.should == 0.1
     end
   
-    # it "accepts probability on some variants" do
+    # it "accepts probability on some alternatives" do
     #   Split.configuration.experiments[:my_experiment] = {
-    #     :variants => [
+    #     :alternatives => [
     #       { :name => "control_opt", :percent => 34 },
     #       "second_opt",
     #       { :name => "third_opt", :percent => 23 },
@@ -63,7 +63,7 @@ describe Split::Alternative do
     #   
     # it "allows name param without probability" do
     #   Split.configuration.experiments[:my_experiment] = {
-    #     :variants => [
+    #     :alternatives => [
     #       { :name => "control_opt" },
     #       "second_opt",
     #       { :name => "third_opt", :percent => 64 },
