@@ -11,11 +11,6 @@ Bugfixes:
   - Fixed negative number of non-finished rates (@philnash, #83)
   - Fixed behaviour of finished(:reset => false) (@philnash, #88)
   - Only take into consideration positive z-scores (@thomasmaas, #96)
-
-## 0.4.7 (November 1, 2012)
-
-Bugfixes:
-
   - Amended ab_test method to raise ArgumentError if passed integers or symbols as
     alternatives (@buddhamagnet, #81)
 
