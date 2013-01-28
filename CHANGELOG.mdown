@@ -1,3 +1,17 @@
+## 0.5.0 (January 28, 2012)
+
+Features:
+
+  - Persistence Adapters: Cookies and Session (@patbenatar, #98)
+  - Configure experiments from a hash (@iangreenleaf, #97)
+  - Pluggable sampling algorithms (@woodhull, #105)
+
+Bugfixes:
+
+  - Fixed negative number of non-finished rates (@philnash, #83)
+  - Fixed behaviour of finished(:reset => false) (@philnash, #88)
+  - Only take into consideration positive z-scores (@thomasmaas, #96)
+
 ## 0.4.7 (November 1, 2012)
 
 Bugfixes:
