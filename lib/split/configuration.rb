@@ -11,7 +11,19 @@ module Split
       'Slurp' => 'Yahoo spider',
       'WordPress' => 'WordPress spider',
       'ZIBB' => 'ZIBB spider',
-      'ZyBorg' => 'Zyborg? Hmmm....'
+      'ZyBorg' => 'Zyborg? Hmmm....',
+      "AdsBot-Google" => 'Google Adwords',
+      "DigitalPersona Fingerprint Software" => 'HP Fingerprint scanner',
+      "EventMachine HttpClient" => 'Ruby http library',
+      "Go http package" => 'Go http library',
+      "Python-urllib" => 'Python http library',
+      "ShowyouBot" => 'Showyou Bot',
+      "Test Certificate Info" => 'C http library?',
+      "Wget" => 'wget unix CLI http client',
+      "bitlybot" => 'bit.ly bot',
+      "curl" => 'curl unix CLI http client',
+      "facebookexternalhit" => 'facebook bot',
+      "spider" => 'generic web spider'
     }
     attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses

@@ -27,7 +27,7 @@ describe Split::Configuration do
   end
 
   it "should provide a default pattern for robots" do
-    %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg].each do |robot|
+    %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg AdsBot-Google Wget curl bitlybot facebookexternalhit spider].each do |robot|
       @config.robot_regex.should =~ robot
     end
   end
