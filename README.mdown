@@ -314,11 +314,33 @@ Your code may then track a completion using the metric instead of
 the experiment name:
 
     finished(:conversion)
-    
-You can also create a new metric by instantiating and saving a new Metric object. 
+
+You can also create a new metric by instantiating and saving a new Metric object.
 
     Split::Metric.new(:conversion)
     Split::Metric.save
+
+#### Goals
+
+You might wish to allow an experiment to have multiple goals.
+The API to define goals for an experiment is this:
+
+    ab_test({"link_color" => ["purchase", "refund"]}, "red", "blue")
+
+or you can you can define them in a configuration file:
+
+    Split.configure do |config|
+      config.experiments = {
+        :link_color => {
+          :alternatives => ["red", "blue"],
+          :goals => ["purchase", "refund"]
+        }
+      }
+    end
+
+To complete a goal conversion, you do it like:
+
+    finished({"link_color" => ["purchase"]})
 
 ### DB failover solution
 
@@ -388,7 +410,7 @@ is configured.
 
 ## Outside of a Web Session
 
-Split provides the Helper module to facilitate running experiments inside web sessions. 
+Split provides the Helper module to facilitate running experiments inside web sessions.
 
 Alternatively, you can access the underlying Metric, Trial, Experiment and Alternative objects to
 conduct experiments that are not tied to a web session.
@@ -412,11 +434,11 @@ end
 
 ## Algorithms
 
-By default, Split ships with an algorithm that randomly selects from possible alternatives for a traditional a/b test. 
+By default, Split ships with an algorithm that randomly selects from possible alternatives for a traditional a/b test.
 
-An implementation of a bandit algorithm is also provided. 
+An implementation of a bandit algorithm is also provided.
 
-Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file. 
+Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file.
 
 ## Extensions
 
