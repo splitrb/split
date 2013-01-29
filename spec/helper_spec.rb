@@ -549,6 +549,18 @@ describe Split::Helper do
             end
           end
         end
+
+        context 'and preloaded config given' do
+          before do
+            Split.configuration.experiments[:link_color] = {
+              :alternatives => [ "blue", "red" ],
+            }
+          end
+
+          it "uses first alternative" do
+            ab_test(:link_color).should eq("blue")
+          end
+        end
       end
 
       describe 'finished' do
