@@ -5,6 +5,10 @@ require 'spec_helper'
 describe Split::Helper do
   include Split::Helper
 
+  let(:experiment) {
+    Split::Experiment.find_or_create('link_color', 'blue', 'red')
+  }
+
   describe "ab_test" do
 
     it "should not raise an error when passed strings for alternatives" do
@@ -19,13 +23,20 @@ describe Split::Helper do
       lambda { ab_test('xyz', :a, :b, :c) }.should raise_error(ArgumentError)
     end
 
+    it "should not raise error when passed an array for experiment" do
+      lambda { ab_test({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }.should_not raise_error
+    end
+
+    it "should raise the appropriate error when passed string for experiment" do
+      lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }.should raise_error(ArgumentError)
+    end
+
     it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
       ab_test('link_color', 'blue', 'red')
       ['red', 'blue'].should include(ab_user['link_color'])
     end
 
     it "should increment the participation counter after assignment to a new user" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
       previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
       previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -39,21 +50,18 @@ describe Split::Helper do
     end
 
     it "should return the given alternative for an existing user" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative = ab_test('link_color', 'blue', 'red')
       repeat_alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql repeat_alternative
     end
 
     it 'should always return the winner if one is present' do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.winner = "orange"
 
       ab_test('link_color', 'blue', 'red').should == 'orange'
     end
 
     it "should allow the alternative to be force by passing it in the params" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       @params = {'link_color' => 'blue'}
       alternative = ab_test('link_color', 'blue', 'red')
       alternative.should eql('blue')
@@ -107,7 +115,6 @@ describe Split::Helper do
     end
 
     it "should not over-write a finished key when an experiment is on a later version" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.increment_version
       ab_user = { experiment.key => 'blue', experiment.finished_key => true }
       finshed_session = ab_user.dup
@@ -132,12 +139,12 @@ describe Split::Helper do
     end
 
     it "should set experiment's finished key if reset is false" do
-      finished(@experiment_name, :reset => false)
+      finished(@experiment_name, {:reset => false})
       ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
     end
 
     it 'should not increment the counter if reset is false and the experiment has been already finished' do
-      2.times { finished(@experiment_name, :reset => false) }
+      2.times { finished(@experiment_name, {:reset => false}) }
       new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
       new_completion_count.should eql(@previous_completion_count + 1)
     end
@@ -150,7 +157,7 @@ describe Split::Helper do
 
     it "should not clear out the users session if reset is false" do
       ab_user.should eql(@experiment.key => @alternative_name)
-      finished(@experiment_name, :reset => false)
+      finished(@experiment_name, {:reset => false})
       ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
     end
 
@@ -257,12 +264,12 @@ describe Split::Helper do
         finished :my_metric, :reset => false
         ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
       end
+
     end
   end
 
   describe 'conversions' do
     it 'should return a conversion rate for an alternative' do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
 
       previous_convertion_rate = Split::Alternative.new(alternative_name, 'link_color').conversion_rate
@@ -282,13 +289,11 @@ describe Split::Helper do
 
     describe 'ab_test' do
       it 'should return the control' do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative = ab_test('link_color', 'blue', 'red')
         alternative.should eql experiment.control.name
       end
 
       it "should not increment the participation count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -304,7 +309,6 @@ describe Split::Helper do
 
     describe 'finished' do
       it "should not increment the completed count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative_name = ab_test('link_color', 'blue', 'red')
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
@@ -328,13 +332,11 @@ describe Split::Helper do
 
     describe 'ab_test' do
       it 'should return the control' do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative = ab_test('link_color', 'blue', 'red')
         alternative.should eql experiment.control.name
       end
 
       it "should not increment the participation count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
 
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -350,7 +352,6 @@ describe Split::Helper do
 
     describe 'finished' do
       it "should not increment the completed count" do
-        experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
         alternative_name = ab_test('link_color', 'blue', 'red')
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
@@ -366,14 +367,12 @@ describe Split::Helper do
 
   describe 'versioned experiments' do
     it "should use version zero if no version is present" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       experiment.version.should eql(0)
       ab_user.should eql({'link_color' => alternative_name})
     end
 
     it "should save the version of the experiment to the session" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.reset
       experiment.version.should eql(1)
       alternative_name = ab_test('link_color', 'blue', 'red')
@@ -381,7 +380,6 @@ describe Split::Helper do
     end
 
     it "should load the experiment even if the version is not 0" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       experiment.reset
       experiment.version.should eql(1)
       alternative_name = ab_test('link_color', 'blue', 'red')
@@ -391,7 +389,6 @@ describe Split::Helper do
     end
 
     it "should reset the session of a user on an older version of the experiment" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       ab_user.should eql({'link_color' => alternative_name})
       alternative = Split::Alternative.new(alternative_name, 'link_color')
@@ -409,7 +406,6 @@ describe Split::Helper do
     end
 
     it "should cleanup old versions of experiments from the session" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       ab_user.should eql({'link_color' => alternative_name})
       alternative = Split::Alternative.new(alternative_name, 'link_color')
@@ -425,7 +421,6 @@ describe Split::Helper do
     end
 
     it "should only count completion of users on the current version" do
-      experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
       alternative_name = ab_test('link_color', 'blue', 'red')
       ab_user.should eql({'link_color' => alternative_name})
       alternative = Split::Alternative.new(alternative_name, 'link_color')
@@ -577,25 +572,47 @@ describe Split::Helper do
 
   context "with preloaded config" do
     before { Split.configuration.experiments = {}}
-  
+
     it "pulls options from config file" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [ "control_opt", "other_opt" ],
+        :goals => ["goal1", "goal2"]
       }
       ab_test :my_experiment
       Split::Experiment.find(:my_experiment).alternative_names.should == [ "control_opt", "other_opt" ]
+      Split::Experiment.find(:my_experiment).goals.should == [ "goal1", "goal2" ]
     end
-  
+
     it "can be called multiple times" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [ "control_opt", "other_opt" ],
+        :goals => ["goal1", "goal2"]
       }
       5.times { ab_test :my_experiment }
       experiment = Split::Experiment.find(:my_experiment)
       experiment.alternative_names.should == [ "control_opt", "other_opt" ]
+      experiment.goals.should == [ "goal1", "goal2" ]
       experiment.participant_count.should == 1
     end
-  
+
+    it "accepts multiple goals" do
+      Split.configuration.experiments[:my_experiment] = {
+        :alternatives => [ "control_opt", "other_opt" ],
+        :goals => [ "goal1", "goal2", "goal3" ]
+      }
+      ab_test :my_experiment
+      experiment = Split::Experiment.find(:my_experiment)
+      experiment.goals.should == [ "goal1", "goal2", "goal3" ]
+    end
+
+    it "allow specifying goals to be optional" do
+      Split.configuration.experiments[:my_experiment] = {
+        :alternatives => [ "control_opt", "other_opt" ]
+      }
+      experiment = Split::Experiment.find(:my_experiment)
+      experiment.goals.should == []
+    end
+
     it "accepts multiple alternatives" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [ "control_opt", "second_opt", "third_opt" ],
@@ -604,7 +621,7 @@ describe Split::Helper do
       experiment = Split::Experiment.find(:my_experiment)
       experiment.alternative_names.should == [ "control_opt", "second_opt", "third_opt" ]
     end
-  
+
     it "accepts probability on alternatives" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [
@@ -616,9 +633,9 @@ describe Split::Helper do
       ab_test :my_experiment
       experiment = Split::Experiment.find(:my_experiment)
       experiment.alternatives.collect{|a| [a.name, a.weight]}.should == [['control_opt', 0.67], ['second_opt', 0.1], ['third_opt', 0.23]]
-      
+
     end
-  
+
     it "accepts probability on some alternatives" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [
@@ -634,7 +651,7 @@ describe Split::Helper do
       names_and_weights.should == [['control_opt', 0.34], ['second_opt', 0.215], ['third_opt', 0.23], ['fourth_opt', 0.215]]
       names_and_weights.inject(0){|sum, nw| sum + nw[1]}.should == 1.0
     end
-  
+
     it "allows name param without probability" do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [
@@ -667,7 +684,6 @@ describe Split::Helper do
   end
 
   it 'should handle multiple experiments correctly' do
-    experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red')
     experiment2 = Split::Experiment.find_or_create('link_color2', 'blue', 'red')
     alternative_name = ab_test('link_color', 'blue', 'red')
     alternative_name2 = ab_test('link_color2', 'blue', 'red')
@@ -675,6 +691,45 @@ describe Split::Helper do
 
     experiment2.alternatives.each do |alt|
       alt.unfinished_count.should eq(0)
+    end
+  end
+
+  context "with goals" do
+    before do
+      @experiment = {'link_color' => ["purchase", "refund"]}
+      @alternatives = ['blue', 'red']
+      @experiment_name, @goals = normalize_experiment(@experiment)
+      @goal1 = @goals[0]
+      @goal2 = @goals[1]
+    end
+
+    it "should normalize experiment" do
+      @experiment_name.should eql("link_color")
+      @goals.should eql(["purchase", "refund"])
+    end
+
+    describe "ab_test" do
+      it "should allow experiment goals interface as a singel hash" do
+        ab_test(@experiment, *@alternatives)
+        experiment = Split::Experiment.find('link_color')
+        experiment.goals.should eql(['purchase', "refund"])
+      end
+    end
+
+    describe "finished" do
+      before do
+        @alternative_name = ab_test(@experiment, *@alternatives)
+      end
+
+      it "should increment the counter for the specified-goal completed alternative" do
+        @previous_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
+        @previous_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
+        finished({"link_color" => ["purchase"]})
+        new_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
+        new_completion_count_for_goal1.should eql(@previous_completion_count_for_goal1 + 1)
+        new_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
+        new_completion_count_for_goal2.should eql(@previous_completion_count_for_goal2)
+      end
     end
   end
 end

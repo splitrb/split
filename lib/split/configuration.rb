@@ -48,7 +48,7 @@ module Split
       end
       @metrics
     end
-    
+
     def normalized_experiments
       if @experiments.nil?
         nil
@@ -58,13 +58,13 @@ module Split
           experiment_config[name] = {}
         end
         @experiments.each do | experiment_name, settings|
-          experiment_config[experiment_name][:alternatives] = normalize_alternatives(settings[:alternatives]) if settings[:alternatives] 
+          experiment_config[experiment_name][:alternatives] = normalize_alternatives(settings[:alternatives]) if settings[:alternatives]
+          experiment_config[experiment_name][:goals] = settings[:goals] if settings[:goals]
         end
         experiment_config
       end
     end
-    
-    
+
     def normalize_alternatives(alternatives)
       given_probability, num_with_probability = alternatives.inject([0,0]) do |a,v|
         p, n = a
