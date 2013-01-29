@@ -558,7 +558,7 @@ describe Split::Helper do
           end
 
           it "uses first alternative" do
-            ab_test("link_color").should eq("blue")
+            ab_test(:link_color).should eq("blue")
           end
         end
       end
