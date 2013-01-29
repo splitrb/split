@@ -160,6 +160,10 @@ body {
   margin:30px 0;
 }
 
+.experiment_with_goal {
+  margin: -32px 0 30px 0;
+}
+
 .experiment .experiment-header {
   background: #f4f4f4;
   background: -webkit-gradient(linear, left top, left bottom,
@@ -177,14 +181,18 @@ body {
 
 .experiment h2 {
   color:#888;
-  margin: 12px 0 0;
+  margin: 12px 0 12px 0;
   font-size: 1em;
   font-weight:bold;
   float:left;
   text-shadow:0 1px 0 rgba(255,255,255,0.8);
 }
 
-.experiment h2 .version{
+.experiment h2 .goal {
+  font-style: italic;
+}
+
+.experiment h2 .version {
   font-style:italic;
   font-size:0.8em;
   color:#bbb;

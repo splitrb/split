@@ -1,14 +1,16 @@
 module Split
   module Helper
 
-    def ab_test(experiment_name, control=nil, *alternatives)
+    def ab_test(experiment_label, control=nil, *alternatives)
       if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
+      experiment_name, goals = normalize_experiment(experiment_label)
+
       begin
         ret = if Split.configuration.enabled
-          load_and_start_trial(experiment_name, control, alternatives)
+          load_and_start_trial(experiment_label, control, alternatives)
         else
           control_variable(control)
         end
@@ -49,7 +51,7 @@ module Split
         return true
       else
         alternative_name = ab_user[experiment.key]
-        trial = Trial.new(:experiment => experiment, :alternative_name => alternative_name)
+        trial = Trial.new(:experiment => experiment, :alternative_name => alternative_name, :goals => options[:goals])
         trial.complete!
         if should_reset
           reset!(experiment)
@@ -62,11 +64,12 @@ module Split
 
     def finished(metric_name, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
+      metric_name, goals = normalize_experiment(metric_name)
       experiments = Metric.possible_experiments(metric_name)
 
       if experiments.any?
         experiments.each do |experiment|
-          finish_experiment(experiment, options)
+          finish_experiment(experiment, options.merge(:goals => goals))
         end
       end
     rescue => e
@@ -132,18 +135,29 @@ module Split
     end
 
     protected
+    def normalize_experiment(experiment_label)
+      if Hash === experiment_label
+        experiment_name = experiment_label.keys.first
+        goals = experiment_label.values.first
+      else
+        experiment_name = experiment_label
+        goals = []
+      end
+      return experiment_name, goals
+    end
 
     def control_variable(control)
       Hash === control ? control.keys.first : control
     end
 
-    def load_and_start_trial(experiment_name, control, alternatives)
+    def load_and_start_trial(experiment_label, control, alternatives)
+      experiment_name, goals = normalize_experiment(experiment_label)
       if control.nil? && alternatives.length.zero?
         experiment = Experiment.find(experiment_name)
 
         raise ExperimentNotFound.new("#{experiment_name} not found") if experiment.nil?
       else
-        experiment = Split::Experiment.find_or_create(experiment_name, *([control] + alternatives))
+        experiment = Split::Experiment.find_or_create(experiment_label, *([control] + alternatives))
       end
 
       start_trial( Trial.new(:experiment => experiment) )

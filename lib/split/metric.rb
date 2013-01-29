@@ -64,5 +64,18 @@ module Split
         experiment.complete!
       end
     end
+
+    private
+
+    def self.normalize_metric(label)
+      if Hash === label
+        metric_name = label.keys.first
+        goals = label.values.first
+      else
+        metric_name = label
+        goals = []
+      end
+      return metric_name, goals
+    end
   end
 end
