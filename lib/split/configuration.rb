@@ -23,7 +23,8 @@ module Split
       "bitlybot" => 'bit.ly bot',
       "curl" => 'curl unix CLI http client',
       "facebookexternalhit" => 'facebook bot',
-      "spider" => 'generic web spider'
+      "spider" => 'generic web spider',
+      "Pingdom" => 'Pingdom monitoring'
     }
     attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses
