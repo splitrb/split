@@ -597,7 +597,7 @@ describe Split::Helper do
 
     it "accepts multiple goals" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [ "control_opt", "other_opt" ],
+        :alternatives => [ "control_opt", "other_opt" ],
         :goals => [ "goal1", "goal2", "goal3" ]
       }
       ab_test :my_experiment
@@ -607,7 +607,7 @@ describe Split::Helper do
 
     it "allow specifying goals to be optional" do
       Split.configuration.experiments[:my_experiment] = {
-        :variants => [ "control_opt", "other_opt" ]
+        :alternatives => [ "control_opt", "other_opt" ]
       }
       experiment = Split::Experiment.find(:my_experiment)
       experiment.goals.should == []
