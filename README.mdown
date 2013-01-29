@@ -82,7 +82,7 @@ end
 
 ## Usage
 
-To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different variants which you wish to test on as the other arguments.
+To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different alternatives which you wish to test on as the other arguments.
 
 `ab_test` returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on.
 
@@ -267,18 +267,18 @@ in a hash or a configuration file:
       config.experiments = YAML.load_file "config/experiments.yml"
     end
 
-This hash can control your experiment's variants, weights, algorithm and if the
+This hash can control your experiment's alternatives, weights, algorithm and if the
 experiment resets once finished:
 
     Split.configure do |config|
       config.experiments = {
         :my_first_experiment => {
-          :variants => ["a", "b"],
+          :alternatives => ["a", "b"],
           :resettable => false,
         },
         :my_second_experiment => {
           :algorithm => 'Split::Algorithms::Whiplash',
-          :variants => [
+          :alternatives => [
             { :name => "a", :percent => 67 },
             { :name => "b", :percent => 33 },
           ]
@@ -304,7 +304,7 @@ the `:metric` option.
     Split.configure do |config|
       config.experiments = {
         :my_first_experiment => {
-          :variants => ["a", "b"],
+          :alternatives => ["a", "b"],
           :metric => :conversion,
         }
       }
