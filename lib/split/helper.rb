@@ -8,6 +8,13 @@ module Split
 
       experiment_name, goals = normalize_experiment(experiment_label)
 
+      if control.nil? && alternatives.length.zero?
+        exp = Split.configuration.experiment_for(experiment_name)
+        raise ExperimentNotFound.new("#{experiment_name} not found") if exp.nil?
+        control, alternatives = exp[:alternatives]
+        raise ArgumentError, "Experiment configuration is missing :alternatives array" if alternatives.nil?
+      end
+
       begin
         ret = if Split.configuration.enabled
           load_and_start_trial(experiment_label, control, alternatives)
@@ -152,13 +159,7 @@ module Split
 
     def load_and_start_trial(experiment_label, control, alternatives)
       experiment_name, goals = normalize_experiment(experiment_label)
-      if control.nil? && alternatives.length.zero?
-        experiment = Experiment.find(experiment_name)
-
-        raise ExperimentNotFound.new("#{experiment_name} not found") if experiment.nil?
-      else
-        experiment = Split::Experiment.find_or_create(experiment_label, *([control] + alternatives))
-      end
+      experiment = Split::Experiment.find_or_create(experiment_label, *([control] + alternatives))
 
       start_trial( Trial.new(:experiment => experiment) )
     end
