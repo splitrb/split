@@ -7,11 +7,41 @@ module Split
 
     def initialize(name, options = {})
       options = {
-          :resettable => true,
-        }.merge(options)
+        :resettable => true,
+      }.merge(options)
+
 
       @name = name.to_s
-      @alternatives = options[:alternatives]  if !options[:alternatives].nil?
+
+      @alternatives = options[:alternatives] || []
+
+      if @alternatives.length == 1
+        if @alternatives[0].is_a? Hash
+          @alternatives = @alternatives[0].map{|k,v| {k => v} }
+        end
+      end
+
+      if @alternatives.length.zero?
+        exp_config = Split.configuration.experiment_for(name)
+        #TODO
+        if exp_config
+        @alternatives = self.class.load_alternatives_from_configuration_for(@name)
+        options[:goals] = self.class.load_goals_from_configuration_for(@name)
+        options[:resettable] = exp_config[:resettable]
+        options[:algorithm] = exp_config[:algorithm]
+        end
+      end
+
+      @alternatives = @alternatives.map do |alternative|
+        Split::Alternative.new(alternative, name)
+      end
+
+      #TODO WTF
+      if !options[:alternative_names].nil?
+        @alternatives = options[:alternative_names].map do |alternative|
+                          Split::Alternative.new(alternative, name)
+                        end
+      end
 
       if !options[:goals].nil?
         @goals = options[:goals]
@@ -24,14 +54,17 @@ module Split
       if !options[:resettable].nil?
         @resettable = options[:resettable].is_a?(String) ? options[:resettable] == 'true' : options[:resettable]
       end
+    end
 
-      if !options[:alternative_names].nil?
-        @alternatives = options[:alternative_names].map do |alternative|
-                          Split::Alternative.new(alternative, name)
-                        end
+    def validate!
+      if @alternatives.length.zero? && Split.configuration.experiment_for(@name).nil?
+        raise ExperimentNotFound.new("Experiment #{@name} not found")
       end
-
-
+      @alternatives.each {|a| a.validate! }
+      #TODO
+      unless @goals.nil? || self.class.valid_goals?(@goals)
+        raise ArgumentError, 'Goals must be an array'
+      end
     end
 
     def algorithm
@@ -151,15 +184,25 @@ module Split
     end
 
     def save
+      validate!
+
       if new_record?
         Split.redis.sadd(:experiments, name)
         Split.redis.hset(:experiment_start_times, @name, Time.now)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
         @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
       else
-        Split.redis.del(name)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-        @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+
+        existing_alternatives = self.class.load_alternatives_for(@name)
+        existing_goals = self.class.load_goals_for(@name)
+        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
+          reset
+          @alternatives.each(&:delete)
+          delete_goals
+          Split.redis.del(@name)
+          @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
+          @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+        end
       end
       config_key = Split::Experiment.experiment_config_key(name)
       Split.redis.hset(config_key, :resettable, resettable)
@@ -218,18 +261,10 @@ module Split
       end
     end
 
-    def self.load_from_configuration(name)
-      exp_config = Split.configuration.experiment_for(name) || {}
-      self.new(name, :alternative_names => load_alternatives_for(name),
-                     :goals => load_goals_for(name),
-                     :resettable => exp_config[:resettable],
-                     :algorithm => exp_config[:algorithm])
-    end
-
     def self.load_from_redis(name)
       exp_config = Split.redis.hgetall(experiment_config_key(name))
-      self.new(name, :alternative_names => load_alternatives_for(name),
-                     :goals => load_goals_for(name),
+      self.new(name, :alternative_names => load_alternatives_from_redis_for(name),
+                     :goals => load_goals_from_redis_for(name),
                      :resettable => exp_config['resettable'],
                      :algorithm => exp_config['algorithm'])
     end
@@ -250,11 +285,8 @@ module Split
       Split.configuration.experiments ? Split.configuration.experiments.keys : []
     end
 
-
     def self.find(name)
-      if Split.configuration.experiment_for(name)
-        obj = load_from_configuration(name)
-      elsif Split.redis.exists(name)
+      if Split.redis.exists(name)
         obj = load_from_redis(name)
       else
         obj = nil
@@ -266,34 +298,9 @@ module Split
       experiment_name_with_version, goals = normalize_experiment(label)
       name = experiment_name_with_version.to_s.split(':')[0]
 
-      if alternatives.length == 1
-        if alternatives[0].is_a? Hash
-          alternatives = alternatives[0].map{|k,v| {k => v} }
-        end
-      end
-
-      alts = initialize_alternatives(alternatives, name)
-      gls = initialize_goals(goals)
-
-      if Split.redis.exists(name)
-        existing_alternatives = load_alternatives_for(name)
-        existing_goals = load_goals_for(name)
-        if existing_alternatives == alts.map(&:name) && existing_goals == gls
-          experiment = self.new(name, :alternative_names => alternatives, :goals => goals)
-        else
-          exp = self.new(name, :alternative_names => existing_alternatives, :goals => goals)
-          exp.reset
-          exp.alternatives.each(&:delete)
-          exp.delete_goals
-          experiment = self.new(name, :alternative_names =>alternatives, :goals => goals)
-          experiment.save
-        end
-      else
-        experiment = self.new(name, :alternative_names => alternatives, :goals => goals)
-        experiment.save
-      end
-      return experiment
-
+      exp = self.new name, :alternatives => alternatives, :goals => goals
+      exp.save
+      exp
     end
 
     def self.normalize_experiment(label)

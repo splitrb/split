@@ -114,6 +114,13 @@ module Split
       Split.redis.hsetnx key, 'completed_count', 0
     end
 
+    def validate!
+      #TODO
+      unless String === @name || self.class.hash_with_correct_values?(@name)
+        raise ArgumentError, 'Alternative must be a string'
+      end
+    end
+
     def reset
       Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
       unless goals.empty?

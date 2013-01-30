@@ -43,7 +43,8 @@ module Split
 
     def experiment_for(name)
       if normalized_experiments
-        normalized_experiments[name]
+        # TODO symbols
+        normalized_experiments[name.to_sym]
       end
     end
 
@@ -55,7 +56,7 @@ module Split
           metric_name = value[:metric]
           if metric_name
             @metrics[metric_name] ||= []
-            @metrics[metric_name] << Split::Experiment.load_from_configuration(key)
+            @metrics[metric_name] << Split::Experiment.new(key)
           end
         end
       end

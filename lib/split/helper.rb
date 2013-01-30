@@ -6,18 +6,15 @@ module Split
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
-      experiment_name, goals = normalize_experiment(experiment_label)
-
-      if control.nil? && alternatives.length.zero?
-        exp = Split.configuration.experiment_for(experiment_name)
-        raise ExperimentNotFound.new("#{experiment_name} not found") if exp.nil?
-        control, alternatives = exp[:alternatives]
-        raise ArgumentError, "Experiment configuration is missing :alternatives array" if alternatives.nil?
-      end
-
       begin
+      experiment_name_with_version, goals = normalize_experiment(experiment_label)
+      experiment_name = experiment_name_with_version.to_s.split(':')[0]
+      experiment = Split::Experiment.new(experiment_name, :alternatives => [control].compact + alternatives, :goals => goals)
+      control ||= experiment.control && experiment.control.name
+
         ret = if Split.configuration.enabled
-          load_and_start_trial(experiment_label, control, alternatives)
+          experiment.save
+          start_trial( Trial.new(:experiment => experiment) )
         else
           control_variable(control)
         end
@@ -159,9 +156,6 @@ module Split
 
     def load_and_start_trial(experiment_label, control, alternatives)
       experiment_name, goals = normalize_experiment(experiment_label)
-      experiment = Split::Experiment.find_or_create(experiment_label, *([control] + alternatives))
-
-      start_trial( Trial.new(:experiment => experiment) )
     end
 
     def start_trial(trial)
