@@ -68,33 +68,54 @@ describe Split::Alternative do
       second.weight.should == 0.1
     end
 
-    # it "accepts probability on some alternatives" do
-    #   Split.configuration.experiments[:my_experiment] = {
-    #     :alternatives => [
-    #       { :name => "control_opt", :percent => 34 },
-    #       "second_opt",
-    #       { :name => "third_opt", :percent => 23 },
-    #       "fourth_opt",
-    #     ],
-    #   }
-    #   should start_experiment(:my_experiment).with({"control_opt" => 0.34}, {"second_opt" => 0.215}, {"third_opt" => 0.23}, {"fourth_opt" => 0.215})
-    #   ab_test :my_experiment
-    # end
+    it "accepts probability on some alternatives" do
+      Split.configuration.experiments = {
+        :my_experiment => {
+          :alternatives => [
+            { :name => "control_opt", :percent => 34 },
+            "second_opt",
+            { :name => "third_opt", :percent => 23 },
+            "fourth_opt",
+          ],
+        }
+      }
+      experiment = Split::Experiment.find(:my_experiment)
+      alts = experiment.alternatives
+      [
+        ["control_opt", 0.34],
+        ["second_opt", 0.215],
+        ["third_opt", 0.23],
+        ["fourth_opt", 0.215]
+      ].each do |h|
+        name, weight = h
+        alt = alts.shift
+        alt.name.should == name
+        alt.weight.should == weight
+      end
+    end
     #
-    # it "allows name param without probability" do
-    #   Split.configuration.experiments[:my_experiment] = {
-    #     :alternatives => [
-    #       { :name => "control_opt" },
-    #       "second_opt",
-    #       { :name => "third_opt", :percent => 64 },
-    #     ],
-    #   }
-    #   should start_experiment(:my_experiment).with({"control_opt" => 0.18}, {"second_opt" => 0.18}, {"third_opt" => 0.64})
-    #   ab_test :my_experiment
-    # end
-
-    it "should set the weights from a configuration file" do
-
+    it "allows name param without probability" do
+      Split.configuration.experiments = {
+        :my_experiment => {
+          :alternatives => [
+            { :name => "control_opt" },
+            "second_opt",
+            { :name => "third_opt", :percent => 64 },
+          ],
+        }
+      }
+      experiment = Split::Experiment.find(:my_experiment)
+      alts = experiment.alternatives
+      [
+        ["control_opt", 0.18],
+        ["second_opt", 0.18],
+        ["third_opt", 0.64],
+      ].each do |h|
+        name, weight = h
+        alt = alts.shift
+        alt.name.should == name
+        alt.weight.should == weight
+      end
     end
   end
 
