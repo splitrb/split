@@ -23,11 +23,11 @@ describe Split::Helper do
       lambda { ab_test('xyz', :a, :b, :c) }.should raise_error(ArgumentError)
     end
 
-    it "should not raise error when passed an array for experiment" do
+    it "should not raise error when passed an array for goals" do
       lambda { ab_test({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }.should_not raise_error
     end
 
-    it "should raise the appropriate error when passed string for experiment" do
+    it "should raise the appropriate error when passed string for goals" do
       lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }.should raise_error(ArgumentError)
     end
 
@@ -197,8 +197,8 @@ describe Split::Helper do
           :resettable => false,
         }
       }
-      experiment = Split::Experiment.find_or_create :my_experiment
       alternative = ab_test(:my_experiment)
+      experiment = Split::Experiment.find :my_experiment
 
       finished :my_experiment
       ab_user.should eql(experiment.key => alternative, experiment.finished_key => true)
@@ -261,8 +261,9 @@ describe Split::Helper do
           :resettable => false,
         }
       }
-      exp = Split::Experiment.find_or_create :my_exp
       alternative_name = ab_test(:my_exp)
+      exp = Split::Experiment.find :my_exp
+
       finished :my_metric
       ab_user[exp.key].should == alternative_name
       ab_user[exp.finished_key].should == true
@@ -275,8 +276,9 @@ describe Split::Helper do
           :metric => :my_metric,
         }
       }
-      exp = Split::Experiment.find_or_create :my_exp
       alternative_name = ab_test(:my_exp)
+      exp = Split::Experiment.find :my_exp
+
       finished :my_metric, :reset => false
       ab_user[exp.key].should == alternative_name
       ab_user[exp.finished_key].should == true
