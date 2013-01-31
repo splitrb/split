@@ -187,17 +187,22 @@ describe Split::Helper do
       doing_other_tests?(@experiment.key).should be false
     end
 
-    it "passes reset option from config" do
+  end
+
+  context "finished with config" do
+    it "passes reset option" do
       Split.configuration.experiments = {
-        @experiment_name => {
-          :alternatives => @alternatives,
+        :my_experiment => {
+          :alternatives => ["one", "two"],
           :resettable => false,
         }
       }
-      finished @experiment_name
-      ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
-    end
+      experiment = Split::Experiment.find_or_create :my_experiment
+      alternative = ab_test(:my_experiment)
 
+      finished :my_experiment
+      ab_user.should eql(experiment.key => alternative, experiment.finished_key => true)
+    end
   end
 
   context "finished with metric name" do
