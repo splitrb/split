@@ -198,74 +198,85 @@ describe Split::Helper do
       ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
     end
 
-    context "with metric name" do
-      before { Split.configuration.experiments = {} }
-      before { Split::Alternative.stub(:new).and_call_original }
+  end
 
-      def should_finish_experiment(experiment_name, should_finish=true)
-        alts = Split.configuration.experiments[experiment_name][:alternatives]
-        experiment = Split::Experiment.find_or_create(experiment_name, *alts)
-        alt_name = ab_user[experiment.key] = alts.first
-        alt = mock('alternative')
-        alt.stub(:name).and_return(alt_name)
-        Split::Alternative.stub(:new).with(alt_name, experiment_name).and_return(alt)
-        if should_finish
-          alt.should_receive(:increment_completion)
-        else
-          alt.should_not_receive(:increment_completion)
-        end
+  context "finished with metric name" do
+    before { Split.configuration.experiments = {} }
+    before { Split::Alternative.stub(:new).and_call_original }
+
+    def should_finish_experiment(experiment_name, should_finish=true)
+      alts = Split.configuration.experiments[experiment_name][:alternatives]
+      experiment = Split::Experiment.find_or_create(experiment_name, *alts)
+      alt_name = ab_user[experiment.key] = alts.first
+      alt = mock('alternative')
+      alt.stub(:name).and_return(alt_name)
+      Split::Alternative.stub(:new).with(alt_name, experiment_name).and_return(alt)
+      if should_finish
+        alt.should_receive(:increment_completion)
+      else
+        alt.should_not_receive(:increment_completion)
       end
+    end
 
-      it "completes the test" do
-        Split.configuration.experiments[:my_experiment] = {
-          :alternatives => [ "control_opt", "other_opt" ],
+    it "completes the test" do
+      Split.configuration.experiments[:my_experiment] = {
+        :alternatives => [ "control_opt", "other_opt" ],
+        :metric => :my_metric
+      }
+      should_finish_experiment :my_experiment
+      finished :my_metric
+    end
+
+    it "completes all relevant tests" do
+      Split.configuration.experiments = {
+        :exp_1 => {
+          :alternatives => [ "1-1", "1-2" ],
           :metric => :my_metric
-        }
-        should_finish_experiment :my_experiment
-        finished :my_metric
-      end
+        },
+        :exp_2 => {
+          :alternatives => [ "2-1", "2-2" ],
+          :metric => :another_metric
+        },
+        :exp_3 => {
+          :alternatives => [ "3-1", "3-2" ],
+          :metric => :my_metric
+        },
+      }
+      should_finish_experiment :exp_1
+      should_finish_experiment :exp_2, false
+      should_finish_experiment :exp_3
+      finished :my_metric
+    end
 
-      it "completes all relevant tests" do
-        Split.configuration.experiments = {
-          :exp_1 => {
-            :alternatives => [ "1-1", "1-2" ],
-            :metric => :my_metric
-          },
-          :exp_2 => {
-            :alternatives => [ "2-1", "2-2" ],
-            :metric => :another_metric
-          },
-          :exp_3 => {
-            :alternatives => [ "3-1", "3-2" ],
-            :metric => :my_metric
-          },
-        }
-        should_finish_experiment :exp_1
-        should_finish_experiment :exp_2, false
-        should_finish_experiment :exp_3
-        finished :my_metric
-      end
-
-      it "passes reset option" do
-        Split.configuration.experiments[@experiment_name] = {
-          :alternatives => @alternatives,
+    it "passes reset option" do
+      Split.configuration.experiments = {
+        :my_exp => {
+          :alternatives => ["one", "two"],
           :metric => :my_metric,
           :resettable => false,
         }
-        finished :my_metric
-        ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
-      end
+      }
+      exp = Split::Experiment.find_or_create :my_exp
+      alternative_name = ab_test(:my_exp)
+      finished :my_metric
+      ab_user[exp.key].should == alternative_name
+      ab_user[exp.finished_key].should == true
+    end
 
-      it "passes through options" do
-        Split.configuration.experiments[@experiment_name] = {
-          :alternatives => @alternatives,
+    it "passes through options" do
+      Split.configuration.experiments = {
+        :my_exp => {
+          :alternatives => ["one", "two"],
           :metric => :my_metric,
         }
-        finished :my_metric, :reset => false
-        ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
-      end
-
+      }
+      exp = Split::Experiment.find_or_create :my_exp
+      alternative_name = ab_test(:my_exp)
+      finished :my_metric, :reset => false
+      ab_user[exp.key].should == alternative_name
+      ab_user[exp.finished_key].should == true
     end
+
   end
 
   describe 'conversions' do
