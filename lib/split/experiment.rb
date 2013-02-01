@@ -36,13 +36,6 @@ module Split
         Split::Alternative.new(alternative, name)
       end
 
-      #TODO WTF
-      if !options[:alternative_names].nil?
-        @alternatives = options[:alternative_names].map do |alternative|
-                          Split::Alternative.new(alternative, name)
-                        end
-      end
-
       if !options[:goals].nil?
         @goals = options[:goals]
       end
@@ -110,10 +103,6 @@ module Split
 
     def alternatives
       @alternatives.dup
-    end
-
-    def alternative_names
-      @alternatives.map(&:name)
     end
 
     def next_alternative
@@ -263,7 +252,7 @@ module Split
 
     def self.load_from_redis(name)
       exp_config = Split.redis.hgetall(experiment_config_key(name))
-      self.new(name, :alternative_names => load_alternatives_from_redis_for(name),
+      self.new(name, :alternatives => load_alternatives_from_redis_for(name),
                      :goals => load_goals_from_redis_for(name),
                      :resettable => exp_config['resettable'],
                      :algorithm => exp_config['algorithm'])

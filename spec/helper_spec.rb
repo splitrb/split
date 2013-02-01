@@ -88,7 +88,7 @@ describe Split::Helper do
     it "should allow alternative weighting interface as a single hash" do
       ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)
       experiment = Split::Experiment.find('link_color')
-      experiment.alternative_names.should eql(['blue', 'red'])
+      experiment.alternatives.map(&:name).should eql(['blue', 'red'])
       # TODO: persist alternative weights
       # experiment.alternatives.collect{|a| a.weight}.should == [0.01, 0.2]
     end
@@ -609,7 +609,7 @@ describe Split::Helper do
         :goals => ["goal1", "goal2"]
       }
       ab_test :my_experiment
-      Split::Experiment.new(:my_experiment).alternative_names.should == [ "control_opt", "other_opt" ]
+      Split::Experiment.new(:my_experiment).alternatives.map(&:name).should == [ "control_opt", "other_opt" ]
       Split::Experiment.new(:my_experiment).goals.should == [ "goal1", "goal2" ]
     end
 
@@ -620,7 +620,7 @@ describe Split::Helper do
       }
       5.times { ab_test :my_experiment }
       experiment = Split::Experiment.new(:my_experiment)
-      experiment.alternative_names.should == [ "control_opt", "other_opt" ]
+      experiment.alternatives.map(&:name).should == [ "control_opt", "other_opt" ]
       experiment.goals.should == [ "goal1", "goal2" ]
       experiment.participant_count.should == 1
     end
@@ -649,7 +649,7 @@ describe Split::Helper do
       }
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
-      experiment.alternative_names.should == [ "control_opt", "second_opt", "third_opt" ]
+      experiment.alternatives.map(&:name).should == [ "control_opt", "second_opt", "third_opt" ]
     end
 
     it "accepts probability on alternatives" do
