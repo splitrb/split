@@ -27,7 +27,7 @@ module Split
           ret = override_alternative(experiment_name)
         end
       ensure
-        if ret.nil?
+        unless ret
           ret = control_variable(control)
         end
       end

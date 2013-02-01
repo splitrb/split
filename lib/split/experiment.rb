@@ -11,7 +11,6 @@ module Split
         :resettable => true,
       }.merge(options)
 
-
       @name = name.to_s
 
       alts = options[:alternatives] || []
@@ -22,7 +21,7 @@ module Split
         end
       end
 
-      if alts.length.zero?
+      if alts.empty?
         exp_config = Split.configuration.experiment_for(name)
         if exp_config
           alts = load_alternatives_from_configuration
@@ -82,13 +81,14 @@ module Split
           @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
         end
       end
+
       Split.redis.hset(experiment_config_key, :resettable, resettable)
       Split.redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
       self
     end
 
     def validate!
-      if @alternatives.length.zero? && Split.configuration.experiment_for(@name).nil?
+      if @alternatives.empty? && Split.configuration.experiment_for(@name).nil?
         raise ExperimentNotFound.new("Experiment #{@name} not found")
       end
       @alternatives.each {|a| a.validate! }
@@ -259,7 +259,7 @@ module Split
 
     def load_alternatives_from_configuration
       alts = Split.configuration.experiment_for(@name)[:alternatives]
-      raise ArgumentError, "Experiment configuration is missing :alternatives array" if alts.nil?
+      raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
       if alts.is_a?(Hash)
         alts.keys
       else
