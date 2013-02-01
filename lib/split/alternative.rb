@@ -115,8 +115,7 @@ module Split
     end
 
     def validate!
-      #TODO
-      unless String === @name || self.class.hash_with_correct_values?(@name)
+      unless String === @name || hash_with_correct_values?(@name)
         raise ArgumentError, 'Alternative must be a string'
       end
     end
@@ -135,15 +134,11 @@ module Split
       Split.redis.del(key)
     end
 
-    def self.valid?(name)
-      String === name || hash_with_correct_values?(name)
-    end
+    private
 
-    def self.hash_with_correct_values?(name)
+    def hash_with_correct_values?(name)
       Hash === name && String === name.keys.first && Float(name.values.first) rescue false
     end
-
-    private
 
     def key
       "#{experiment_name}:#{name}"
