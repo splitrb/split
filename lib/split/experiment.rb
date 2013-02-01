@@ -38,6 +38,55 @@ module Split
       self.resettable = options[:resettable]
     end
 
+    def self.all
+      Split.redis.smembers(:experiments).map {|e| find(e)}
+    end
+
+    def self.find(name)
+      if Split.redis.exists(name)
+        obj = self.new name
+        obj.load_from_redis
+      else
+        obj = nil
+      end
+      obj
+    end
+
+    def self.find_or_create(label, *alternatives)
+      experiment_name_with_version, goals = normalize_experiment(label)
+      name = experiment_name_with_version.to_s.split(':')[0]
+
+      exp = self.new name, :alternatives => alternatives, :goals => goals
+      exp.save
+      exp
+    end
+
+    def save
+      validate!
+
+      if new_record?
+        Split.redis.sadd(:experiments, name)
+        Split.redis.hset(:experiment_start_times, @name, Time.now)
+        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
+        @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+      else
+
+        existing_alternatives = load_alternatives_from_redis
+        existing_goals = load_goals_from_redis
+        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
+          reset
+          @alternatives.each(&:delete)
+          delete_goals
+          Split.redis.del(@name)
+          @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
+          @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+        end
+      end
+      Split.redis.hset(experiment_config_key, :resettable, resettable)
+      Split.redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
+      self
+    end
+
     def validate!
       if @alternatives.length.zero? && Split.configuration.experiment_for(@name).nil?
         raise ExperimentNotFound.new("Experiment #{@name} not found")
@@ -46,6 +95,22 @@ module Split
       unless @goals.nil? || goals.kind_of?(Array)
         raise ArgumentError, 'Goals must be an array'
       end
+    end
+
+    def new_record?
+      !Split.redis.exists(name)
+    end
+
+    def ==(obj)
+      self.name == obj.name
+    end
+
+    def [](name)
+      alternatives.find{|a| a.name == name}
+    end
+
+    def algorithm
+      @algorithm ||= Split.configuration.algorithm
     end
 
     def algorithm=(algorithm)
@@ -66,20 +131,16 @@ module Split
       end
     end
 
-    def algorithm
-      @algorithm ||= Split.configuration.algorithm
-    end
-
-    def ==(obj)
-      self.name == obj.name
-    end
-
     def winner
       if w = Split.redis.hget(:experiment_winner, name)
         Split::Alternative.new(w, name)
       else
         nil
       end
+    end
+
+    def winner=(winner_name)
+      Split.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
 
     def participant_count
@@ -94,17 +155,9 @@ module Split
       Split.redis.hdel(:experiment_winner, name)
     end
 
-    def winner=(winner_name)
-      Split.redis.hset(:experiment_winner, name, winner_name.to_s)
-    end
-
     def start_time
       t = Split.redis.hget(:experiment_start_times, @name)
       Time.parse(t) if t
-    end
-
-    def [](name)
-      alternatives.find{|a| a.name == name}
     end
 
     def next_alternative
@@ -166,34 +219,29 @@ module Split
       Split.redis.del(goals_key)
     end
 
-    def new_record?
-      !Split.redis.exists(name)
+    def load_from_redis
+      exp_config = Split.redis.hgetall(experiment_config_key)
+      self.resettable = exp_config['resettable']
+      self.algorithm = exp_config['algorithm']
+      self.alternatives = load_alternatives_from_redis
+      self.goals = load_goals_from_redis
     end
 
-    def save
-      validate!
+    protected
 
-      if new_record?
-        Split.redis.sadd(:experiments, name)
-        Split.redis.hset(:experiment_start_times, @name, Time.now)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-        @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+    def self.normalize_experiment(label)
+      if Hash === label
+        experiment_name = label.keys.first
+        goals = label.values.first
       else
-
-        existing_alternatives = load_alternatives_from_redis
-        existing_goals = load_goals_from_redis
-        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
-          reset
-          @alternatives.each(&:delete)
-          delete_goals
-          Split.redis.del(@name)
-          @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-          @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
-        end
+        experiment_name = label
+        goals = []
       end
-      Split.redis.hset(experiment_config_key, :resettable, resettable)
-      Split.redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
-      self
+      return experiment_name, goals
+    end
+
+    def experiment_config_key
+      "experiment_configurations/#{@name}"
     end
 
     def load_goals_from_configuration
@@ -231,50 +279,5 @@ module Split
       end
     end
 
-    def load_from_redis
-      exp_config = Split.redis.hgetall(experiment_config_key)
-      self.resettable = exp_config['resettable']
-      self.algorithm = exp_config['algorithm']
-      self.alternatives = load_alternatives_from_redis
-      self.goals = load_goals_from_redis
-    end
-
-    def experiment_config_key
-      "experiment_configurations/#{@name}"
-    end
-
-    def self.all
-      Split.redis.smembers(:experiments).map {|e| find(e)}
-    end
-
-    def self.find(name)
-      if Split.redis.exists(name)
-        obj = self.new name
-        obj.load_from_redis
-      else
-        obj = nil
-      end
-      obj
-    end
-
-    def self.find_or_create(label, *alternatives)
-      experiment_name_with_version, goals = normalize_experiment(label)
-      name = experiment_name_with_version.to_s.split(':')[0]
-
-      exp = self.new name, :alternatives => alternatives, :goals => goals
-      exp.save
-      exp
-    end
-
-    def self.normalize_experiment(label)
-      if Hash === label
-        experiment_name = label.keys.first
-        goals = label.values.first
-      else
-        experiment_name = label
-        goals = []
-      end
-      return experiment_name, goals
-    end
   end
 end
