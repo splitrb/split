@@ -4,6 +4,7 @@ module Split
     attr_writer :algorithm
     attr_accessor :resettable
     attr_accessor :goals
+    attr_accessor :alternatives
 
     def initialize(name, options = {})
       options = {
@@ -97,10 +98,6 @@ module Split
 
     def [](name)
       alternatives.find{|a| a.name == name}
-    end
-
-    def alternatives
-      @alternatives.dup
     end
 
     def next_alternative
