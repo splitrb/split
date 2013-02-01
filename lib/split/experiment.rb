@@ -246,16 +246,7 @@ module Split
     end
 
     def self.all
-      #TODO
-      Array(all_experiment_names_from_redis + all_experiment_names_from_configuration).map {|e| find(e)}
-    end
-
-    def self.all_experiment_names_from_redis
-      Split.redis.smembers(:experiments)
-    end
-
-    def self.all_experiment_names_from_configuration
-      Split.configuration.experiments ? Split.configuration.experiments.keys : []
+      Split.redis.smembers(:experiments).map {|e| find(e)}
     end
 
     def self.find(name)
