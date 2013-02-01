@@ -23,12 +23,11 @@ module Split
 
       if @alternatives.length.zero?
         exp_config = Split.configuration.experiment_for(name)
-        #TODO
         if exp_config
-        @alternatives = self.class.load_alternatives_from_configuration_for(@name)
-        options[:goals] = self.class.load_goals_from_configuration_for(@name)
-        options[:resettable] = exp_config[:resettable]
-        options[:algorithm] = exp_config[:algorithm]
+          @alternatives = load_alternatives_from_configuration
+          options[:goals] = load_goals_from_configuration
+          options[:resettable] = exp_config[:resettable]
+          options[:algorithm] = exp_config[:algorithm]
         end
       end
 
@@ -54,8 +53,7 @@ module Split
         raise ExperimentNotFound.new("Experiment #{@name} not found")
       end
       @alternatives.each {|a| a.validate! }
-      #TODO
-      unless @goals.nil? || self.class.valid_goals?(@goals)
+      unless @goals.nil? || goals.kind_of?(Array)
         raise ArgumentError, 'Goals must be an array'
       end
     end
@@ -133,12 +131,8 @@ module Split
       end
     end
 
-    def self.goals_key(name)
-      "#{name}:goals"
-    end
-
     def goals_key
-      self.class.goals_key(self.name)
+      "#{name}:goals"
     end
 
     def finished_key
@@ -182,8 +176,8 @@ module Split
         @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
       else
 
-        existing_alternatives = self.class.load_alternatives_for(@name)
-        existing_goals = self.class.load_goals_for(@name)
+        existing_alternatives = load_alternatives_from_redis
+        existing_goals = load_goals_from_redis
         unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
           reset
           @alternatives.each(&:delete)
@@ -193,22 +187,13 @@ module Split
           @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
         end
       end
-      config_key = Split::Experiment.experiment_config_key(name)
-      Split.redis.hset(config_key, :resettable, resettable)
-      Split.redis.hset(config_key, :algorithm, algorithm.to_s)
+      Split.redis.hset(experiment_config_key, :resettable, resettable)
+      Split.redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
       self
     end
 
-    def self.load_goals_for(name)
-      if Split.configuration.experiment_for(name)
-        load_goals_from_configuration_for(name)
-      else
-        load_goals_from_redis_for(name)
-      end
-    end
-
-    def self.load_goals_from_configuration_for(name)
-      goals = Split.configuration.experiment_for(name)[:goals]
+    def load_goals_from_configuration
+      goals = Split.configuration.experiment_for(@name)[:goals]
       if goals.nil?
         goals = []
       else
@@ -216,20 +201,12 @@ module Split
       end
     end
 
-    def self.load_goals_from_redis_for(name)
-      Split.redis.lrange(goals_key(name), 0, -1)
+    def load_goals_from_redis
+      Split.redis.lrange(goals_key, 0, -1)
     end
 
-    def self.load_alternatives_for(name)
-      if Split.configuration.experiment_for(name)
-        load_alternatives_from_configuration_for(name)
-      else
-        load_alternatives_from_redis_for(name)
-      end
-    end
-
-    def self.load_alternatives_from_configuration_for(name)
-      alts = Split.configuration.experiment_for(name)[:alternatives]
+    def load_alternatives_from_configuration
+      alts = Split.configuration.experiment_for(@name)[:alternatives]
       raise ArgumentError, "Experiment configuration is missing :alternatives array" if alts.nil?
       if alts.is_a?(Hash)
         alts.keys
@@ -238,31 +215,38 @@ module Split
       end
     end
 
-    def self.load_alternatives_from_redis_for(name)
-      case Split.redis.type(name)
+    def load_alternatives_from_redis
+      case Split.redis.type(@name)
       when 'set' # convert legacy sets to lists
-        alts = Split.redis.smembers(name)
-        Split.redis.del(name)
-        alts.reverse.each {|a| Split.redis.lpush(name, a) }
-        Split.redis.lrange(name, 0, -1)
+        alts = Split.redis.smembers(@name)
+        Split.redis.del(@name)
+        alts.reverse.each {|a| Split.redis.lpush(@name, a) }
+        Split.redis.lrange(@name, 0, -1)
       else
-        Split.redis.lrange(name, 0, -1)
+        Split.redis.lrange(@name, 0, -1)
       end
     end
 
-    def self.load_from_redis(name)
-      exp_config = Split.redis.hgetall(experiment_config_key(name))
-      self.new(name, :alternatives => load_alternatives_from_redis_for(name),
-                     :goals => load_goals_from_redis_for(name),
-                     :resettable => exp_config['resettable'],
-                     :algorithm => exp_config['algorithm'])
+    def load_from_redis
+      exp_config = Split.redis.hgetall(experiment_config_key)
+      @resettable = exp_config['resettable']
+      @algorithm = exp_config['algorithm']
+      @alternatives = load_alternatives_from_redis
+      @goals = load_goals_from_redis
+      #TODO duplication
+      @alternatives = @alternatives.map do |alternative|
+        Split::Alternative.new(alternative, name)
+      end
+      @algorithm = @algorithm.is_a?(String) ? @algorithm.constantize : @algorithmm
+      @resettable = @resettable.is_a?(String) ? @resettable == 'true' : @resettable
     end
 
-    def self.experiment_config_key(name)
-      "experiment_configurations/#{name}"
+    def experiment_config_key
+      "experiment_configurations/#{@name}"
     end
 
     def self.all
+      #TODO
       Array(all_experiment_names_from_redis + all_experiment_names_from_configuration).map {|e| find(e)}
     end
 
@@ -276,7 +260,8 @@ module Split
 
     def self.find(name)
       if Split.redis.exists(name)
-        obj = load_from_redis(name)
+        obj = self.new name
+        obj.load_from_redis
       else
         obj = nil
       end
@@ -301,26 +286,6 @@ module Split
         goals = []
       end
       return experiment_name, goals
-    end
-
-    def self.initialize_alternatives(alternatives, name)
-
-      unless alternatives.all? { |a| Split::Alternative.valid?(a) }
-        raise ArgumentError, 'Alternatives must be strings'
-      end
-
-      alternatives.map do |alternative|
-        Split::Alternative.new(alternative, name)
-      end
-    end
-
-    def self.initialize_goals(goals)
-      raise ArgumentError, 'Goals must be an array' unless valid_goals?(goals)
-      goals
-    end
-
-    def self.valid_goals?(goals)
-      Array === goals rescue false
     end
   end
 end

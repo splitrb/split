@@ -306,7 +306,7 @@ describe Split::Experiment do
 
       it "should reset an experiment if it is loaded with different goals" do
         same_experiment = same_but_different_goals
-        Split::Experiment.load_goals_for("link_color").should == ["purchase", "refund"]
+        Split::Experiment.find("link_color").goals.should == ["purchase", "refund"]
       end
 
     end
