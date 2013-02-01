@@ -8,11 +8,11 @@ module Split
 
       experiment_name, goals = normalize_experiment(experiment_label)
 
-      if control.nil? && alternatives.length.zero?
+      if control.nil? && alternatives.empty?
         exp = Split.configuration.experiment_for(experiment_name)
-        raise ExperimentNotFound.new("#{experiment_name} not found") if exp.nil?
+        raise ExperimentNotFound.new("#{experiment_name} not found") unless exp
         control, alternatives = exp[:alternatives]
-        raise ArgumentError, "Experiment configuration is missing :alternatives array" if alternatives.nil?
+        raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alternatives
       end
 
       begin
@@ -30,7 +30,7 @@ module Split
           ret = override_alternative(experiment_name)
         end
       ensure
-        if ret.nil?
+        unless ret
           ret = control_variable(control)
         end
       end
