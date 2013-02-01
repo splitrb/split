@@ -38,7 +38,7 @@ describe Split::Alternative do
   describe 'weights' do
 
     it "should set the weights" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => [{'Basket' => 0.6}, {"Cart" => 0.4}])
+      experiment = Split::Experiment.new('basket_text', :alternatives => [{'Basket' => 0.6}, {"Cart" => 0.4}])
       first = experiment.alternatives[0]
       first.name.should == 'Basket'
       first.weight.should == 0.6
@@ -58,7 +58,7 @@ describe Split::Alternative do
           ]
         }
       }
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       first = experiment.alternatives[0]
       first.name.should == 'control_opt'
       first.weight.should == 0.67
@@ -79,7 +79,7 @@ describe Split::Alternative do
           ],
         }
       }
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       alts = experiment.alternatives
       [
         ["control_opt", 0.34],
@@ -104,7 +104,7 @@ describe Split::Alternative do
           ],
         }
       }
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       alts = experiment.alternatives
       [
         ["control_opt", 0.18],

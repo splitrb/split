@@ -23,11 +23,11 @@ describe Split::Helper do
       lambda { ab_test('xyz', :a, :b, :c) }.should raise_error(ArgumentError)
     end
 
-    it "should not raise error when passed an array for experiment" do
+    it "should not raise error when passed an array for goals" do
       lambda { ab_test({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }.should_not raise_error
     end
 
-    it "should raise the appropriate error when passed string for experiment" do
+    it "should raise the appropriate error when passed string for goals" do
       lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }.should raise_error(ArgumentError)
     end
 
@@ -88,7 +88,7 @@ describe Split::Helper do
     it "should allow alternative weighting interface as a single hash" do
       ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)
       experiment = Split::Experiment.find('link_color')
-      experiment.alternative_names.should eql(['blue', 'red'])
+      experiment.alternatives.map(&:name).should eql(['blue', 'red'])
       # TODO: persist alternative weights
       # experiment.alternatives.collect{|a| a.weight}.should == [0.01, 0.2]
     end
@@ -197,8 +197,8 @@ describe Split::Helper do
           :resettable => false,
         }
       }
-      experiment = Split::Experiment.find_or_create :my_experiment
       alternative = ab_test(:my_experiment)
+      experiment = Split::Experiment.find :my_experiment
 
       finished :my_experiment
       ab_user.should eql(experiment.key => alternative, experiment.finished_key => true)
@@ -215,7 +215,7 @@ describe Split::Helper do
       alt_name = ab_user[experiment.key] = alts.first
       alt = mock('alternative')
       alt.stub(:name).and_return(alt_name)
-      Split::Alternative.stub(:new).with(alt_name, experiment_name).and_return(alt)
+      Split::Alternative.stub(:new).with(alt_name, experiment_name.to_s).and_return(alt)
       if should_finish
         alt.should_receive(:increment_completion)
       else
@@ -261,8 +261,9 @@ describe Split::Helper do
           :resettable => false,
         }
       }
-      exp = Split::Experiment.find_or_create :my_exp
       alternative_name = ab_test(:my_exp)
+      exp = Split::Experiment.find :my_exp
+
       finished :my_metric
       ab_user[exp.key].should == alternative_name
       ab_user[exp.finished_key].should == true
@@ -275,8 +276,9 @@ describe Split::Helper do
           :metric => :my_metric,
         }
       }
-      exp = Split::Experiment.find_or_create :my_exp
       alternative_name = ab_test(:my_exp)
+      exp = Split::Experiment.find :my_exp
+
       finished :my_metric, :reset => false
       ab_user[exp.key].should == alternative_name
       ab_user[exp.finished_key].should == true
@@ -607,8 +609,8 @@ describe Split::Helper do
         :goals => ["goal1", "goal2"]
       }
       ab_test :my_experiment
-      Split::Experiment.find(:my_experiment).alternative_names.should == [ "control_opt", "other_opt" ]
-      Split::Experiment.find(:my_experiment).goals.should == [ "goal1", "goal2" ]
+      Split::Experiment.new(:my_experiment).alternatives.map(&:name).should == [ "control_opt", "other_opt" ]
+      Split::Experiment.new(:my_experiment).goals.should == [ "goal1", "goal2" ]
     end
 
     it "can be called multiple times" do
@@ -617,8 +619,8 @@ describe Split::Helper do
         :goals => ["goal1", "goal2"]
       }
       5.times { ab_test :my_experiment }
-      experiment = Split::Experiment.find(:my_experiment)
-      experiment.alternative_names.should == [ "control_opt", "other_opt" ]
+      experiment = Split::Experiment.new(:my_experiment)
+      experiment.alternatives.map(&:name).should == [ "control_opt", "other_opt" ]
       experiment.goals.should == [ "goal1", "goal2" ]
       experiment.participant_count.should == 1
     end
@@ -629,7 +631,7 @@ describe Split::Helper do
         :goals => [ "goal1", "goal2", "goal3" ]
       }
       ab_test :my_experiment
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       experiment.goals.should == [ "goal1", "goal2", "goal3" ]
     end
 
@@ -637,7 +639,7 @@ describe Split::Helper do
       Split.configuration.experiments[:my_experiment] = {
         :alternatives => [ "control_opt", "other_opt" ]
       }
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       experiment.goals.should == []
     end
 
@@ -646,8 +648,8 @@ describe Split::Helper do
         :alternatives => [ "control_opt", "second_opt", "third_opt" ],
       }
       ab_test :my_experiment
-      experiment = Split::Experiment.find(:my_experiment)
-      experiment.alternative_names.should == [ "control_opt", "second_opt", "third_opt" ]
+      experiment = Split::Experiment.new(:my_experiment)
+      experiment.alternatives.map(&:name).should == [ "control_opt", "second_opt", "third_opt" ]
     end
 
     it "accepts probability on alternatives" do
@@ -659,7 +661,7 @@ describe Split::Helper do
         ],
       }
       ab_test :my_experiment
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       experiment.alternatives.collect{|a| [a.name, a.weight]}.should == [['control_opt', 0.67], ['second_opt', 0.1], ['third_opt', 0.23]]
 
     end
@@ -674,7 +676,7 @@ describe Split::Helper do
         ],
       }
       ab_test :my_experiment
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       names_and_weights = experiment.alternatives.collect{|a| [a.name, a.weight]}
       names_and_weights.should == [['control_opt', 0.34], ['second_opt', 0.215], ['third_opt', 0.23], ['fourth_opt', 0.215]]
       names_and_weights.inject(0){|sum, nw| sum + nw[1]}.should == 1.0
@@ -689,7 +691,7 @@ describe Split::Helper do
         ],
       }
       ab_test :my_experiment
-      experiment = Split::Experiment.find(:my_experiment)
+      experiment = Split::Experiment.new(:my_experiment)
       names_and_weights = experiment.alternatives.collect{|a| [a.name, a.weight]}
       names_and_weights.should ==  [['control_opt', 0.18], ['second_opt', 0.18], ['third_opt', 0.64]]
       names_and_weights.inject(0){|sum, nw| sum + nw[1]}.should == 1.0
@@ -737,7 +739,7 @@ describe Split::Helper do
     end
 
     describe "ab_test" do
-      it "should allow experiment goals interface as a singel hash" do
+      it "should allow experiment goals interface as a single hash" do
         ab_test(@experiment, *@alternatives)
         experiment = Split::Experiment.find('link_color')
         experiment.goals.should eql(['purchase', "refund"])

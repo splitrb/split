@@ -18,7 +18,7 @@ describe Split::Trial do
     end
 
     it "should populate alternative with a full alternative object after calling choose" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => ['basket', 'cart'])
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['basket', 'cart'])
       experiment.save
       trial = Split::Trial.new(:experiment => experiment)
       trial.choose
@@ -27,7 +27,7 @@ describe Split::Trial do
     end
 
     it "should populate an alternative when only one option is offerred" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => ['basket'])
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['basket'])
       experiment.save
       trial = Split::Trial.new(:experiment => experiment)
       trial.choose
@@ -49,7 +49,7 @@ describe Split::Trial do
 
   describe "alternative_name" do
     it "should load the alternative when the alternative name is set" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => ['basket', "cart"])
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['basket', "cart"])
       experiment.save
 
       trial = Split::Trial.new(:experiment => experiment, :alternative_name => 'basket')

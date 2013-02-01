@@ -5,7 +5,7 @@ require 'time'
 
 describe Split::Experiment do
   def new_experiment(goals=[])
-    Split::Experiment.new('link_color', :alternative_names => ['blue', 'red', 'green'], :goals => goals)
+    Split::Experiment.new('link_color', :alternatives => ['blue', 'red', 'green'], :goals => goals)
   end
 
   def alternative(color)
@@ -20,7 +20,7 @@ describe Split::Experiment do
   let(:green) { alternative("green") }
 
   context "with an experiment" do
-    let(:experiment) { Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"]) }
+    let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"]) }
 
     it "should have a name" do
       experiment.name.should eql('basket_text')
@@ -109,12 +109,12 @@ describe Split::Experiment do
 
   describe 'initialization' do
     it "should set the algorithm when passed as an option to the initializer" do
-       experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"], :algorithm =>  Split::Algorithms::Whiplash)
+       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm =>  Split::Algorithms::Whiplash)
        experiment.algorithm.should == Split::Algorithms::Whiplash
     end
 
     it "should be possible to make an experiment not resettable" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"], :resettable => false)
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
       experiment.resettable.should be_false
     end
   end
@@ -122,7 +122,7 @@ describe Split::Experiment do
   describe 'persistent configuration' do
 
     it "should persist resettable in redis" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"], :resettable => false)
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
       experiment.save
 
       e = Split::Experiment.find('basket_text')
@@ -132,7 +132,7 @@ describe Split::Experiment do
     end
 
     it "should persist algorithm in redis" do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash)
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash)
       experiment.save
 
       e = Split::Experiment.find('basket_text')
@@ -143,7 +143,7 @@ describe Split::Experiment do
 
   describe 'deleting' do
     it 'should delete itself' do
-      experiment = Split::Experiment.new('basket_text', :alternative_names => [ 'Basket', "Cart"])
+      experiment = Split::Experiment.new('basket_text', :alternatives => [ 'Basket', "Cart"])
       experiment.save
 
       experiment.delete
@@ -306,7 +306,7 @@ describe Split::Experiment do
 
       it "should reset an experiment if it is loaded with different goals" do
         same_experiment = same_but_different_goals
-        Split::Experiment.load_goals_for("link_color").should == ["purchase", "refund"]
+        Split::Experiment.find("link_color").goals.should == ["purchase", "refund"]
       end
 
     end
