@@ -14,39 +14,28 @@ module Split
 
       @name = name.to_s
 
-      @alternatives = options[:alternatives] || []
+      alts = options[:alternatives] || []
 
-      if @alternatives.length == 1
-        if @alternatives[0].is_a? Hash
-          @alternatives = @alternatives[0].map{|k,v| {k => v} }
+      if alts.length == 1
+        if alts[0].is_a? Hash
+          alts = alts[0].map{|k,v| {k => v} }
         end
       end
 
-      if @alternatives.length.zero?
+      if alts.length.zero?
         exp_config = Split.configuration.experiment_for(name)
         if exp_config
-          @alternatives = load_alternatives_from_configuration
+          alts = load_alternatives_from_configuration
           options[:goals] = load_goals_from_configuration
           options[:resettable] = exp_config[:resettable]
           options[:algorithm] = exp_config[:algorithm]
         end
       end
 
-      @alternatives = @alternatives.map do |alternative|
-        Split::Alternative.new(alternative, name)
-      end
-
-      if !options[:goals].nil?
-        @goals = options[:goals]
-      end
-
-      if !options[:algorithm].nil?
-        @algorithm = options[:algorithm].is_a?(String) ? options[:algorithm].constantize : options[:algorithm]
-      end
-
-      if !options[:resettable].nil?
-        @resettable = options[:resettable].is_a?(String) ? options[:resettable] == 'true' : options[:resettable]
-      end
+      self.alternatives = alts
+      self.goals = options[:goals]
+      self.algorithm = options[:algorithm]
+      self.resettable = options[:resettable]
     end
 
     def validate!
@@ -56,6 +45,24 @@ module Split
       @alternatives.each {|a| a.validate! }
       unless @goals.nil? || goals.kind_of?(Array)
         raise ArgumentError, 'Goals must be an array'
+      end
+    end
+
+    def algorithm=(algorithm)
+      @algorithm = algorithm.is_a?(String) ? algorithm.constantize : algorithm
+    end
+
+    def resettable=(resettable)
+      @resettable = resettable.is_a?(String) ? resettable == 'true' : resettable
+    end
+
+    def alternatives=(alts)
+      @alternatives = alts.map do |alternative|
+        if alternative.kind_of?(Split::Alternative)
+          alternative
+        else
+          Split::Alternative.new(alternative, @name)
+        end
       end
     end
 
@@ -226,16 +233,10 @@ module Split
 
     def load_from_redis
       exp_config = Split.redis.hgetall(experiment_config_key)
-      @resettable = exp_config['resettable']
-      @algorithm = exp_config['algorithm']
-      @alternatives = load_alternatives_from_redis
-      @goals = load_goals_from_redis
-      #TODO duplication
-      @alternatives = @alternatives.map do |alternative|
-        Split::Alternative.new(alternative, name)
-      end
-      @algorithm = @algorithm.is_a?(String) ? @algorithm.constantize : @algorithmm
-      @resettable = @resettable.is_a?(String) ? @resettable == 'true' : @resettable
+      self.resettable = exp_config['resettable']
+      self.algorithm = exp_config['algorithm']
+      self.alternatives = load_alternatives_from_redis
+      self.goals = load_goals_from_redis
     end
 
     def experiment_config_key

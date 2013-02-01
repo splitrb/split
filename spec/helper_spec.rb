@@ -215,7 +215,7 @@ describe Split::Helper do
       alt_name = ab_user[experiment.key] = alts.first
       alt = mock('alternative')
       alt.stub(:name).and_return(alt_name)
-      Split::Alternative.stub(:new).with(alt_name, experiment_name).and_return(alt)
+      Split::Alternative.stub(:new).with(alt_name, experiment_name.to_s).and_return(alt)
       if should_finish
         alt.should_receive(:increment_completion)
       else
