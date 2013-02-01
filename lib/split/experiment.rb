@@ -7,31 +7,20 @@ module Split
 
     def initialize(name, options = {})
       options = {
-          :resettable => true,
-        }.merge(options)
+        :resettable => true,
+      }.merge(options)
 
       @name = name.to_s
-      @alternatives = options[:alternatives]  if !options[:alternatives].nil?
+      @alternatives = options[:alternatives]
+      @goals = options[:goals]
+      @algorithm = options[:algorithm].is_a?(String) ? options[:algorithm].constantize : options[:algorithm]
+      @resettable = options[:resettable].is_a?(String) ? options[:resettable] == 'true' : options[:resettable]
 
-      if !options[:goals].nil?
-        @goals = options[:goals]
-      end
-
-      if !options[:algorithm].nil?
-        @algorithm = options[:algorithm].is_a?(String) ? options[:algorithm].constantize : options[:algorithm]
-      end
-
-      if !options[:resettable].nil?
-        @resettable = options[:resettable].is_a?(String) ? options[:resettable] == 'true' : options[:resettable]
-      end
-
-      if !options[:alternative_names].nil?
+      if options[:alternative_names].respond_to? :map
         @alternatives = options[:alternative_names].map do |alternative|
                           Split::Alternative.new(alternative, name)
                         end
       end
-
-
     end
 
     def algorithm
@@ -154,13 +143,11 @@ module Split
       if new_record?
         Split.redis.sadd(:experiments, name)
         Split.redis.hset(:experiment_start_times, @name, Time.now)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-        @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
       else
         Split.redis.del(name)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-        @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
       end
+      @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
+      @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} if @goals.respond_to? :reverse
       config_key = Split::Experiment.experiment_config_key(name)
       Split.redis.hset(config_key, :resettable, resettable)
       Split.redis.hset(config_key, :algorithm, algorithm.to_s)
