@@ -340,13 +340,7 @@ describe Split::Helper do
     end
   end
 
-  describe 'when ip address is ignored' do
-    before(:each) do
-      @request = OpenStruct.new(:ip => '81.19.48.130')
-      Split.configure do |c|
-        c.ignore_ip_addresses << '81.19.48.130'
-      end
-    end
+  shared_examples_for "a disabled test" do
 
     describe 'ab_test' do
       it 'should return the control' do
@@ -381,6 +375,50 @@ describe Split::Helper do
         new_completion_count.should eql(previous_completion_count)
       end
     end
+  end
+
+  describe 'when ip address is ignored' do
+
+    context "individually" do
+
+      before(:each) do
+        @request = OpenStruct.new(:ip => '81.19.48.130')
+        Split.configure do |c|
+          c.ignore_ip_addresses << '81.19.48.130'
+        end
+      end
+
+      it_behaves_like "a disabled test"
+
+    end
+
+    context "for a range" do
+
+      before(:each) do
+        @request = OpenStruct.new(:ip => '81.19.48.129')
+        Split.configure do |c|
+          c.ignore_ip_addresses << /81\.19\.48\.[0-9]+/
+        end
+      end
+
+      it_behaves_like "a disabled test"
+
+    end
+
+    context "using both a range and a specific value" do
+
+      before(:each) do
+        @request = OpenStruct.new(:ip => '81.19.48.128')
+        Split.configure do |c|
+          c.ignore_ip_addresses << '81.19.48.130'
+          c.ignore_ip_addresses << /81\.19\.48\.[0-9]+/
+        end
+      end
+
+      it_behaves_like "a disabled test"
+
+    end
+
   end
 
   describe 'versioned experiments' do

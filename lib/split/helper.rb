@@ -131,11 +131,12 @@ module Split
     end
 
     def is_ignored_ip_address?
-      if Split.configuration.ignore_ip_addresses.any?
-        Split.configuration.ignore_ip_addresses.include?(request.ip)
-      else
-        false
+      return false if Split.configuration.ignore_ip_addresses.empty?
+
+      Split.configuration.ignore_ip_addresses.each do |ip|
+        return true if request.ip == ip || (ip.class == Regexp && request.ip =~ ip)
       end
+      false
     end
 
     protected
