@@ -249,7 +249,7 @@ You can override the default configuration options of Split like so:
 ```ruby
 Split.configure do |config|
   config.robot_regex = /my_custom_robot_regex/
-  config.ignore_ip_addresses << '81.19.48.130'
+  config.ignore_ip_addresses << '81.19.48.130' # or regex: /81\.19\.48\.[0-9]+/
   config.db_failover = true # handle redis errors gracefully
   config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
   config.allow_multiple_experiments = true
