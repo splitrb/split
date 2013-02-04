@@ -30,9 +30,12 @@ describe Split::Configuration do
     %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg AdsBot-Google Wget curl bitlybot facebookexternalhit spider].each do |robot|
       @config.robot_regex.should =~ robot
     end
+
     @config.robot_regex.should =~ "EventMachine HttpClient"
     @config.robot_regex.should =~ "libwww-perl/5.836"
     @config.robot_regex.should =~ "Pingdom.com_bot_version_1.4_(http://www.pingdom.com)"
+
+    @config.robot_regex.should =~ " - "
   end
 
   it "should accept real UAs with the robot regexp" do
