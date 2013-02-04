@@ -103,29 +103,6 @@ describe Split::Helper do
       small.participant_count.should eql(0)
     end
 
-    it 'should not raise the completion rate of an experiment that the user is not participating in' do
-      ab_test('link_color', 'blue', 'red')
-      ab_test('button_size', 'small', 'big')
-
-      # So, user should be participating in the link_color experiment and
-      # receive the control for button_size. As the user is not participating in
-      # the button size experiment, finishing it should not increase the
-      # completion count for that alternative.
-      lambda {
-        finished('button_size')
-      }.should_not change { Split::Alternative.new('small', 'button_size').completed_count }
-    end
-
-    it 'should not raise the completion rate of an already-finished experiment' do
-      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
-      e.winner = 'small'
-      a = ab_test('button_size', 'small', 'big')
-      a.should eq('small')
-      lambda {
-        finished('button_size')
-      }.should_not change { Split::Alternative.new(a, 'button_size').completed_count }
-    end
-
     it "should let a user participate in many experiment with allow_multiple_experiments option" do
       Split.configure do |config|
         config.allow_multiple_experiments = true
@@ -170,6 +147,28 @@ describe Split::Helper do
       2.times { finished(@experiment_name, {:reset => false}) }
       new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
       new_completion_count.should eql(@previous_completion_count + 1)
+    end
+
+    it 'should not increment the counter for an experiment that the user is not participating in' do
+      ab_test('button_size', 'small', 'big')
+
+      # So, user should be participating in the link_color experiment and
+      # receive the control for button_size. As the user is not participating in
+      # the button size experiment, finishing it should not increase the
+      # completion count for that alternative.
+      lambda {
+        finished('button_size')
+      }.should_not change { Split::Alternative.new('small', 'button_size').completed_count }
+    end
+
+    it 'should not increment the counter for an already-finished experiment' do
+      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      e.winner = 'small'
+      a = ab_test('button_size', 'small', 'big')
+      a.should eq('small')
+      lambda {
+        finished('button_size')
+      }.should_not change { Split::Alternative.new(a, 'button_size').completed_count }
     end
 
     it "should clear out the user's participation from their session" do
