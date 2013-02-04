@@ -111,13 +111,10 @@ describe Split::Helper do
       # receive the control for button_size. As the user is not participating in
       # the button size experiment, finishing it should not increase the
       # completion count for that alternative.
-      ab_user['button_size'].should eql('small')
-      previous_completion_count = Split::Alternative.new('small', 'button_size').completed_count
+      lambda {
+        finished('button_size')
+      }.should_not change { Split::Alternative.new('small', 'button_size').completed_count }
 
-      finished('button_size')
-
-      new_completion_count = Split::Alternative.new('small', 'button_size').completed_count
-      previous_completion_count.should eql(new_completion_count)
     end
 
     it "should let a user participate in many experiment with allow_multiple_experiments option" do
