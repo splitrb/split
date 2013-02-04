@@ -30,6 +30,14 @@ describe Split::Configuration do
     %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg AdsBot-Google Wget curl bitlybot facebookexternalhit spider].each do |robot|
       @config.robot_regex.should =~ robot
     end
+    @config.robot_regex.should =~ "EventMachine HttpClient"
+    @config.robot_regex.should =~ "libwww-perl/5.836"
+    @config.robot_regex.should =~ "Pingdom.com_bot_version_1.4_(http://www.pingdom.com)"
+  end
+
+  it "should accept real UAs with the robot regexp" do
+    @config.robot_regex.should_not =~ "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.4) Gecko/20091017 SeaMonkey/2.0"
+    @config.robot_regex.should_not =~ "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; F-6.0SP2-20041109; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 1.1.4322; InfoPath.3)"
   end
 
   it "should use the session adapter for persistence by default" do
