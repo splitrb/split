@@ -114,7 +114,16 @@ describe Split::Helper do
       lambda {
         finished('button_size')
       }.should_not change { Split::Alternative.new('small', 'button_size').completed_count }
+    end
 
+    it 'should not raise the completion rate of an already-finished experiment' do
+      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      e.winner = 'small'
+      a = ab_test('button_size', 'small', 'big')
+      a.should eq('small')
+      lambda {
+        finished('button_size')
+      }.should_not change { Split::Alternative.new(a, 'button_size').completed_count }
     end
 
     it "should let a user participate in many experiment with allow_multiple_experiments option" do
