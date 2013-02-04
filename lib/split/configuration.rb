@@ -1,7 +1,8 @@
 module Split
   class Configuration
     BOTS = {
-      'Baidu' => 'Chinese spider',
+      'Baidu' => 'Chinese search engine',
+      'Sogou' => 'Chinese search engine',
       'Gigabot' => 'Gigabot spider',
       'Googlebot' => 'Google spider',
       'libwww-perl' => 'Perl client-server library loved by script kids',
@@ -17,6 +18,7 @@ module Split
       "EventMachine HttpClient" => 'Ruby http library',
       "Go http package" => 'Go http library',
       "Python-urllib" => 'Python http library',
+      "PycURL" => 'Python http library',
       "ShowyouBot" => 'Showyou Bot',
       "Test Certificate Info" => 'C http library?',
       "Wget" => 'wget unix CLI http client',
@@ -24,7 +26,19 @@ module Split
       "curl" => 'curl unix CLI http client',
       "facebookexternalhit" => 'facebook bot',
       "spider" => 'generic web spider',
-      "Pingdom" => 'Pingdom monitoring'
+      'check_http' => 'Nagios monitor',
+      'NewRelicPinger' => 'NewRelic monitor',
+      "Pingdom" => 'Pingdom monitoring',
+      'Apache-HttpClient' => 'Java http library',
+      'Java' => 'Generic Java http library',
+      'ColdFusion' => 'ColdFusion http library',
+      'rogerbot' => 'SeoMoz spider',
+      'LongURL' => 'URL expander service',
+      'UnwindFetch' => 'Gnip URL expander',
+      'awe.sm' => 'Awe.sm URL expander',
+      'Twitterbot' => 'Twitter URL expander',
+      'Panopta' => 'Monitoring service',
+      'AppEngine-Google' => 'Google App Engine',
     }
     attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses
