@@ -458,6 +458,10 @@ Special thanks to the following people for submitting patches:
 * Andrew Appleton
 * Phil Nash
 * Dave Goodchild
+* Ian Young
+* Nathan Woodhull 
+* Ville Lautanala
+* Liu Jin
 
 ## Development
 
