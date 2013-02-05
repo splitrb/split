@@ -49,6 +49,24 @@ describe Split::Helper do
       (new_red_count + new_blue_count).should eql(previous_red_count + previous_blue_count + 1)
     end
 
+    it 'should not increment the counter for an experiment that the user is not participating in' do
+      ab_test('link_color', 'blue', 'red')
+      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      lambda {
+        # User shouldn't participate in this second experiment
+        ab_test('button_size', 'small', 'big')
+      }.should_not change { e.participant_count }
+    end
+
+    it 'should not increment the counter for an ended experiment' do
+      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      e.winner = 'small'
+      lambda {
+        a = ab_test('button_size', 'small', 'big')
+        a.should eq('small')
+      }.should_not change { e.participant_count }
+    end
+
     it "should return the given alternative for an existing user" do
       alternative = ab_test('link_color', 'blue', 'red')
       repeat_alternative = ab_test('link_color', 'blue', 'red')
@@ -161,7 +179,7 @@ describe Split::Helper do
       }.should_not change { Split::Alternative.new('small', 'button_size').completed_count }
     end
 
-    it 'should not increment the counter for an already-finished experiment' do
+    it 'should not increment the counter for an ended experiment' do
       e = Split::Experiment.find_or_create('button_size', 'small', 'big')
       e.winner = 'small'
       a = ab_test('button_size', 'small', 'big')
