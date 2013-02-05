@@ -37,11 +37,7 @@ module Split
     end
 
     def choose
-      if experiment.winner
-        self.alternative = experiment.winner
-      else
-        self.alternative = experiment.next_alternative
-      end
+      self.alternative = experiment.next_alternative
     end
 
     def alternative_name=(name)
