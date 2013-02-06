@@ -261,30 +261,50 @@ end
 ### Experiment configuration
 
 Instead of providing the experiment options inline, you can store them
-in a hash or a configuration file:
+in a hash. This hash can control your experiment's alternatives, weights,
+algorithm and if the experiment resets once finished:
 
-    Split.configure do |config|
-      config.experiments = YAML.load_file "config/experiments.yml"
-    end
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    :my_first_experiment => {
+      :alternatives => ["a", "b"],
+      :resettable => false,
+    },
+    :my_second_experiment => {
+      :algorithm => 'Split::Algorithms::Whiplash',
+      :alternatives => [
+        { :name => "a", :percent => 67 },
+        { :name => "b", :percent => 33 },
+      ]
+    }
+  }
+end
+```
 
-This hash can control your experiment's alternatives, weights, algorithm and if the
-experiment resets once finished:
+You can also store your experiments in a YAML file:
 
-    Split.configure do |config|
-      config.experiments = {
-        :my_first_experiment => {
-          :alternatives => ["a", "b"],
-          :resettable => false,
-        },
-        :my_second_experiment => {
-          :algorithm => 'Split::Algorithms::Whiplash',
-          :alternatives => [
-            { :name => "a", :percent => 67 },
-            { :name => "b", :percent => 33 },
-          ]
-        }
-      }
-    end
+```ruby
+Split.configure do |config|
+  config.experiments = YAML.load_file "config/experiments.yml"
+end
+```
+
+You can then define the YAML file like:
+
+```yaml
+my_first_experiment:
+  alternatives:
+    - a
+    - b
+my_second_experiment:
+  alternatives:
+    - name: a
+      percent: 67
+    - name: b
+      percent: 33
+  resettable: false
+```
 
 This simplifies the calls from your code:
 
@@ -459,7 +479,7 @@ Special thanks to the following people for submitting patches:
 * Phil Nash
 * Dave Goodchild
 * Ian Young
-* Nathan Woodhull 
+* Nathan Woodhull
 * Ville Lautanala
 * Liu Jin
 

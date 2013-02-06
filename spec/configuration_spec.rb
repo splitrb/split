@@ -54,13 +54,85 @@ describe Split::Configuration do
     @config.metrics.should_not be_nil
     @config.metrics.keys.should ==  [:my_metric]
   end
-  
+
   it "should allow loading of experiment using experment_for" do
     @config.experiments = {:my_experiment=>
         {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
     @config.experiment_for(:my_experiment).should == {:alternatives=>["control_opt", ["other_opt"]]}
   end
-  
+
+  context "when experiments are defined via YAML" do
+    context "as strings" do
+      context "in a basic configuration" do
+        before do
+          experiments_yaml = <<-eos
+            my_experiment:
+              alternatives:
+                - Control Opt
+                - Alt One
+                - Alt Two
+              resettable: false
+            eos
+          @config.experiments = YAML.load(experiments_yaml)
+        end
+
+        it 'should normalize experiments' do
+          @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
+        end
+      end
+
+      context "in a complex configuration" do
+        before do
+          experiments_yaml = <<-eos
+            my_experiment:
+              alternatives:
+                - name: Control Opt
+                  percent: 67
+                - name: Alt One
+                  percent: 10
+                - name: Alt Two
+                  percent: 23
+              resettable: false
+              metric: my_metric
+            another_experiment:
+              alternatives:
+                - a
+                - b
+            eos
+          @config.experiments = YAML.load(experiments_yaml)
+        end
+
+        it "should normalize experiments" do
+          @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>[{"Control Opt"=>0.67},
+            [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, :another_experiment=>{:alternatives=>["a", ["b"]]}}
+        end
+
+        it "should recognize metrics" do
+          @config.metrics.should_not be_nil
+          @config.metrics.keys.should ==  [:my_metric]
+        end
+      end
+    end
+
+    context "as symbols" do
+      before do
+        experiments_yaml = <<-eos
+          :my_experiment:
+            :alternatives:
+              - Control Opt
+              - Alt One
+              - Alt Two
+            :resettable: false
+          eos
+        @config.experiments = YAML.load(experiments_yaml)
+      end
+
+      it "should normalize experiments" do
+        @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
+      end
+    end
+  end
+
   it "should normalize experiments" do
     @config.experiments = {
       :my_experiment => {
@@ -71,7 +143,7 @@ describe Split::Configuration do
         ],
       }
     }
-    
+
     @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}}
   end
 end
