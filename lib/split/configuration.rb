@@ -72,7 +72,7 @@ module Split
       @metrics = {}
       if self.experiments
         self.experiments.each do |key, value|
-          metric_name = value[:metric]
+          metric_name = value_for(value, :metric).to_sym rescue nil
           if metric_name
             @metrics[metric_name] ||= []
             @metrics[metric_name] << Split::Experiment.new(key)
@@ -87,13 +87,20 @@ module Split
         nil
       else
         experiment_config = {}
-        @experiments.keys.each do | name |
-          experiment_config[name] = {}
+        @experiments.keys.each do |name|
+          experiment_config[name.to_sym] = {}
         end
-        @experiments.each do | experiment_name, settings|
-          experiment_config[experiment_name][:alternatives] = normalize_alternatives(settings[:alternatives]) if settings[:alternatives]
-          experiment_config[experiment_name][:goals] = settings[:goals] if settings[:goals]
+
+        @experiments.each do |experiment_name, settings|
+          if alternatives = value_for(settings, :alternatives)
+            experiment_config[experiment_name.to_sym][:alternatives] = normalize_alternatives(alternatives)
+          end
+
+          if goals = value_for(settings, :goals)
+            experiment_config[experiment_name.to_sym][:goals] = goals
+          end
         end
+
         experiment_config
       end
     end
@@ -101,8 +108,8 @@ module Split
     def normalize_alternatives(alternatives)
       given_probability, num_with_probability = alternatives.inject([0,0]) do |a,v|
         p, n = a
-        if v.kind_of?(Hash) && v[:percent]
-          [p + v[:percent], n + 1]
+        if percent = value_for(v, :percent)
+          [p + percent, n + 1]
         else
           a
         end
@@ -113,14 +120,15 @@ module Split
 
       if num_with_probability.nonzero?
         alternatives = alternatives.map do |v|
-          if v.kind_of?(Hash) && v[:name] && v[:percent]
-            { v[:name] => v[:percent] / 100.0 }
-          elsif v.kind_of?(Hash) && v[:name]
-            { v[:name] => unassigned_probability }
+          if (name = value_for(v, :name)) && (percent = value_for(v, :percent))
+            { name => percent / 100.0 }
+          elsif name = value_for(v, :name)
+            { name => unassigned_probability }
           else
             { v => unassigned_probability }
           end
         end
+
         [alternatives.shift, alternatives]
       else
         alternatives = alternatives.dup
@@ -139,6 +147,14 @@ module Split
       @experiments = {}
       @persistence = Split::Persistence::SessionAdapter
       @algorithm = Split::Algorithms::WeightedSample
+    end
+
+    private
+
+    def value_for(hash, key)
+      if hash.kind_of?(Hash)
+        hash[key.to_s] || hash[key.to_sym]
+      end
     end
   end
 end
