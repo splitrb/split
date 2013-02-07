@@ -4,7 +4,7 @@ require 'split/trial'
 describe Split::Trial do
   it "should be initializeable" do
     experiment  = mock('experiment')
-    alternative = mock('alternative')
+    alternative = mock('alternative', :kind_of? => Split::Alternative)
     trial = Split::Trial.new(:experiment => experiment, :alternative => alternative)
     trial.experiment.should == experiment
     trial.alternative.should == alternative
@@ -12,7 +12,8 @@ describe Split::Trial do
 
   describe "alternative" do
     it "should use the alternative if specified" do
-      trial = Split::Trial.new(:experiment => experiment = mock('experiment'), :alternative => alternative = mock('alternative'))
+      alternative = mock('alternative', :kind_of? => Split::Alternative)
+      trial = Split::Trial.new(:experiment => experiment = mock('experiment'), :alternative => alternative)
       trial.should_not_receive(:choose)
       trial.alternative.should == alternative
     end
@@ -38,7 +39,8 @@ describe Split::Trial do
 
     it "should choose from the available alternatives" do
       trial = Split::Trial.new(:experiment => experiment = mock('experiment'))
-      experiment.should_receive(:next_alternative).and_return(alternative = mock('alternative'))
+      alternative = mock('alternative', :kind_of? => Split::Alternative)
+      experiment.should_receive(:next_alternative).and_return(alternative)
       alternative.should_receive(:increment_participation)
       experiment.stub(:winner).and_return nil
       trial.choose!
@@ -52,7 +54,7 @@ describe Split::Trial do
       experiment = Split::Experiment.new('basket_text', :alternatives => ['basket', "cart"])
       experiment.save
 
-      trial = Split::Trial.new(:experiment => experiment, :alternative_name => 'basket')
+      trial = Split::Trial.new(:experiment => experiment, :alternative => 'basket')
       trial.alternative.name.should == 'basket'
     end
   end
