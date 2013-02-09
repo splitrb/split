@@ -464,6 +464,7 @@ Users may also write their own algorithms. The default algorithm may be specifie
 
   - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
   - [Split::Analytics](http://github.com/andrew/split-analytics) - push test data to google analytics
+  - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - store data in mongoid instead of redis
 
 ## Screencast
 
