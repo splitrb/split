@@ -92,7 +92,7 @@ It can be used to render different templates, show different text or any other c
 
 Example: View
 
-```ruby
+```erb
 <% ab_test("login_button", "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
   <%= img_tag(button_file, :alt => "Login!") %>
 <% end %>
@@ -118,7 +118,7 @@ end
 
 Example: Conversion tracking (in a view)
 
-```ruby
+```erb
 Thanks for signing up, dude! <% finished("signup_page_redesign") >
 ```
 
@@ -308,11 +308,15 @@ my_second_experiment:
 
 This simplifies the calls from your code:
 
-    ab_test(:my_first_experiment)
+```ruby
+ab_test(:my_first_experiment)
+```
 
 and:
 
-    finished(:my_first_experiment)
+```ruby
+finished(:my_first_experiment)
+```
 
 #### Metrics
 
@@ -321,46 +325,58 @@ those to complete multiple different experiments without adding more to
 your code. You can use the configuration hash to do this, thanks to
 the `:metric` option.
 
-    Split.configure do |config|
-      config.experiments = {
-        :my_first_experiment => {
-          :alternatives => ["a", "b"],
-          :metric => :conversion,
-        }
-      }
-    end
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    :my_first_experiment => {
+      :alternatives => ["a", "b"],
+      :metric => :conversion,
+    }
+  }
+end
+```
 
 Your code may then track a completion using the metric instead of
 the experiment name:
 
-    finished(:conversion)
+```ruby
+finished(:conversion)
+```
 
 You can also create a new metric by instantiating and saving a new Metric object.
 
-    Split::Metric.new(:conversion)
-    Split::Metric.save
+```ruby
+Split::Metric.new(:conversion)
+Split::Metric.save
+```
 
 #### Goals
 
 You might wish to allow an experiment to have multiple goals.
 The API to define goals for an experiment is this:
 
-    ab_test({"link_color" => ["purchase", "refund"]}, "red", "blue")
+```ruby
+ab_test({"link_color" => ["purchase", "refund"]}, "red", "blue")
+```
 
 or you can you can define them in a configuration file:
 
-    Split.configure do |config|
-      config.experiments = {
-        :link_color => {
-          :alternatives => ["red", "blue"],
-          :goals => ["purchase", "refund"]
-        }
-      }
-    end
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    :link_color => {
+      :alternatives => ["red", "blue"],
+      :goals => ["purchase", "refund"]
+    }
+  }
+end
+```
 
 To complete a goal conversion, you do it like:
 
-    finished({"link_color" => ["purchase"]})
+```ruby
+finished({"link_color" => ["purchase"]})
+```
 
 ### DB failover solution
 
