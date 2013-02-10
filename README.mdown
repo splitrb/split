@@ -119,7 +119,7 @@ end
 Example: Conversion tracking (in a view)
 
 ```erb
-Thanks for signing up, dude! <% finished("signup_page_redesign") >
+Thanks for signing up, dude! <% finished("signup_page_redesign") %>
 ```
 
 You can find more examples, tutorials and guides on the [wiki](https://github.com/andrew/split/wiki).
