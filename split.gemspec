@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
 
   # Ruby 1.8 doesn't include JSON in the std lib
   if RUBY_VERSION < "1.9"
-    s.add_dependency 'json',            '>= 1.7.5'
+    s.add_dependency 'json',            '>= 1.7.7'
   end
 
   s.add_development_dependency 'rake'
