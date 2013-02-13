@@ -7,6 +7,7 @@ module Split
       'Gigabot' => 'Gigabot spider',
       'Googlebot' => 'Google spider',
       'msnbot' => 'Microsoft bot',
+      'bingbot' => 'Microsoft bing bot',
       'rogerbot' => 'SeoMoz spider',
       'Slurp' => 'Yahoo spider',
       'Sogou' => 'Chinese search engine',
