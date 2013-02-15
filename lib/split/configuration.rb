@@ -138,7 +138,7 @@ module Split
     end
 
     def initialize
-      @robot_regex = /\b(#{BOTS.keys.join('|')})\b|^\W*$/i
+      @robot_regex = /\b(#{BOTS.keys.join('|')})\b|\A\W*\z/i
       @ignore_ip_addresses = []
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
