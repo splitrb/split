@@ -14,6 +14,7 @@ module Split
       "spider" => 'generic web spider',
       'WordPress' => 'WordPress spider',
       'ZIBB' => 'ZIBB spider',
+      'YandexBot' => 'Yandex spider',
       # HTTP libraries
       'Apache-HttpClient' => 'Java http library',
       'AppEngine-Google' => 'Google App Engine',
