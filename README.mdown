@@ -234,7 +234,7 @@ Then adding this to config/routes.rb
 mount Split::Dashboard, :at => 'split'
 ```
 
-You may want to password protect that page, you can do so with `Rack::Auth::Basic`
+You may want to password protect that page, you can do so with `Rack::Auth::Basic` (in your split initializer file)
 
 ```ruby
 Split::Dashboard.use Rack::Auth::Basic do |username, password|
