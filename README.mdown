@@ -269,13 +269,13 @@ Split.configure do |config|
   config.experiments = {
     :my_first_experiment => {
       :alternatives => ["a", "b"],
-      :resettable => false,
+      :resettable => false
     },
     :my_second_experiment => {
       :algorithm => 'Split::Algorithms::Whiplash',
       :alternatives => [
         { :name => "a", :percent => 67 },
-        { :name => "b", :percent => 33 },
+        { :name => "b", :percent => 33 }
       ]
     }
   }
