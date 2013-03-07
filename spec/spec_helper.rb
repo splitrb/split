@@ -4,6 +4,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'split'
 require 'ostruct'
+require 'yaml'
 require 'complex' if RUBY_VERSION.match(/1\.8/)
 
 Dir['./spec/support/*.rb'].each { |f| require f }
