@@ -43,6 +43,11 @@ describe Split::Configuration do
     @config.robot_regex.should_not =~ "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; F-6.0SP2-20041109; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 1.1.4322; InfoPath.3)"
   end
 
+  it "should allow adding a bot to the bot list" do
+    @config.bots["newbot"] = "An amazing test bot"
+    @config.robot_regex.should =~ "newbot"
+  end
+
   it "should use the session adapter for persistence by default" do
     @config.persistence.should eq(Split::Persistence::SessionAdapter)
   end
