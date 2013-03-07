@@ -1,52 +1,6 @@
 module Split
   class Configuration
-    BOTS = {
-      # Indexers
-      "AdsBot-Google" => 'Google Adwords',
-      'Baidu' => 'Chinese search engine',
-      'Gigabot' => 'Gigabot spider',
-      'Googlebot' => 'Google spider',
-      'msnbot' => 'Microsoft bot',
-      'bingbot' => 'Microsoft bing bot',
-      'rogerbot' => 'SeoMoz spider',
-      'Slurp' => 'Yahoo spider',
-      'Sogou' => 'Chinese search engine',
-      "spider" => 'generic web spider',
-      'WordPress' => 'WordPress spider',
-      'ZIBB' => 'ZIBB spider',
-      'YandexBot' => 'Yandex spider',
-      # HTTP libraries
-      'Apache-HttpClient' => 'Java http library',
-      'AppEngine-Google' => 'Google App Engine',
-      "curl" => 'curl unix CLI http client',
-      'ColdFusion' => 'ColdFusion http library',
-      "EventMachine HttpClient" => 'Ruby http library',
-      "Go http package" => 'Go http library',
-      'Java' => 'Generic Java http library',
-      'libwww-perl' => 'Perl client-server library loved by script kids',
-      'lwp-trivial' => 'Another Perl library loved by script kids',
-      "Python-urllib" => 'Python http library',
-      "PycURL" => 'Python http library',
-      "Test Certificate Info" => 'C http library?',
-      "Wget" => 'wget unix CLI http client',
-      # URL expanders / previewers
-      'awe.sm' => 'Awe.sm URL expander',
-      "bitlybot" => 'bit.ly bot',
-      "facebookexternalhit" => 'facebook bot',
-      'LongURL' => 'URL expander service',
-      'Twitterbot' => 'Twitter URL expander',
-      'UnwindFetch' => 'Gnip URL expander',
-      # Uptime monitoring
-      'check_http' => 'Nagios monitor',
-      'NewRelicPinger' => 'NewRelic monitor',
-      'Panopta' => 'Monitoring service',
-      "Pingdom" => 'Pingdom monitoring',
-      'SiteUptime' => 'Site monitoring services',
-      # ???
-      "DigitalPersona Fingerprint Software" => 'HP Fingerprint scanner',
-      "ShowyouBot" => 'Showyou iOS app spider',
-      'ZyBorg' => 'Zyborg? Hmmm....',
-    }
+    attr_accessor :bots
     attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses
     attr_accessor :db_failover
@@ -57,6 +11,56 @@ module Split
     attr_accessor :experiments
     attr_accessor :persistence
     attr_accessor :algorithm
+
+    def bots
+      @bots ||= {
+        # Indexers
+        "AdsBot-Google" => 'Google Adwords',
+        'Baidu' => 'Chinese search engine',
+        'Gigabot' => 'Gigabot spider',
+        'Googlebot' => 'Google spider',
+        'msnbot' => 'Microsoft bot',
+        'bingbot' => 'Microsoft bing bot',
+        'rogerbot' => 'SeoMoz spider',
+        'Slurp' => 'Yahoo spider',
+        'Sogou' => 'Chinese search engine',
+        "spider" => 'generic web spider',
+        'WordPress' => 'WordPress spider',
+        'ZIBB' => 'ZIBB spider',
+        'YandexBot' => 'Yandex spider',
+        # HTTP libraries
+        'Apache-HttpClient' => 'Java http library',
+        'AppEngine-Google' => 'Google App Engine',
+        "curl" => 'curl unix CLI http client',
+        'ColdFusion' => 'ColdFusion http library',
+        "EventMachine HttpClient" => 'Ruby http library',
+        "Go http package" => 'Go http library',
+        'Java' => 'Generic Java http library',
+        'libwww-perl' => 'Perl client-server library loved by script kids',
+        'lwp-trivial' => 'Another Perl library loved by script kids',
+        "Python-urllib" => 'Python http library',
+        "PycURL" => 'Python http library',
+        "Test Certificate Info" => 'C http library?',
+        "Wget" => 'wget unix CLI http client',
+        # URL expanders / previewers
+        'awe.sm' => 'Awe.sm URL expander',
+        "bitlybot" => 'bit.ly bot',
+        "facebookexternalhit" => 'facebook bot',
+        'LongURL' => 'URL expander service',
+        'Twitterbot' => 'Twitter URL expander',
+        'UnwindFetch' => 'Gnip URL expander',
+        # Uptime monitoring
+        'check_http' => 'Nagios monitor',
+        'NewRelicPinger' => 'NewRelic monitor',
+        'Panopta' => 'Monitoring service',
+        "Pingdom" => 'Pingdom monitoring',
+        'SiteUptime' => 'Site monitoring services',
+        # ???
+        "DigitalPersona Fingerprint Software" => 'HP Fingerprint scanner',
+        "ShowyouBot" => 'Showyou iOS app spider',
+        'ZyBorg' => 'Zyborg? Hmmm....',
+      }
+    end
 
     def disabled?
       !enabled
@@ -138,8 +142,11 @@ module Split
       end
     end
 
+    def robot_regex
+      @robot_regex ||= /\b(?:#{escaped_bots.join('|')})\b|\A\W*\z/i
+    end
+
     def initialize
-      @robot_regex = /\b(?:#{escaped_bots.join('|')})\b|\A\W*\z/i
       @ignore_ip_addresses = []
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
@@ -160,7 +167,7 @@ module Split
     end
 
     def escaped_bots
-      BOTS.map { |key, _| Regexp.escape(key) }
+      bots.map { |key, _| Regexp.escape(key) }
     end
   end
 end
