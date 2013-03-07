@@ -267,11 +267,11 @@ algorithm and if the experiment resets once finished:
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    :my_first_experiment => {
+    "my_first_experiment" => {
       :alternatives => ["a", "b"],
       :resettable => false
     },
-    :my_second_experiment => {
+    "my_second_experiment" => {
       :algorithm => 'Split::Algorithms::Whiplash',
       :alternatives => [
         { :name => "a", :percent => 67 },
@@ -309,13 +309,13 @@ my_second_experiment:
 This simplifies the calls from your code:
 
 ```ruby
-ab_test(:my_first_experiment)
+ab_test("my_first_experiment")
 ```
 
 and:
 
 ```ruby
-finished(:my_first_experiment)
+finished("my_first_experiment")
 ```
 
 #### Metrics
@@ -328,7 +328,7 @@ the `:metric` option.
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    :my_first_experiment => {
+    "my_first_experiment" => {
       :alternatives => ["a", "b"],
       :metric => :conversion,
     }
@@ -340,7 +340,7 @@ Your code may then track a completion using the metric instead of
 the experiment name:
 
 ```ruby
-finished(:conversion)
+finished("my_first_experiment")
 ```
 
 You can also create a new metric by instantiating and saving a new Metric object.
@@ -364,7 +364,7 @@ or you can you can define them in a configuration file:
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    :link_color => {
+    "link_color" => {
       :alternatives => ["red", "blue"],
       :goals => ["purchase", "refund"]
     }
