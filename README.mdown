@@ -248,15 +248,30 @@ You can override the default configuration options of Split like so:
 
 ```ruby
 Split.configure do |config|
-  config.robot_regex = /my_custom_robot_regex/ # or
-  config.bots['newbot'] = "Description for bot with 'newbot' user agent, which will be added to config.robot_regex for exclusion"
-
-  config.ignore_ip_addresses << '81.19.48.130' # or regex: /81\.19\.48\.[0-9]+/
   config.db_failover = true # handle redis errors gracefully
   config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
   config.allow_multiple_experiments = true
   config.enabled = true
   config.persistence = Split::Persistence::SessionAdapter
+end
+```
+
+### Filtering
+
+In most scenarios you don't want to have AB-Testing enabled for web spiders, robots or special groups of users.
+Split provides functionality to filter this based on a predefined, extensible list of bots, IP-lists or custom exclude logic.
+
+```ruby
+Split.configure do |config|
+  # bot config
+  config.robot_regex = /my_custom_robot_regex/ # or
+  config.bots['newbot'] = "Description for bot with 'newbot' user agent, which will be added to config.robot_regex for exclusion"
+
+  # IP config
+  config.ignore_ip_addresses << '81.19.48.130' # or regex: /81\.19\.48\.[0-9]+/
+
+  # or provide your own filter functionality, the default is proc{ |request| is_robot? || is_ignored_ip_address? }
+  config.ignore_filter = proc{ |request| CustomExcludeLogic.excludes?(request) }
 end
 ```
 

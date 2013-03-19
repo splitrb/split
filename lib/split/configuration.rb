@@ -149,7 +149,7 @@ module Split
 
     def initialize
       @ignore_ip_addresses = []
-      @ignore_filter = proc{|request| is_robot? || is_ignored_ip_address? }
+      @ignore_filter = proc{ |request| is_robot? || is_ignored_ip_address? }
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
       @db_failover_allow_parameter_override = false
