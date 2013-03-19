@@ -396,7 +396,7 @@ end
 To complete a goal conversion, you do it like:
 
 ```ruby
-finished("link_color" => ["purchase"])
+finished("link_color" => "purchase")
 ```
 
 ### DB failover solution
