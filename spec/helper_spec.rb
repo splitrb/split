@@ -380,6 +380,26 @@ describe Split::Helper do
     end
   end
 
+
+  describe 'when providing custom ignore logic' do
+    context "using a proc to configure custom logic" do
+
+      before(:each) do
+        Split.configure do |c|
+          c.ignore_filter = proc{|request| !!"i_am_going_to_be_disabled" }
+        end
+      end
+
+      it "ignores the ab_test" do
+        ab_test('link_color', 'blue', 'red')
+
+        red_count = Split::Alternative.new('red', 'link_color').participant_count
+        blue_count = Split::Alternative.new('blue', 'link_color').participant_count
+        (red_count + blue_count).should be(0)
+      end
+    end
+  end
+
   shared_examples_for "a disabled test" do
 
     describe 'ab_test' do

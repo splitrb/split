@@ -3,6 +3,7 @@ module Split
     attr_accessor :bots
     attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses
+    attr_accessor :ignore_filter
     attr_accessor :db_failover
     attr_accessor :db_failover_on_db_error
     attr_accessor :db_failover_allow_parameter_override
@@ -148,6 +149,7 @@ module Split
 
     def initialize
       @ignore_ip_addresses = []
+      @ignore_filter = proc{ |request| is_robot? || is_ignored_ip_address? }
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
       @db_failover_allow_parameter_override = false
