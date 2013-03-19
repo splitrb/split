@@ -332,7 +332,7 @@ Split.configure do |config|
   config.experiments = {
     "my_first_experiment" => {
       :alternatives => ["a", "b"],
-      :metric => :conversion,
+      :metric => :my_metric,
     }
   }
 end
@@ -342,19 +342,19 @@ Your code may then track a completion using the metric instead of
 the experiment name:
 
 ```ruby
-finished("my_first_experiment")
+finished(:my_metric)
 ```
 
 You can also create a new metric by instantiating and saving a new Metric object.
 
 ```ruby
-Split::Metric.new(:conversion)
+Split::Metric.new(:my_metric)
 Split::Metric.save
 ```
 
 #### Goals
 
-You might wish to allow an experiment to have multiple goals.
+You might wish to allow an experiment to have multiple, distinguishable goals.
 The API to define goals for an experiment is this:
 
 ```ruby
@@ -377,12 +377,12 @@ end
 To complete a goal conversion, you do it like:
 
 ```ruby
-finished({"link_color" => ["purchase"]})
+finished("link_color" => ["purchase"])
 ```
 
 ### DB failover solution
 
-Due to the fact that Redis has no autom. failover mechanism, it's
+Due to the fact that Redis has no automatic failover mechanism, it's
 possible to switch on the `db_failover` config option, so that `ab_test`
 and `finished` will not crash in case of a db failure. `ab_test` always
 delivers alternative A (the first one) in that case.
@@ -433,7 +433,7 @@ If you're running multiple, separate instances of Split you may want
 to namespace the keyspaces so they do not overlap. This is not unlike
 the approach taken by many memcached clients.
 
-This feature is provided by the [redis-namespace][rs] library, which
+This feature is provided by the [redis-namespace](https://github.com/defunkt/redis-namespace) library, which
 Split uses by default to separate the keys it manages from other keys
 in your Redis server.
 
