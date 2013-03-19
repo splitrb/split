@@ -101,7 +101,7 @@ module Split
     end
 
     def exclude_visitor?
-      is_robot? || is_ignored_ip_address?
+      instance_eval(&Split.configuration.ignore_filter)
     end
 
     def not_allowed_to_test?(experiment_key)
