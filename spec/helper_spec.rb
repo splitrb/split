@@ -27,8 +27,8 @@ describe Split::Helper do
       lambda { ab_test({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }.should_not raise_error
     end
 
-    it "should raise the appropriate error when passed string for goals" do
-      lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }.should raise_error(ArgumentError)
+    it "should not raise error when passed just one goal" do
+      lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }.should_not raise_error
     end
 
     it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
@@ -852,7 +852,7 @@ describe Split::Helper do
       it "should increment the counter for the specified-goal completed alternative" do
         @previous_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
         @previous_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
-        finished({"link_color" => ["purchase"]})
+        finished({"link_color" => "purchase"})
         new_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
         new_completion_count_for_goal1.should eql(@previous_completion_count_for_goal1 + 1)
         new_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)

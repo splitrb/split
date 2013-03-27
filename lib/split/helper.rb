@@ -1,13 +1,13 @@
 module Split
   module Helper
 
-    def ab_test(experiment_label, control=nil, *alternatives)
+    def ab_test(metric_descriptor, control=nil, *alternatives)
       if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
       begin
-      experiment_name_with_version, goals = normalize_experiment(experiment_label)
+      experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
       experiment_name = experiment_name_with_version.to_s.split(':')[0]
       experiment = Split::Experiment.new(experiment_name, :alternatives => [control].compact + alternatives, :goals => goals)
       control ||= experiment.control && experiment.control.name
@@ -67,10 +67,10 @@ module Split
     end
 
 
-    def finished(metric_name, options = {:reset => true})
+    def finished(metric_descriptor, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
-      metric_name, goals = normalize_experiment(metric_name)
-      experiments = Metric.possible_experiments(metric_name)
+      metric_descriptor, goals = normalize_experiment(metric_descriptor)
+      experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
         experiments.each do |experiment|
@@ -141,12 +141,13 @@ module Split
     end
 
     protected
-    def normalize_experiment(experiment_label)
-      if Hash === experiment_label
-        experiment_name = experiment_label.keys.first
-        goals = experiment_label.values.first
+
+    def normalize_experiment(metric_descriptor)
+      if Hash === metric_descriptor
+        experiment_name = metric_descriptor.keys.first
+        goals = Array(metric_descriptor.values.first)
       else
-        experiment_name = experiment_label
+        experiment_name = metric_descriptor
         goals = []
       end
       return experiment_name, goals
@@ -154,10 +155,6 @@ module Split
 
     def control_variable(control)
       Hash === control ? control.keys.first : control
-    end
-
-    def load_and_start_trial(experiment_label, control, alternatives)
-      experiment_name, goals = normalize_experiment(experiment_label)
     end
 
     def start_trial(trial)
