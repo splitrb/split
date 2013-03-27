@@ -242,6 +242,10 @@ Split::Dashboard.use Rack::Auth::Basic do |username, password|
 end
 ```
 
+### Screenshot
+
+![split_screenshot](https://f.cloud.github.com/assets/78887/306152/99c64650-9670-11e2-93f8-197f49495d02.png)
+
 ## Configuration
 
 You can override the default configuration options of Split like so:
