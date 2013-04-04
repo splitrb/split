@@ -19,7 +19,7 @@ Misc:
   - updated minimum json version requirement
   - Refactor Yaml Configuration (@rtwomey, #124)
   - Refactoring of Experiments (@iangreenleaf @tamird, #117 #118)
-  - Added more known Bots, including Pingdom, Bing, YandexBot (@julesie, @zinkkrysty)
+  - Added more known Bots, including Pingdom, Bing, YandexBot (@julesie, @zinkkrysty, @dimko)
   - Improved Readme (@iangreenleaf @phoet)
 
 ## 0.5.0 (January 28, 2012)
