@@ -1,3 +1,22 @@
+## 0.6.0 (April TODO, 2013)
+
+Features:
+
+  - Multiple Goals (@liujin, #109)
+  - Ignoring IPs using Regular Expressions (@waynemoore, #119)
+
+Bugfixes:
+
+  - Fixed regression in handling of config files (@iangreenleaf, #115)
+  - Fixed completion rate increases for experiments users aren't participating in (@philnash, #67)
+
+Misc:
+
+  - Refactor Yaml Configuration (@rtwomey, #124)
+  - Refactoring of Experiments (@iangreenleaf @tamird, #117 #118)
+  - Added more known Bots, including Pingdom (@julesie)
+  - Improved Readme (@iangreenleaf @phoet)
+
 ## 0.5.0 (January 28, 2012)
 
 Features:
