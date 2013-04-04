@@ -520,6 +520,7 @@ Special thanks to the following people for submitting patches:
 * Nathan Woodhull
 * Ville Lautanala
 * Liu Jin
+* Peter Schröder
 
 ## Development
 
