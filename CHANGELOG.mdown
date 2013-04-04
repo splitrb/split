@@ -1,4 +1,4 @@
-## 0.6.0 (April TODO, 2013)
+## 0.6.0 (April 4, 2013)
 
 Features:
 
