@@ -1,3 +1,27 @@
+## 0.6.0 (April TODO, 2013)
+
+Features:
+
+  - Support for Ruby 2.0.0 (@phoet, #142)
+  - Multiple Goals (@liujin, #109)
+  - Ignoring IPs using Regular Expressions (@waynemoore, #119)
+  - Added ability to add more bots to the default list (@themgt, #140)
+  - Allow custom configuration of user blocking logic (@phoet , #148)
+
+Bugfixes:
+
+  - Fixed regression in handling of config files (@iangreenleaf, #115)
+  - Fixed completion rate increases for experiments users aren't participating in (@philnash, #67)
+  - Handle exceptions from invalid JSON in cookies (@iangreenleaf, #126)
+
+Misc:
+
+  - updated minimum json version requirement
+  - Refactor Yaml Configuration (@rtwomey, #124)
+  - Refactoring of Experiments (@iangreenleaf @tamird, #117 #118)
+  - Added more known Bots, including Pingdom, Bing, YandexBot (@julesie, @zinkkrysty)
+  - Improved Readme (@iangreenleaf @phoet)
+
 ## 0.5.0 (January 28, 2012)
 
 Features:
