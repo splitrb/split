@@ -6,6 +6,12 @@ module Split
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
+      # Check if array is passed to ab_test: ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
+      if control.is_a? Array and alternatives.length.zero?
+        arguments_array = control
+        control, alternatives = control.first, control[1..-1]
+      end
+
       begin
       experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
       experiment_name = experiment_name_with_version.to_s.split(':')[0]
