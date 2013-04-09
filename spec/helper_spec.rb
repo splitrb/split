@@ -15,6 +15,10 @@ describe Split::Helper do
       lambda { ab_test('xyz', '1', '2', '3') }.should_not raise_error
     end
 
+    it "should not raise an error when passed an array for alternatives" do
+      lambda { ab_test('xyz', ['1', '2', '3']) }.should_not raise_error
+    end
+
     it "should raise the appropriate error when passed integers for alternatives" do
       lambda { ab_test('xyz', 1, 2, 3) }.should raise_error(ArgumentError)
     end
