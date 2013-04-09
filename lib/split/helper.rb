@@ -8,7 +8,6 @@ module Split
 
       # Check if array is passed to ab_test: ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
       if control.is_a? Array and alternatives.length.zero?
-        arguments_array = control
         control, alternatives = control.first, control[1..-1]
       end
 
