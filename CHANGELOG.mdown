@@ -1,9 +1,8 @@
-
 ## TBD
 
 Misc:
 
-  - Allow arrays to be passed to ab_test (@phoet, #156)
+  - Allow arrays to be passed to ab_test (@fenelon, #156)
 
 ## 0.6.0 (April 4, 2013)
 
