@@ -120,20 +120,44 @@ describe Split::Configuration do
     end
 
     context "as symbols" do
-      before do
-        experiments_yaml = <<-eos
-          :my_experiment:
-            :alternatives:
-              - Control Opt
-              - Alt One
-              - Alt Two
-            :resettable: false
-          eos
-        @config.experiments = YAML.load(experiments_yaml)
+
+      context "with valid YAML" do
+        before do
+          experiments_yaml = <<-eos
+            :my_experiment:
+              :alternatives:
+                - Control Opt
+                - Alt One
+                - Alt Two
+              :resettable: false
+            eos
+          @config.experiments = YAML.load(experiments_yaml)
+        end
+
+        it "should normalize experiments" do
+          @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
+        end
       end
 
-      it "should normalize experiments" do
-        @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
+      context "with invalid YAML" do
+
+        let(:yaml) { YAML.load(input) }
+
+        context "with an empty string" do
+          let(:input) { '' }
+
+          it "should raise an error" do
+            expect { @config.experiments = yaml }.to raise_error(/Experiments must be a Hash/)
+          end
+        end
+
+        context "with just the YAML header" do
+          let(:input) { '---' }
+
+          it "should raise an error" do
+            expect { @config.experiments = yaml }.to raise_error(/Experiments must be a Hash/)
+          end
+        end
       end
     end
   end

@@ -805,8 +805,7 @@ describe Split::Helper do
     end
 
     it "fails gracefully if config is missing" do
-      Split.configuration.experiments = nil
-      lambda { ab_test :my_experiment }.should raise_error(/not found/i)
+      lambda { Split.configuration.experiments = nil }.should raise_error(/Experiments must be a Hash/)
     end
 
     it "fails gracefully if config is missing alternatives" do
