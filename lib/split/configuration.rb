@@ -9,9 +9,10 @@ module Split
     attr_accessor :db_failover_allow_parameter_override
     attr_accessor :allow_multiple_experiments
     attr_accessor :enabled
-    attr_accessor :experiments
     attr_accessor :persistence
     attr_accessor :algorithm
+
+    attr_reader :experiments
 
     def bots
       @bots ||= {
@@ -61,6 +62,11 @@ module Split
         "ShowyouBot" => 'Showyou iOS app spider',
         'ZyBorg' => 'Zyborg? Hmmm....',
       }
+    end
+
+    def experiments= experiments
+      raise InvalidExperimentsFormatError.new('Experiments must be a Hash') unless experiments.is_a?(Hash)
+      @experiments = experiments
     end
 
     def disabled?
