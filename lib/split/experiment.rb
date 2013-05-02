@@ -84,7 +84,7 @@ module Split
 
     def random_alternative
       if alternatives.length > 1
-        Split.configuration.algorithm.choose_alternative(self)
+        algorithm.choose_alternative(self)
       else
         alternatives.first
       end

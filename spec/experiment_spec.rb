@@ -225,7 +225,8 @@ describe Split::Experiment do
     end
     
     it "should use the specified algorithm if a winner does not exist" do
-      Split.configuration.algorithm.should_receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
+      experiment.algorithm = Split::Algorithms::Whiplash
+      experiment.algorithm.should_receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
       experiment.next_alternative.name.should eql('green')
     end
   end
