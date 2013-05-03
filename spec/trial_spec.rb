@@ -8,6 +8,7 @@ describe Split::Trial do
     trial = Split::Trial.new(:experiment => experiment, :alternative => alternative)
     trial.experiment.should == experiment
     trial.alternative.should == alternative
+    trial.goals.should == []
   end
 
   describe "alternative" do

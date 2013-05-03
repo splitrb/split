@@ -6,7 +6,7 @@ module Split
     def initialize(attrs = {})
       self.experiment = attrs[:experiment]  if !attrs[:experiment].nil?
       self.alternative = attrs[:alternative] if !attrs[:alternative].nil?
-      self.goals = attrs[:goals] if !attrs[:goals].nil?
+      self.goals = attrs[:goals].nil? ? [] : attrs[:goals]
     end
 
     def alternative
