@@ -139,6 +139,15 @@ describe Split::Experiment do
       e.should == experiment
       e.algorithm.should == Split::Algorithms::Whiplash
     end
+    
+    it "should persist a new experiment in redis, that does not exist in the configuration file" do
+      experiment = Split::Experiment.new('foobar', :alternatives => ['tra', 'la'], :algorithm => Split::Algorithms::Whiplash)
+      experiment.save
+
+      e = Split::Experiment.find('foobar')
+      e.should == experiment
+      e.alternatives.collect{|a| a.name}.should == ['tra', 'la']
+    end
   end
 
   describe 'deleting' do
@@ -230,7 +239,8 @@ describe Split::Experiment do
     end
 
     it "should use the specified algorithm if a winner does not exist" do
-      Split.configuration.algorithm.should_receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
+      experiment.algorithm = Split::Algorithms::Whiplash
+      experiment.algorithm.should_receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
       experiment.next_alternative.name.should eql('green')
     end
   end
