@@ -1,0 +1,14 @@
+<div class="experiment">
+  <div class="experiment-header">
+      <div class='inline-controls'>
+        <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
+        <form action="<%= url "/reset/#{experiment.name}" %>" method='post' onclick="return confirmReset()">
+          <input type="submit" value="Reset Data">
+        </form>
+        <form action="<%= url "/#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
+          <input type="hidden" name="_method" value="delete"/>
+          <input type="submit" value="Delete" class="red">
+        </form>
+      </div>
+  </div>
+</div>

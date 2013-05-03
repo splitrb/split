@@ -6,7 +6,10 @@ Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and 
 
 Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
 
-[![Build Status](https://secure.travis-ci.org/andrew/split.png?branch=master)](http://travis-ci.org/andrew/split) [![Dependency Status](https://gemnasium.com/andrew/split.png)](https://gemnasium.com/andrew/split)
+[![Gem Version](https://badge.fury.io/rb/split.png)](http://badge.fury.io/rb/split)
+[![Build Status](https://secure.travis-ci.org/andrew/split.png?branch=master)](http://travis-ci.org/andrew/split)
+[![Dependency Status](https://gemnasium.com/andrew/split.png)](https://gemnasium.com/andrew/split)
+[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/andrew/split)
 
 ## Requirements
 
@@ -79,7 +82,7 @@ end
 
 ## Usage
 
-To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different variants which you wish to test on as the other arguments.
+To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different alternatives which you wish to test on as the other arguments.
 
 `ab_test` returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on.
 
@@ -89,7 +92,7 @@ It can be used to render different templates, show different text or any other c
 
 Example: View
 
-```ruby
+```erb
 <% ab_test("login_button", "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
   <%= img_tag(button_file, :alt => "Login!") %>
 <% end %>
@@ -115,8 +118,8 @@ end
 
 Example: Conversion tracking (in a view)
 
-```ruby
-Thanks for signing up, dude! <% finished("signup_page_redesign") >
+```erb
+Thanks for signing up, dude! <% finished("signup_page_redesign") %>
 ```
 
 You can find more examples, tutorials and guides on the [wiki](https://github.com/andrew/split/wiki).
@@ -231,7 +234,7 @@ Then adding this to config/routes.rb
 mount Split::Dashboard, :at => 'split'
 ```
 
-You may want to password protect that page, you can do so with `Rack::Auth::Basic`
+You may want to password protect that page, you can do so with `Rack::Auth::Basic` (in your split initializer file)
 
 ```ruby
 Split::Dashboard.use Rack::Auth::Basic do |username, password|
@@ -239,14 +242,16 @@ Split::Dashboard.use Rack::Auth::Basic do |username, password|
 end
 ```
 
+### Screenshot
+
+![split_screenshot](https://f.cloud.github.com/assets/78887/306152/99c64650-9670-11e2-93f8-197f49495d02.png)
+
 ## Configuration
 
 You can override the default configuration options of Split like so:
 
 ```ruby
 Split.configure do |config|
-  config.robot_regex = /my_custom_robot_regex/
-  config.ignore_ip_addresses << '81.19.48.130'
   config.db_failover = true # handle redis errors gracefully
   config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
   config.allow_multiple_experiments = true
@@ -255,41 +260,84 @@ Split.configure do |config|
 end
 ```
 
+### Filtering
+
+In most scenarios you don't want to have AB-Testing enabled for web spiders, robots or special groups of users.
+Split provides functionality to filter this based on a predefined, extensible list of bots, IP-lists or custom exclude logic.
+
+```ruby
+Split.configure do |config|
+  # bot config
+  config.robot_regex = /my_custom_robot_regex/ # or
+  config.bots['newbot'] = "Description for bot with 'newbot' user agent, which will be added to config.robot_regex for exclusion"
+
+  # IP config
+  config.ignore_ip_addresses << '81.19.48.130' # or regex: /81\.19\.48\.[0-9]+/
+
+  # or provide your own filter functionality, the default is proc{ |request| is_robot? || is_ignored_ip_address? }
+  config.ignore_filter = proc{ |request| CustomExcludeLogic.excludes?(request) }
+end
+```
+
 ### Experiment configuration
 
 Instead of providing the experiment options inline, you can store them
-in a hash or a configuration file:
+in a hash. This hash can control your experiment's alternatives, weights,
+algorithm and if the experiment resets once finished:
 
-    Split.configure do |config|
-      config.experiments = YAML.load_file "config/experiments.yml"
-    end
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    "my_first_experiment" => {
+      :alternatives => ["a", "b"],
+      :resettable => false
+    },
+    "my_second_experiment" => {
+      :algorithm => 'Split::Algorithms::Whiplash',
+      :alternatives => [
+        { :name => "a", :percent => 67 },
+        { :name => "b", :percent => 33 }
+      ]
+    }
+  }
+end
+```
 
-This hash can control your experiment's variants, weights, algorithm and if the
-experiment resets once finished:
+You can also store your experiments in a YAML file:
 
-    Split.configure do |config|
-      config.experiments = {
-        :my_first_experiment => {
-          :variants => ["a", "b"],
-          :resettable => false,
-        },
-        :my_second_experiment => {
-          :algorithm => 'Split::Algorithms::Whiplash',
-          :variants => [
-            { :name => "a", :percent => 67 },
-            { :name => "b", :percent => 33 },
-          ]
-        }
-      }
-    end
+```ruby
+Split.configure do |config|
+  config.experiments = YAML.load_file "config/experiments.yml"
+end
+```
+
+You can then define the YAML file like:
+
+```yaml
+my_first_experiment:
+  alternatives:
+    - a
+    - b
+my_second_experiment:
+  alternatives:
+    - name: a
+      percent: 67
+    - name: b
+      percent: 33
+  resettable: false
+```
 
 This simplifies the calls from your code:
 
-    ab_test(:my_first_experiment)
+```ruby
+ab_test("my_first_experiment")
+```
 
 and:
 
-    finished(:my_first_experiment)
+```ruby
+finished("my_first_experiment")
+```
 
 #### Metrics
 
@@ -298,28 +346,62 @@ those to complete multiple different experiments without adding more to
 your code. You can use the configuration hash to do this, thanks to
 the `:metric` option.
 
-    Split.configure do |config|
-      config.experiments = {
-        :my_first_experiment => {
-          :variants => ["a", "b"],
-          :metric => :conversion,
-        }
-      }
-    end
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    "my_first_experiment" => {
+      :alternatives => ["a", "b"],
+      :metric => :my_metric,
+    }
+  }
+end
+```
 
 Your code may then track a completion using the metric instead of
 the experiment name:
 
-    finished(:conversion)
-    
-You can also create a new metric by instantiating and saving a new Metric object. 
+```ruby
+finished(:my_metric)
+```
 
-    Split::Metric.new(:conversion)
-    Split::Metric.save
+You can also create a new metric by instantiating and saving a new Metric object.
+
+```ruby
+Split::Metric.new(:my_metric)
+Split::Metric.save
+```
+
+#### Goals
+
+You might wish to allow an experiment to have multiple, distinguishable goals.
+The API to define goals for an experiment is this:
+
+```ruby
+ab_test({"link_color" => ["purchase", "refund"]}, "red", "blue")
+```
+
+or you can you can define them in a configuration file:
+
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    "link_color" => {
+      :alternatives => ["red", "blue"],
+      :goals => ["purchase", "refund"]
+    }
+  }
+end
+```
+
+To complete a goal conversion, you do it like:
+
+```ruby
+finished("link_color" => "purchase")
+```
 
 ### DB failover solution
 
-Due to the fact that Redis has no autom. failover mechanism, it's
+Due to the fact that Redis has no automatic failover mechanism, it's
 possible to switch on the `db_failover` config option, so that `ab_test`
 and `finished` will not crash in case of a db failure. `ab_test` always
 delivers alternative A (the first one) in that case.
@@ -370,7 +452,7 @@ If you're running multiple, separate instances of Split you may want
 to namespace the keyspaces so they do not overlap. This is not unlike
 the approach taken by many memcached clients.
 
-This feature is provided by the [redis-namespace][rs] library, which
+This feature is provided by the [redis-namespace](https://github.com/defunkt/redis-namespace) library, which
 Split uses by default to separate the keys it manages from other keys
 in your Redis server.
 
@@ -385,7 +467,7 @@ is configured.
 
 ## Outside of a Web Session
 
-Split provides the Helper module to facilitate running experiments inside web sessions. 
+Split provides the Helper module to facilitate running experiments inside web sessions.
 
 Alternatively, you can access the underlying Metric, Trial, Experiment and Alternative objects to
 conduct experiments that are not tied to a web session.
@@ -409,16 +491,17 @@ end
 
 ## Algorithms
 
-By default, Split ships with an algorithm that randomly selects from possible alternatives for a traditional a/b test. 
+By default, Split ships with an algorithm that randomly selects from possible alternatives for a traditional a/b test.
 
-An implementation of a bandit algorithm is also provided. 
+An implementation of a bandit algorithm is also provided.
 
-Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file. 
+Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file.
 
 ## Extensions
 
   - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
   - [Split::Analytics](http://github.com/andrew/split-analytics) - push test data to google analytics
+  - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - store data in mongoid instead of redis
 
 ## Screencast
 
@@ -433,6 +516,11 @@ Special thanks to the following people for submitting patches:
 * Andrew Appleton
 * Phil Nash
 * Dave Goodchild
+* Ian Young
+* Nathan Woodhull
+* Ville Lautanala
+* Liu Jin
+* Peter Schröder
 
 ## Development
 
@@ -448,10 +536,11 @@ Tests can be ran with `rake spec`
  * Make your feature addition or bug fix.
  * Add tests for it. This is important so I don't break it in a
    future version unintentionally.
+ * Add documentation if necessary.
  * Commit, do not mess with rakefile, version, or history.
    (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
  * Send a pull request. Bonus points for topic branches.
 
 ## Copyright
 
-Copyright (c) 2012 Andrew Nesbitt. See [LICENSE](https://github.com/andrew/split/blob/master/LICENSE) for details.
+Copyright (c) 2013 Andrew Nesbitt. See [LICENSE](https://github.com/andrew/split/blob/master/LICENSE) for details.

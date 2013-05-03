@@ -1,14 +1,25 @@
 module Split
   module Helper
 
-    def ab_test(experiment_name, control=nil, *alternatives)
-      if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero?
+    def ab_test(metric_descriptor, control=nil, *alternatives)
+      if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
+      # Check if array is passed to ab_test: ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
+      if control.is_a? Array and alternatives.length.zero?
+        control, alternatives = control.first, control[1..-1]
+      end
+
       begin
+      experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
+      experiment_name = experiment_name_with_version.to_s.split(':')[0]
+      experiment = Split::Experiment.new(experiment_name, :alternatives => [control].compact + alternatives, :goals => goals)
+      control ||= experiment.control && experiment.control.name
+
         ret = if Split.configuration.enabled
-          load_and_start_trial(experiment_name, control, alternatives)
+          experiment.save
+          start_trial( Trial.new(:experiment => experiment) )
         else
           control_variable(control)
         end
@@ -21,7 +32,7 @@ module Split
           ret = override_alternative(experiment_name)
         end
       ensure
-        if ret.nil?
+        unless ret
           ret = control_variable(control)
         end
       end
@@ -44,12 +55,13 @@ module Split
     end
 
     def finish_experiment(experiment, options = {:reset => true})
+      return true unless experiment.winner.nil?
       should_reset = experiment.resettable? && options[:reset]
       if ab_user[experiment.finished_key] && !should_reset
         return true
       else
         alternative_name = ab_user[experiment.key]
-        trial = Trial.new(:experiment => experiment, :alternative_name => alternative_name)
+        trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals])
         trial.complete!
         if should_reset
           reset!(experiment)
@@ -60,13 +72,14 @@ module Split
     end
 
 
-    def finished(metric_name, options = {:reset => true})
+    def finished(metric_descriptor, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
-      experiments = Metric.possible_experiments(metric_name)
+      metric_descriptor, goals = normalize_experiment(metric_descriptor)
+      experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
         experiments.each do |experiment|
-          finish_experiment(experiment, options)
+          finish_experiment(experiment, options.merge(:goals => goals))
         end
       end
     rescue => e
@@ -93,7 +106,7 @@ module Split
     end
 
     def exclude_visitor?
-      is_robot? || is_ignored_ip_address?
+      instance_eval(&Split.configuration.ignore_filter)
     end
 
     def not_allowed_to_test?(experiment_key)
@@ -124,35 +137,37 @@ module Split
     end
 
     def is_ignored_ip_address?
-      if Split.configuration.ignore_ip_addresses.any?
-        Split.configuration.ignore_ip_addresses.include?(request.ip)
-      else
-        false
+      return false if Split.configuration.ignore_ip_addresses.empty?
+
+      Split.configuration.ignore_ip_addresses.each do |ip|
+        return true if request.ip == ip || (ip.class == Regexp && request.ip =~ ip)
       end
+      false
     end
 
     protected
 
-    def control_variable(control)
-      Hash === control ? control.keys.first : control
+    def normalize_experiment(metric_descriptor)
+      if Hash === metric_descriptor
+        experiment_name = metric_descriptor.keys.first
+        goals = Array(metric_descriptor.values.first)
+      else
+        experiment_name = metric_descriptor
+        goals = []
+      end
+      return experiment_name, goals
     end
 
-    def load_and_start_trial(experiment_name, control, alternatives)
-      if control.nil? && alternatives.length.zero?
-        experiment = Experiment.find(experiment_name)
-
-        raise ExperimentNotFound("#{experiment_name} not found") if experiment.nil?
-      else
-        experiment = Split::Experiment.find_or_create(experiment_name, *([control] + alternatives))
-      end
-
-      start_trial( Trial.new(:experiment => experiment) )
+    def control_variable(control)
+      Hash === control ? control.keys.first : control
     end
 
     def start_trial(trial)
       experiment = trial.experiment
       if override_present?(experiment.name)
         ret = override_alternative(experiment.name)
+      elsif ! experiment.winner.nil?
+        ret = experiment.winner.name
       else
         clean_old_versions(experiment)
         if exclude_visitor? || not_allowed_to_test?(experiment.key)

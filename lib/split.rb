@@ -48,7 +48,7 @@ module Split
   #
   # @example
   #   Split.configure do |config|
-  #     config.ignore_ips = '192.168.2.1'
+  #     config.ignore_ip_addresses = '192.168.2.1'
   #   end
   def configure
     self.configuration ||= Configuration.new

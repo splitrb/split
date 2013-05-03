@@ -1,7 +1,47 @@
-## 0.4.7 (November 1, 2012)
+## TBD
+
+Misc:
+
+  - Ensure experiements are valid when configuring (@ashmckenzie, #159)
+  - Allow arrays to be passed to ab_test (@fenelon, #156)
+
+## 0.6.0 (April 4, 2013)
+
+Features:
+
+  - Support for Ruby 2.0.0 (@phoet, #142)
+  - Multiple Goals (@liujin, #109)
+  - Ignoring IPs using Regular Expressions (@waynemoore, #119)
+  - Added ability to add more bots to the default list (@themgt, #140)
+  - Allow custom configuration of user blocking logic (@phoet , #148)
 
 Bugfixes:
 
+  - Fixed regression in handling of config files (@iangreenleaf, #115)
+  - Fixed completion rate increases for experiments users aren't participating in (@philnash, #67)
+  - Handle exceptions from invalid JSON in cookies (@iangreenleaf, #126)
+
+Misc:
+
+  - updated minimum json version requirement
+  - Refactor Yaml Configuration (@rtwomey, #124)
+  - Refactoring of Experiments (@iangreenleaf @tamird, #117 #118)
+  - Added more known Bots, including Pingdom, Bing, YandexBot (@julesie, @zinkkrysty, @dimko)
+  - Improved Readme (@iangreenleaf @phoet)
+
+## 0.5.0 (January 28, 2013)
+
+Features:
+
+  - Persistence Adapters: Cookies and Session (@patbenatar, #98)
+  - Configure experiments from a hash (@iangreenleaf, #97)
+  - Pluggable sampling algorithms (@woodhull, #105)
+
+Bugfixes:
+
+  - Fixed negative number of non-finished rates (@philnash, #83)
+  - Fixed behaviour of finished(:reset => false) (@philnash, #88)
+  - Only take into consideration positive z-scores (@thomasmaas, #96)
   - Amended ab_test method to raise ArgumentError if passed integers or symbols as
     alternatives (@buddhamagnet, #81)
 
