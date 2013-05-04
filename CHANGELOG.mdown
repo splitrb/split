@@ -1,4 +1,8 @@
-## TBD
+## 0.6.1 (May 4, 2013)
+
+Bugfixes:
+
+  - Use the specified algorithm for the experiment instead of the default (@woodhull, #165)
 
 Misc:
 
