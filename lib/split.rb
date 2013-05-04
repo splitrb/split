@@ -30,7 +30,7 @@ module Split
 
       @redis = Redis::Namespace.new(namespace, :redis => redis)
     elsif server.respond_to? :namespace=
-        @redis = server
+      @redis = server
     else
       @redis = Redis::Namespace.new(:split, :redis => server)
     end
