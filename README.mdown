@@ -62,9 +62,18 @@ Put the following in your gemfile as well:
 gem 'SystemTimer'
 ```
 
-### Rails
+### Rails 3
 
 Split is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
+
+### Rails 2.3
+
+To configure Rails 2.3 with Split you need to mix in the helper methods. Add the following lines to config/initializers.split.rb:
+
+```ruby
+ActionController::Base.send :include, Split::Helper
+ActionController::Base.helper Split::Helper
+```
 
 ### Sinatra
 
