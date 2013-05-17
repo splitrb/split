@@ -157,11 +157,7 @@ module Split
 
     def start_time
       t = Split.redis.hget(:experiment_start_times, @name)
-      puts "#############\n\n"
-      puts t
-      puts t.to_s
-      puts "\n\n#############"
-      Time.now
+      return t
     end
 
     def next_alternative
