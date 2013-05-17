@@ -155,7 +155,7 @@ module Split
       Split.redis.hdel(:experiment_winner, name)
     end
 
-    def start_time
+    def start_time 
       t = Split.redis.hget(:experiment_start_times, @name)
       return DateTime.strptime(t, '%m/%d/%Y')
     end
