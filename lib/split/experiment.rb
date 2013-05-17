@@ -157,7 +157,7 @@ module Split
 
     def start_time
       t = Split.redis.hget(:experiment_start_times, @name)
-      return t
+      return DateTime.strptime(t, '%m/%d/%Y')
     end
 
     def next_alternative
