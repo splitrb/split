@@ -485,7 +485,7 @@ conduct experiments that are not tied to a web session.
 # create a new experiment
 experiment = Split::Experiment.find_or_create('color', 'red', 'blue')
 # create a new trial
-trial = Trial.new(:experiment => experiment)
+trial = Split::Trial.new(:experiment => experiment)
 # run trial
 trial.choose!
 # get the result, returns either red or blue
