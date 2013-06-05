@@ -96,6 +96,22 @@ describe Split::Helper do
       alternative.should eql('red')
     end
 
+    it "should not store the via params forced alternative" do
+      @params = {'link_color' => 'blue'}
+      ab_user.should_not_receive(:[]=)
+      ab_test('link_color', 'blue', 'red')
+    end
+
+    context "when store_override is set" do
+      before { Split.configuration.store_override = true }
+
+      it "should store the forced alternative" do
+        @params = {'link_color' => 'blue'}
+        ab_user.should_receive(:[]=).with('link_color', 'blue')
+        ab_test('link_color', 'blue', 'red')
+      end
+    end
+
     it "should allow passing a block" do
       alt = ab_test('link_color', 'blue', 'red')
       ret = ab_test('link_color', 'blue', 'red') { |alternative| "shared/#{alternative}" }

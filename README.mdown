@@ -162,7 +162,7 @@ If you have an experiment called `button_color` with alternatives called `red` a
 
     http://myawesomesite.com?button_color=red
 
-will always have red buttons. This won't be stored in your session or count towards to results.
+will always have red buttons. This won't be stored in your session or count towards to results, unless you set the `store_override` configuration option.
 
 ### Reset after completion
 

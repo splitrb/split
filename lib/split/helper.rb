@@ -166,6 +166,7 @@ module Split
       experiment = trial.experiment
       if override_present?(experiment.name)
         ret = override_alternative(experiment.name)
+        ab_user[experiment.key] = ret if Split.configuration.store_override
       elsif ! experiment.winner.nil?
         ret = experiment.winner.name
       else
