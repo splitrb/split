@@ -26,6 +26,10 @@ describe Split::Configuration do
     @config.disabled?.should be_true
   end
 
+  it "should not store the overridden test group per default" do
+    @config.store_override.should be_false
+  end
+
   it "should provide a default pattern for robots" do
     %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg YandexBot AdsBot-Google Wget curl bitlybot facebookexternalhit spider].each do |robot|
       @config.robot_regex.should =~ robot
