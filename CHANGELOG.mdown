@@ -1,3 +1,14 @@
+## 0.6.2 (June 6, 2013)
+
+Features:
+
+  - Rails 2.3 compatibility (@bhcarpenter, #167)
+  - Adding possibility to store overridden alternative (@duksis, #173)
+
+Misc:
+
+  - Now testing against multiple versions of rails
+
 ## 0.6.1 (May 4, 2013)
 
 Bugfixes:
