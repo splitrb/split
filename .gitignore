@@ -4,3 +4,4 @@ Gemfile.lock
 pkg/*
 *.rbc
 .idea
+coverage
