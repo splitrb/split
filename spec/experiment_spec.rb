@@ -44,7 +44,7 @@ describe Split::Experiment do
     end
 
     it "should save the start time to redis" do
-      experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
+      experiment_start_time = Time.at(1372167761)
       Time.stub(:now => experiment_start_time)
       experiment.save
 
@@ -57,6 +57,15 @@ describe Split::Experiment do
       experiment.save
 
       Split::Experiment.find('basket_text').algorithm.should == experiment_algorithm
+    end
+
+    it "should handle having a start time stored as a string" do
+      experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
+      Time.stub(:now => experiment_start_time)
+      experiment.save
+      Split.redis.hset(:experiment_start_times, experiment.name, experiment_start_time)
+
+      Split::Experiment.find('basket_text').start_time.should == experiment_start_time
     end
 
     it "should handle not having a start time" do
