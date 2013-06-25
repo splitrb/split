@@ -65,7 +65,7 @@ module Split
 
       if new_record?
         Split.redis.sadd(:experiments, name)
-        Split.redis.hset(:experiment_start_times, @name, Time.now)
+        Split.redis.hset(:experiment_start_times, @name, Time.now.to_i)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
         @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
       else
@@ -157,7 +157,14 @@ module Split
 
     def start_time
       t = Split.redis.hget(:experiment_start_times, @name)
-      Time.parse(t) if t
+      if t
+        # Check if stored time is an integer
+        if t =~ /^[-+]?[0-9]+$/
+          t = Time.at(t.to_i)
+        else
+          t = Time.parse(t)
+        end
+      end
     end
 
     def next_alternative
