@@ -112,6 +112,14 @@ describe Split::Helper do
       end
     end
 
+    context "when on_trial_choose is set" do
+      before { Split.configuration.on_trial_choose = :some_method }
+      it "should call the method" do
+        self.should_receive(:some_method)
+        ab_test('link_color', 'blue', 'red')
+      end
+    end
+
     it "should allow passing a block" do
       alt = ab_test('link_color', 'blue', 'red')
       ret = ab_test('link_color', 'blue', 'red') { |alternative| "shared/#{alternative}" }
@@ -245,6 +253,14 @@ describe Split::Helper do
       ab_user[@experiment.key] = @alternative_name
       ab_user[@experiment.finished_key] = true
       doing_other_tests?(@experiment.key).should be false
+    end
+
+    context "when on_trial_complete is set" do
+      before { Split.configuration.on_trial_complete = :some_method }
+      it "should call the method" do
+        self.should_receive(:some_method)
+        finished(@experiment_name)
+      end
     end
 
   end
