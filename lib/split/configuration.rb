@@ -12,6 +12,8 @@ module Split
     attr_accessor :persistence
     attr_accessor :algorithm
     attr_accessor :store_override
+    attr_accessor :on_trial_choose
+    attr_accessor :on_trial_complete
 
     attr_reader :experiments
 

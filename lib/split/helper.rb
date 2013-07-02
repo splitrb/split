@@ -63,6 +63,8 @@ module Split
         alternative_name = ab_user[experiment.key]
         trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals])
         trial.complete!
+        call_trial_complete_hook(trial)
+
         if should_reset
           reset!(experiment)
         else
@@ -178,12 +180,21 @@ module Split
             ret = ab_user[experiment.key]
           else
             trial.choose!
+            call_trial_choose_hook(trial)
             ret = begin_experiment(experiment, trial.alternative.name)
           end
         end
       end
 
       ret
+    end
+
+    def call_trial_choose_hook(trial)
+      send(Split.configuration.on_trial_choose, trial) if Split.configuration.on_trial_choose
+    end
+
+    def call_trial_complete_hook(trial)
+      send(Split.configuration.on_trial_complete, trial) if Split.configuration.on_trial_complete
     end
 
     def keys_without_experiment(keys, experiment_key)
