@@ -218,6 +218,35 @@ Split.configure do |config|
 end
 ```
 
+### Trial Event Hooks
+
+You can define methods that will be called at the same time as experiment
+alternative participation and goal completion.
+
+For example:
+
+``` ruby
+Split.configure do |config|
+  config.on_trial_choose   = :log_trial_choice
+  config.on_trial_complete = :log_trial_complete
+end
+```
+
+Set these attributes to a method name available in the same context as the
+`ab_test` method. These methods should accept one argument, a `Trial` instance.
+
+``` ruby
+def log_trial_choose(trial)
+  logger.info "experiment=%s alternative=%s user=%s" %
+    [ trial.experiment.name, trial.alternative, current_user.id ]
+end
+
+def log_trial_complete(trial)
+  logger.info "experiment=%s alternative=%s user=%s complete=true" %
+    [ trial.experiment.name, trial.alternative, current_user.id ]
+end
+```
+
 ## Web Interface
 
 Split comes with a Sinatra-based front end to get an overview of how your experiments are doing.
