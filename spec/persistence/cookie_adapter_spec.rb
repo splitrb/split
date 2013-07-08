@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Split::Persistence::CookieAdapter do
 
-  let(:context) { mock(:cookies => CookiesMock.new) }
+  let(:context) { double(:cookies => CookiesMock.new) }
   subject { Split::Persistence::CookieAdapter.new(context) }
 
   describe "#[] and #[]=" do

@@ -151,7 +151,7 @@ describe Split::Configuration do
           let(:input) { '' }
 
           it "should raise an error" do
-            expect { @config.experiments = yaml }.to raise_error(/Experiments must be a Hash/)
+            expect { @config.experiments = yaml }.to raise_error
           end
         end
 
@@ -159,7 +159,7 @@ describe Split::Configuration do
           let(:input) { '---' }
 
           it "should raise an error" do
-            expect { @config.experiments = yaml }.to raise_error(/Experiments must be a Hash/)
+            expect { @config.experiments = yaml }.to raise_error
           end
         end
       end

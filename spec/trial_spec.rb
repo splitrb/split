@@ -3,8 +3,8 @@ require 'split/trial'
 
 describe Split::Trial do
   it "should be initializeable" do
-    experiment  = mock('experiment')
-    alternative = mock('alternative', :kind_of? => Split::Alternative)
+    experiment  = double('experiment')
+    alternative = double('alternative', :kind_of? => Split::Alternative)
     trial = Split::Trial.new(:experiment => experiment, :alternative => alternative)
     trial.experiment.should == experiment
     trial.alternative.should == alternative
@@ -13,8 +13,8 @@ describe Split::Trial do
 
   describe "alternative" do
     it "should use the alternative if specified" do
-      alternative = mock('alternative', :kind_of? => Split::Alternative)
-      trial = Split::Trial.new(:experiment => experiment = mock('experiment'), :alternative => alternative)
+      alternative = double('alternative', :kind_of? => Split::Alternative)
+      trial = Split::Trial.new(:experiment => experiment = double('experiment'), :alternative => alternative)
       trial.should_not_receive(:choose)
       trial.alternative.should == alternative
     end
@@ -39,8 +39,8 @@ describe Split::Trial do
 
 
     it "should choose from the available alternatives" do
-      trial = Split::Trial.new(:experiment => experiment = mock('experiment'))
-      alternative = mock('alternative', :kind_of? => Split::Alternative)
+      trial = Split::Trial.new(:experiment => experiment = double('experiment'))
+      alternative = double('alternative', :kind_of? => Split::Alternative)
       experiment.should_receive(:next_alternative).and_return(alternative)
       alternative.should_receive(:increment_participation)
       experiment.stub(:winner).and_return nil
