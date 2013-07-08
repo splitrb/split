@@ -1,3 +1,13 @@
+## 0.6.3 (July 8, 2013)
+
+Features:
+
+  - Add hooks for Trial#choose! and Trial#complete! (@bmarini, #176)
+
+Bugfixes:
+
+  - Stores and parses Experiment's start_time as a UNIX integer (@joeroot, #177)
+
 ## 0.6.2 (June 6, 2013)
 
 Features:
