@@ -75,6 +75,14 @@ body {
   color: #fff;
 }
 
+.header p.environment {
+  clear: both;
+  padding: 10px 0 0 0;
+  color: #BBB;
+  font-style: italic;
+  float: right;
+}
+
 #main {
   padding: 10px 5%;
   background: #f9f9f9;
