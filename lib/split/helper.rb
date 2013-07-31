@@ -135,14 +135,14 @@ module Split
     end
 
     def is_robot?
-      request.user_agent =~ Split.configuration.robot_regex
+      defined?(request) && request.user_agent =~ Split.configuration.robot_regex
     end
 
     def is_ignored_ip_address?
       return false if Split.configuration.ignore_ip_addresses.empty?
 
       Split.configuration.ignore_ip_addresses.each do |ip|
-        return true if request.ip == ip || (ip.class == Regexp && request.ip =~ ip)
+        return true if defined?(request) && (request.ip == ip || (ip.class == Regexp && request.ip =~ ip))
       end
       false
     end
