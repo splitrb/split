@@ -3,6 +3,13 @@ require 'split'
 require 'bigdecimal'
 require 'split/dashboard/helpers'
 
+if RUBY_VERSION < "1.9"
+  require 'fastercsv'
+  CSV = FasterCSV
+else
+  require 'csv'
+end
+
 module Split
   class Dashboard < Sinatra::Base
     dir = File.dirname(File.expand_path(__FILE__))
@@ -36,6 +43,26 @@ module Split
       @experiment = Split::Experiment.find(params[:experiment])
       @experiment.delete
       redirect url('/')
+    end
+
+    get '/export' do
+      content_type 'application/csv', :charset => "utf-8"
+      attachment "split_experiment_results.csv"
+      csv = CSV.generate do |csv|
+        csv << ['Experiment', 'Alternative', 'Participants', 'Completed', 'Conversion Rate', 'Z score', 'Control', 'Winner']
+        Split::Experiment.all.each do |experiment|
+          experiment.alternatives.each do |alternative|
+            csv << [experiment.name,
+                    alternative.name,
+                    alternative.participant_count,
+                    alternative.completed_count,
+                    round(alternative.conversion_rate, 3),
+                    round(alternative.z_score, 3),
+                    alternative.control?,
+                    alternative.to_s == experiment.winner.to_s]
+          end
+        end
+      end
     end
   end
 end

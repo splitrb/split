@@ -87,4 +87,10 @@ describe Split::Dashboard do
 
     last_response.body.should include('<small>Unknown</small>')
   end
+
+  it "should export experiment results as a CSV" do
+    get '/export'
+    last_response.content_type.should eql('application/csv;charset=utf-8')
+    last_response.body.should include("Experiment,Alternative,Participants,Completed,Conversion Rate,Z score,Control,Winner")
+  end
 end
