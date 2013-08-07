@@ -174,6 +174,11 @@ describe Split::Experiment do
       experiment.delete
       experiment.version.should eql(1)
     end
+
+    it "should call the on_experiment_delete hook" do
+      expect(Split.configuration.on_experiment_delete).to receive(:call)
+      experiment.delete
+    end
   end
 
 
@@ -218,6 +223,11 @@ describe Split::Experiment do
       experiment.version.should eql(0)
       experiment.reset
       experiment.version.should eql(1)
+    end
+
+    it "should call the on_experiment_reset hook" do
+      expect(Split.configuration.on_experiment_reset).to receive(:call)
+      experiment.reset
     end
   end
 

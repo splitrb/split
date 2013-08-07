@@ -210,6 +210,7 @@ module Split
     def reset
       alternatives.each(&:reset)
       reset_winner
+      Split.configuration.on_experiment_reset.call(self)
       increment_version
     end
 
@@ -219,6 +220,7 @@ module Split
       Split.redis.srem(:experiments, name)
       Split.redis.del(name)
       delete_goals
+      Split.configuration.on_experiment_delete.call(self)
       increment_version
     end
 
