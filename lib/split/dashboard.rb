@@ -5,9 +5,10 @@ require 'split/dashboard/helpers'
 
 if RUBY_VERSION < "1.9"
   require 'fastercsv'
-  CSV = FasterCSV
+  FCSV = FasterCSV
 else
   require 'csv'
+  FCSV = CSV
 end
 
 module Split
@@ -48,7 +49,7 @@ module Split
     get '/export' do
       content_type 'application/csv', :charset => "utf-8"
       attachment "split_experiment_results.csv"
-      csv = CSV.generate do |csv|
+      csv = FCSV.generate do |csv|
         csv << ['Experiment', 'Alternative', 'Participants', 'Completed', 'Conversion Rate', 'Z score', 'Control', 'Winner']
         Split::Experiment.all.each do |experiment|
           experiment.alternatives.each do |alternative|
