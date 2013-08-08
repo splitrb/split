@@ -14,6 +14,8 @@ module Split
     attr_accessor :store_override
     attr_accessor :on_trial_choose
     attr_accessor :on_trial_complete
+    attr_accessor :on_experiment_reset
+    attr_accessor :on_experiment_delete
 
     attr_reader :experiments
 
@@ -161,6 +163,8 @@ module Split
       @ignore_filter = proc{ |request| is_robot? || is_ignored_ip_address? }
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
+      @on_experiment_reset = proc{|experiment|}
+      @on_experiment_delete = proc{|experiment|}
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true
