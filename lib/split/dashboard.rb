@@ -16,6 +16,12 @@ module Split
 
     get '/' do
       @experiments = Split::Experiment.all
+      #Display Rails Environment mode (or Rack version if not using Rails)
+      if Object.const_defined?('Rails')
+        @current_env = Rails.env.titlecase
+      else
+        @current_env = "Rack: #{Rack.version}"
+      end
       erb :index
     end
 
