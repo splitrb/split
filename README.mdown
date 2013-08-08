@@ -247,6 +247,19 @@ def log_trial_complete(trial)
 end
 ```
 
+### Experiment Hooks
+
+You can assign a proc that will be called when an experiment is reset or deleted. You can use these hooks to call methods within your application to keep data related to experiments in sync with Split.
+
+For example:
+
+``` ruby
+Split.configure do |config|
+  config.on_experiment_reset  = proc{ |experiment| # Do something on reset }
+  config.on_experiment_delete = proc{ |experiment| # Do something else on delete }
+end
+```
+
 ## Web Interface
 
 Split comes with a Sinatra-based front end to get an overview of how your experiments are doing.
