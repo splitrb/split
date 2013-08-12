@@ -554,11 +554,22 @@ end
 
 ## Algorithms
 
-By default, Split ships with an algorithm that randomly selects from possible alternatives for a traditional a/b test.
+By default, Split ships with `Split::Algorithms::WeightedSample` that randomly selects from possible alternatives for a traditional a/b test. 
+It is possible to specify static weights to favor certain alternatives.
 
-An implementation of a bandit algorithm is also provided.
+`Split::Algorithms::Whiplash` is an implementation of a [multi-armed bandit algorithm](http://stevehanov.ca/blog/index.php?id=132). 
+This algorithm will automatically weight the alternatives based on their relative performance, 
+choosing the better-performing ones more often as trials are completed.
 
 Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file.
+
+To change the algorithm globally for all experiments, use the following in your initializer:
+
+```ruby
+Split.configure do |config|
+  config.algorithm = Split::Algorithms::Whiplash
+end
+```
 
 ## Extensions
 
