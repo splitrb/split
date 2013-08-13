@@ -1,4 +1,14 @@
-%w[algorithms extensions metric trial experiment alternative helper version configuration persistence exceptions].each do |f|
+%w[algorithms
+   alternative
+   configuration
+   exceptions
+   experiment
+   extensions
+   helper
+   metric
+   persistence
+   trial
+   version].each do |f|
   require "split/#{f}"
 end
 
