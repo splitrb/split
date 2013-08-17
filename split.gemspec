@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Split::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Andrew Nesbitt"]
+  s.licenses    = ['MIT']
   s.email       = ["andrewnez@gmail.com"]
   s.homepage    = "https://github.com/andrew/split"
   s.summary     = %q{Rack based split testing framework}
