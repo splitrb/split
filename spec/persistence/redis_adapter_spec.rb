@@ -6,6 +6,41 @@ describe Split::Persistence::RedisAdapter do
 
   subject { Split::Persistence::RedisAdapter.new(context) }
 
+  describe '#redis_key' do
+    before { Split::Persistence::RedisAdapter.reset_config! }
+
+    context 'default' do
+      it 'should be "persistence"' do
+        subject.redis_key.should == 'persistence'
+      end
+    end
+
+    context 'config with namespace' do
+      before { Split::Persistence::RedisAdapter.with_config(:namespace => 'namer') }
+
+      it 'should be "namer"' do
+        subject.redis_key.should == 'namer'
+      end
+    end
+
+    context 'config with lookup_by = "method_name"' do
+      before { Split::Persistence::RedisAdapter.with_config(:lookup_by => 'method_name') }
+      let(:context) { double(:method_name => 'val') }
+
+      it 'should be "persistence:bar"' do
+        subject.redis_key.should == 'persistence:val'
+      end
+    end
+
+    context 'config with lookup_by = proc { "block" }' do
+      before { Split::Persistence::RedisAdapter.with_config(:lookup_by => proc{'block'}) }
+
+      it 'should be "persistence:block"' do
+        subject.redis_key.should == 'persistence:block'
+      end
+    end
+  end
+
   describe "#[] and #[]=" do
     it "should set and return the value for given key" do
       subject["my_key"] = "my_value"
