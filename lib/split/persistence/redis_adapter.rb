@@ -14,7 +14,7 @@ module Split
           end
           @redis_key = "#{self.class.config[:namespace]}:#{key_frag}"
         else
-          @redis_key = self.class.config[:namespace]
+          raise "Please configure lookup_by"
         end
       end
 
