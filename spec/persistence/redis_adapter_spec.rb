@@ -26,7 +26,7 @@ describe Split::Persistence::RedisAdapter do
 
     context 'config with lookup_by = proc { |context| context.test }' do
       before { Split::Persistence::RedisAdapter.with_config(:lookup_by => proc{'block'}) }
-      let(:context) { double(test: 'block') }
+      let(:context) { double(:test => 'block') }
 
       it 'should be "persistence:block"' do
         subject.redis_key.should == 'persistence:block'
