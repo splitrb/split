@@ -191,11 +191,11 @@ end
 
 ### Experiment Persistence
 
-Split comes with two built-in persistence adapters for storing users and the alternatives they've been given for each experiment.
+Split comes with three built-in persistence adapters for storing users and the alternatives they've been given for each experiment.
 
 By default Split will store the tests for each user in the session.
 
-You can optionally configure Split to use a cookie or any custom adapter of your choosing.
+You can optionally configure Split to use a cookie, Redis, or any custom adapter of your choosing.
 
 #### Cookies
 
@@ -206,6 +206,22 @@ end
 ```
 
 __Note:__ Using cookies depends on `ActionDispatch::Cookies` or any identical API
+
+#### Redis
+
+Using Redis will allow ab_users to persist across sessions or machines.
+
+```ruby
+Split.configure do |config|
+  config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => proc { |context| context.current_user_id }
+  # Equivalent
+  # config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => :current_user_id }
+end
+```
+
+Options:
+* `lookup_by`: method to invoke per request for uniquely identifying ab_users (mandatory configuration)
+* `namespace`: separate namespace to store these persisted values (default "persistence")
 
 #### Custom Adapter
 
