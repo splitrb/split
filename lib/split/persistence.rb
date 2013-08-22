@@ -1,4 +1,4 @@
-%w[session_adapter cookie_adapter].each do |f|
+%w[session_adapter cookie_adapter redis_adapter].each do |f|
   require "split/persistence/#{f}"
 end
 
