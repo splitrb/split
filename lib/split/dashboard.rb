@@ -15,7 +15,8 @@ module Split
     helpers Split::DashboardHelpers
 
     get '/' do
-      @experiments = Split::Experiment.all
+      # Display experiments without a winner at the top of the dashboard
+      @experiments = Split::Experiment.all_active_first
       # Display Rails Environment mode (or Rack version if not using Rails)
       if Object.const_defined?('Rails')
         @current_env = Rails.env.titlecase

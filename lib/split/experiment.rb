@@ -41,6 +41,11 @@ module Split
       Split.redis.smembers(:experiments).map {|e| find(e)}
     end
 
+    # Return experiments without a winner (considered "active") first
+    def self.all_active_first
+      all.sort_by{|e| e.winner ? 1 : 0} # sort_by hack since true/false isn't sortable
+    end
+
     def self.find(name)
       if Split.redis.exists(name)
         obj = self.new name
