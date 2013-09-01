@@ -1,4 +1,4 @@
-# A multi-armed bandit implementation inspired by 
+# A multi-armed bandit implementation inspired by
 # @aaronsw and victorykit/whiplash
 require 'simple-random'
 
