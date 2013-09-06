@@ -33,6 +33,12 @@ module Split
       redirect url('/')
     end
 
+    post '/start/:experiment' do
+      @experiment = Split::Experiment.find(params[:experiment])
+      @experiment.start
+      redirect url('/')
+    end
+
     post '/reset/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
       @experiment.reset

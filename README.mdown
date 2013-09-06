@@ -165,6 +165,13 @@ If you have an experiment called `button_color` with alternatives called `red` a
 
 will always have red buttons. This won't be stored in your session or count towards to results, unless you set the `store_override` configuration option.
 
+### Starting experiments manually
+
+By default new AB tests will be active right after deployment. In case you would like to start new test a while after
+the deploy, you can do it by setting the `start_manually` configuration option to `true`.
+
+After choosing this option tests won't be started right after deploy, but after pressing the `Start` button in Split admin dashboard.
+
 ### Reset after completion
 
 When a user completes a test their session is reset so that they may start the test again in the future.
@@ -336,6 +343,7 @@ Split.configure do |config|
   config.allow_multiple_experiments = true
   config.enabled = true
   config.persistence = Split::Persistence::SessionAdapter
+  #config.start_manually = false ## new test will have to be started manually from the admin panel. default false
 end
 ```
 

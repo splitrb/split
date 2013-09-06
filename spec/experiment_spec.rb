@@ -51,6 +51,13 @@ describe Split::Experiment do
       Split::Experiment.find('basket_text').start_time.should == experiment_start_time
     end
 
+    it "should not save the start time to redis when start_manually is enabled" do
+      Split.configuration.stub(:start_manually => true)
+      experiment.save
+
+      Split::Experiment.find('basket_text').start_time.should be_nil
+    end
+
     it "should save the selected algorithm to redis" do
       experiment_algorithm = Split::Algorithms::Whiplash
       experiment.algorithm = experiment_algorithm
@@ -148,7 +155,7 @@ describe Split::Experiment do
       e.should == experiment
       e.algorithm.should == Split::Algorithms::Whiplash
     end
-    
+
     it "should persist a new experiment in redis, that does not exist in the configuration file" do
       experiment = Split::Experiment.new('foobar', :alternatives => ['tra', 'la'], :algorithm => Split::Algorithms::Whiplash)
       experiment.save
