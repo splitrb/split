@@ -261,6 +261,12 @@ describe Split::Helper do
         self.should_receive(:some_method)
         finished(@experiment_name)
       end
+
+      it "should not call the method without alternative" do
+        ab_user[@experiment.key] = nil
+        self.should_not_receive(:some_method)
+        finished(@experiment_name)
+      end
     end
 
   end
