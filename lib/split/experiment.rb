@@ -70,7 +70,7 @@ module Split
 
       if new_record?
         Split.redis.sadd(:experiments, name)
-        Split.redis.hset(:experiment_start_times, @name, Time.now.to_i)
+        start unless Split.configuration.start_manually
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
         @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
       else
@@ -158,6 +158,10 @@ module Split
 
     def reset_winner
       Split.redis.hdel(:experiment_winner, name)
+    end
+
+    def start
+      Split.redis.hset(:experiment_start_times, @name, Time.now.to_i)
     end
 
     def start_time

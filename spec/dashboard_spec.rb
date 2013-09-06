@@ -25,6 +25,16 @@ describe Split::Dashboard do
     last_response.should be_ok
   end
 
+  it "should start experiment" do
+    Split.configuration.start_manually = true
+    experiment
+    get '/'
+    last_response.body.should include('Start')
+
+    post "/start/#{experiment.name}"
+    get '/'
+    last_response.body.should include('Reset Data')
+  end
 
   it "should reset an experiment" do
     red_link.participant_count = 5

@@ -173,7 +173,7 @@ module Split
         ret = experiment.winner.name
       else
         clean_old_versions(experiment)
-        if exclude_visitor? || not_allowed_to_test?(experiment.key)
+        if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
           ret = experiment.control.name
         else
           if ab_user[experiment.key]
@@ -187,6 +187,10 @@ module Split
       end
 
       ret
+    end
+
+    def not_started?(experiment)
+      experiment.start_time.nil?
     end
 
     def call_trial_choose_hook(trial)
