@@ -71,6 +71,15 @@ describe Split::Helper do
       }.should_not change { e.participant_count }
     end
 
+    it 'should not increment the counter for an not started experiment' do
+      Split.configuration.stub(:start_manually => true)
+      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      lambda {
+        a = ab_test('button_size', 'small', 'big')
+        a.should eq('small')
+      }.should_not change { e.participant_count }
+    end
+
     it "should return the given alternative for an existing user" do
       alternative = ab_test('link_color', 'blue', 'red')
       repeat_alternative = ab_test('link_color', 'blue', 'red')
