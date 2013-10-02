@@ -180,7 +180,7 @@ module Split
 
     def value_for(hash, key)
       if hash.kind_of?(Hash)
-        hash[key.to_s] || hash[key.to_sym]
+        hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
       end
     end
 
