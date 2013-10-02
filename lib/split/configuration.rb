@@ -17,6 +17,7 @@ module Split
     attr_accessor :on_trial_complete
     attr_accessor :on_experiment_reset
     attr_accessor :on_experiment_delete
+    attr_accessor :include_rails_helper
 
     attr_reader :experiments
 
@@ -172,6 +173,7 @@ module Split
       @experiments = {}
       @persistence = Split::Persistence::SessionAdapter
       @algorithm = Split::Algorithms::WeightedSample
+      @include_rails_helper = true
     end
 
     private

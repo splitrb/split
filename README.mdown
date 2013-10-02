@@ -344,6 +344,7 @@ Split.configure do |config|
   config.enabled = true
   config.persistence = Split::Persistence::SessionAdapter
   #config.start_manually = false ## new test will have to be started manually from the admin panel. default false
+  config.include_rails_helper = true
 end
 ```
 
