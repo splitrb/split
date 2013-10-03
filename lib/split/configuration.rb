@@ -25,6 +25,8 @@ module Split
         # Indexers
         'AdsBot-Google' => 'Google Adwords',
         'Baidu' => 'Chinese search engine',
+        'Baiduspider' => 'Chinese search engine',
+        'Butterfly' => 'Topsy Labs',
         'Gigabot' => 'Gigabot spider',
         'Googlebot' => 'Google spider',
         'msnbot' => 'Microsoft bot',
@@ -56,9 +58,15 @@ module Split
         'awe.sm' => 'Awe.sm URL expander',
         'bitlybot' => 'bit.ly bot',
         'facebookexternalhit' => 'facebook bot',
+        'Feedfetcher-Google' => 'Google Feedfetcher',
+        'https://developers.google.com/+/web/snippet' => 'Google+ Snippet Fetcher',
         'LongURL' => 'URL expander service',
+        'NING' => 'NING - Yet Another Twitter Swarmer',
+        'redditbot' => 'Reddit Bot',
+        'ShortLinkTranslate' => 'Link shortener',
         'Twitterbot' => 'Twitter URL expander',
         'UnwindFetch' => 'Gnip URL expander',
+        'vkShare' => 'VKontake Sharer',
 
         # Uptime monitoring
         'check_http' => 'Nagios monitor',
