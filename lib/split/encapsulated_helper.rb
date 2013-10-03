@@ -14,11 +14,15 @@ module Split
 
     class ContextShim
       include Split::Helper
-      def initialize(context)
+      def initialize(context, original_params)
         @context = context
+        @_params = original_params
       end
       def ab_user
         @ab_user ||= Split::Persistence.adapter.new(@context)
+      end
+      def params
+        @_params
       end
     end
 
@@ -45,8 +49,10 @@ module Split
 
     private
 
+    # instantiate and memoize a context shim in case of multiple ab_test* calls
     def split_context_shim
-      @split_context_shim ||= ContextShim.new self
+      _params = defined?(params) ? params : {}
+      @split_context_shim ||= ContextShim.new(self, _params)
     end
   end
 end
