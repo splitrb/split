@@ -7,6 +7,7 @@
    helper
    metric
    persistence
+   encapsulated_helper
    trial
    version].each do |f|
   require "split/#{f}"

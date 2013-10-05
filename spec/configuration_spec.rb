@@ -86,7 +86,7 @@ describe Split::Configuration do
         end
 
         it 'should normalize experiments' do
-          @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
+          @config.normalized_experiments.should == {:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
         end
       end
 
@@ -112,7 +112,7 @@ describe Split::Configuration do
         end
 
         it "should normalize experiments" do
-          @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>[{"Control Opt"=>0.67},
+          @config.normalized_experiments.should == {:my_experiment=>{:resettable=>false,:alternatives=>[{"Control Opt"=>0.67},
             [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, :another_experiment=>{:alternatives=>["a", ["b"]]}}
         end
 
@@ -139,7 +139,7 @@ describe Split::Configuration do
         end
 
         it "should normalize experiments" do
-          @config.normalized_experiments.should == {:my_experiment=>{:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
+          @config.normalized_experiments.should == {:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}}
         end
       end
 
