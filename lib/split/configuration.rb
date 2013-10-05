@@ -17,6 +17,7 @@ module Split
     attr_accessor :on_trial_complete
     attr_accessor :on_experiment_reset
     attr_accessor :on_experiment_delete
+    attr_accessor :include_rails_helper
 
     attr_reader :experiments
 
@@ -130,6 +131,10 @@ module Split
           if goals = value_for(settings, :goals)
             experiment_config[experiment_name.to_sym][:goals] = goals
           end
+
+          if (resettable = value_for(settings, :resettable)) != nil
+            experiment_config[experiment_name.to_sym][:resettable] = resettable
+          end
         end
 
         experiment_config
@@ -184,13 +189,14 @@ module Split
       @experiments = {}
       @persistence = Split::Persistence::SessionAdapter
       @algorithm = Split::Algorithms::WeightedSample
+      @include_rails_helper = true
     end
 
     private
 
     def value_for(hash, key)
       if hash.kind_of?(Hash)
-        hash[key.to_s] || hash[key.to_sym]
+        hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
       end
     end
 
