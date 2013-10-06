@@ -64,6 +64,7 @@ module Split
         'NING' => 'NING - Yet Another Twitter Swarmer',
         'redditbot' => 'Reddit Bot',
         'ShortLinkTranslate' => 'Link shortener',
+        'TweetmemeBot' => 'TweetMeMe Crawler',
         'Twitterbot' => 'Twitter URL expander',
         'UnwindFetch' => 'Gnip URL expander',
         'vkShare' => 'VKontake Sharer',
