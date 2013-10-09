@@ -36,9 +36,10 @@ module Split
         'Slurp' => 'Yahoo spider',
         'Sogou' => 'Chinese search engine',
         'spider' => 'generic web spider',
+        'UnwindFetchor' => 'Gnip crawler'
         'WordPress' => 'WordPress spider',
-        'ZIBB' => 'ZIBB spider',
         'YandexBot' => 'Yandex spider',
+        'ZIBB' => 'ZIBB spider',
 
         # HTTP libraries
         'Apache-HttpClient' => 'Java http library',
