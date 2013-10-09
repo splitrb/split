@@ -32,6 +32,7 @@ module Split
         'msnbot' => 'Microsoft bot',
         'bingbot' => 'Microsoft bing bot',
         'rogerbot' => 'SeoMoz spider',
+        'PaperLiBot' => 'PaperLi is another content curation service',
         'Slurp' => 'Yahoo spider',
         'Sogou' => 'Chinese search engine',
         'spider' => 'generic web spider',
@@ -57,6 +58,7 @@ module Split
         # URL expanders / previewers
         'awe.sm' => 'Awe.sm URL expander',
         'bitlybot' => 'bit.ly bot',
+        'bot@linkfluence.net' => 'Linkfluence bot',
         'facebookexternalhit' => 'facebook bot',
         'Feedfetcher-Google' => 'Google Feedfetcher',
         'https://developers.google.com/+/web/snippet' => 'Google+ Snippet Fetcher',
