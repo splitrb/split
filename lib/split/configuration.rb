@@ -33,12 +33,14 @@ module Split
         'msnbot' => 'Microsoft bot',
         'bingbot' => 'Microsoft bing bot',
         'rogerbot' => 'SeoMoz spider',
+        'PaperLiBot' => 'PaperLi is another content curation service',
         'Slurp' => 'Yahoo spider',
         'Sogou' => 'Chinese search engine',
         'spider' => 'generic web spider',
+        'UnwindFetchor' => 'Gnip crawler'
         'WordPress' => 'WordPress spider',
-        'ZIBB' => 'ZIBB spider',
         'YandexBot' => 'Yandex spider',
+        'ZIBB' => 'ZIBB spider',
 
         # HTTP libraries
         'Apache-HttpClient' => 'Java http library',
@@ -58,6 +60,7 @@ module Split
         # URL expanders / previewers
         'awe.sm' => 'Awe.sm URL expander',
         'bitlybot' => 'bit.ly bot',
+        'bot@linkfluence.net' => 'Linkfluence bot',
         'facebookexternalhit' => 'facebook bot',
         'Feedfetcher-Google' => 'Google Feedfetcher',
         'https://developers.google.com/+/web/snippet' => 'Google+ Snippet Fetcher',
@@ -65,6 +68,7 @@ module Split
         'NING' => 'NING - Yet Another Twitter Swarmer',
         'redditbot' => 'Reddit Bot',
         'ShortLinkTranslate' => 'Link shortener',
+        'TweetmemeBot' => 'TweetMeMe Crawler',
         'Twitterbot' => 'Twitter URL expander',
         'UnwindFetch' => 'Gnip URL expander',
         'vkShare' => 'VKontake Sharer',
