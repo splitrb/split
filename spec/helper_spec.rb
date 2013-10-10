@@ -900,13 +900,15 @@ describe Split::Helper do
       end
 
       it "should increment the counter for the specified-goal completed alternative" do
-        @previous_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
-        @previous_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
-        finished({"link_color" => "purchase"})
-        new_completion_count_for_goal1 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
-        new_completion_count_for_goal1.should eql(@previous_completion_count_for_goal1 + 1)
-        new_completion_count_for_goal2 = Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
-        new_completion_count_for_goal2.should eql(@previous_completion_count_for_goal2)
+        lambda {
+          lambda {
+            finished({"link_color" => ["purchase"]})
+          }.should_not change {
+            Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
+          }
+        }.should change {
+          Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
+        }.by(1)
       end
     end
   end
