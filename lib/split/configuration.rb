@@ -37,7 +37,7 @@ module Split
         'Slurp' => 'Yahoo spider',
         'Sogou' => 'Chinese search engine',
         'spider' => 'generic web spider',
-        'UnwindFetchor' => 'Gnip crawler'
+        'UnwindFetchor' => 'Gnip crawler',
         'WordPress' => 'WordPress spider',
         'YandexBot' => 'Yandex spider',
         'ZIBB' => 'ZIBB spider',
