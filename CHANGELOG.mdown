@@ -1,3 +1,19 @@
+## 0.6.6 (October 15th, 2013)
+
+Features:
+
+  - Sort experiments on Dashboard so "active" ones without a winner appear first (@swrobel, #204)
+  - Starting tests manually (@duksis, #209)
+
+Bugfixes:
+
+  - Only trigger completion callback with valid Trial (@segfaultAX, #208)
+  - Fixed bug with `resettable` when using `normalize_experiments` (@jonashuckestein, #213)
+
+Misc:
+
+  - Added more bots to filter list (@lbeder, #214, #215, #216)
+
 ## 0.6.5 (August 23, 2013)
 
 Features:
