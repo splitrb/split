@@ -43,7 +43,7 @@ module Split
 
     # Return experiments without a winner (considered "active") first
     def self.all_active_first
-      all.sort_by{|e| e.winner ? 1 : 0} # sort_by hack since true/false isn't sortable
+      all.partition{|e| not e.winner}.map{|es| es.sort_by(&:name)}.flatten
     end
 
     def self.find(name)
