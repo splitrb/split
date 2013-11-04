@@ -1,0 +1,13 @@
+<% if experiment.start_time %>
+  <form action="<%= url "/reset/#{experiment.name}" %>" method='post' onclick="return confirmReset()">
+    <input type="submit" value="Reset Data">
+  </form>
+<% else%>
+  <form action="<%= url "/start/#{experiment.name}" %>" method='post'>
+    <input type="submit" value="Start">
+  </form>
+<% end %>
+<form action="<%= url "/#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
+  <input type="hidden" name="_method" value="delete"/>
+  <input type="submit" value="Delete" class="red">
+</form>
