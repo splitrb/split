@@ -14,7 +14,11 @@ describe Split::Dashboard do
   end
 
   let(:experiment) {
-    Split::Experiment.find_or_create('link_color', 'blue', 'red')
+    Split::Experiment.find_or_create("link_color", "blue", "red")
+  }
+
+  let(:experiment_with_goals) {
+    Split::Experiment.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
   }
 
   let(:red_link) { link("red") }
@@ -25,15 +29,34 @@ describe Split::Dashboard do
     last_response.should be_ok
   end
 
-  it "should start experiment" do
-    Split.configuration.start_manually = true
-    experiment
-    get '/'
-    last_response.body.should include('Start')
+  context "start experiment manually" do
+    before do
+      Split.configuration.start_manually = true
+    end
 
-    post "/start/#{experiment.name}"
-    get '/'
-    last_response.body.should include('Reset Data')
+    context "experiment without goals" do
+      it "should display a Start button" do
+        experiment
+        get '/'
+        last_response.body.should include('Start')
+
+        post "/start/#{experiment.name}"
+        get '/'
+        last_response.body.should include('Reset Data')
+      end
+    end
+
+    context "with goals" do
+      it "should display a Start button" do
+        experiment_with_goals
+        get '/'
+        last_response.body.should include('Start')
+
+        post "/start/#{experiment.name}"
+        get '/'
+        last_response.body.should include('Reset Data')
+      end
+    end
   end
 
   it "should reset an experiment" do
