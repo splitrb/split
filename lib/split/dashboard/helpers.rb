@@ -23,9 +23,9 @@ module Split
 
       if z >= 2.58
         '99% confidence'
-      elsif z > 1.96
+      elsif z >= 1.96
         '95% confidence'
-      elsif z > 1.65
+      elsif z >= 1.65
         '90% confidence'
       else
         'Insufficient confidence'

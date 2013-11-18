@@ -1,10 +1,14 @@
+require 'split/zscore'
+
+# TODO - take out require and implement using file paths?
+
 module Split
   class Alternative
     attr_accessor :name
     attr_accessor :experiment_name
     attr_accessor :weight
 
-    include Math
+    include Zscore
 
     def initialize(name, experiment_name)
       @experiment_name = experiment_name
@@ -90,55 +94,19 @@ module Split
       # p_c = Pc = proportion of users who converted within the control split (conversion rate)
       # n_a = Na = the number of impressions within the experiment split
       # n_c = Nc = the number of impressions within the control split
-      # s_a = SEa = standard error of p_a, the estiamte of the mean
-      # s_c = SEc = standard error of p_c, the estimate of the control
-      # s_p = SEp = standard error of p_a - p_c, assuming a pooled variance
-      # s_unp = SEunp = standard error of p_a - p_c, assuming unpooled variance
 
       control = experiment.control
-
       alternative = self
 
       return 'N/A' if control.name == alternative.name
 
-      p_a = alternative.conversion_rate(goal).to_f
-      p_c = control.conversion_rate(goal).to_f
+      p_a = alternative.conversion_rate(goal)
+      p_c = control.conversion_rate(goal)
 
-      n_a = alternative.participant_count.to_f
-      n_c = control.participant_count.to_f
+      n_a = alternative.participant_count
+      n_c = control.participant_count
 
-      # Perform checks on data to make sure we can validly run our confidence tests
-      if n_a < 30 || n_c < 30
-        error = "Needs 30+ participants."
-        return error
-      elsif p_a * n_a < 5 || p_c * n_c < 5
-        error = "Needs 5+ conversions."
-        return error
-      end
-
-      # Formula for standard error: root(pq/n) = root(p(1-p)/n)
-      s_a = Math.sqrt((p_a)*(1-p_a)/(n_a))
-      s_c = Math.sqrt((p_c)*(1-p_c)/(n_c))
-
-      # Formula for pooled error of the difference of the means: root(π*(1-π)*(1/na+1/nc)
-      # π = (xa + xc) / (na + nc)
-      pi = (p_a*n_a + p_c*n_c)/(n_a + n_c) 
-      s_p = Math.sqrt(pi*(1-pi)*(1/n_a + 1/n_c))
-
-      # Formula for unpooled error of the difference of the means: root(sa**2/na + sc**2/nc)
-      s_unp = Math.sqrt(s_a**2 + s_c**2)
-
-      # Boolean variable decides whether we can pool our variances
-      pooled = s_a/s_c < 2 && s_c/s_a < 2
-
-      # Assign standard error either the pooled or unpooled variance
-      se = pooled ? s_p : s_unp
-
-      # Calculate z-score
-      z_score = (p_a - p_c)/(se)
-
-      return z_score
-
+      z_score = Split::Zscore.calculate(p_a, n_a, p_c, n_c)
     end
 
     def save
