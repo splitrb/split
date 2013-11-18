@@ -5,3 +5,6 @@ pkg/*
 *.rbc
 .idea
 coverage
+issues.rtf
+dump.rdb
+.gitignore

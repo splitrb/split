@@ -4,6 +4,8 @@ module Split
     attr_accessor :experiment_name
     attr_accessor :weight
 
+    include Math
+
     def initialize(name, experiment_name)
       @experiment_name = experiment_name
       if Hash === name
@@ -84,10 +86,14 @@ module Split
     end
 
     def z_score(goal = nil)
-      # CTR_E = the CTR within the experiment split
-      # CTR_C = the CTR within the control split
-      # E = the number of impressions within the experiment split
-      # C = the number of impressions within the control split
+      # p_a = Pa = proportion of users who converted within the experiment split (conversion rate)
+      # p_c = Pc = proportion of users who converted within the control split (conversion rate)
+      # n_a = Na = the number of impressions within the experiment split
+      # n_c = Nc = the number of impressions within the control split
+      # s_a = SEa = standard error of p_a, the estiamte of the mean
+      # s_c = SEc = standard error of p_c, the estimate of the control
+      # s_p = SEp = standard error of p_a - p_c, assuming a pooled variance
+      # s_unp = SEunp = standard error of p_a - p_c, assuming unpooled variance
 
       control = experiment.control
 
@@ -95,18 +101,44 @@ module Split
 
       return 'N/A' if control.name == alternative.name
 
-      ctr_e = alternative.conversion_rate(goal)
-      ctr_c = control.conversion_rate(goal)
+      p_a = alternative.conversion_rate(goal).to_f
+      p_c = control.conversion_rate(goal).to_f
 
+      n_a = alternative.participant_count.to_f
+      n_c = control.participant_count.to_f
 
-      e = alternative.participant_count
-      c = control.participant_count
+      # Perform checks on data to make sure we can validly run our confidence tests
+      if n_a < 30 || n_c < 30
+        error = "Needs 30+ participants."
+        return error
+      elsif p_a * n_a < 5 || p_c * n_c < 5
+        error = "Needs 5+ conversions."
+        return error
+      end
 
-      return 0 if ctr_c.zero?
+      # Formula for standard error: root(pq/n) = root(p(1-p)/n)
+      s_a = Math.sqrt((p_a)*(1-p_a)/(n_a))
+      s_c = Math.sqrt((p_c)*(1-p_c)/(n_c))
 
-      standard_deviation = ((ctr_e / ctr_c**3) * ((e*ctr_e)+(c*ctr_c)-(ctr_c*ctr_e)*(c+e))/(c*e)) ** 0.5
+      # Formula for pooled error of the difference of the means: root(π*(1-π)*(1/na+1/nc)
+      # π = (xa + xc) / (na + nc)
+      pi = (p_a*n_a + p_c*n_c)/(n_a + n_c) 
+      s_p = Math.sqrt(pi*(1-pi)*(1/n_a + 1/n_c))
 
-      z_score = ((ctr_e / ctr_c) - 1) / standard_deviation
+      # Formula for unpooled error of the difference of the means: root(sa**2/na + sc**2/nc)
+      s_unp = Math.sqrt(s_a**2 + s_c**2)
+
+      # Boolean variable decides whether we can pool our variances
+      pooled = s_a/s_c < 2 && s_c/s_a < 2
+
+      # Assign standard error either the pooled or unpooled variance
+      se = pooled ? s_p : s_unp
+
+      # Calculate z-score
+      z_score = (p_a - p_c)/(se)
+
+      return z_score
+
     end
 
     def save
