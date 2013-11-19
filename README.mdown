@@ -134,6 +134,20 @@ Thanks for signing up, dude! <% finished("signup_page_redesign") %>
 
 You can find more examples, tutorials and guides on the [wiki](https://github.com/andrew/split/wiki).
 
+## Statistical Validity
+
+Split uses a z test (n>30) of the difference between your control and alternative conversion rates to calculate statistical significance. 
+
+This means that Split will tell you whether an alternative is better or worse than your control, but it will not distinguish between which alternative is the best in an experiment with multiple alternatives. To find that out, run a new experiment with one of the prior alternatives as the control.
+
+Also, as per this [blog post](http://www.evanmiller.org/how-not-to-run-an-ab-test.html) on the pitfalls of A/B testing, it is highly recommended that you determine your requisite sample size for each branch before running the experiment. Otherwise, you'll have an increased rate of false positives (experiments which show a significant effect where really there is none).
+
+[Here](http://www.evanmiller.org/ab-testing/sample-size.html) is a sample size calculator for your convenience.
+
+Finally, two things should be noted about the dashboard:
+* Split will only tell if you if your experiment is 90%, 95%, or 99% significant. For levels of lesser significance, Split will simply show "insufficient significance."
+* If you have less than 30 participants or 5 conversions for a branch, Split will not calculate significance, as you have not yet gathered enough data.
+
 ## Extras
 
 ### Weighted alternatives

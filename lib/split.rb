@@ -9,7 +9,8 @@
    persistence
    encapsulated_helper
    trial
-   version].each do |f|
+   version
+   zscore].each do |f|
   require "split/#{f}"
 end
 

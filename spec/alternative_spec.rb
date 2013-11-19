@@ -211,10 +211,45 @@ describe Split::Alternative do
   end
 
   describe 'z score' do
-    it 'should be zero when the control has no conversions' do
-      alternative2.z_score.should eql(0)
-      alternative2.z_score(goal1).should eql(0)
-      alternative2.z_score(goal2).should eql(0)
+
+    it "should return an error string when the control has 0 people" do
+      alternative2.z_score.should eql("Needs 30+ participants.")
+      alternative2.z_score(goal1).should eql("Needs 30+ participants.")
+      alternative2.z_score(goal2).should eql("Needs 30+ participants.")
+    end
+
+    it "should return an error string when the data is skewed or incomplete as per the np > 5 test" do
+      control = experiment.control
+      control.participant_count = 100
+      control.set_completed_count(50)
+
+      alternative2.participant_count = 50
+      alternative2.set_completed_count(1)
+
+      alternative2.z_score.should eql("Needs 5+ conversions.")
+    end
+
+    it "should return a float for a z_score given proper data" do
+      control = experiment.control
+      control.participant_count = 120
+      control.set_completed_count(20)
+
+      alternative2.participant_count = 100
+      alternative2.set_completed_count(25)
+
+      alternative2.z_score.should be_kind_of(Float)
+      alternative2.z_score.should_not eql(0)
+    end
+
+    it "should correctly calculate a z_score given proper data" do
+      control = experiment.control
+      control.participant_count = 126
+      control.set_completed_count(89)
+
+      alternative2.participant_count = 142
+      alternative2.set_completed_count(119)
+      
+      alternative2.z_score.round(2).should eql(2.58)
     end
 
     it "should be N/A for the control" do

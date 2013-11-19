@@ -1,8 +1,14 @@
+require 'split/zscore'
+
+# TODO - take out require and implement using file paths?
+
 module Split
   class Alternative
     attr_accessor :name
     attr_accessor :experiment_name
     attr_accessor :weight
+
+    include Zscore
 
     def initialize(name, experiment_name)
       @experiment_name = experiment_name
@@ -84,29 +90,23 @@ module Split
     end
 
     def z_score(goal = nil)
-      # CTR_E = the CTR within the experiment split
-      # CTR_C = the CTR within the control split
-      # E = the number of impressions within the experiment split
-      # C = the number of impressions within the control split
+      # p_a = Pa = proportion of users who converted within the experiment split (conversion rate)
+      # p_c = Pc = proportion of users who converted within the control split (conversion rate)
+      # n_a = Na = the number of impressions within the experiment split
+      # n_c = Nc = the number of impressions within the control split
 
       control = experiment.control
-
       alternative = self
 
       return 'N/A' if control.name == alternative.name
 
-      ctr_e = alternative.conversion_rate(goal)
-      ctr_c = control.conversion_rate(goal)
+      p_a = alternative.conversion_rate(goal)
+      p_c = control.conversion_rate(goal)
 
+      n_a = alternative.participant_count
+      n_c = control.participant_count
 
-      e = alternative.participant_count
-      c = control.participant_count
-
-      return 0 if ctr_c.zero?
-
-      standard_deviation = ((ctr_e / ctr_c**3) * ((e*ctr_e)+(c*ctr_c)-(ctr_c*ctr_e)*(c+e))/(c*e)) ** 0.5
-
-      z_score = ((ctr_e / ctr_c) - 1) / standard_deviation
+      z_score = Split::Zscore.calculate(p_a, n_a, p_c, n_c)
     end
 
     def save

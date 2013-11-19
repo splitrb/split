@@ -21,17 +21,16 @@ module Split
 
       z = round(z_score.to_s.to_f, 3).abs
 
-      if z == 0.0
-        'No Change'
-      elsif z < 1.645
-        'no confidence'
-      elsif z < 1.96
-        '95% confidence'
-      elsif z < 2.57
+      if z >= 2.58
         '99% confidence'
+      elsif z >= 1.96
+        '95% confidence'
+      elsif z >= 1.65
+        '90% confidence'
       else
-        '99.9% confidence'
+        'Insufficient confidence'
       end
+
     end
   end
 end
