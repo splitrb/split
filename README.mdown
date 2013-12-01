@@ -284,6 +284,22 @@ def log_trial_complete(trial)
 end
 ```
 
+#### Views
+
+If you are running `ab_test` from a view, you must define your event
+hook callback as a
+[helper_method](http://apidock.com/rails/AbstractController/Helpers/ClassMethods/helper_method)
+in the controller:
+
+``` ruby
+helper_method :log_trial_choose
+
+def log_trial_choose(trial)
+  logger.info "experiment=%s alternative=%s user=%s" %
+    [ trial.experiment.name, trial.alternative, current_user.id ]
+end
+```
+
 ### Experiment Hooks
 
 You can assign a proc that will be called when an experiment is reset or deleted. You can use these hooks to call methods within your application to keep data related to experiments in sync with Split.
