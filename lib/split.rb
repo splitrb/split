@@ -3,6 +3,7 @@
    configuration
    exceptions
    experiment
+   experiment_catalog
    extensions
    helper
    metric
