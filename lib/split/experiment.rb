@@ -6,10 +6,12 @@ module Split
     attr_accessor :goals
     attr_accessor :alternatives
 
+    DEFAULT_OPTIONS = {
+      :resettable => true,
+    }
+
     def initialize(name, options = {})
-      options = {
-        :resettable => true,
-      }.merge(options)
+      options = DEFAULT_OPTIONS.merge(options)
 
       @name = name.to_s
 
