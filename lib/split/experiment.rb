@@ -17,20 +17,17 @@ module Split
 
       alternatives = extract_alternatives_from_options(options)
 
-      if alternatives.empty?
-        exp_config = Split.configuration.experiment_for(name)
-        if exp_config
-          alternatives = load_alternatives_from_configuration
-          options[:goals] = load_goals_from_configuration
-          options[:resettable] = exp_config[:resettable]
-          options[:algorithm] = exp_config[:algorithm]
-        end
+      if alternatives.empty? && (exp_config = Split.configuration.experiment_for(name))
+        self.alternatives = load_alternatives_from_configuration
+        self.goals = load_goals_from_configuration
+        self.resettable = exp_config[:resettable]
+        self.algorithm = exp_config[:algorithm]
+      else
+        self.alternatives = alternatives
+        self.goals = options[:goals]
+        self.algorithm = options[:algorithm]
+        self.resettable = options[:resettable]
       end
-
-      self.alternatives = alternatives
-      self.goals = options[:goals]
-      self.algorithm = options[:algorithm]
-      self.resettable = options[:resettable]
     end
 
     def extract_alternatives_from_options(options)
