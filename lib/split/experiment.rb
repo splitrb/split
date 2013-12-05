@@ -18,16 +18,27 @@ module Split
       alternatives = extract_alternatives_from_options(options)
 
       if alternatives.empty? && (exp_config = Split.configuration.experiment_for(name))
-        self.alternatives = load_alternatives_from_configuration
-        self.goals = load_goals_from_configuration
-        self.resettable = exp_config[:resettable]
-        self.algorithm = exp_config[:algorithm]
+        set_alternatives_and_options(
+          alternatives: load_alternatives_from_configuration,
+          goals: load_goals_from_configuration,
+          resettable: exp_config[:resettable],
+          algorithm: exp_config[:algorithm]
+        )
       else
-        self.alternatives = alternatives
-        self.goals = options[:goals]
-        self.algorithm = options[:algorithm]
-        self.resettable = options[:resettable]
+        set_alternatives_and_options(
+          alternatives: alternatives,
+          goals: options[:goals],
+          resettable: options[:resettable],
+          algorithm: options[:algorithm]
+        )
       end
+    end
+
+    def set_alternatives_and_options(options)
+      self.alternatives = options[:alternatives]
+      self.goals = options[:goals]
+      self.resettable = options[:resettable]
+      self.algorithm = options[:algorithm]
     end
 
     def extract_alternatives_from_options(options)
