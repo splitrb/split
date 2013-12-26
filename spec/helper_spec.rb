@@ -437,7 +437,7 @@ describe Split::Helper do
 
       before(:each) do
         Split.configure do |c|
-          c.ignore_filter = proc{|request| !!"i_am_going_to_be_disabled" }
+          c.ignore_filter = proc{|request| true } # ignore everything
         end
       end
 
