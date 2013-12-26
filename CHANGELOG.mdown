@@ -1,3 +1,19 @@
+## 0.7.0 (December 26th, 2013)
+
+Features:
+  
+  - Significantly improved z-score algorithm (@caser ,#221)
+  - Better sorting of Experiments on dashboard (@wadako111, #218)
+
+Bugfixes:
+
+  - Fixed start button not being displayed in some cases (@vigosan, #219)
+
+Misc
+  
+  - Experiment#initialize refactoring (@nberger, #224)
+  - Extract ExperimentStore into a seperate class (@nberger, #225)
+
 ## 0.6.6 (October 15th, 2013)
 
 Features:
