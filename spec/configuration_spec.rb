@@ -70,6 +70,10 @@ describe Split::Configuration do
     @config.experiment_for(:my_experiment).should == {:alternatives=>["control_opt", ["other_opt"]]}
   end
 
+  it "should provide a default value for reset_on_experiment_changes" do
+    @config.reset_on_experiment_changes.should be_true
+  end
+
   context "when experiments are defined via YAML" do
     context "as strings" do
       context "in a basic configuration" do

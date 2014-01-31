@@ -83,12 +83,25 @@ module Split
         existing_alternatives = load_alternatives_from_redis
         existing_goals = load_goals_from_redis
         unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
-          reset
-          @alternatives.each(&:delete)
-          delete_goals
-          Split.redis.del(@name)
-          @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-          @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+          stored_alternatives, stored_goals = [], []
+
+          if Split.configuration.reset_on_experiment_changes
+            reset
+            @alternatives.each(&:delete)
+            delete_goals
+            Split.redis.del(@name)
+          else
+            stored_alternatives = Split.redis.lrange(name, 0, -1)
+            stored_goals = Split.redis.lrange(goals_key, 0, -1)
+          end
+
+          @alternatives.each do |a|
+            Split.redis.rpush(name, a.name) unless stored_alternatives.include?(a.name)
+          end
+
+          @goals.each do |a|
+            Split.redis.rpush(goals_key, a) unless stored_goals.include?(a)
+          end unless @goals.nil?
         end
       end
 
