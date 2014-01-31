@@ -284,21 +284,63 @@ describe Split::Experiment do
       Split::Experiment.find_or_create('link_color', 'blue', 'yellow', 'orange')
     end
 
-    it "should reset an experiment if it is loaded with different alternatives" do
-      experiment.save
-      blue.participant_count = 5
-      same_experiment = same_but_different_alternative
-      same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
-      blue.participant_count.should eql(0)
+    def same_but_completely_different_alternative
+      Split::Experiment.find_or_create('link_color', 'pink', 'white', 'black')
     end
 
-    it "should only reset once" do
-      experiment.save
-      experiment.version.should eql(0)
-      same_experiment = same_but_different_alternative
-      same_experiment.version.should eql(1)
-      same_experiment_again = same_but_different_alternative
-      same_experiment_again.version.should eql(1)
+    context "with reset_on_experiment_changes setting enabled" do
+      before { Split.configuration.stub(:reset_on_experiment_changes => true) }
+
+      it "should reset an experiment if it is loaded with different alternatives" do
+        experiment.save
+        blue.participant_count = 5
+        same_experiment = same_but_different_alternative
+        same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
+        blue.participant_count.should eql(0)
+      end
+
+      it "should only reset once" do
+        experiment.save
+        experiment.version.should eql(0)
+        same_experiment = same_but_different_alternative
+        same_experiment.version.should eql(1)
+        same_experiment_again = same_but_different_alternative
+        same_experiment_again.version.should eql(1)
+      end
+    end
+
+    context "with reset_on_experiment_changes setting disabled" do
+      before { Split.configuration.stub(:reset_on_experiment_changes => false) }
+
+      it "should not reset an experiment if it is loaded with different alternatives", focus: true do
+        experiment.save
+        blue.participant_count = 5
+        same_experiment = same_but_different_alternative
+        same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
+        blue.participant_count.should eql(5)
+        same_experiment_diff_alt = same_but_completely_different_alternative
+        same_experiment_diff_alt.alternatives.map(&:name).should eql(['pink', 'white', 'black'])
+
+        # Make sure we don't lose our old data
+        reloaded_experiment = Split::Experiment.find("link_color")
+        reloaded_alternatives = reloaded_experiment.alternatives.map(&:name)
+
+        %w(blue yellow orange pink white black).each do |alternative|
+          reloaded_alternatives.should include(alternative)
+        end
+
+        reloaded_blue = alternative('blue')
+        reloaded_blue.participant_count.should eql(5)
+      end
+
+      it "should never reset" do
+        experiment.save
+        experiment.version.should eql(0)
+        same_experiment = same_but_different_alternative
+        same_experiment.version.should eql(0)
+        same_experiment_again = same_but_different_alternative
+        same_experiment_again.version.should eql(0)
+      end
     end
   end
 
