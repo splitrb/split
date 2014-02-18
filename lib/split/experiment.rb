@@ -149,6 +149,10 @@ module Split
       end
     end
 
+    def has_winner?
+      !winner.nil?
+    end
+
     def winner=(winner_name)
       Split.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
