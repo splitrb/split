@@ -59,6 +59,53 @@ describe Split::Dashboard do
     end
   end
 
+  describe "index page" do
+    context "with winner" do
+      before { experiment.winner = 'red' }
+
+      it "displays `Reopen Experiment` button" do
+        get '/'
+
+        expect(last_response.body).to include('Reopen Experiment')
+      end
+    end
+
+    context "without winner" do
+      it "should not display `Reopen Experiment` button" do
+        get '/'
+
+        expect(last_response.body).to_not include('Reopen Experiment')
+      end
+    end
+  end
+
+  describe "reopen experiment" do
+    before { experiment.winner = 'red' }
+
+    it 'redirects' do
+      post "/reopen/#{experiment.name}"
+
+      expect(last_response).to be_redirect
+    end
+
+    it "removes winner" do
+      post "/reopen/#{experiment.name}"
+
+      expect(experiment).to_not have_winner
+    end
+
+    it "keeps existing stats" do
+      red_link.participant_count = 5
+      blue_link.participant_count = 7
+      experiment.winner = 'blue'
+
+      post "/reopen/#{experiment.name}"
+
+      expect(red_link.participant_count).to eq(5)
+      expect(blue_link.participant_count).to eq(7)
+    end
+  end
+
   it "should reset an experiment" do
     red_link.participant_count = 5
     blue_link.participant_count = 7
