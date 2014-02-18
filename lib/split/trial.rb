@@ -10,7 +10,7 @@ module Split
     end
 
     def alternative
-      @alternative ||=  if experiment.winner
+      @alternative ||=  if experiment.has_winner?
                           experiment.winner
                         end
     end

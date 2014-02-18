@@ -55,7 +55,7 @@ module Split
     end
 
     def finish_experiment(experiment, options = {:reset => true})
-      return true unless experiment.winner.nil?
+      return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
       if ab_user[experiment.finished_key] && !should_reset
         return true
@@ -168,7 +168,7 @@ module Split
       if override_present?(experiment.name)
         ret = override_alternative(experiment.name)
         ab_user[experiment.key] = ret if Split.configuration.store_override
-      elsif ! experiment.winner.nil?
+      elsif experiment.has_winner?
         ret = experiment.winner.name
       else
         clean_old_versions(experiment)
