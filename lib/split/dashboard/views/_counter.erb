@@ -1,0 +1,43 @@
+<div class="experiment">
+  <div class="experiment-header">
+    <h2>
+      Counter: <%= counter_name %>
+    </h2>
+    <div class='inline-controls'>
+      <form action="<%= url "/counter/#{counter_name}" %>" method='post' onclick="return confirmDeleteCounter()">
+        <input type="hidden" name="_method" value="delete"/>
+        <input type="submit" value="Delete" class="red">
+      </form>
+    </div>
+  </div>
+  <table>
+    <tr>
+      <th>Experiment Name</th>
+      <th>Alternative</th>
+      <th>Counter</th>
+      <th>Reset</th>
+    </tr>
+    <% Split::Counter.all_values_hash(counter_name).each do |experiment, alternative_hash| %>
+      <% total_value = 0 %>
+      <% alternative_hash.each do |alternative, value| %>
+        <tr>
+          <td><%= experiment %></td>
+          <td><%= alternative %></td>
+          <td><%= value %></td>
+          <td>
+            <form action="<%= url "/counter/reset/#{counter_name}/#{experiment}/#{alternative}" %>" method='post' onclick="return confirmResetCounter()">
+              <input type="submit" value="Reset Data">
+            </form>
+          </td>
+        <tr>
+        <% total_value += value %>
+      <% end %>
+      <tr class="totals">
+        <td>Totals</td>
+        <td></td>
+        <td><%= total_value %></td>
+        <td></td>
+      <tr>
+    <% end %>
+  </table>
+</div>

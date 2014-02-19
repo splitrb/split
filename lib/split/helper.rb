@@ -1,6 +1,5 @@
 module Split
   module Helper
-
     def ab_test(metric_descriptor, control=nil, *alternatives)
       if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
@@ -144,6 +143,14 @@ module Split
         return true if defined?(request) && (request.ip == ip || (ip.class == Regexp && request.ip =~ ip))
       end
       false
+    end
+
+    def ab_counter_inc(counter_name, experiment, alternative)
+      begin
+        Split::Counter.inc(counter_name, experiment, alternative)
+      rescue
+        raise(e) unless Split.configuration.db_failover
+      end
     end
 
     protected

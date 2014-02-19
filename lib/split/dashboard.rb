@@ -17,6 +17,7 @@ module Split
     get '/' do
       # Display experiments without a winner at the top of the dashboard
       @experiments = Split::Experiment.all_active_first
+      @counter_names = Split::Counter.all_counter_names
       # Display Rails Environment mode (or Rack version if not using Rails)
       if Object.const_defined?('Rails')
         @current_env = Rails.env.titlecase
@@ -48,6 +49,20 @@ module Split
     delete '/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
       @experiment.delete
+      redirect url('/')
+    end
+
+    delete '/counter/:counter' do
+      if Split::Counter.exists?(params[:counter])
+        Split::Counter.delete(params[:counter])
+      end
+      redirect url('/')
+    end
+
+    post '/counter/reset/:counter/:experiment/:alternative' do
+      if Split::Counter.exists?(params[:counter])
+        Split::Counter.reset(params[:counter], params[:experiment], params[:alternative])
+      end
       redirect url('/')
     end
   end

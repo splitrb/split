@@ -15,3 +15,12 @@
   <p class="intro">No experiments have started yet, you need to define them in your code and introduce them to your users.</p>
   <p class="intro">Check out the <a href='https://github.com/andrew/split#readme'>Readme</a> for more help getting started.</p>
 <% end %>
+<% if @counter_names.any? %>
+  <p class="intro">The list below contains all the registered counters.</p>
+  <% @counter_names.each do |counter_name| %>
+    <%= erb :_counter, :locals => {:counter_name => counter_name} %>
+  <% end %>
+<% else %>
+  <p class="intro">No counters have been registered.</p>
+<% end %>
+

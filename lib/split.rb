@@ -1,6 +1,7 @@
 %w[algorithms
    alternative
    configuration
+   counter
    exceptions
    experiment
    experiment_catalog
