@@ -59,7 +59,7 @@
           <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
         </td>
         <td>
-          <% if experiment.winner %>
+          <% if experiment.has_winner? %>
             <% if experiment.winner.name == alternative.name %>
               Winner
             <% else %>

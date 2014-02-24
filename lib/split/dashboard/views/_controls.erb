@@ -1,3 +1,8 @@
+<% if experiment.has_winner? %>
+  <form action="<%= url "/reopen/#{experiment.name}" %>" method='post' onclick="return confirmReopen()">
+    <input type="submit" value="Reopen Experiment">
+  </form>
+<% end %>
 <% if experiment.start_time %>
   <form action="<%= url "/reset/#{experiment.name}" %>" method='post' onclick="return confirmReset()">
     <input type="submit" value="Reset Data">

@@ -201,6 +201,22 @@ describe Split::Experiment do
     end
   end
 
+  describe 'has_winner?' do
+    context 'with winner' do
+      before { experiment.winner = 'red' }
+
+      it 'returns true' do
+        expect(experiment).to have_winner
+      end
+    end
+
+    context 'without winner' do
+      it 'returns false' do
+        expect(experiment).to_not have_winner
+      end
+    end
+  end
+
   describe 'reset' do
     before { experiment.save }
     it 'should reset all alternatives' do
