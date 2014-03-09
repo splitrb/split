@@ -79,7 +79,6 @@ module Split
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
         @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
       else
-
         existing_alternatives = load_alternatives_from_redis
         existing_goals = load_goals_from_redis
         unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
