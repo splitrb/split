@@ -615,12 +615,6 @@ describe Split::Helper do
           end
         end
 
-        after(:each) do
-          Split.configure do |config|
-            config.enabled = true
-          end
-        end
-
         it "should not attempt to connect to redis" do
           lambda { ab_test('link_color', 'blue', 'red') }.should_not raise_error
         end
