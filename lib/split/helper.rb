@@ -27,7 +27,7 @@ module Split
         else
           control_variable(control)
         end
-      rescue => e
+      rescue Errno::ECONNREFUSED => e
         raise(e) unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
 
