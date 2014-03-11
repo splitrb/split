@@ -6,16 +6,20 @@ module Split
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
 
-      # Check if array is passed to ab_test: ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
+      # Check if array is passed to ab_test
+      # e.g. ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
       if control.is_a? Array and alternatives.length.zero?
         control, alternatives = control.first, control[1..-1]
       end
 
       begin
-      experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
-      experiment_name = experiment_name_with_version.to_s.split(':')[0]
-      experiment = Split::Experiment.new(experiment_name, :alternatives => [control].compact + alternatives, :goals => goals)
-      control ||= experiment.control && experiment.control.name
+        experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
+        experiment_name = experiment_name_with_version.to_s.split(':')[0]
+        experiment = Split::Experiment.new(
+          experiment_name,
+          :alternatives => [control].compact + alternatives,
+          :goals => goals)
+        control ||= experiment.control && experiment.control.name
 
         ret = if Split.configuration.enabled
           experiment.save
@@ -23,8 +27,7 @@ module Split
         else
           control_variable(control)
         end
-
-      rescue => e
+      rescue Errno::ECONNREFUSED => e
         raise(e) unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
 
@@ -32,9 +35,7 @@ module Split
           ret = override_alternative(experiment_name)
         end
       ensure
-        unless ret
-          ret = control_variable(control)
-        end
+        ret ||= control_variable(control)
       end
 
       if block_given?

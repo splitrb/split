@@ -11,32 +11,22 @@ describe Split::Alternative do
     Split::Alternative.new('Cart', 'basket_text')
   }
 
-  let(:experiment) {
+  let!(:experiment) {
     Split::Experiment.find_or_create({"basket_text" => ["purchase", "refund"]}, "Basket", "Cart")
   }
 
   let(:goal1) { "purchase" }
   let(:goal2) { "refund" }
 
-  # setup experiment
-  before do
-    experiment
-  end
-
   it "should have goals" do
     alternative.goals.should eql(["purchase", "refund"])
   end
 
-  it "should have a name" do
-    alternative.name.should eql('Basket')
-  end
-
-  it "return only the name" do
+  it "should have and only return the name" do
     alternative.name.should eql('Basket')
   end
 
   describe 'weights' do
-
     it "should set the weights" do
       experiment = Split::Experiment.new('basket_text', :alternatives => [{'Basket' => 0.6}, {"Cart" => 0.4}])
       first = experiment.alternatives[0]
@@ -248,7 +238,7 @@ describe Split::Alternative do
 
       alternative2.participant_count = 142
       alternative2.set_completed_count(119)
-      
+
       alternative2.z_score.round(2).should eql(2.58)
     end
 

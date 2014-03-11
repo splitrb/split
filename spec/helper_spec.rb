@@ -10,7 +10,6 @@ describe Split::Helper do
   }
 
   describe "ab_test" do
-
     it "should not raise an error when passed strings for alternatives" do
       lambda { ab_test('xyz', '1', '2', '3') }.should_not raise_error
     end
@@ -41,7 +40,6 @@ describe Split::Helper do
     end
 
     it "should increment the participation counter after assignment to a new user" do
-
       previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
       previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
@@ -81,9 +79,7 @@ describe Split::Helper do
     end
 
     it "should return the given alternative for an existing user" do
-      alternative = ab_test('link_color', 'blue', 'red')
-      repeat_alternative = ab_test('link_color', 'blue', 'red')
-      alternative.should eql repeat_alternative
+      ab_test('link_color', 'blue', 'red').should eql ab_test('link_color', 'blue', 'red')
     end
 
     it 'should always return the winner if one is present' do
@@ -105,7 +101,7 @@ describe Split::Helper do
       alternative.should eql('red')
     end
 
-    it "should not store the via params forced alternative" do
+    it "should not store the split when a param forced alternative" do
       @params = {'link_color' => 'blue'}
       ab_user.should_not_receive(:[]=)
       ab_test('link_color', 'blue', 'red')
@@ -135,7 +131,7 @@ describe Split::Helper do
       ret.should eql("shared/#{alt}")
     end
 
-    it "should allow the share of visitors see an alternative to be specificed" do
+    it "should allow the share of visitors see an alternative to be specified" do
       ab_test('link_color', {'blue' => 0.8}, {'red' => 20})
       ['red', 'blue'].should include(ab_user['link_color'])
     end
@@ -277,7 +273,6 @@ describe Split::Helper do
         finished(@experiment_name)
       end
     end
-
   end
 
   context "finished with config" do
@@ -374,7 +369,6 @@ describe Split::Helper do
       ab_user[exp.key].should == alternative_name
       ab_user[exp.finished_key].should == true
     end
-
   end
 
   describe 'conversions' do
@@ -431,7 +425,6 @@ describe Split::Helper do
     end
   end
 
-
   describe 'when providing custom ignore logic' do
     context "using a proc to configure custom logic" do
 
@@ -452,7 +445,6 @@ describe Split::Helper do
   end
 
   shared_examples_for "a disabled test" do
-
     describe 'ab_test' do
       it 'should return the control' do
         alternative = ab_test('link_color', 'blue', 'red')
@@ -460,7 +452,6 @@ describe Split::Helper do
       end
 
       it "should not increment the participation count" do
-
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
@@ -489,9 +480,7 @@ describe Split::Helper do
   end
 
   describe 'when ip address is ignored' do
-
     context "individually" do
-
       before(:each) do
         @request = OpenStruct.new(:ip => '81.19.48.130')
         Split.configure do |c|
@@ -500,11 +489,9 @@ describe Split::Helper do
       end
 
       it_behaves_like "a disabled test"
-
     end
 
     context "for a range" do
-
       before(:each) do
         @request = OpenStruct.new(:ip => '81.19.48.129')
         Split.configure do |c|
@@ -513,11 +500,9 @@ describe Split::Helper do
       end
 
       it_behaves_like "a disabled test"
-
     end
 
     context "using both a range and a specific value" do
-
       before(:each) do
         @request = OpenStruct.new(:ip => '81.19.48.128')
         Split.configure do |c|
@@ -527,9 +512,7 @@ describe Split::Helper do
       end
 
       it_behaves_like "a disabled test"
-
     end
-
   end
 
   describe 'versioned experiments' do
@@ -602,13 +585,11 @@ describe Split::Helper do
   end
 
   context 'when redis is not available' do
-
     before(:each) do
       Split.stub(:redis).and_raise(Errno::ECONNREFUSED.new)
     end
 
     context 'and db_failover config option is turned off' do
-
       before(:each) do
         Split.configure do |config|
           config.db_failover = false
@@ -617,55 +598,35 @@ describe Split::Helper do
 
       describe 'ab_test' do
         it 'should raise an exception' do
-          lambda {
-            ab_test('link_color', 'blue', 'red')
-          }.should raise_error
+          lambda { ab_test('link_color', 'blue', 'red') }.should raise_error
         end
       end
 
       describe 'finished' do
         it 'should raise an exception' do
-          lambda {
-            finished('link_color')
-          }.should raise_error
+          lambda { finished('link_color') }.should raise_error
         end
       end
 
       describe "disable split testing" do
-
         before(:each) do
           Split.configure do |config|
             config.enabled = false
           end
         end
 
-        after(:each) do
-          Split.configure do |config|
-            config.enabled = true
-          end
-        end
-
         it "should not attempt to connect to redis" do
-
-          lambda {
-            ab_test('link_color', 'blue', 'red')
-          }.should_not raise_error
+          lambda { ab_test('link_color', 'blue', 'red') }.should_not raise_error
         end
 
         it "should return control variable" do
           ab_test('link_color', 'blue', 'red').should eq('blue')
-          lambda {
-            finished('link_color')
-          }.should_not raise_error
+          lambda { finished('link_color') }.should_not raise_error
         end
-
       end
-
-
     end
 
     context 'and db_failover config option is turned on' do
-
       before(:each) do
         Split.configure do |config|
           config.db_failover = true
@@ -674,10 +635,9 @@ describe Split::Helper do
 
       describe 'ab_test' do
         it 'should not raise an exception' do
-          lambda {
-            ab_test('link_color', 'blue', 'red')
-          }.should_not raise_error
+          lambda { ab_test('link_color', 'blue', 'red') }.should_not raise_error
         end
+
         it 'should call db_failover_on_db_error proc with error as parameter' do
           Split.configure do |config|
             config.db_failover_on_db_error = proc do |error|
@@ -687,6 +647,7 @@ describe Split::Helper do
           Split.configuration.db_failover_on_db_error.should_receive(:call)
           ab_test('link_color', 'blue', 'red')
         end
+
         it 'should always use first alternative' do
           ab_test('link_color', 'blue', 'red').should eq('blue')
           ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2).should eq('blue')
@@ -732,16 +693,16 @@ describe Split::Helper do
 
       describe 'finished' do
         it 'should not raise an exception' do
-          lambda {
-            finished('link_color')
-          }.should_not raise_error
+          lambda { finished('link_color') }.should_not raise_error
         end
+
         it 'should call db_failover_on_db_error proc with error as parameter' do
           Split.configure do |config|
             config.db_failover_on_db_error = proc do |error|
               error.should be_a(Errno::ECONNREFUSED)
             end
           end
+
           Split.configuration.db_failover_on_db_error.should_receive(:call)
           finished('link_color')
         end
@@ -812,7 +773,6 @@ describe Split::Helper do
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
       experiment.alternatives.collect{|a| [a.name, a.weight]}.should == [['control_opt', 0.67], ['second_opt', 0.1], ['third_opt', 0.23]]
-
     end
 
     it "accepts probability on some alternatives" do
@@ -842,7 +802,7 @@ describe Split::Helper do
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
       names_and_weights = experiment.alternatives.collect{|a| [a.name, a.weight]}
-      names_and_weights.should ==  [['control_opt', 0.18], ['second_opt', 0.18], ['third_opt', 0.64]]
+      names_and_weights.should == [['control_opt', 0.18], ['second_opt', 0.18], ['third_opt', 0.64]]
       names_and_weights.inject(0){|sum, nw| sum + nw[1]}.should == 1.0
     end
 
