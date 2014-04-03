@@ -631,6 +631,7 @@ end
   - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
   - [Split::Analytics](http://github.com/andrew/split-analytics) - push test data to google analytics
   - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - store experiment data in mongoid (still uses redis)
+  - [Split::Cacheable](https://github.com/harrystech/split_cacheable) - automatically create cache buckets per test
 
 ## Screencast
 
