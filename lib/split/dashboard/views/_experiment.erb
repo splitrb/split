@@ -9,6 +9,10 @@
       Experiment: <%= experiment.name %>
       <% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
       <% unless goal.nil? %><span class='goal'>Goal:<%= goal %></span><% end %>
+      <% metrics = @metrics.select {|metric| metric.experiments.include? experiment} %>
+      <% unless metrics.empty? %>
+        <span class='goal'>Metrics:<%= metrics.map(&:name).join(', ') %></span>
+      <% end %>
     </h2>
 
     <% if goal.nil? %>
