@@ -19,6 +19,7 @@ module Split
         @name = name
         @weight = 1
       end
+      p_winner = 0.0
     end
 
     def to_s
@@ -27,6 +28,17 @@ module Split
 
     def goals
       self.experiment.goals
+    end
+
+    def p_winner(goal = nil)
+      field = set_prob_field(goal)
+      @p_winner = Split.redis.hget(key, field).to_f
+      return @p_winner
+    end
+
+    def set_p_winner(prob, goal = nil)
+      field = set_prob_field(goal)
+      Split.redis.hset(key, field, prob.to_f)
     end
 
     def participant_count
@@ -58,6 +70,12 @@ module Split
 
     def set_field(goal)
       field = "completed_count"
+      field += ":" + goal unless goal.nil?
+      return field
+    end
+
+    def set_prob_field(goal)
+      field = "p_winner"
       field += ":" + goal unless goal.nil?
       return field
     end
@@ -112,6 +130,7 @@ module Split
     def save
       Split.redis.hsetnx key, 'participant_count', 0
       Split.redis.hsetnx key, 'completed_count', 0
+      Split.redis.hsetnx key, 'p_winner', p_winner
     end
 
     def validate!

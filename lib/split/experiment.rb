@@ -1,10 +1,11 @@
-module Split
+  module Split
   class Experiment
     attr_accessor :name
     attr_writer :algorithm
     attr_accessor :resettable
     attr_accessor :goals
     attr_accessor :alternatives
+    attr_accessor :alternative_probabilities
 
     DEFAULT_OPTIONS = {
       :resettable => true,
@@ -50,6 +51,23 @@ module Split
         end
       end
 
+      if alts.empty?
+        exp_config = Split.configuration.experiment_for(name)
+        if exp_config
+          alts = load_alternatives_from_configuration
+          options[:goals] = load_goals_from_configuration
+          options[:resettable] = exp_config[:resettable]
+          options[:algorithm] = exp_config[:algorithm]
+        end
+      end
+
+      self.alternatives = alts
+      self.goals = options[:goals]
+      self.algorithm = options[:algorithm]
+      self.resettable = options[:resettable]
+
+      # calculate probability that each alternative is the winner
+      @alternative_probabilities = {}
       alts
     end
 
@@ -251,6 +269,136 @@ module Split
       self.algorithm = exp_config['algorithm']
       self.alternatives = load_alternatives_from_redis
       self.goals = load_goals_from_redis
+    end
+
+    def calc_winning_alternatives
+      if goals.empty?
+        self.estimate_winning_alternative
+      else
+        goals.each do |goal|
+          self.estimate_winning_alternative(goal)
+        end
+      end
+
+      calc_time = Time.now.day
+
+      self.save
+    end
+
+    def estimate_winning_alternative(goal = nil)
+      # TODO - refactor out functionality to work with and without goals
+
+      # initialize a hash of beta distributions based on the alternatives' conversion rates
+      beta_params = calc_beta_params(goal)
+
+      winning_alternatives = []
+
+      number_of_simulations = 10000
+
+      number_of_simulations.times do
+        # calculate simulated conversion rates from the beta distributions
+        simulated_cr_hash = calc_simulated_conversion_rates(beta_params)
+
+        winning_alternative = find_simulated_winner(simulated_cr_hash)
+
+        # push the winning pair to the winning_alternatives array
+        winning_alternatives.push(winning_alternative)
+      end
+
+      winning_counts = count_simulated_wins(winning_alternatives)
+
+      @alternative_probabilities = calc_alternative_probabilities(winning_counts, number_of_simulations)
+
+      write_to_alternatives(@alternative_probabilities, goal)
+
+      self.save
+    end
+
+    def write_to_alternatives(alternative_probabilities, goal = nil)
+      alternatives.each do |alternative|
+        alternative.set_p_winner(@alternative_probabilities[alternative], goal)
+      end
+    end
+
+    def calc_alternative_probabilities(winning_counts, number_of_simulations)
+      alternative_probabilities = {}
+      winning_counts.each do |alternative, wins|
+        alternative_probabilities[alternative] = wins / number_of_simulations.to_f
+      end
+      return alternative_probabilities
+    end
+
+    def count_simulated_wins(winning_alternatives)
+       # initialize a hash to keep track of winning alternative in simulations
+      winning_counts = {}
+      alternatives.each do |alternative|
+        winning_counts[alternative] = 0
+      end
+      # count number of times each alternative won, calculate probabilities, place in hash
+      winning_alternatives.each do |alternative|
+        winning_counts[alternative] += 1
+      end
+      return winning_counts
+    end
+
+    def find_simulated_winner(simulated_cr_hash)
+      # figure out which alternative had the highest simulated conversion rate
+      winning_pair = ["",0.0]
+      simulated_cr_hash.each do |alternative, rate|
+        if rate > winning_pair[1]
+          winning_pair = [alternative, rate]
+        end
+      end
+      winner = winning_pair[0]
+      return winner
+    end
+
+    def calc_simulated_conversion_rates(beta_params)
+      # initialize a random variable (from which to simulate conversion rates ~beta-distributed)
+      rand = SimpleRandom.new
+      rand.set_seed
+
+      simulated_cr_hash = {}
+
+      # create a hash which has the conversion rate pulled from each alternative's beta distribution
+      beta_params.each do |alternative, params|
+        alpha = params[0]
+        beta = params[1]
+        simulated_conversion_rate = rand.beta(alpha, beta)
+        simulated_cr_hash[alternative] = simulated_conversion_rate
+      end
+
+      return simulated_cr_hash
+    end
+
+    def calc_beta_params(goal = nil)
+      beta_params = {}
+      alternatives.each do |alternative|
+        conversions = goal.nil? ? alternative.completed_count : alternative.completed_count(goal)
+        alpha = 1 + conversions
+        beta = 1 + alternative.participant_count - conversions
+
+        params = [alpha, beta]
+
+        beta_params[alternative] = params
+      end
+      return beta_params
+    end
+
+    def calc_time=(time)
+      Split.redis.hset(experiment_config_key, :calc_time, time)
+    end
+
+    def calc_time
+      Split.redis.hget(experiment_config_key, :calc_time)
+    end
+
+    def jstring(goal = nil)
+      unless goal.nil?
+        jstring = name + "-" + goal
+      else
+        jstring = name
+      end
     end
 
     protected

@@ -3,6 +3,10 @@
 <% else %>
   <% experiment_class = "experiment" %>
 <% end %>
+<% unless experiment.calc_time == Time.now.day %>
+  <% experiment.estimate_winning_alternative %>
+<% end %>
+
 <div class="<%= experiment_class %>">
   <div class="experiment-header">
     <h2>
@@ -29,7 +33,14 @@
       <th>Non-finished</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
-      <th>Confidence</th>
+      <th>
+        <form>
+          <select id="dropdown-<%=experiment.jstring(goal)%>" name="dropdown-<%=experiment.jstring(goal)%>">
+            <option value="confidence-<%=experiment.jstring(goal)%>">Confidence</option>
+            <option value="probability-<%=experiment.jstring(goal)%>">Probability of being Winner</option>
+          </select>
+        </form>
+      </th>
       <th>Finish</th>
     </tr>
 
@@ -59,9 +70,24 @@
             <% end  %>
           <% end %>
         </td>
+        <script type="text/javascript" id="sourcecode">
+          $(document).ready(function(){
+            $('.probability-<%=experiment.jstring(goal)%>').hide();
+            $('#dropdown-<%=experiment.jstring(goal)%>').change(function() {
+              $('.box-<%=experiment.jstring(goal)%>').hide();
+              $('.' + $(this).val()).show();
+            });
+          });
+        </script>
         <td>
-          <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
-        </td>
+          <div class="box-<%=experiment.jstring(goal)%> confidence-<%=experiment.jstring(goal)%>">
+            <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
+            <br>
+          </div>
+          <div class="box-<%=experiment.jstring(goal)%> probability-<%=experiment.jstring(goal)%>">
+            <span title="p_winner: <%= round(alternative.p_winner(goal), 3) %>"><%= number_to_percentage(round(alternative.p_winner(goal), 3)) %>%</span>
+          </div>
+        </td>        
         <td>
           <% if experiment.has_winner? %>
             <% if experiment.winner.name == alternative.name %>

@@ -200,6 +200,30 @@ describe Split::Alternative do
     end
   end
 
+  describe "probability winner" do
+    before do
+      experiment.calc_winning_alternatives
+    end
+
+    it "should have a probability of being the winning alternative (p_winner)" do
+      alternative.p_winner.should_not be_nil
+    end
+
+    it "should have a probability of being the winner for each goal" do
+      alternative.p_winner(goal1).should_not be_nil
+    end
+
+    it "should be possible to set the p_winner" do
+      alternative.set_p_winner(0.5)
+      expect(alternative.p_winner).to eq(0.5)
+    end
+
+    it "should be possible to set the p_winner for each goal" do
+      alternative.set_p_winner(0.5, goal1)
+      expect(alternative.p_winner(goal1)).to eq(0.5)
+    end
+  end
+
   describe 'z score' do
 
     it "should return an error string when the control has 0 people" do
