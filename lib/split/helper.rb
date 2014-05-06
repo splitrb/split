@@ -27,7 +27,7 @@ module Split
         else
           control_variable(control)
         end
-      rescue Errno::ECONNREFUSED => e
+      rescue Errno::ECONNREFUSED, Redis::CannotConnectError => e
         raise(e) unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
 
