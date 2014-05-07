@@ -19,7 +19,7 @@ describe Split::DashboardHelpers do
       confidence_level(2.00).should eql('95% confidence')
     end
 
-    it "should consider a z-score of z >= 2.58 as 95% confident" do
+    it "should consider a z-score of z >= 2.58 as 99% confident" do
       confidence_level(2.58).should eql('99% confidence')
       confidence_level(3.00).should eql('99% confidence')
     end
