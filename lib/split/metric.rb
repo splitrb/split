@@ -42,6 +42,25 @@ module Split
       metric
     end
 
+    def self.find_or_create(attrs)
+      metric = find(attrs[:name])
+      unless metric
+        metric = new(attrs)
+        metric.save
+      end
+      metric
+    end
+
+    def self.all
+      redis_metrics = Split.redis.hgetall(:metrics).collect do |key, value|
+        find(key)
+      end
+      configuration_metrics = Split.configuration.metrics.collect do |key, value|
+        new(name: key, experiments: value)
+      end
+      redis_metrics | configuration_metrics
+    end
+
     def self.possible_experiments(metric_name)
       experiments = []
       metric  = Split::Metric.find(metric_name)

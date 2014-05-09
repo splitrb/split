@@ -21,6 +21,10 @@ describe Split::Dashboard do
     Split::Experiment.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
   }
 
+  let(:metric) {
+    Split::Metric.find_or_create(name: 'testmetric', experiments: [experiment, experiment_with_goals])
+  }
+
   let(:red_link) { link("red") }
   let(:blue_link) { link("blue") }
 
@@ -43,6 +47,15 @@ describe Split::Dashboard do
         post "/start/#{experiment.name}"
         get '/'
         last_response.body.should include('Reset Data')
+        last_response.body.should_not include('Metrics:')
+      end
+    end
+
+    context "experiment with metrics" do
+      it "should display the names of associated metrics" do
+        metric
+        get '/'
+        last_response.body.should include('Metrics:testmetric')
       end
     end
 
