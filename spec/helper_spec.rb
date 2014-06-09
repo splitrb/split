@@ -101,6 +101,12 @@ describe Split::Helper do
       alternative.should eql('red')
     end
 
+    it "should not allow an arbitrary alternative" do
+      @params = {'link_color' => 'pink'}
+      alternative = ab_test('link_color', 'blue')
+      alternative.should eql('blue')
+    end
+
     it "should not store the split when a param forced alternative" do
       @params = {'link_color' => 'blue'}
       ab_user.should_not_receive(:[]=)
