@@ -109,7 +109,7 @@ module Split
       @metrics = {}
       if self.experiments
         self.experiments.each do |key, value|
-          metrics = value_for(value, :metric).to_sym rescue nil
+          metrics = value_for(value, :metric) rescue nil
           Array(metrics).each do |metric_name|
             if metric_name
               @metrics[metric_name] ||= []
