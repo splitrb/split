@@ -111,9 +111,9 @@ module Split
         self.experiments.each do |key, value|
           metrics = value_for(value, :metric) rescue nil
           Array(metrics).each do |metric_name|
-            if metric_name.to_sym
-              @metrics[metric_name] ||= []
-              @metrics[metric_name] << Split::Experiment.new(key)
+            if metric_name
+              @metrics[metric_name.to_sym] ||= []
+              @metrics[metric_name.to_sym] << Split::Experiment.new(key)
             end
           end
         end
