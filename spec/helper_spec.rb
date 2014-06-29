@@ -184,7 +184,9 @@ describe Split::Helper do
     before(:each) do
       @experiment_name = 'link_color'
       @alternatives = ['blue', 'red']
+      @goals = ['goal1', 'goal2']
       @experiment = Split::Experiment.find_or_create(@experiment_name, *@alternatives)
+      @experiment.goals = @goals
       @alternative_name = ab_test(@experiment_name, *@alternatives)
       @previous_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
     end
@@ -240,10 +242,22 @@ describe Split::Helper do
       ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key => true)
     end
 
+    it "should not clear out the users session on completed goal if reset is false" do
+      ab_user.should eql(@experiment.key => @alternative_name)
+      finished({@experiment_name => "goal1"}, {:reset => false})
+      ab_user.should eql(@experiment.key => @alternative_name, @experiment.finished_key("goal1") => true)
+    end
+
     it "should reset the users session when experiment is not versioned" do
       ab_user.should eql(@experiment.key => @alternative_name)
       finished(@experiment_name)
       ab_user.should eql({})
+    end
+
+    it "should reset the users session for complete goal but not others when experiment is not versioned" do
+      ab_user.should eql(@experiment.key => @alternative_name)
+      finished({@experiment_name => "goal1"})
+      ab_user.should eql(@experiment.key => @alternative_name)
     end
 
     it "should reset the users session when experiment is versioned" do
@@ -253,6 +267,15 @@ describe Split::Helper do
       ab_user.should eql(@experiment.key => @alternative_name)
       finished(@experiment_name)
       ab_user.should eql({})
+    end
+
+    it "should reset the users session for complete goal but not others when experiment is versioned" do
+      @experiment.increment_version
+      @alternative_name = ab_test(@experiment_name, *@alternatives)
+
+      ab_user.should eql(@experiment.key => @alternative_name)
+      finished({@experiment_name => "goal1"})
+      ab_user.should eql(@experiment.key => @alternative_name)
     end
 
     it "should do nothing where the experiment was not started by this user" do

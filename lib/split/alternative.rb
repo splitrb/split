@@ -52,8 +52,8 @@ module Split
       end
     end
 
-    def unfinished_count
-      participant_count - all_completed_count
+    def unfinished_count(goal = nil)
+      participant_count - completed_count(goal)
     end
 
     def set_field(goal)

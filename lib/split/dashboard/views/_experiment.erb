@@ -26,7 +26,6 @@
     <tr>
       <th>Alternative Name</th>
       <th>Participants</th>
-      <th>Non-finished</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
       <th>Confidence</th>
@@ -43,7 +42,6 @@
           <% end %>
         </td>
         <td><%= alternative.participant_count %></td>
-        <td><%= alternative.unfinished_count %></td>
         <td><%= alternative.completed_count(goal) %></td>
         <td>
           <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
@@ -79,14 +77,12 @@
       </tr>
 
       <% total_participants += alternative.participant_count %>
-      <% total_unfinished += alternative.unfinished_count %>
       <% total_completed += alternative.completed_count(goal) %>
     <% end %>
 
     <tr class="totals">
       <td>Totals</td>
       <td><%= total_participants %></td>
-      <td><%= total_unfinished %></td>
       <td><%= total_completed %></td>
       <td>N/A</td>
       <td>N/A</td>

@@ -51,28 +51,49 @@ module Split
       end
     end
 
-    def reset!(experiment)
-      ab_user.delete(experiment.key)
+    def reset!(experiment, goal=nil)
+      if !goal
+        ab_user.delete(experiment.key)
+      else
+        ab_user.delete(experiment.finished_key(goal))
+      end
     end
 
     def finish_experiment(experiment, options = {:reset => true})
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
-      if ab_user[experiment.finished_key] && !should_reset
-        return true
-      else
-        alternative_name = ab_user[experiment.key]
-        trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals])
-        call_trial_complete_hook(trial) if trial.complete!
+      alternative_name = ab_user[experiment.key]
 
-        if should_reset
-          reset!(experiment)
+      if options[:goals].any?
+        options[:goals].each do |goal|
+          if ab_user[experiment.finished_key(goal)] && !should_reset
+            return true
+          else
+            trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal))
+            call_trial_complete_hook(trial) if trial.complete!
+
+            if should_reset
+              reset!(experiment, goal)
+            else
+              ab_user[experiment.finished_key(goal)] = true
+            end
+          end
+        end
+      else
+        if ab_user[experiment.finished_key] && !should_reset
+          return true
         else
-          ab_user[experiment.finished_key] = true
+          trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals])
+          call_trial_complete_hook(trial) if trial.complete!
+
+          if should_reset
+            reset!(experiment)
+          else
+            ab_user[experiment.finished_key] = true
+          end
         end
       end
     end
-
 
     def finished(metric_descriptor, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?

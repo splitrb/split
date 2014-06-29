@@ -177,7 +177,9 @@ describe Split::Alternative do
       alternative.set_completed_count(3, goal2)
       alternative.set_completed_count(2)
 
-      alternative.unfinished_count.should eql(1)
+      alternative.unfinished_count(goal1).should eql(6)
+      alternative.unfinished_count(goal2).should eql(7)
+      alternative.unfinished_count.should eql(8)
     end
   end
 

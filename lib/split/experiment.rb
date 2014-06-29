@@ -204,11 +204,19 @@ module Split
       @version = Split.redis.incr("#{name}:version")
     end
 
-    def key
+    def key(goal=nil)
       if version.to_i > 0
-        "#{name}:#{version}"
+        if goal
+          "#{name}:#{version}:#{goal}"
+        else
+          "#{name}:#{version}"
+        end
       else
-        name
+        if goal
+          "#{name}:#{goal}"
+        else
+          "#{name}"
+        end
       end
     end
 
@@ -216,8 +224,12 @@ module Split
       "#{name}:goals"
     end
 
-    def finished_key
-      "#{key}:finished"
+    def finished_key(goal=nil)
+      if goal
+        "#{key}:#{goal}:finished"
+      else
+        "#{key}:finished"
+      end
     end
 
     def resettable?
