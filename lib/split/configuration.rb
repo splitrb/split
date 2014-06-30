@@ -85,6 +85,7 @@ module Split
         'DigitalPersona Fingerprint Software' => 'HP Fingerprint scanner',
         'ShowyouBot' => 'Showyou iOS app spider',
         'ZyBorg' => 'Zyborg? Hmmm....',
+        'ELB-HealthChecker' => 'ELB Health Check'
       }
     end
 
