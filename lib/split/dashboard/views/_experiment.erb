@@ -7,18 +7,15 @@
   <div class="experiment-header">
     <h2>
       <% if goal %>
-          <%= goal %>
+          Goal: <%= goal.humanize %>
       <% else %>
           Experiment: <%= experiment.name %><% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
+          <div class='inline-controls'>
+            <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
+            <%= erb :_controls, :locals => {:experiment => experiment} %>
+          </div>
        <% end %>
     </h2>
-
-    <% if goal.nil? %>
-      <div class='inline-controls'>
-        <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
-        <%= erb :_controls, :locals => {:experiment => experiment} %>
-      </div>
-    <% end %>
   </div>
   <table>
     <tr>
