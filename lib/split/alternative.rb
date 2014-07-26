@@ -54,7 +54,7 @@ module Split
 
     def completed_values(goal = nil)
       field = set_value_field(goal)
-      list = Split.redis.lrange(key + field, 0, -1)
+      list = Split.redis.lrange(key + field, 0, -1).collect{|n| n.to_f}
     end
 
     def all_completed_count
