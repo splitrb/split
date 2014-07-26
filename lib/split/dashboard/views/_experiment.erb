@@ -89,7 +89,13 @@
               <% end  %>
             <% end %>
           </td>
-          <td><%= number_to_percentage(alternative.probability_better_than_control(goal)) if alternative.probability_better_than_control(goal) != "N/A" %></td>
+          <td>
+            <% if alternative.probability_better_than_control(goal) != "N/A" %>
+              <%= number_to_percentage(alternative.probability_better_than_control(goal)) %>%
+            <% else %>
+              N/A
+            <% end %>
+          </td>
           <td>
           </td>
         </tr>
