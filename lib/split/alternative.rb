@@ -42,6 +42,11 @@ module Split
       Split.redis.hget(key, field).to_i
     end
 
+    def completed_value(goal = nil)
+      field = set_value_field(goal)
+      Split.redis.get(key + field)
+    end
+
     def all_completed_count
       if goals.empty?
         completed_count
@@ -62,6 +67,12 @@ module Split
       return field
     end
 
+    def set_value_field(goal)
+      field = ":completed_value"
+      field += ":" + goal unless goal.nil?
+      return field
+    end
+
     def set_completed_count (count, goal = nil)
       field = set_field(goal)
       Split.redis.hset(key, field, count.to_i)
@@ -71,8 +82,11 @@ module Split
       Split.redis.hincrby key, 'participant_count', 1
     end
 
-    def increment_completion(goal = nil)
+    def increment_completion(goal = nil, value = nil)
       field = set_field(goal)
+      if value
+        Split.redis.lpush(key + set_value_field(goal), value)
+      end
       Split.redis.hincrby(key, field, 1)
     end
 

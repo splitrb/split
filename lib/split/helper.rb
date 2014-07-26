@@ -69,7 +69,7 @@ module Split
           if ab_user[experiment.finished_key(goal)] && !should_reset
             return true
           else
-            trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal))
+            trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value])
             call_trial_complete_hook(trial) if trial.complete!
 
             if should_reset
@@ -83,7 +83,7 @@ module Split
         if ab_user[experiment.finished_key] && !should_reset
           return true
         else
-          trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals])
+          trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals], :value => options[:value])
           call_trial_complete_hook(trial) if trial.complete!
 
           if should_reset

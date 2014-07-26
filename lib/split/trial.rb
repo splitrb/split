@@ -7,6 +7,7 @@ module Split
       self.experiment = attrs[:experiment]  if !attrs[:experiment].nil?
       self.alternative = attrs[:alternative] if !attrs[:alternative].nil?
       self.goals = attrs[:goals].nil? ? [] : attrs[:goals]
+      self.value = attrs[:value] if !attrs[:value].nil?
     end
 
     def alternative
@@ -20,7 +21,7 @@ module Split
         if self.goals.empty?
           alternative.increment_completion
         else
-          self.goals.each {|g| alternative.increment_completion(g)}
+          self.goals.each {|g| alternative.increment_completion(g, self.value)}
         end
       end
     end
