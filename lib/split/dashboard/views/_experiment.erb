@@ -90,11 +90,7 @@
             <% end %>
           </td>
           <td>
-            <% if alternative.probability_better_than_control(goal) != "N/A" %>
-              <%= number_to_percentage(alternative.probability_better_than_control(goal)) %>%
-            <% else %>
-              N/A
-            <% end %>
+            <span title='probability: <%= round(alternative.probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.probability_better_than_control(goal)) %></span>
           </td>
           <td>
           </td>

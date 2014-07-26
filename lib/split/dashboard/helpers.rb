@@ -36,5 +36,19 @@ module Split
       end
 
     end
+
+    def probability_confidence(probability)
+      return probability if probability.is_a? String
+
+      if probability >= 0.99 || probability <= 0.01
+        '99% confidence'
+      elsif probability >= 0.95 || probability <= 0.05
+        '95% confidence'
+      elsif probability >= 0.90 || probability <= 0.10
+        '90% confidence'
+      else
+        'Insufficient confidence'
+      end
+    end
   end
 end
