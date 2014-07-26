@@ -12,6 +12,10 @@ module Split
       round(number * 100)
     end
 
+    def number_to_currency(number)
+      "$#{round(number)}"
+    end
+
     def round(number, precision = 2)
       BigDecimal.new(number.to_s).round(precision).to_f
     end
