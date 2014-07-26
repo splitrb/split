@@ -77,7 +77,7 @@
           <td></td>
           <td>
             <%= number_to_currency(alternative.completed_value(goal)) %>
-            <% if experiment.control.completed_value(goal) > 0 && !alternative.control? %>
+            <% if experiment.control.completed_value(goal) != "N/A" && experiment.control.completed_value(goal) > 0 && !alternative.control? %>
               <% if alternative.completed_value(goal) > experiment.control.completed_value(goal) %>
               <span class='better'>
                 +<%= number_to_percentage((alternative.completed_value(goal)/experiment.control.completed_value(goal))-1) %>%
