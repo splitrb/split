@@ -187,6 +187,8 @@ module Split
       end
       lift_calc = sum.to_f/b_posterior_samples.size.to_f
       print lift_calc
+
+      return prob_A_greater_B
     end
 
     def draw_log_normal_means(data,m0,k0,s_sq0,v0,n_samples=10000)

@@ -22,8 +22,6 @@
       <th>Alternative Name</th>
       <th>Participants</th>
       <th>Completed</th>
-      <th>Value</th>
-      <th>Probability</th>
       <th>Conversion Rate</th>
       <th>Confidence</th>
       <th>Finish</th>
@@ -40,8 +38,6 @@
         </td>
         <td><%= alternative.participant_count %></td>
         <td><%= alternative.completed_count(goal) %></td>
-        <td><%= alternative.completed_value(goal) %></td>
-        <td><%= alternative.probability_better_than_control(goal) %></td>
         <td>
           <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
           <% if experiment.control.conversion_rate(goal) > 0 && !alternative.control? %>
@@ -74,6 +70,30 @@
           <% end %>
         </td>
       </tr>
+      <% if alternative.completed_value(goal) != "N/A" %>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>
+            <%= number_to_currency(alternative.completed_value(goal)) %>
+            <% if experiment.control.completed_value(goal) > 0 && !alternative.control? %>
+              <% if alternative.completed_value(goal) > experiment.control.completed_value(goal) %>
+              <span class='better'>
+                +<%= number_to_percentage((alternative.completed_value(goal)/experiment.control.completed_value(goal))-1) %>%
+              </span>
+              <% elsif alternative.completed_value(goal) < experiment.control.completed_value(goal) %>
+              <span class='worse'>
+                <%= number_to_percentage((alternative.completed_value(goal)/experiment.control.completed_value(goal))-1) %>%
+              </span>
+              <% end  %>
+            <% end %>
+          </td>
+          <td><%= number_to_percentage(alternative.probability_better_than_control(goal)) if alternative.probability_better_than_control(goal) != "N/A" %></td>
+          <td>
+          </td>
+        </tr>
+      <% end %>
 
       <% total_participants += alternative.participant_count %>
       <% total_completed += alternative.completed_count(goal) %>
@@ -83,7 +103,6 @@
       <td>Totals</td>
       <td><%= total_participants %></td>
       <td><%= total_completed %></td>
-      <td>N/A</td>
       <td>N/A</td>
       <td>N/A</td>
       <td>N/A</td>
