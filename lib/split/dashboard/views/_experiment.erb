@@ -23,6 +23,7 @@
       <th>Participants</th>
       <th>Completed</th>
       <th>Value</th>
+      <th>Probability</th>
       <th>Conversion Rate</th>
       <th>Confidence</th>
       <th>Finish</th>
@@ -40,6 +41,7 @@
         <td><%= alternative.participant_count %></td>
         <td><%= alternative.completed_count(goal) %></td>
         <td><%= alternative.completed_value(goal) %></td>
+        <td><%= number_to_percentage(alternative.probability_better_than_control) %></td>
         <td>
           <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
           <% if experiment.control.conversion_rate(goal) > 0 && !alternative.control? %>

@@ -52,6 +52,11 @@ module Split
       end
     end
 
+    def completed_values(goal = nil)
+      field = set_value_field(goal)
+      list = Split.redis.lrange(key + field, 0, -1)
+    end
+
     def all_completed_count
       if goals.empty?
         completed_count
@@ -126,6 +131,143 @@ module Split
       n_c = control.participant_count
 
       z_score = Split::Zscore.calculate(p_a, n_a, p_c, n_c)
+    end
+
+    def probability_better_than_control
+      if self.completed_values.present? && experiment.control.completed_values.present?
+        bayesian_probability(self.completed_values, experiment.control.completed_values)
+      else
+        "N/A"
+      end
+    end
+
+    def bayesian_probability(alternative, control)
+      a_data = alternative
+      b_data = control
+      # a_data = [45,78,35,8,23,56,8,6,2,34,77,2,667,234,23,7,434,76,25,21,79,34,752]
+      # b_data = [45,78,35,8,23,56,8,6,2,34,77,2,667,234,23,7,434,76,25,21,79,34,753]
+
+      m0 = 4.0 # guess about the log of the mean
+      k0 = 1.0 # certainty about m.  compare with number of data samples
+      s_sq0 = 1.0 # degrees of freedom of sigma squared parameter
+      v0 = 1.0 # scale of sigma_squared parameter
+
+      # step 3: get posterior samples
+      a_posterior_samples = draw_log_normal_means(a_data,m0,k0,s_sq0,v0)
+      puts("a_posterior_samples")
+      puts("--------------------------------")
+      puts(a_posterior_samples.inspect)
+      # a_posterior_samples = [ 132.21672467, 104.79249553,  97.47489145, 201.3726052,  129.03142744, 233.90944597, 524.59244505, 142.80788793, 159.97628083, 167.96562996]
+      b_posterior_samples = draw_log_normal_means(b_data,m0,k0,s_sq0,v0)
+      puts("b_posterior_samples")
+      puts("--------------------------------")
+      puts(b_posterior_samples.inspect)
+      # b_posterior_samples = [  73.64035435, 100.94395081, 125.39778487,  75.84193507,  61.06892854, 153.61498405, 119.50436212,  77.33575107, 103.04974504, 219.81910446]
+      
+      # step 4: perform numerical integration
+      sum = 0
+      a_posterior_samples.each_with_index do |num, index|
+        if num > b_posterior_samples[index]
+          sum += 1
+        end
+      end
+      prob_A_greater_B = sum.to_f/a_posterior_samples.size.to_f
+      # prob_A_greater_B = mean(a_posterior_samples > b_posterior_samples)
+      puts prob_A_greater_B
+
+      # or you can do more complicated lift calculations
+      diff = [a_posterior_samples, b_posterior_samples].transpose.map {|x| x.reduce(:-)}
+      temp_array = [diff, b_posterior_samples].transpose.map {|x| x.reduce(:/)}.collect{|n| n.to_f*100}
+      # diff = a_posterior_samples - b_posterior_samples
+      sum = 0
+      temp_array.each_with_index do |num, index|
+        if num > 1
+          sum += 1
+        end
+      end
+      lift_calc = sum.to_f/b_posterior_samples.size.to_f
+      print lift_calc
+    end
+
+    def draw_log_normal_means(data,m0,k0,s_sq0,v0,n_samples=10000)
+      # log transform the data
+      log_data = data.collect{|n| Math.log(n)}
+
+      # get samples from the posterior
+      mu_samples, sig_sq_samples = draw_mus_and_sigmas(log_data,m0,k0,s_sq0,v0,n_samples)
+      # transform into log-normal means
+      puts("sig_sq_samples/2")
+      puts "--------------------------------"
+      puts sig_sq_samples.collect{|n|n/2}.inspect
+      puts "--------------------------------"
+      log_normal_mean_samples = [sig_sq_samples.collect{|n|n/2}, mu_samples].transpose.map {|x| x.reduce(:+)}.collect{|n| Math.exp(n)}
+      # log_normal_mean_samples = ( + ).collect{|n| Math.exp(n)}
+      puts "--------------------------------"
+      puts log_normal_mean_samples.inspect
+      return log_normal_mean_samples
+    end
+
+    def draw_mus_and_sigmas(data,m0,k0,s_sq0,v0,n_samples)
+      # number of samples
+      n = data.size
+      puts n
+      # find the mean of the data
+      the_mean = data.sum{|n| n.to_f}/data.size
+      puts "sum: #{data.sum{|n| n.to_f}}"
+      puts "size: #{data.size}"
+      puts the_mean
+      # sum of squared differences between data and mean
+      ssd = data.sum{|n| (n-the_mean)**2}
+      puts ssd
+
+      # combining the prior with the data - page 79 of Gelman et al.
+      # to make sense of this note that
+      # inv-chi-sq(v,s^2) = inv-gamma(v/2,(v*s^2)/2)
+      kN = k0.to_f + n.to_f
+      mN = (k0.to_f/kN.to_f)*m0.to_f + (n.to_f/kN.to_f)*the_mean.to_f
+      vN = v0.to_f + n.to_f
+      vN_times_s_sqN = v0.to_f*s_sq0.to_f + ssd.to_f + (n.to_f*k0.to_f*(m0.to_f-the_mean.to_f)**2)/kN.to_f
+
+      # 1) draw the variances from an inverse gamma
+      # (params: alpha, beta)
+      alpha = vN/2
+      beta = vN_times_s_sqN/2
+      # thanks to wikipedia, we know that:
+      # if X ~ inv-gamma(a,1) then b*X ~ inv-gamma(a,b)
+      random_generator = SimpleRandom.new
+      random_generator.set_seed(Time.now)
+      sig_sq_samples = []
+      (size=n_samples).times do
+        sig_sq_samples << random_generator.inverse_gamma(alpha, beta)
+      end
+      # sig_sq_samples = [ 3.93387767, 2.86873865, 1.37857381, 1.44969198, 1.73889165, 4.40767376, 2.8204655,  5.40070993, 2.61998073, 2.43945704]
+
+      puts("sig_sq_samples")
+      puts("--------------------------------")
+      puts(sig_sq_samples.inspect)
+
+      # 2) draw means from a normal conditioned on the drawn sigmas
+      # (params: mean_norm, var_norm)
+      mean_norm = mN
+      puts("mean_norm")
+      puts("--------------------------------")
+      puts(mean_norm)
+      var_norm = sig_sq_samples.collect{|n| Math.sqrt(n/kN)}
+      puts("var_norm")
+      puts("--------------------------------")
+      puts(var_norm.inspect)
+      mu_samples = []
+      var_norm.each do |var|
+        mu_samples << random_generator.normal(mean_norm, var)
+      end
+      # mu_samples = [ 3.83535981, 4.32951363, 3.4837355,  4.04552639, 3.34382522, 3.44135176, 4.04160632, 3.05436931, 3.72039264, 3.31144501]
+
+      puts("mu_samples")
+      puts("--------------------------------")
+      puts(mu_samples.inspect)
+
+      # 3) return the mu_samples and sig_sq_samples
+      return mu_samples, sig_sq_samples
     end
 
     def save
