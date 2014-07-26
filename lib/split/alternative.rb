@@ -135,7 +135,7 @@ module Split
 
     def probability_better_than_control(goal = nil)
       if !self.completed_values(goal).blank? && !experiment.control.completed_values(goal).blank?
-        bayesian_probability(self.completed_values, experiment.control.completed_values)
+        bayesian_probability(self.completed_values(goal), experiment.control.completed_values(goal))
       else
         "N/A"
       end
