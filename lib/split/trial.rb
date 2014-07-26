@@ -2,6 +2,7 @@ module Split
   class Trial
     attr_accessor :experiment
     attr_accessor :goals
+    attr_accessor :value
 
     def initialize(attrs = {})
       self.experiment = attrs[:experiment]  if !attrs[:experiment].nil?
