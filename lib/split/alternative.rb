@@ -133,8 +133,8 @@ module Split
       z_score = Split::Zscore.calculate(p_a, n_a, p_c, n_c)
     end
 
-    def probability_better_than_control
-      if self.completed_values.present? && experiment.control.completed_values.present?
+    def probability_better_than_control(goal = nil)
+      if !self.completed_values(goal).blank? && !experiment.control.completed_values(goal).blank?
         bayesian_probability(self.completed_values, experiment.control.completed_values)
       else
         "N/A"
