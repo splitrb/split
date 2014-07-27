@@ -420,6 +420,7 @@ module Split
         goals.each do |g|
           field = "completed_count:#{g}"
           Split.redis.hset key, field, 0
+          Split.redis.del(key + field)
         end
       end
     end
