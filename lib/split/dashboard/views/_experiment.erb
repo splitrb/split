@@ -31,7 +31,7 @@
     <% experiment.alternatives.each do |alternative| %>
       <tr>
         <td>
-          <%= alternative.name %>
+          <%= alternative.name.humanize %>
           <% if alternative.control? %>
             <em>control</em>
           <% end %>
@@ -54,6 +54,7 @@
         </td>
         <td>
           <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
+          <br />
           <span title='probability: <%= round(alternative.beta_probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.beta_probability_better_than_control(goal)) %></span>
         </td>
         <td>
@@ -75,7 +76,7 @@
         <tr>
           <td></td>
           <td></td>
-          <td></td>
+          <td><strong>AOV</strong></td>
           <td>
             <%= number_to_currency(alternative.completed_value(goal)) %>
             <% if experiment.control.completed_value(goal) != "N/A" && experiment.control.completed_value(goal) > 0 && !alternative.control? %>
@@ -101,7 +102,7 @@
         <tr>
           <td></td>
           <td></td>
-          <td></td>
+          <td><strong>RPS</strong></td>
           <td>
             <%= number_to_currency(alternative.combined_value(goal)) %>
             <% if experiment.control.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > 0 && !alternative.control? %>
