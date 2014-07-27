@@ -54,6 +54,7 @@
         </td>
         <td>
           <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
+          <span title='probability: <%= round(alternative.beta_probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.beta_probability_better_than_control(goal)) %></span>
         </td>
         <td>
           <% if experiment.has_winner? %>
