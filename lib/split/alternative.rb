@@ -146,6 +146,7 @@ module Split
 
     def log_normal_probability_better_than_control(goal = nil)
       return "N/A" if experiment.control.name == self.name
+      return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if !self.completed_values(goal).blank? && !experiment.control.completed_values(goal).blank?
         bayesian_log_normal_probability(self.completed_values(goal), experiment.control.completed_values(goal))
@@ -216,6 +217,7 @@ module Split
 
     def combined_probability_better_than_control(goal = nil)
       return "N/A" if experiment.control.name == self.name
+      return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if self.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > 0
         bayesian_combined_probability(self.completed_values(goal), experiment.control.completed_values(goal))
