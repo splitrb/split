@@ -90,7 +90,33 @@
             <% end %>
           </td>
           <td>
-            <span title='probability: <%= round(alternative.probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.probability_better_than_control(goal)) %></span>
+            <span title='probability: <%= round(alternative.log_normal_probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.log_normal_probability_better_than_control(goal)) %></span>
+          </td>
+          <td>
+          </td>
+        </tr>
+      <% end %>
+      <% if alternative.combined_value(goal) != "N/A" %>
+        <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>
+            <%= number_to_currency(alternative.combined_value(goal)) %>
+            <% if experiment.control.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > 0 && !alternative.control? %>
+              <% if alternative.combined_value(goal) > experiment.control.combined_value(goal) %>
+              <span class='better'>
+                +<%= number_to_percentage((alternative.combined_value(goal)/experiment.control.combined_value(goal))-1) %>%
+              </span>
+              <% elsif alternative.combined_value(goal) < experiment.control.combined_value(goal) %>
+              <span class='worse'>
+                <%= number_to_percentage((alternative.combined_value(goal)/experiment.control.combined_value(goal))-1) %>%
+              </span>
+              <% end  %>
+            <% end %>
+          </td>
+          <td>
+            <span title='probability: <%= round(alternative.combined_probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.combined_probability_better_than_control(goal)) %></span>
           </td>
           <td>
           </td>

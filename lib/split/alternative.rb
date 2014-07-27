@@ -52,6 +52,14 @@ module Split
       end
     end
 
+    def combined_value(goal = nil)
+      if completed_value(goal) != "N/A" && completed_count(goal) > 0
+        completed_value(goal).to_f * (completed_count(goal).to_f/participant_count.to_f)
+      else
+        "N/A"
+      end
+    end
+
     def completed_values(goal = nil)
       field = set_value_field(goal)
       list = Split.redis.lrange(key + field, 0, -1).collect{|n| n.to_f}
@@ -133,17 +141,97 @@ module Split
       z_score = Split::Zscore.calculate(p_a, n_a, p_c, n_c)
     end
 
-    def probability_better_than_control(goal = nil)
+    def log_normal_probability_better_than_control(goal = nil)
       return "N/A" if experiment.control.name == self.name
 
       if !self.completed_values(goal).blank? && !experiment.control.completed_values(goal).blank?
-        bayesian_probability(self.completed_values(goal), experiment.control.completed_values(goal))
+        bayesian_log_normal_probability(self.completed_values(goal), experiment.control.completed_values(goal))
       else
         "N/A"
       end
     end
 
-    def bayesian_probability(alternative, control)
+    def beta_samples(alternative, control)
+      non_zeros_a = alternative.size
+      non_zeros_b = control.size
+
+      total_a = self.participant_count
+      total_b = experiment.control.participant_count
+
+      alpha = 1
+      beta = 1
+
+      a_samples = []
+      random_generator = SimpleRandom.new
+      random_generator.set_seed(Time.now)
+      10000.times do
+        a_samples << random_generator.beta(non_zeros_a+alpha, total_a-non_zeros_a+beta)
+      end
+
+      b_samples = []
+      random_generator.set_seed(Time.now)
+      10000.times do
+        b_samples << random_generator.beta(non_zeros_b+alpha, total_b-non_zeros_b+beta)
+      end
+
+      return a_samples, b_samples
+    end
+
+    def beta_probability_better_than_control(goal = nil)
+      return "N/A" if experiment.control.name == self.name
+
+      if self.completed_count(goal) > 0 && experiment.control.completed_count(goal) > 0
+        bayesian_beta_probability(self.completed_count(goal), experiment.control.completed_count(goal))
+      else
+        "N/A"
+      end
+    end
+
+    def combined_probability_better_than_control(goal = nil)
+      return "N/A" if experiment.control.name == self.name
+
+      if self.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > "N/A"
+        bayesian_combined_probability(self.completed_values(goal), experiment.control.completed_values(goal))
+      else
+        "N/A"
+      end
+    end
+
+    def bayesian_combined_probability(alternative, control)
+      a_rps_samps, b_rps_samps = bayesian_combined_samples(alternative, control)
+
+      sum = 0
+      a_rps_samps.each_with_index do |num, index|
+        if num > b_rps_samps[index]
+          sum += 1
+        end
+      end
+      prob_A_greater_B = sum.to_f/a_rps_samps.size.to_f
+    end
+
+    def bayesian_combined_samples(alternative, control)
+      a_conv_samps, b_conv_samps = beta_samples(alternative, control)
+      a_order_samps, b_order_samps = log_normal_samples(alternative, control)
+
+      a_rps_samps = [a_conv_samps, a_order_samps].transpose.map {|x| x.reduce(:*)}
+      b_rps_samps = [b_conv_samps, b_order_samps].transpose.map {|x| x.reduce(:*)}
+
+      return a_rps_samps, b_rps_samps
+    end
+
+    def bayesian_beta_probability(alternative, control)
+      a_samples, b_samples = beta_samples(alternative, control)
+
+      sum = 0
+      a_samples.each_with_index do |num, index|
+        if num > b_samples[index]
+          sum += 1
+        end
+      end
+      prob_A_greater_B = sum.to_f/a_samples.size.to_f
+    end
+
+    def log_normal_samples(alternative, control)
       a_data = alternative
       b_data = control
       # a_data = [45,78,35,8,23,56,8,6,2,34,77,2,667,234,23,7,434,76,25,21,79,34,752]
@@ -165,6 +253,12 @@ module Split
       puts("--------------------------------")
       puts(b_posterior_samples.inspect)
       # b_posterior_samples = [  73.64035435, 100.94395081, 125.39778487,  75.84193507,  61.06892854, 153.61498405, 119.50436212,  77.33575107, 103.04974504, 219.81910446]
+
+      return a_posterior_samples, b_posterior_samples
+    end
+
+    def bayesian_log_normal_probability(alternative, control)
+      a_posterior_samples, b_posterior_samples = log_normal_samples(alternative, control)
       
       # step 4: perform numerical integration
       sum = 0
