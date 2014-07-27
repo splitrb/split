@@ -155,8 +155,13 @@ module Split
     end
 
     def beta_samples(alternative, control)
-      non_zeros_a = alternative.size
-      non_zeros_b = control.size
+      if alternative.is_a?(Array)
+        non_zeros_a = alternative.size
+        non_zeros_b = control.size
+      else
+        non_zeros_a = alternative
+        non_zeros_b = control
+      end
 
       puts("non_zeros_a")
       puts("-----------------------------------------------")
@@ -202,7 +207,7 @@ module Split
       return "N/A" if experiment.control.name == self.name
 
       if self.completed_count(goal) > 0 && experiment.control.completed_count(goal) > 0
-        bayesian_beta_probability(self.completed_values(goal), experiment.control.completed_values(goal))
+        bayesian_beta_probability(self.completed_count(goal), experiment.control.completed_count(goal))
       else
         "N/A"
       end
