@@ -419,8 +419,9 @@ module Split
       unless goals.empty?
         goals.each do |g|
           field = "completed_count:#{g}"
+          value_field = set_value_field(g)
           Split.redis.hset key, field, 0
-          Split.redis.del(key + field)
+          Split.redis.del(key + value_field)
         end
       end
     end
