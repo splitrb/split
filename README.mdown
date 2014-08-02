@@ -179,6 +179,12 @@ If you have an experiment called `button_color` with alternatives called `red` a
 
 will always have red buttons. This won't be stored in your session or count towards to results, unless you set the `store_override` configuration option.
 
+In the event you want to disable all tests without having to know the individual experiment names, add a `SPLIT_DISABLE` query parameter.
+
+    http://myawesomesite.com?SPLIT_DISABLE=trues
+
+It is not required to send `SPLIT_DISABLE=false` to activate Split.
+
 ### Starting experiments manually
 
 By default new AB tests will be active right after deployment. In case you would like to start new test a while after

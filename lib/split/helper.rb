@@ -31,8 +31,9 @@ module Split
         raise(e) unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
 
-        if Split.configuration.db_failover_allow_parameter_override && override_present?(experiment_name)
-          ret = override_alternative(experiment_name)
+        if Split.configuration.db_failover_allow_parameter_override
+          ret = override_alternative(experiment_name) if override_present?(experiment_name)
+          ret = control_variable(control) if split_generically_disabled?
         end
       ensure
         ret ||= control_variable(control)
@@ -95,6 +96,10 @@ module Split
 
     def override_alternative(experiment_name)
       params[experiment_name] if override_present?(experiment_name)
+    end
+
+    def split_generically_disabled?
+      defined?(params) && params[:SPLIT_DISABLE]
     end
 
     def begin_experiment(experiment, alternative_name = nil)
@@ -168,6 +173,9 @@ module Split
       experiment = trial.experiment
       if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
         ret = override_alternative(experiment.name)
+        ab_user[experiment.key] = ret if Split.configuration.store_override
+      elsif split_generically_disabled?
+        ret = experiment.control.name
         ab_user[experiment.key] = ret if Split.configuration.store_override
       elsif experiment.has_winner?
         ret = experiment.winner.name
