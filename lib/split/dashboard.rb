@@ -11,6 +11,7 @@ module Split
     set :public_folder, "#{dir}/dashboard/public"
     set :static, true
     set :method_override, true
+    set :show_exceptions, true
 
     helpers Split::DashboardHelpers
 
