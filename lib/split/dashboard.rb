@@ -30,6 +30,18 @@ module Split
       erb :index
     end
 
+    get '/:experiment' do
+      @experiment = Split::Experiment.find(params[:experiment])
+      @metrics = Split::Metric.all
+
+      if Object.const_defined?('Rails')
+        @current_env = Rails.env.titlecase
+      else
+        @current_env = "Rack: #{Rack.version}"
+      end
+      erb :experiment
+    end
+
     post '/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
       @alternative = Split::Alternative.new(params[:alternative], params[:experiment])
