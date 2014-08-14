@@ -140,7 +140,7 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal
-  bundler (~> 1.6.5)
+  bundler (~> 1.6)
   coveralls
   rack-test
   rails (~> 3.1.12)
