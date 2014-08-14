@@ -29,16 +29,17 @@ module Split
       private
 
       def set_cookie(value)
-        @cookies[:split] = {
+        @cookies[:tomo_split] = {
           :value => JSON.generate(value),
-          :expires => EXPIRES
+          :expires => EXPIRES,
+          :domain => "touchofmodern.com"
         }
       end
 
       def hash
-        if @cookies[:split]
+        if @cookies[:tomo_split]
           begin
-            JSON.parse(@cookies[:split])
+            JSON.parse(@cookies[:tomo_split])
           rescue JSON::ParserError
             {}
           end
