@@ -11,6 +11,7 @@ module Split
     set :public_folder, "#{dir}/dashboard/public"
     set :static, true
     set :method_override, true
+    set :show_exceptions, true
 
     helpers Split::DashboardHelpers
 
@@ -27,6 +28,18 @@ module Split
         @current_env = "Rack: #{Rack.version}"
       end
       erb :index
+    end
+
+    get '/:experiment' do
+      @experiment = Split::Experiment.find(params[:experiment])
+      @metrics = Split::Metric.all
+
+      if Object.const_defined?('Rails')
+        @current_env = Rails.env.titlecase
+      else
+        @current_env = "Rack: #{Rack.version}"
+      end
+      erb :experiment
     end
 
     post '/:experiment' do

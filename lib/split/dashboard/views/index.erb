@@ -3,12 +3,9 @@
 
   <% @experiments.each do |experiment| %>
     <% if experiment.goals.empty? %>
-      <%= erb :_experiment, :locals => {:goal => nil, :experiment => experiment} %>
+      <%= erb :_experiment_header, :locals => {:goal => nil, :experiment => experiment} %>
     <% else %>
       <%= erb :_experiment_with_goal_header, :locals => {:experiment => experiment} %>
-      <% experiment.goals.each do |g| %>
-        <%= erb :_experiment, :locals => {:goal => g, :experiment => experiment} %>
-      <% end %>
     <% end %>
   <% end %>
 <% else %>
