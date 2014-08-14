@@ -6,17 +6,17 @@ describe Split::Trial do
     experiment  = double('experiment')
     alternative = double('alternative', :kind_of? => Split::Alternative)
     trial = Split::Trial.new(:experiment => experiment, :alternative => alternative)
-    trial.experiment.should == experiment
-    trial.alternative.should == alternative
-    trial.goals.should == []
+    expect(trial.experiment).to eq(experiment)
+    expect(trial.alternative).to eq(alternative)
+    expect(trial.goals).to eq([])
   end
 
   describe "alternative" do
     it "should use the alternative if specified" do
       alternative = double('alternative', :kind_of? => Split::Alternative)
       trial = Split::Trial.new(:experiment => experiment = double('experiment'), :alternative => alternative)
-      trial.should_not_receive(:choose)
-      trial.alternative.should == alternative
+      expect(trial).not_to receive(:choose)
+      expect(trial.alternative).to eq(alternative)
     end
 
     it "should populate alternative with a full alternative object after calling choose" do
@@ -24,8 +24,8 @@ describe Split::Trial do
       experiment.save
       trial = Split::Trial.new(:experiment => experiment)
       trial.choose
-      trial.alternative.class.should == Split::Alternative
-      ['basket', 'cart'].should include(trial.alternative.name)
+      expect(trial.alternative.class).to eq(Split::Alternative)
+      expect(['basket', 'cart']).to include(trial.alternative.name)
     end
 
     it "should populate an alternative when only one option is offerred" do
@@ -33,20 +33,20 @@ describe Split::Trial do
       experiment.save
       trial = Split::Trial.new(:experiment => experiment)
       trial.choose
-      trial.alternative.class.should == Split::Alternative
-      trial.alternative.name.should == 'basket'
+      expect(trial.alternative.class).to eq(Split::Alternative)
+      expect(trial.alternative.name).to eq('basket')
     end
 
 
     it "should choose from the available alternatives" do
       trial = Split::Trial.new(:experiment => experiment = double('experiment'))
       alternative = double('alternative', :kind_of? => Split::Alternative)
-      experiment.should_receive(:next_alternative).and_return(alternative)
-      alternative.should_receive(:increment_participation)
-      experiment.stub(:winner).and_return nil
+      expect(experiment).to receive(:next_alternative).and_return(alternative)
+      expect(alternative).to receive(:increment_participation)
+      expect(experiment).to receive(:winner).at_most(1).times.and_return(nil)
       trial.choose!
 
-      trial.alternative.should == alternative
+      expect(trial.alternative).to eq(alternative)
     end
   end
 
@@ -56,7 +56,7 @@ describe Split::Trial do
       experiment.save
 
       trial = Split::Trial.new(:experiment => experiment, :alternative => 'basket')
-      trial.alternative.name.should == 'basket'
+      expect(trial.alternative.name).to eq('basket')
     end
   end
 end

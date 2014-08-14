@@ -8,7 +8,7 @@ describe Split::Persistence::CookieAdapter do
   describe "#[] and #[]=" do
     it "should set and return the value for given key" do
       subject["my_key"] = "my_value"
-      subject["my_key"].should eq("my_value")
+      expect(subject["my_key"]).to eq("my_value")
     end
   end
 
@@ -16,7 +16,7 @@ describe Split::Persistence::CookieAdapter do
     it "should delete the given key" do
       subject["my_key"] = "my_value"
       subject.delete("my_key")
-      subject["my_key"].should be_nil
+      expect(subject["my_key"]).to be_nil
     end
   end
 
@@ -24,15 +24,15 @@ describe Split::Persistence::CookieAdapter do
     it "should return an array of the session's stored keys" do
       subject["my_key"] = "my_value"
       subject["my_second_key"] = "my_second_value"
-      subject.keys.should =~ ["my_key", "my_second_key"]
+      expect(subject.keys).to match(["my_key", "my_second_key"])
     end
   end
 
   it "handles invalid JSON" do
     context.cookies[:split] = { :value => '{"foo":2,', :expires => Time.now }
-    subject["my_key"].should be_nil
+    expect(subject["my_key"]).to be_nil
     subject["my_key"] = "my_value"
-    subject["my_key"].should eq("my_value")
+    expect(subject["my_key"]).to eq("my_value")
   end
 
 end

@@ -23,39 +23,39 @@ describe Split::Experiment do
     let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"]) }
 
     it "should have a name" do
-      experiment.name.should eql('basket_text')
+      expect(experiment.name).to eq('basket_text')
     end
 
     it "should have alternatives" do
-      experiment.alternatives.length.should be 2
+      expect(experiment.alternatives.length).to be 2
     end
 
     it "should have alternatives with correct names" do
-      experiment.alternatives.collect{|a| a.name}.should == ['Basket', 'Cart']
+      expect(experiment.alternatives.collect{|a| a.name}).to eq(['Basket', 'Cart'])
     end
 
     it "should be resettable by default" do
-      experiment.resettable.should be_true
+      expect(experiment.resettable).to be_truthy
     end
 
     it "should save to redis" do
       experiment.save
-      Split.redis.exists('basket_text').should be true
+      expect(Split.redis.exists('basket_text')).to be true
     end
 
     it "should save the start time to redis" do
       experiment_start_time = Time.at(1372167761)
-      Time.stub(:now => experiment_start_time)
+      expect(Time).to receive(:now).and_return(experiment_start_time)
       experiment.save
 
-      Split::Experiment.find('basket_text').start_time.should == experiment_start_time
+      expect(Split::Experiment.find('basket_text').start_time).to eq(experiment_start_time)
     end
 
     it "should not save the start time to redis when start_manually is enabled" do
-      Split.configuration.stub(:start_manually => true)
+      expect(Split.configuration).to receive(:start_manually).and_return(true)
       experiment.save
 
-      Split::Experiment.find('basket_text').start_time.should be_nil
+      expect(Split::Experiment.find('basket_text').start_time).to be_nil
     end
 
     it "should save the selected algorithm to redis" do
@@ -63,43 +63,43 @@ describe Split::Experiment do
       experiment.algorithm = experiment_algorithm
       experiment.save
 
-      Split::Experiment.find('basket_text').algorithm.should == experiment_algorithm
+      expect(Split::Experiment.find('basket_text').algorithm).to eq(experiment_algorithm)
     end
 
     it "should handle having a start time stored as a string" do
       experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
-      Time.stub(:now => experiment_start_time)
+      expect(Time).to receive(:now).twice.and_return(experiment_start_time)
       experiment.save
       Split.redis.hset(:experiment_start_times, experiment.name, experiment_start_time)
 
-      Split::Experiment.find('basket_text').start_time.should == experiment_start_time
+      expect(Split::Experiment.find('basket_text').start_time).to eq(experiment_start_time)
     end
 
     it "should handle not having a start time" do
       experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
-      Time.stub(:now => experiment_start_time)
+      expect(Time).to receive(:now).and_return(experiment_start_time)
       experiment.save
 
       Split.redis.hdel(:experiment_start_times, experiment.name)
 
-      Split::Experiment.find('basket_text').start_time.should == nil
+      expect(Split::Experiment.find('basket_text').start_time).to be_nil
     end
 
     it "should not create duplicates when saving multiple times" do
       experiment.save
       experiment.save
-      Split.redis.exists('basket_text').should be true
-      Split.redis.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+      expect(Split.redis.exists('basket_text')).to be true
+      expect(Split.redis.lrange('basket_text', 0, -1)).to eq(['Basket', "Cart"])
     end
 
     describe 'new record?' do
       it "should know if it hasn't been saved yet" do
-        experiment.new_record?.should be_true
+        expect(experiment.new_record?).to be_truthy
       end
 
       it "should know if it has been saved yet" do
         experiment.save
-        experiment.new_record?.should be_false
+        expect(experiment.new_record?).to be_falsey
       end
     end
 
@@ -107,18 +107,18 @@ describe Split::Experiment do
       it "should return an existing experiment" do
         experiment.save
         experiment = Split::Experiment.find('basket_text')
-        experiment.name.should eql('basket_text')
+        expect(experiment.name).to eq('basket_text')
       end
 
       it "should return an existing experiment" do
-        Split::Experiment.find('non_existent_experiment').should be_nil
+        expect(Split::Experiment.find('non_existent_experiment')).to be_nil
       end
     end
 
     describe 'control' do
       it 'should be the first alternative' do
         experiment.save
-        experiment.control.name.should eql('Basket')
+        expect(experiment.control.name).to eq('Basket')
       end
     end
   end
@@ -126,12 +126,12 @@ describe Split::Experiment do
   describe 'initialization' do
     it "should set the algorithm when passed as an option to the initializer" do
        experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm =>  Split::Algorithms::Whiplash)
-       experiment.algorithm.should == Split::Algorithms::Whiplash
+       expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
     end
 
     it "should be possible to make an experiment not resettable" do
       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
-      experiment.resettable.should be_false
+      expect(experiment.resettable).to be_falsey
     end
   end
 
@@ -142,8 +142,8 @@ describe Split::Experiment do
       experiment.save
 
       e = Split::Experiment.find('basket_text')
-      e.should == experiment
-      e.resettable.should be_false
+      expect(e).to eq(experiment)
+      expect(e.resettable).to be_falsey
 
     end
 
@@ -152,8 +152,8 @@ describe Split::Experiment do
       experiment.save
 
       e = Split::Experiment.find('basket_text')
-      e.should == experiment
-      e.algorithm.should == Split::Algorithms::Whiplash
+      expect(e).to eq(experiment)
+      expect(e.algorithm).to eq(Split::Algorithms::Whiplash)
     end
 
     it "should persist a new experiment in redis, that does not exist in the configuration file" do
@@ -161,8 +161,8 @@ describe Split::Experiment do
       experiment.save
 
       e = Split::Experiment.find('foobar')
-      e.should == experiment
-      e.alternatives.collect{|a| a.name}.should == ['tra', 'la']
+      expect(e).to eq(experiment)
+      expect(e.alternatives.collect{|a| a.name}).to eq(['tra', 'la'])
     end
   end
 
@@ -172,14 +172,14 @@ describe Split::Experiment do
       experiment.save
 
       experiment.delete
-      Split.redis.exists('link_color').should be false
-      Split::Experiment.find('link_color').should be_nil
+      expect(Split.redis.exists('link_color')).to be false
+      expect(Split::Experiment.find('link_color')).to be_nil
     end
 
     it "should increment the version" do
-      experiment.version.should eql(0)
+      expect(experiment.version).to eq(0)
       experiment.delete
-      experiment.version.should eql(1)
+      expect(experiment.version).to eq(1)
     end
 
     it "should call the on_experiment_delete hook" do
@@ -191,13 +191,13 @@ describe Split::Experiment do
 
   describe 'winner' do
     it "should have no winner initially" do
-      experiment.winner.should be_nil
+      expect(experiment.winner).to be_nil
     end
 
     it "should allow you to specify a winner" do
       experiment.save
       experiment.winner = 'red'
-      experiment.winner.name.should == 'red'
+      expect(experiment.winner.name).to eq('red')
     end
   end
 
@@ -222,30 +222,30 @@ describe Split::Experiment do
     it 'should reset all alternatives' do
       experiment.winner = 'green'
 
-      experiment.next_alternative.name.should eql('green')
+      expect(experiment.next_alternative.name).to eq('green')
       green.increment_participation
 
       experiment.reset
 
-      green.participant_count.should eql(0)
-      green.completed_count.should eql(0)
+      expect(green.participant_count).to eq(0)
+      expect(green.completed_count).to eq(0)
     end
 
     it 'should reset the winner' do
       experiment.winner = 'green'
 
-      experiment.next_alternative.name.should eql('green')
+      expect(experiment.next_alternative.name).to eq('green')
       green.increment_participation
 
       experiment.reset
 
-      experiment.winner.should be_nil
+      expect(experiment.winner).to be_nil
     end
 
     it "should increment the version" do
-      experiment.version.should eql(0)
+      expect(experiment.version).to eq(0)
       experiment.reset
-      experiment.version.should eql(1)
+      expect(experiment.version).to eq(1)
     end
 
     it "should call the on_experiment_reset hook" do
@@ -258,12 +258,12 @@ describe Split::Experiment do
     let(:experiment) { Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green') }
 
     it 'should use the default algorithm if none is specified' do
-      experiment.algorithm.should == Split.configuration.algorithm
+      expect(experiment.algorithm).to eq(Split.configuration.algorithm)
     end
 
     it 'should use the user specified algorithm for this experiment if specified' do
       experiment.algorithm = Split::Algorithms::Whiplash
-      experiment.algorithm.should == Split::Algorithms::Whiplash
+      expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
     end
   end
 
@@ -274,16 +274,16 @@ describe Split::Experiment do
       green = Split::Alternative.new('green', 'link_color')
       experiment.winner = 'green'
 
-      experiment.next_alternative.name.should eql('green')
+      expect(experiment.next_alternative.name).to eq('green')
       green.increment_participation
 
-      experiment.next_alternative.name.should eql('green')
+      expect(experiment.next_alternative.name).to eq('green')
     end
 
     it "should use the specified algorithm if a winner does not exist" do
       experiment.algorithm = Split::Algorithms::Whiplash
-      experiment.algorithm.should_receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
-      experiment.next_alternative.name.should eql('green')
+      expect(experiment.algorithm).to receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
+      expect(experiment.next_alternative.name).to eq('green')
     end
   end
 
@@ -291,7 +291,7 @@ describe Split::Experiment do
     let(:experiment) { Split::Experiment.find_or_create('link_color', 'blue') }
 
     it "should always return the color blue" do
-      experiment.next_alternative.name.should eql('blue')
+      expect(experiment.next_alternative.name).to eq('blue')
     end
   end
 
@@ -304,24 +304,24 @@ describe Split::Experiment do
       experiment.save
       blue.participant_count = 5
       same_experiment = same_but_different_alternative
-      same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
-      blue.participant_count.should eql(0)
+      expect(same_experiment.alternatives.map(&:name)).to eq(['blue', 'yellow', 'orange'])
+      expect(blue.participant_count).to eq(0)
     end
 
     it "should only reset once" do
       experiment.save
-      experiment.version.should eql(0)
+      expect(experiment.version).to eq(0)
       same_experiment = same_but_different_alternative
-      same_experiment.version.should eql(1)
+      expect(same_experiment.version).to eq(1)
       same_experiment_again = same_but_different_alternative
-      same_experiment_again.version.should eql(1)
+      expect(same_experiment_again.version).to eq(1)
     end
   end
 
   describe 'alternatives passed as non-strings' do
     it "should throw an exception if an alternative is passed that is not a string" do
-      lambda { Split::Experiment.find_or_create('link_color', :blue, :red) }.should raise_error
-      lambda { Split::Experiment.find_or_create('link_enabled', true, false) }.should raise_error
+      expect(lambda { Split::Experiment.find_or_create('link_color', :blue, :red) }).to raise_error
+      expect(lambda { Split::Experiment.find_or_create('link_enabled', true, false) }).to raise_error
     end
   end
 
@@ -331,12 +331,12 @@ describe Split::Experiment do
     }
 
     it "should work for a new experiment" do
-      experiment_with_weight.alternatives.map(&:weight).should == [1, 2]
+      expect(experiment_with_weight.alternatives.map(&:weight)).to eq([1, 2])
     end
 
     it "should work for an existing experiment" do
       experiment.save
-      experiment_with_weight.alternatives.map(&:weight).should == [1, 2]
+      expect(experiment_with_weight.alternatives.map(&:weight)).to eq([1, 2])
     end
   end
 
@@ -353,26 +353,26 @@ describe Split::Experiment do
       before { experiment.save }
 
       it "can find existing experiment" do
-        Split::Experiment.find("link_color").name.should eql("link_color")
+        expect(Split::Experiment.find("link_color").name).to eq("link_color")
       end
 
       it "should reset an experiment if it is loaded with different goals" do
         same_experiment = same_but_different_goals
-        Split::Experiment.find("link_color").goals.should == ["purchase", "refund"]
+        expect(Split::Experiment.find("link_color").goals).to eq(["purchase", "refund"])
       end
 
     end
 
     it "should have goals" do
-      experiment.goals.should eql(["purchase"])
+      expect(experiment.goals).to eq(["purchase"])
     end
 
     context "find or create experiment" do
       it "should have correct goals"  do
         experiment = Split::Experiment.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
-        experiment.goals.should == ["purchase", "refund"]
+        expect(experiment.goals).to eq(["purchase", "refund"])
         experiment = Split::Experiment.find_or_create('link_color3', 'blue', 'red', 'green')
-        experiment.goals.should == []
+        expect(experiment.goals).to eq([])
       end
     end
   end

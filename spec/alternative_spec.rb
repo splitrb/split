@@ -19,23 +19,23 @@ describe Split::Alternative do
   let(:goal2) { "refund" }
 
   it "should have goals" do
-    alternative.goals.should eql(["purchase", "refund"])
+    expect(alternative.goals).to eq(["purchase", "refund"])
   end
 
   it "should have and only return the name" do
-    alternative.name.should eql('Basket')
+    expect(alternative.name).to eq('Basket')
   end
 
   describe 'weights' do
     it "should set the weights" do
       experiment = Split::Experiment.new('basket_text', :alternatives => [{'Basket' => 0.6}, {"Cart" => 0.4}])
       first = experiment.alternatives[0]
-      first.name.should == 'Basket'
-      first.weight.should == 0.6
+      expect(first.name).to eq('Basket')
+      expect(first.weight).to eq(0.6)
 
       second = experiment.alternatives[1]
-      second.name.should == 'Cart'
-      second.weight.should == 0.4
+      expect(second.name).to eq('Cart')
+      expect(second.weight).to eq(0.4)
     end
 
     it "accepts probability on alternatives" do
@@ -50,12 +50,12 @@ describe Split::Alternative do
       }
       experiment = Split::Experiment.new(:my_experiment)
       first = experiment.alternatives[0]
-      first.name.should == 'control_opt'
-      first.weight.should == 0.67
+      expect(first.name).to eq('control_opt')
+      expect(first.weight).to eq(0.67)
 
       second = experiment.alternatives[1]
-      second.name.should == 'second_opt'
-      second.weight.should == 0.1
+      expect(second.name).to eq('second_opt')
+      expect(second.weight).to eq(0.1)
     end
 
     it "accepts probability on some alternatives" do
@@ -79,8 +79,8 @@ describe Split::Alternative do
       ].each do |h|
         name, weight = h
         alt = alts.shift
-        alt.name.should == name
-        alt.weight.should == weight
+        expect(alt.name).to eq(name)
+        expect(alt.weight).to eq(weight)
       end
     end
     #
@@ -103,35 +103,35 @@ describe Split::Alternative do
       ].each do |h|
         name, weight = h
         alt = alts.shift
-        alt.name.should == name
-        alt.weight.should == weight
+        expect(alt.name).to eq(name)
+        expect(alt.weight).to eq(weight)
       end
     end
   end
 
   it "should have a default participation count of 0" do
-    alternative.participant_count.should eql(0)
+    expect(alternative.participant_count).to eq(0)
   end
 
   it "should have a default completed count of 0 for each goal" do
-    alternative.completed_count.should eql(0)
-    alternative.completed_count(goal1).should eql(0)
-    alternative.completed_count(goal2).should eql(0)
+    expect(alternative.completed_count).to eq(0)
+    expect(alternative.completed_count(goal1)).to eq(0)
+    expect(alternative.completed_count(goal2)).to eq(0)
   end
 
   it "should belong to an experiment" do
-    alternative.experiment.name.should eql(experiment.name)
+    expect(alternative.experiment.name).to eq(experiment.name)
   end
 
   it "should save to redis" do
     alternative.save
-    Split.redis.exists('basket_text:Basket').should be true
+    expect(Split.redis.exists('basket_text:Basket')).to be true
   end
 
   it "should increment participation count" do
     old_participant_count = alternative.participant_count
     alternative.increment_participation
-    alternative.participant_count.should eql(old_participant_count+1)
+    expect(alternative.participant_count).to eq(old_participant_count+1)
   end
 
   it "should increment completed count for each goal" do
@@ -143,9 +143,9 @@ describe Split::Alternative do
     alternative.increment_completion(goal1)
     alternative.increment_completion(goal2)
 
-    alternative.completed_count.should eql(old_default_completed_count+1)
-    alternative.completed_count(goal1).should eql(old_completed_count_for_goal1+1)
-    alternative.completed_count(goal2).should eql(old_completed_count_for_goal2+1)
+    expect(alternative.completed_count).to eq(old_default_completed_count+1)
+    expect(alternative.completed_count(goal1)).to eq(old_completed_count_for_goal1+1)
+    expect(alternative.completed_count(goal2)).to eq(old_completed_count_for_goal2+1)
   end
 
   it "can be reset" do
@@ -154,21 +154,21 @@ describe Split::Alternative do
     alternative.set_completed_count(5, goal2)
     alternative.set_completed_count(6)
     alternative.reset
-    alternative.participant_count.should eql(0)
-    alternative.completed_count(goal1).should eql(0)
-    alternative.completed_count(goal2).should eql(0)
-    alternative.completed_count.should eql(0)
+    expect(alternative.participant_count).to eq(0)
+    expect(alternative.completed_count(goal1)).to eq(0)
+    expect(alternative.completed_count(goal2)).to eq(0)
+    expect(alternative.completed_count).to eq(0)
   end
 
   it "should know if it is the control of an experiment" do
-    alternative.control?.should be_true
-    alternative2.control?.should be_false
+    expect(alternative.control?).to be_truthy
+    expect(alternative2.control?).to be_falsey
   end
 
   describe 'unfinished_count' do
     it "should be difference between participant and completed counts" do
       alternative.increment_participation
-      alternative.unfinished_count.should eql(alternative.participant_count)
+      expect(alternative.unfinished_count).to eq(alternative.participant_count)
     end
 
     it "should return the correct unfinished_count" do
@@ -177,35 +177,35 @@ describe Split::Alternative do
       alternative.set_completed_count(3, goal2)
       alternative.set_completed_count(2)
 
-      alternative.unfinished_count.should eql(1)
+      expect(alternative.unfinished_count).to eq(1)
     end
   end
 
   describe 'conversion rate' do
     it "should be 0 if there are no conversions" do
-      alternative.completed_count.should eql(0)
-      alternative.conversion_rate.should eql(0)
+      expect(alternative.completed_count).to eq(0)
+      expect(alternative.conversion_rate).to eq(0)
     end
 
     it "calculate conversion rate" do
-      alternative.stub(:participant_count).and_return(10)
-      alternative.stub(:completed_count).and_return(4)
-      alternative.conversion_rate.should eql(0.4)
+      expect(alternative).to receive(:participant_count).exactly(6).times.and_return(10)
+      expect(alternative).to receive(:completed_count).and_return(4)
+      expect(alternative.conversion_rate).to eq(0.4)
 
-      alternative.stub(:completed_count).with(goal1).and_return(5)
-      alternative.conversion_rate(goal1).should eql(0.5)
+      expect(alternative).to receive(:completed_count).with(goal1).and_return(5)
+      expect(alternative.conversion_rate(goal1)).to eq(0.5)
 
-      alternative.stub(:completed_count).with(goal2).and_return(6)
-      alternative.conversion_rate(goal2).should eql(0.6)
+      expect(alternative).to receive(:completed_count).with(goal2).and_return(6)
+      expect(alternative.conversion_rate(goal2)).to eq(0.6)
     end
   end
 
   describe 'z score' do
 
     it "should return an error string when the control has 0 people" do
-      alternative2.z_score.should eql("Needs 30+ participants.")
-      alternative2.z_score(goal1).should eql("Needs 30+ participants.")
-      alternative2.z_score(goal2).should eql("Needs 30+ participants.")
+      expect(alternative2.z_score).to eq("Needs 30+ participants.")
+      expect(alternative2.z_score(goal1)).to eq("Needs 30+ participants.")
+      expect(alternative2.z_score(goal2)).to eq("Needs 30+ participants.")
     end
 
     it "should return an error string when the data is skewed or incomplete as per the np > 5 test" do
@@ -216,7 +216,7 @@ describe Split::Alternative do
       alternative2.participant_count = 50
       alternative2.set_completed_count(1)
 
-      alternative2.z_score.should eql("Needs 5+ conversions.")
+      expect(alternative2.z_score).to eq("Needs 5+ conversions.")
     end
 
     it "should return a float for a z_score given proper data" do
@@ -227,8 +227,8 @@ describe Split::Alternative do
       alternative2.participant_count = 100
       alternative2.set_completed_count(25)
 
-      alternative2.z_score.should be_kind_of(Float)
-      alternative2.z_score.should_not eql(0)
+      expect(alternative2.z_score).to be_kind_of(Float)
+      expect(alternative2.z_score).to_not eq(0)
     end
 
     it "should correctly calculate a z_score given proper data" do
@@ -239,14 +239,14 @@ describe Split::Alternative do
       alternative2.participant_count = 142
       alternative2.set_completed_count(119)
 
-      alternative2.z_score.round(2).should eql(2.58)
+      expect(alternative2.z_score.round(2)).to eq(2.58)
     end
 
     it "should be N/A for the control" do
       control = experiment.control
-      control.z_score.should eql('N/A')
-      control.z_score(goal1).should eql('N/A')
-      control.z_score(goal2).should eql('N/A')
+      expect(control.z_score).to eq('N/A')
+      expect(control.z_score(goal1)).to eq('N/A')
+      expect(control.z_score(goal2)).to eq('N/A')
     end
   end
 end

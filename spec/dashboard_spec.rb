@@ -30,7 +30,7 @@ describe Split::Dashboard do
 
   it "should respond to /" do
     get '/'
-    last_response.should be_ok
+    expect(last_response).to be_ok
   end
 
   context "start experiment manually" do
@@ -42,12 +42,12 @@ describe Split::Dashboard do
       it "should display a Start button" do
         experiment
         get '/'
-        last_response.body.should include('Start')
+        expect(last_response.body).to include('Start')
 
         post "/start/#{experiment.name}"
         get '/'
-        last_response.body.should include('Reset Data')
-        last_response.body.should_not include('Metrics:')
+        expect(last_response.body).to include('Reset Data')
+        expect(last_response.body).not_to include('Metrics:')
       end
     end
 
@@ -55,7 +55,7 @@ describe Split::Dashboard do
       it "should display the names of associated metrics" do
         metric
         get '/'
-        last_response.body.should include('Metrics:testmetric')
+        expect(last_response.body).to include('Metrics:testmetric')
       end
     end
 
@@ -63,11 +63,11 @@ describe Split::Dashboard do
       it "should display a Start button" do
         experiment_with_goals
         get '/'
-        last_response.body.should include('Start')
+        expect(last_response.body).to include('Start')
 
         post "/start/#{experiment.name}"
         get '/'
-        last_response.body.should include('Reset Data')
+        expect(last_response.body).to include('Reset Data')
       end
     end
   end
@@ -126,47 +126,48 @@ describe Split::Dashboard do
 
     post "/reset/#{experiment.name}"
 
-    last_response.should be_redirect
+    expect(last_response).to be_redirect
 
     new_red_count = red_link.participant_count
     new_blue_count = blue_link.participant_count
 
-    new_blue_count.should eql(0)
-    new_red_count.should eql(0)
-    experiment.winner.should be_nil
+    expect(new_blue_count).to eq(0)
+    expect(new_red_count).to eq(0)
+    expect(experiment.winner).to be_nil
   end
 
   it "should delete an experiment" do
     delete "/#{experiment.name}"
-    last_response.should be_redirect
-    Split::Experiment.find(experiment.name).should be_nil
+    expect(last_response).to be_redirect
+    expect(Split::Experiment.find(experiment.name)).to be_nil
   end
 
   it "should mark an alternative as the winner" do
-    experiment.winner.should be_nil
+    expect(experiment.winner).to be_nil
     post "/#{experiment.name}", :alternative => 'red'
 
-    last_response.should be_redirect
-    experiment.winner.name.should eql('red')
+    expect(last_response).to be_redirect
+    expect(experiment.winner.name).to eq('red')
   end
 
   it "should display the start date" do
     experiment_start_time = Time.parse('2011-07-07')
-    Time.stub(:now => experiment_start_time)
+    expect(Time).to receive(:now).and_return(experiment_start_time)
     experiment
 
     get '/'
 
-    last_response.body.should include('<small>2011-07-07</small>')
+    expect(last_response.body).to include('<small>2011-07-07</small>')
   end
 
   it "should handle experiments without a start date" do
     experiment_start_time = Time.parse('2011-07-07')
-    Time.stub(:now => experiment_start_time)
+    expect(Time).to receive(:now).and_return(experiment_start_time)
+
     Split.redis.hdel(:experiment_start_times, experiment.name)
 
     get '/'
 
-    last_response.body.should include('<small>Unknown</small>')
+    expect(last_response.body).to include('<small>Unknown</small>')
   end
 end
