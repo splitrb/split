@@ -10,7 +10,7 @@ Split is designed to be hacker friendly, allowing for maximum customisation and 
 [![Build Status](https://secure.travis-ci.org/andrew/split.svg?branch=master)](http://travis-ci.org/andrew/split)
 [![Dependency Status](https://gemnasium.com/andrew/split.svg)](https://gemnasium.com/andrew/split)
 [![Code Climate](https://codeclimate.com/github/andrew/split.svg)](https://codeclimate.com/github/andrew/split)
-[![Coverage Status](https://coveralls.io/repos/andrew/split/badge.svg)](https://coveralls.io/r/andrew/split)
+[![Coverage Status](http://img.shields.io/coveralls/andrew/split.svg)](https://coveralls.io/r/andrew/split)
 
 ## Requirements
 
