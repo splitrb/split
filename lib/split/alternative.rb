@@ -192,13 +192,13 @@ module Split
       random_generator = SimpleRandom.new
       random_generator.set_seed(Time.now)
       10000.times do
-        a_samples << random_generator.beta(non_zeros_a+alpha, total_a-non_zeros_a+beta)
+        a_samples << random_generator.beta(non_zeros_a+alpha, [total_a-non_zeros_a, 0].max+beta)
       end
 
       b_samples = []
       random_generator.set_seed(Time.now)
       10000.times do
-        b_samples << random_generator.beta(non_zeros_b+alpha, total_b-non_zeros_b+beta)
+        b_samples << random_generator.beta(non_zeros_b+alpha, [total_b-non_zeros_b, 0].max+beta)
       end
 
       return a_samples, b_samples
