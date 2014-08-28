@@ -220,7 +220,7 @@ module Split
       return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if self.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > 0
-        bayesian_combined_probability(self.completed_values(goal), experiment.control.completed_values(goal))
+        bayesian_combined_probability(self.completed_values(goal).collect{|n| [0,n].max}, experiment.control.completed_values(goal).collect{|n| [0,n].max})
       else
         "N/A"
       end
