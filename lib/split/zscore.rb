@@ -13,8 +13,8 @@ module Split
       # s_p = SEp = standard error of p_1 - p_2, assuming a pooled variance
       # s_unp = SEunp = standard error of p_1 - p_2, assuming unpooled variance
 
-      p_1 = p1.to_f
-      p_2 = p2.to_f
+      p_1 = [[0, p1.to_f].max, 1].min
+      p_2 = [[0, p2.to_f].max, 1].min
 
       n_1 = n1.to_f
       n_2 = n2.to_f

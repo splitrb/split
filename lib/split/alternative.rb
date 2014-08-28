@@ -149,7 +149,7 @@ module Split
       return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if !self.completed_values(goal).blank? && !experiment.control.completed_values(goal).blank?
-        bayesian_log_normal_probability(self.completed_values(goal), experiment.control.completed_values(goal))
+        bayesian_log_normal_probability(self.completed_values(goal).collect{|n| [0,n].max}, experiment.control.completed_values(goal).collect{|n| [0,n].max})
       else
         "N/A"
       end
