@@ -1,3 +1,14 @@
+## 0.7.3 (September 16th, 2014)
+
+Features:
+
+  - Disable all split tests via a URL parameter (@hwartig, #263)
+
+Bugfixes:
+
+  - Correctly escape experiment names on dashboard (@ecaron, #265)
+  - Handle redis connection exception error properly (@andrew, #245)
+
 ## 0.7.2 (June 12th, 2014)
 
 Features:
