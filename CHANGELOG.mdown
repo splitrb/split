@@ -1,7 +1,28 @@
+## 0.7.2 (June 12th, 2014)
+
+Features:
+
+  -  Show metrics on the dashboard (@swrobel, #241)
+
+Bugfixes:
+
+  - Avoid nil error with ExperimentCatalog when upgrading (@danielschwartz, #253)
+  - [SECURITY ISSUE] Only allow known alternatives as query param overrides (@ankane, #255)
+
+## 0.7.1 (March 20th, 2014)
+
+Features:
+
+  - You can now reopen experiment from the dashboard (@mikezaby, #235)
+
+Misc
+
+  - Internal code tidy up (@IanVaughan, #238)
+
 ## 0.7.0 (December 26th, 2013)
 
 Features:
-  
+
   - Significantly improved z-score algorithm (@caser ,#221)
   - Better sorting of Experiments on dashboard (@wadako111, #218)
 
@@ -10,7 +31,7 @@ Bugfixes:
   - Fixed start button not being displayed in some cases (@vigosan, #219)
 
 Misc
-  
+
   - Experiment#initialize refactoring (@nberger, #224)
   - Extract ExperimentStore into a seperate class (@nberger, #225)
 
