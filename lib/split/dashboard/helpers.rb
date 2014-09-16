@@ -1,5 +1,9 @@
 module Split
   module DashboardHelpers
+    def h(text)
+      Rack::Utils.escape_html(text)
+    end
+
     def url(*path_parts)
       [ path_prefix, path_parts ].join("/").squeeze('/')
     end
