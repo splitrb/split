@@ -3,6 +3,7 @@
 <% else %>
   <% experiment_class = "experiment" %>
 <% end %>
+
 <% unless experiment.calc_time == Time.now.day %>
   <% experiment.estimate_winning_alternative %>
 <% end %>

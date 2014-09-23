@@ -293,9 +293,7 @@
 
       winning_alternatives = []
 
-      number_of_simulations = 10000
-
-      number_of_simulations.times do
+      Split.configuration.beta_probability_simulations.times do
         # calculate simulated conversion rates from the beta distributions
         simulated_cr_hash = calc_simulated_conversion_rates(beta_params)
 
@@ -307,7 +305,7 @@
 
       winning_counts = count_simulated_wins(winning_alternatives)
 
-      @alternative_probabilities = calc_alternative_probabilities(winning_counts, number_of_simulations)
+      @alternative_probabilities = calc_alternative_probabilities(winning_counts, Split.configuration.beta_probability_simulations)
 
       write_to_alternatives(@alternative_probabilities, goal)
 
