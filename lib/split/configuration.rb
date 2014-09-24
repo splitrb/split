@@ -18,6 +18,7 @@ module Split
     attr_accessor :on_experiment_reset
     attr_accessor :on_experiment_delete
     attr_accessor :include_rails_helper
+    attr_accessor :beta_probability_simulations
 
     attr_reader :experiments
 
@@ -195,6 +196,7 @@ module Split
       @persistence = Split::Persistence::SessionAdapter
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
+      @beta_probability_simulations = 10000
     end
 
     private

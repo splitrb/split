@@ -9,3 +9,4 @@ issues.rtf
 dump.rdb
 .gitignore
 gemfiles/*.gemfile.lock
+.DS_Store
