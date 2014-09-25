@@ -1,3 +1,14 @@
+## 0.8.0 (September 25th, 2014)
+
+Features:
+
+  - Added new way to calculate the probability an alternative is the winner (@caser, #266, #251)
+  - support multiple metrics per experiment (@stevenou, #260)
+
+Bugfixes:
+
+  - Avoiding call to params in EncapsulatedHelper (@afn, #257)
+
 ## 0.7.3 (September 16th, 2014)
 
 Features:
