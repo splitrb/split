@@ -381,13 +381,13 @@ describe Split::Experiment do
     it "should return a hash with the probability of each alternative being the best" do
       experiment = Split::Experiment.find_or_create('mathematicians', 'bernoulli', 'poisson', 'lagrange')
       experiment.calc_winning_alternatives
-      experiment.alternative_probabilities.should_not be_nil
+      expect(experiment.alternative_probabilities).not_to be_nil
     end
 
     it "should return between 46% and 54% probability for an experiment with 2 alternatives and no data" do
       experiment = Split::Experiment.find_or_create('scientists', 'einstein', 'bohr')
       experiment.calc_winning_alternatives
-      experiment.alternatives[0].p_winner.should be_within(0.04).of(0.50)
+      expect(experiment.alternatives[0].p_winner).to be_within(0.04).of(0.50)
     end
 
     it "should calculate the probability of being the winning alternative separately for each goal" do
@@ -403,8 +403,8 @@ describe Split::Experiment do
       alt = experiment.alternatives[0]
       p_goal1 = alt.p_winner(goal1)
       p_goal2 = alt.p_winner(goal2)
-      p_goal1.should_not be_within(0.04).of(p_goal2)
+      expect(p_goal1).not_to be_within(0.04).of(p_goal2)
     end
-  end 
+  end
 
 end

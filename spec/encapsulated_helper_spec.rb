@@ -18,7 +18,7 @@ describe Split::EncapsulatedHelper do
 
   describe "ab_test" do
     it "should not raise an error when params raises an error" do
-      lambda { ab_test('link_color', 'blue', 'red') }.should_not raise_error
+      expect(lambda { ab_test('link_color', 'blue', 'red') }).not_to raise_error
     end
   end
 end

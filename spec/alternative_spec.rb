@@ -206,11 +206,11 @@ describe Split::Alternative do
     end
 
     it "should have a probability of being the winning alternative (p_winner)" do
-      alternative.p_winner.should_not be_nil
+      expect(alternative.p_winner).not_to be_nil
     end
 
     it "should have a probability of being the winner for each goal" do
-      alternative.p_winner(goal1).should_not be_nil
+      expect(alternative.p_winner(goal1)).not_to be_nil
     end
 
     it "should be possible to set the p_winner" do
