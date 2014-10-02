@@ -397,7 +397,7 @@ describe Split::Experiment do
       experiment.alternatives.each do |alternative|
         alternative.participant_count = 50
         alternative.set_completed_count(10, goal1)
-        alternative.set_completed_count(10+rand(30), goal2)
+        alternative.set_completed_count(15+rand(30), goal2)
       end
       experiment.calc_winning_alternatives
       alt = experiment.alternatives[0]
