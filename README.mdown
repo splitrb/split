@@ -14,6 +14,8 @@ Split is designed to be hacker friendly, allowing for maximum customisation and 
 
 ## Requirements
 
+Split requires Ruby 1.9.2 or higher.
+
 Split uses redis as a datastore.
 
 Split only supports redis 2.0 or greater.
