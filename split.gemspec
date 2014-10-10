@@ -12,6 +12,8 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/andrew/split"
   s.summary     = %q{Rack based split testing framework}
 
+  s.required_ruby_version = '>= 1.9.2'
+
   s.rubyforge_project = "split"
 
   s.files         = `git ls-files`.split("\n")
