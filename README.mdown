@@ -14,6 +14,8 @@ Split is designed to be hacker friendly, allowing for maximum customisation and 
 
 ## Requirements
 
+Split currently requires Ruby 1.9.2 or higher. If your project requires compatibility with Ruby 1.8.x and Rails 2.3, please use v0.8.0.
+
 Split uses redis as a datastore.
 
 Split only supports redis 2.0 or greater.
@@ -53,28 +55,9 @@ and require it in your project:
 require 'split'
 ```
 
-### SystemTimer
-
-If you are using Redis on Ruby 1.8.x then you will likely want to also use the SystemTimer gem if you want to make sure the Redis client will not hang.
-
-Put the following in your gemfile as well:
-
-```
-gem 'SystemTimer'
-```
-
 ### Rails 3
 
 Split is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
-
-### Rails 2.3
-
-To configure Rails 2.3 with Split you need to mix in the helper methods. Add the following lines to config/initializers.split.rb:
-
-```ruby
-ActionController::Base.send :include, Split::Helper
-ActionController::Base.helper Split::Helper
-```
 
 ### Sinatra
 
@@ -162,8 +145,6 @@ ab_test('homepage design', 'Old', {'New' => 0.1})
 
 ab_test('homepage design', {'Old' => 10}, 'New')
 ```
-
-Note: If using ruby 1.8.x and weighted alternatives you should always pass the control alternative through as the second argument with any other alternatives as a third argument because the order of the hash is not preserved in ruby 1.8, ruby 1.9.1+ users are not affected by this bug.
 
 This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
 

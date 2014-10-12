@@ -1,4 +1,7 @@
 ## Contributing
+
+*Note*: Split requires Ruby 1.9.2 or higher. 
+
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a

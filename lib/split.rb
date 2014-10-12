@@ -15,7 +15,7 @@
   require "split/#{f}"
 end
 
-require 'split/engine' if defined?(Rails) && Rails::VERSION::MAJOR >= 3
+require 'split/engine' if defined?(Rails)
 require 'redis/namespace'
 
 module Split

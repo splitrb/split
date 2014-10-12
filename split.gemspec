@@ -12,6 +12,8 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/andrew/split"
   s.summary     = %q{Rack based split testing framework}
 
+  s.required_ruby_version = '>= 1.9.2'
+
   s.rubyforge_project = "split"
 
   s.files         = `git ls-files`.split("\n")
@@ -22,11 +24,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'redis-namespace', '>= 1.1.0'
   s.add_dependency 'sinatra',         '>= 1.2.6'
   s.add_dependency 'simple-random'
-
-  # Ruby 1.8 doesn't include JSON in the std lib
-  if RUBY_VERSION < "1.9"
-    s.add_dependency 'json',            '>= 1.7.7'
-  end
 
   s.add_development_dependency 'rake'
   s.add_development_dependency 'bundler',     '~> 1.6'
