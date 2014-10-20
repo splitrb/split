@@ -409,6 +409,47 @@ describe Split::Helper do
     end
   end
 
+  describe 'active experiments' do
+    it 'should show an active test' do
+      alternative = ab_test('def', '4', '5', '6')
+      expect(active_experiments.count).to eq 1
+      expect(active_experiments.first[0]).to eq "def"
+      expect(active_experiments.first[1]).to eq alternative
+    end
+
+    it 'should show a finished test' do
+      alternative = ab_test('def', '4', '5', '6')
+      finished('def', {:reset => false})
+      expect(active_experiments.count).to eq 1
+      expect(active_experiments.first[0]).to eq "def"
+      expect(active_experiments.first[1]).to eq alternative
+    end
+
+    it 'should show multiple tests' do
+      Split.configure do |config|
+        config.allow_multiple_experiments = true
+      end
+      alternative = ab_test('def', '4', '5', '6')
+      another_alternative = ab_test('ghi', '7', '8', '9')
+      expect(active_experiments.count).to eq 2
+      expect(active_experiments['def']).to eq alternative
+      expect(active_experiments['ghi']).to eq another_alternative
+    end
+
+    it 'should not show tests with winners' do
+      Split.configure do |config|
+        config.allow_multiple_experiments = true
+      end
+      e = Split::Experiment.find_or_create('def', '4', '5', '6')
+      e.winner = '4'
+      alternative = ab_test('def', '4', '5', '6')
+      another_alternative = ab_test('ghi', '7', '8', '9')
+      expect(active_experiments.count).to eq 1
+      expect(active_experiments.first[0]).to eq "ghi"
+      expect(active_experiments.first[1]).to eq another_alternative
+    end
+  end
+
   describe 'when user is a robot' do
     before(:each) do
       @request = OpenStruct.new(:user_agent => 'Googlebot/2.1 (+http://www.google.com/bot.html)')
