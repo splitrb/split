@@ -149,6 +149,18 @@ module Split
       false
     end
 
+    def active_experiments
+      experiment_pairs = {}
+      ab_user.keys.each do |key|
+        Metric.possible_experiments(key).each do |experiment|
+          if !experiment.has_winner?
+            experiment_pairs[key] = ab_user[key]
+          end
+        end
+      end
+      return experiment_pairs
+    end
+
     protected
 
     def normalize_experiment(metric_descriptor)
