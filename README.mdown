@@ -220,7 +220,7 @@ Using Redis will allow ab_users to persist across sessions or machines.
 
 ```ruby
 Split.configure do |config|
-  config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => proc { |context| context.current_user_id }
+  config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => proc { |context| context.current_user_id })
   # Equivalent
   # config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => :current_user_id }
 end
