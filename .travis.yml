@@ -30,3 +30,4 @@ gemfile:
 services:
    - redis-server
 cache: bundler
+sudo: false
