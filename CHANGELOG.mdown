@@ -1,3 +1,9 @@
+## 1.0.0 (October 12th, 2014)
+
+Changes:
+
+  - Remove support for Ruby 1.8.7 and Rails 2.3 (@qpowell, #271)
+
 ## 0.8.0 (September 25th, 2014)
 
 Features:
