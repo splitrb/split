@@ -1,51 +1,38 @@
 module Split
   module Helper
 
-    def ab_test(metric_descriptor, control=nil, *alternatives)
-
-      # Check if array is passed to ab_test
-      # e.g. ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
-      if control.is_a? Array and alternatives.length.zero?
-        control, alternatives = control.first, control[1..-1]
-      end
-
+    def ab_test(metric_descriptor, control = nil, *alternatives)
       begin
-        experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
-        experiment_name = experiment_name_with_version.to_s.split(':')[0]
-        experiment = Split::Experiment.new(
-          experiment_name,
-          :alternatives => [control].compact + alternatives,
-          :goals => goals)
-        control ||= experiment.control && experiment.control.name
+        experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
 
-        ret = if Split.configuration.enabled
+        alternative = if Split.configuration.enabled
           experiment.save
-          start_trial( Trial.new(:experiment => experiment) )
+          Trial.start_for_user(experiment: experiment, user: ab_user)
         else
-          control_variable(control)
+          control_variable(experiment.control)
         end
       rescue Errno::ECONNREFUSED, Redis::CannotConnectError => e
         raise(e) unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
 
         if Split.configuration.db_failover_allow_parameter_override
-          ret = override_alternative(experiment_name) if override_present?(experiment_name)
-          ret = control_variable(control) if split_generically_disabled?
+          alternative = override_alternative(experiment.name) if override_present?(experiment.name)
+          alternative = control_variable(experiment.control) if split_generically_disabled?
         end
       ensure
-        ret ||= control_variable(control)
+        alternative ||= control_variable(experiment.control)
       end
 
       if block_given?
         if defined?(capture) # a block in a rails view
-          block = Proc.new { yield(ret) }
-          concat(capture(ret, &block))
+          block = Proc.new { yield(alternative) }
+          concat(capture(alternative, &block))
           false
         else
-          yield(ret)
+          yield(alternative)
         end
       else
-        ret
+        alternative
       end
     end
 
@@ -175,7 +162,7 @@ module Split
     end
 
     def control_variable(control)
-      Hash === control ? control.keys.first : control
+      Hash === control ? control.keys.first.to_s : control.to_s
     end
 
     def start_trial(trial)
