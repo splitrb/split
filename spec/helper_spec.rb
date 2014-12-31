@@ -6,7 +6,7 @@ describe Split::Helper do
   include Split::Helper
 
   let(:experiment) {
-    Split::Experiment.find_or_create('link_color', 'blue', 'red')
+    Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'red')
   }
 
   describe "ab_test" do
@@ -53,7 +53,7 @@ describe Split::Helper do
 
     it 'should not increment the counter for an experiment that the user is not participating in' do
       ab_test('link_color', 'blue', 'red')
-      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
       expect(lambda {
         # User shouldn't participate in this second experiment
         ab_test('button_size', 'small', 'big')
@@ -61,7 +61,7 @@ describe Split::Helper do
     end
 
     it 'should not increment the counter for an ended experiment' do
-      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
       e.winner = 'small'
       expect(lambda {
         a = ab_test('button_size', 'small', 'big')
@@ -71,7 +71,7 @@ describe Split::Helper do
 
     it 'should not increment the counter for an not started experiment' do
       expect(Split.configuration).to receive(:start_manually).and_return(true)
-      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
       expect(lambda {
         a = ab_test('button_size', 'small', 'big')
         expect(a).to eq('small')
@@ -162,7 +162,7 @@ describe Split::Helper do
 
     it "should allow alternative weighting interface as a single hash" do
       ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)
-      experiment = Split::Experiment.find('link_color')
+      experiment = Split::ExperimentCatalog.find('link_color')
       expect(experiment.alternatives.map(&:name)).to eq(['blue', 'red'])
       # TODO: persist alternative weights
       # expect(experiment.alternatives.collect{|a| a.weight}).to eq([0.01, 0.2])
@@ -202,7 +202,7 @@ describe Split::Helper do
     before(:each) do
       @experiment_name = 'link_color'
       @alternatives = ['blue', 'red']
-      @experiment = Split::Experiment.find_or_create(@experiment_name, *@alternatives)
+      @experiment = Split::ExperimentCatalog.find_or_create(@experiment_name, *@alternatives)
       @alternative_name = ab_test(@experiment_name, *@alternatives)
       @previous_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
     end
@@ -237,7 +237,7 @@ describe Split::Helper do
     end
 
     it 'should not increment the counter for an ended experiment' do
-      e = Split::Experiment.find_or_create('button_size', 'small', 'big')
+      e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
       e.winner = 'small'
       a = ab_test('button_size', 'small', 'big')
       expect(a).to eq('small')
@@ -308,7 +308,7 @@ describe Split::Helper do
         }
       }
       alternative = ab_test(:my_experiment)
-      experiment = Split::Experiment.find :my_experiment
+      experiment = Split::ExperimentCatalog.find :my_experiment
 
       finished :my_experiment
       expect(ab_user).to eq(experiment.key => alternative, experiment.finished_key => true)
@@ -321,7 +321,7 @@ describe Split::Helper do
 
     def should_finish_experiment(experiment_name, should_finish=true)
       alts = Split.configuration.experiments[experiment_name][:alternatives]
-      experiment = Split::Experiment.find_or_create(experiment_name, *alts)
+      experiment = Split::ExperimentCatalog.find_or_create(experiment_name, *alts)
       alt_name = ab_user[experiment.key] = alts.first
       alt = double('alternative')
       expect(alt).to receive(:name).at_most(1).times.and_return(alt_name)
@@ -372,7 +372,7 @@ describe Split::Helper do
         }
       }
       alternative_name = ab_test(:my_exp)
-      exp = Split::Experiment.find :my_exp
+      exp = Split::ExperimentCatalog.find :my_exp
 
       finished :my_metric
       expect(ab_user[exp.key]).to eq(alternative_name)
@@ -387,7 +387,7 @@ describe Split::Helper do
         }
       }
       alternative_name = ab_test(:my_exp)
-      exp = Split::Experiment.find :my_exp
+      exp = Split::ExperimentCatalog.find :my_exp
 
       finished :my_metric, :reset => false
       expect(ab_user[exp.key]).to eq(alternative_name)
@@ -440,7 +440,7 @@ describe Split::Helper do
       Split.configure do |config|
         config.allow_multiple_experiments = true
       end
-      e = Split::Experiment.find_or_create('def', '4', '5', '6')
+      e = Split::ExperimentCatalog.find_or_create('def', '4', '5', '6')
       e.winner = '4'
       alternative = ab_test('def', '4', '5', '6')
       another_alternative = ab_test('ghi', '7', '8', '9')
@@ -888,7 +888,7 @@ describe Split::Helper do
   end
 
   it 'should handle multiple experiments correctly' do
-    experiment2 = Split::Experiment.find_or_create('link_color2', 'blue', 'red')
+    experiment2 = Split::ExperimentCatalog.find_or_create('link_color2', 'blue', 'red')
     alternative_name = ab_test('link_color', 'blue', 'red')
     alternative_name2 = ab_test('link_color2', 'blue', 'red')
     finished('link_color2')
@@ -915,7 +915,7 @@ describe Split::Helper do
     describe "ab_test" do
       it "should allow experiment goals interface as a single hash" do
         ab_test(@experiment, *@alternatives)
-        experiment = Split::Experiment.find('link_color')
+        experiment = Split::ExperimentCatalog.find('link_color')
         expect(experiment.goals).to eq(['purchase', "refund"])
       end
     end
