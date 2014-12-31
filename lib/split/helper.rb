@@ -7,7 +7,11 @@ module Split
 
         alternative = if Split.configuration.enabled
           experiment.save
-          Trial.start_for_user(experiment: experiment, user: ab_user)
+          trial = Trial.new(:user => ab_user, :experiment => experiment,
+              :override => override_alternative(experiment.name), :exclude => exclude_visitor?,
+              :disabled => split_generically_disabled?)
+          alt = trial.choose!(self)
+          alt ? alt.name : nil
         else
           control_variable(experiment.control)
         end
@@ -47,8 +51,9 @@ module Split
         return true
       else
         alternative_name = ab_user[experiment.key]
-        trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals])
-        call_trial_complete_hook(trial) if trial.complete!
+        trial = Trial.new(:user => ab_user, :experiment => experiment,
+              :alternative => alternative_name, :goals => options[:goals])
+        trial.complete!(self)
 
         if should_reset
           reset!(experiment)
@@ -61,7 +66,7 @@ module Split
 
     def finished(metric_descriptor, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
-      metric_descriptor, goals = normalize_experiment(metric_descriptor)
+      metric_descriptor, goals = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
@@ -97,30 +102,7 @@ module Split
     end
 
     def exclude_visitor?
-      instance_eval(&Split.configuration.ignore_filter)
-    end
-
-    def not_allowed_to_test?(experiment_key)
-      !Split.configuration.allow_multiple_experiments && doing_other_tests?(experiment_key)
-    end
-
-    def doing_other_tests?(experiment_key)
-      keys_without_experiment(ab_user.keys, experiment_key).length > 0
-    end
-
-    def clean_old_versions(experiment)
-      old_versions(experiment).each do |old_key|
-        ab_user.delete old_key
-      end
-    end
-
-    def old_versions(experiment)
-      if experiment.version > 0
-        keys = ab_user.keys.select { |k| k.match(Regexp.new(experiment.name)) }
-        keys_without_experiment(keys, experiment.key)
-      else
-        []
-      end
+      instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot?
     end
 
     def is_robot?
@@ -150,7 +132,7 @@ module Split
 
     protected
 
-    def normalize_experiment(metric_descriptor)
+    def normalize_metric(metric_descriptor)
       if Hash === metric_descriptor
         experiment_name = metric_descriptor.keys.first
         goals = Array(metric_descriptor.values.first)
@@ -163,50 +145,6 @@ module Split
 
     def control_variable(control)
       Hash === control ? control.keys.first.to_s : control.to_s
-    end
-
-    def start_trial(trial)
-      experiment = trial.experiment
-      if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
-        ret = override_alternative(experiment.name)
-        ab_user[experiment.key] = ret if Split.configuration.store_override
-      elsif split_generically_disabled?
-        ret = experiment.control.name
-        ab_user[experiment.key] = ret if Split.configuration.store_override
-      elsif experiment.has_winner?
-        ret = experiment.winner.name
-      else
-        clean_old_versions(experiment)
-        if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
-          ret = experiment.control.name
-        else
-          if ab_user[experiment.key]
-            ret = ab_user[experiment.key]
-          else
-            trial.choose!
-            call_trial_choose_hook(trial)
-            ret = begin_experiment(experiment, trial.alternative.name)
-          end
-        end
-      end
-
-      ret
-    end
-
-    def not_started?(experiment)
-      experiment.start_time.nil?
-    end
-
-    def call_trial_choose_hook(trial)
-      send(Split.configuration.on_trial_choose, trial) if Split.configuration.on_trial_choose
-    end
-
-    def call_trial_complete_hook(trial)
-      send(Split.configuration.on_trial_complete, trial) if Split.configuration.on_trial_complete
-    end
-
-    def keys_without_experiment(keys, experiment_key)
-      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
     end
   end
 end

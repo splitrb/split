@@ -278,12 +278,6 @@ describe Split::Helper do
       expect(lambda { finished('some_experiment_not_started_by_the_user') }).not_to raise_exception
     end
 
-    it 'should not be doing other tests when it has completed one that has :reset => false' do
-      ab_user[@experiment.key] = @alternative_name
-      ab_user[@experiment.finished_key] = true
-      expect(doing_other_tests?(@experiment.key)).to be false
-    end
-
     context "when on_trial_complete is set" do
       before { Split.configuration.on_trial_complete = :some_method }
       it "should call the method" do
@@ -902,7 +896,7 @@ describe Split::Helper do
     before do
       @experiment = {'link_color' => ["purchase", "refund"]}
       @alternatives = ['blue', 'red']
-      @experiment_name, @goals = normalize_experiment(@experiment)
+      @experiment_name, @goals = normalize_metric(@experiment)
       @goal1 = @goals[0]
       @goal2 = @goals[1]
     end
