@@ -52,8 +52,8 @@ module Split
       else
         alternative_name = ab_user[experiment.key]
         trial = Trial.new(:user => ab_user, :experiment => experiment,
-              :alternative => alternative_name, :goals => options[:goals])
-        trial.complete!(self)
+              :alternative => alternative_name)
+        trial.complete!(options[:goals], self)
 
         if should_reset
           reset!(experiment)

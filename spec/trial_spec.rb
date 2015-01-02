@@ -13,7 +13,6 @@ describe Split::Trial do
     trial = Split::Trial.new(:experiment => experiment, :alternative => alternative)
     expect(trial.experiment).to eq(experiment)
     expect(trial.alternative).to eq(alternative)
-    expect(trial.goals).to eq([])
   end
 
   describe "alternative" do

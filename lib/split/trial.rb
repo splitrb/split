@@ -1,11 +1,9 @@
 module Split
   class Trial
     attr_accessor :experiment
-    attr_accessor :goals
 
     def initialize(attrs = {})
       self.experiment   = attrs.delete(:experiment)
-      self.goals        = attrs.delete(:goals) || []
       self.alternative  = attrs.delete(:alternative)
 
       @user             = attrs.delete(:user)
@@ -26,12 +24,14 @@ module Split
       end
     end
 
-    def complete!(context = nil)
+    def complete!(goals, context = nil)
+      goals = goals || []
+
       if alternative
-        if @goals.empty?
+        if goals.empty?
           alternative.increment_completion
         else
-          @goals.each {|g| alternative.increment_completion(g) }
+          goals.each {|g| alternative.increment_completion(g) }
         end
 
         context.send(Split.configuration.on_trial_complete, self) \
