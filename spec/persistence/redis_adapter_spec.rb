@@ -16,6 +16,15 @@ describe Split::Persistence::RedisAdapter do
       end
     end
 
+    context 'config with key' do
+      before { Split::Persistence::RedisAdapter.reset_config! }
+      subject { Split::Persistence::RedisAdapter.new(context, 'manual') }
+
+      it 'should be "persistence:manual"' do
+        expect(subject.redis_key).to eq('persistence:manual')
+      end
+    end
+
     context 'config with lookup_by = proc { "block" }' do
       before { Split::Persistence::RedisAdapter.with_config(:lookup_by => proc{'block'}) }
 
