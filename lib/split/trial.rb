@@ -8,6 +8,8 @@ module Split
 
       @user             = attrs.delete(:user)
       @options          = attrs
+
+      @alternative_choosen = false
     end
 
     def alternative
@@ -39,13 +41,13 @@ module Split
       end
     end
 
-    def record!
-      if should_store_alternative?
-        @user[@experiment.key] = @alternative.name
-      end
-    end
+    # Choose an alternative, add a participant, and save the alternative choice on the user. This
+    # method is guaranteed to only run once, and will skip the alternative choosing process if run
+    # a second time.
+    def choose!(context = nil)
+      # Only run the process once
+      return alternative if @alternative_choosen
 
-    def choose(context = nil)
       if @options[:override]
         self.alternative = @options[:override]
       elsif @options[:disabled]
@@ -62,17 +64,17 @@ module Split
         else
           self.alternative = @experiment.next_alternative
 
+          # Increment the number of participants since we are actually choosing a new alternative
           self.alternative.increment_participation
+
+          # Run the post-choosing hook on the context
           context.send(Split.configuration.on_trial_choose, self) \
               if Split.configuration.on_trial_choose && context
         end
       end
-    end
 
-    def choose!(context = nil)
-      choose(context)
-      record!
-
+      @user[@experiment.key] = alternative.name if should_store_alternative?
+      @alternative_choosen = true
       alternative
     end
 

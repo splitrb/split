@@ -33,10 +33,10 @@ describe Split::Trial do
     end
   end
 
-  describe "#choose" do
+  describe "#choose!" do
     def expect_alternative(trial, alternative_name)
       3.times do
-        trial.choose
+        trial.choose!
         expect(trial.alternative.name).to eq(alternative_name)
       end
     end
@@ -93,60 +93,55 @@ describe Split::Trial do
         trial = Split::Trial.new(:user => user, :experiment => experiment)
         expect(experiment).to receive(:next_alternative).and_call_original
 
-        trial.choose
+        trial.choose!
         expect(trial.alternative.name).to_not be_empty
       end
     end
-  end
 
-  describe "#record!" do
-    before(:each) { Split.configuration.store_override = false }
+    describe "alternative recording" do
+      before(:each) { Split.configuration.store_override = false }
 
-    context "when override is present" do
-      it "stores when store_override is true" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
-        trial.choose
+      context "when override is present" do
+        it "stores when store_override is true" do
+          trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
 
-        Split.configuration.store_override = true
-        expect(user).to receive("[]=")
-        trial.record!
+          Split.configuration.store_override = true
+          expect(user).to receive("[]=")
+          trial.choose!
+        end
+
+        it "does not store when store_override is false" do
+          trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
+
+          expect(user).to_not receive("[]=")
+          trial.choose!
+        end
       end
 
-      it "does not store when store_override is false" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
-        trial.choose
+      context "when disabled is present" do
+        it "stores when store_override is true" do
+          trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
 
-        expect(user).to_not receive("[]=")
-        trial.record!
-      end
-    end
+          Split.configuration.store_override = true
+          expect(user).to receive("[]=")
+          trial.choose!
+        end
 
-    context "when disabled is present" do
-      it "stores when store_override is true" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
-        trial.choose
+        it "does not store when store_override is false" do
+          trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
 
-        Split.configuration.store_override = true
-        expect(user).to receive("[]=")
-        trial.record!
+          expect(user).to_not receive("[]=")
+          trial.choose!
+        end
       end
 
-      it "does not store when store_override is false" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
-        trial.choose
+      context "when exclude is present" do
+        it "does not store" do
+          trial = Split::Trial.new(:user => user, :experiment => experiment, :exclude => true)
 
-        expect(user).to_not receive("[]=")
-        trial.record!
-      end
-    end
-
-    context "when exclude is present" do
-      it "does not store" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :exclude => true)
-        trial.choose
-
-        expect(user).to_not receive("[]=")
-        trial.record!
+          expect(user).to_not receive("[]=")
+          trial.choose!
+        end
       end
     end
   end
