@@ -661,4 +661,4 @@ Tests can be ran with `rake spec`
 
 ## Copyright
 
-Copyright (c) 2013 Andrew Nesbitt. See [LICENSE](https://github.com/andrew/split/blob/master/LICENSE) for details.
+Copyright (c) 2015 Andrew Nesbitt. See [LICENSE](https://github.com/andrew/split/blob/master/LICENSE) for details.
