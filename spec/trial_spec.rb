@@ -50,7 +50,7 @@ describe Split::Trial do
       end
     end
 
-    context "when disabled" do
+    context "when disabled option is true" do
       it "picks the control" do
         trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
         expect(experiment).to_not receive(:next_alternative)
@@ -59,7 +59,18 @@ describe Split::Trial do
       end
     end
 
-    context "experiment has winner" do
+    context "when Split is globally disabled" do
+      it "picks the control" do
+        Split.configuration.enabled = false
+        trial = Split::Trial.new(:user => user, :experiment => experiment)
+        expect(experiment).to_not receive(:next_alternative)
+
+        expect_alternative(trial, 'basket')
+        Split.configuration.enabled = true
+      end
+    end
+
+    context "when experiment has winner" do
       it "picks the winner" do
         trial = Split::Trial.new(:user => user, :experiment => experiment)
         experiment.winner = 'cart'
