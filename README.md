@@ -638,18 +638,7 @@ Ryan bates has produced an excellent 10 minute screencast about split on the Rai
 
 ## Contributors
 
-Special thanks to the following people for submitting patches:
-
-* Lloyd Pick
-* Jeffery Chupp
-* Andrew Appleton
-* Phil Nash
-* Dave Goodchild
-* Ian Young
-* Nathan Woodhull
-* Ville Lautanala
-* Liu Jin
-* Peter Schröder
+Over 70 different people have contributed to the project, you can see them all here: https://github.com/andrew/split/graphs/contributors
 
 ## Development
 
