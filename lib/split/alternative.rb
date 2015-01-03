@@ -104,7 +104,7 @@ module Split
     end
 
     def experiment
-      Split::Experiment.find(experiment_name)
+      Split::ExperimentCatalog.find(experiment_name)
     end
 
     def z_score(goal = nil)

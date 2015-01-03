@@ -14,11 +14,11 @@ describe Split::Dashboard do
   end
 
   let(:experiment) {
-    Split::Experiment.find_or_create("link_color", "blue", "red")
+    Split::ExperimentCatalog.find_or_create("link_color", "blue", "red")
   }
 
   let(:experiment_with_goals) {
-    Split::Experiment.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
+    Split::ExperimentCatalog.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
   }
 
   let(:metric) {
@@ -139,7 +139,7 @@ describe Split::Dashboard do
   it "should delete an experiment" do
     delete "/#{experiment.name}"
     expect(last_response).to be_redirect
-    expect(Split::Experiment.find(experiment.name)).to be_nil
+    expect(Split::ExperimentCatalog.find(experiment.name)).to be_nil
   end
 
   it "should mark an alternative as the winner" do

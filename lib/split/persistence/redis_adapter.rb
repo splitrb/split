@@ -5,8 +5,10 @@ module Split
 
       attr_reader :redis_key
 
-      def initialize(context)
-        if lookup_by = self.class.config[:lookup_by]
+      def initialize(context, key = nil)
+        if key
+          @redis_key = "#{self.class.config[:namespace]}:#{key}"
+        elsif lookup_by = self.class.config[:lookup_by]
           if lookup_by.respond_to?(:call)
             key_frag = lookup_by.call(context)
           else

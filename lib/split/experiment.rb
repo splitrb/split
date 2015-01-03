@@ -1,4 +1,4 @@
-  module Split
+module Split
   class Experiment
     attr_accessor :name
     attr_writer :algorithm
@@ -69,23 +69,6 @@
       # calculate probability that each alternative is the winner
       @alternative_probabilities = {}
       alts
-    end
-
-    def self.all
-      ExperimentCatalog.all
-    end
-
-    # Return experiments without a winner (considered "active") first
-    def self.all_active_first
-      ExperimentCatalog.all_active_first
-    end
-
-    def self.find(name)
-      ExperimentCatalog.find(name)
-    end
-
-    def self.find_or_create(label, *alternatives)
-      ExperimentCatalog.find_or_create(label, *alternatives)
     end
 
     def save
