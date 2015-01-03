@@ -1,5 +1,4 @@
 language: ruby
-bundler_args: '--without debug'
 rvm:
   - 2.1.5
 
