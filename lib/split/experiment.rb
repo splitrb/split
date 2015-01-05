@@ -8,7 +8,7 @@ module Split
     attr_accessor :alternative_probabilities
 
     DEFAULT_OPTIONS = {
-      :resettable => true,
+      :resettable => true
     }
 
     def initialize(name, options = {})
