@@ -1,3 +1,14 @@
+## 1.1.0 (January 9th, 2015)
+
+Features:
+
+  - Decouple trial from Split::Helper (@joshdover, #286)
+  - Helper method for Active Experiments (@blahblahblah-, #273)
+
+Misc:
+
+  - Use the new travis container based infrastructure for tests (@andrew, #280)
+
 ## 1.0.0 (October 12th, 2014)
 
 Changes:
