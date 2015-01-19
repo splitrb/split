@@ -1,15 +1,21 @@
 module Split
   class Trial
     attr_accessor :experiment
+    attr_accessor :metadata
 
     def initialize(attrs = {})
       self.experiment   = attrs.delete(:experiment)
       self.alternative  = attrs.delete(:alternative)
+      self.metadata  = attrs.delete(:metadata)
 
       @user             = attrs.delete(:user)
       @options          = attrs
 
       @alternative_choosen = false
+    end
+
+    def metadata
+      @metadata ||= experiment.metadata[alternative.name]
     end
 
     def alternative
