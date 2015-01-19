@@ -60,6 +60,7 @@ module Split
         if exp_config
           alts = load_alternatives_from_configuration
           options[:goals] = load_goals_from_configuration
+          options[:metadata] = load_metadata_from_configuration
           options[:resettable] = exp_config[:resettable]
           options[:algorithm] = exp_config[:algorithm]
         end
@@ -87,10 +88,12 @@ module Split
       else
         existing_alternatives = load_alternatives_from_redis
         existing_goals = load_goals_from_redis
-        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
+        existing_metadata = load_metadata_from_redis
+        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals && existing_metadata == @metadata
           reset
           @alternatives.each(&:delete)
           delete_goals
+          delete_metadata
           Split.redis.del(@name)
           @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
           @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
@@ -248,6 +251,7 @@ module Split
       Split.redis.srem(:experiments, name)
       Split.redis.del(name)
       delete_goals
+      delete_metadata
       Split.configuration.on_experiment_delete.call(self)
       increment_version
     end
@@ -256,7 +260,7 @@ module Split
       Split.redis.del(goals_key)
     end
 
-    def metadata_goals
+    def delete_metadata
       Split.redis.del(metadata_key)
     end
 
