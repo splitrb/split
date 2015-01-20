@@ -109,6 +109,42 @@ describe Split::Trial do
       end
     end
 
+    describe "#complete!" do
+      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+      context 'when there are no goals' do
+        it 'should complete the trial' do
+          trial.choose!
+          old_completed_count = trial.alternative.completed_count
+          trial.complete!
+          expect(trial.alternative.completed_count).to be(old_completed_count+1)
+        end
+      end
+
+      context 'when there are many goals' do
+        let(:goals) { ['first', 'second'] }
+        let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goals) }
+        shared_examples_for "goal completion" do
+          it 'should not complete the trial' do
+            trial.choose!
+            old_completed_count = trial.alternative.completed_count
+            trial.complete!(goal)
+            expect(trial.alternative.completed_count).to_not be(old_completed_count+1)
+          end
+        end
+
+        describe 'Array of Goals' do
+          let(:goal) { [goals.first] }
+          it_behaves_like 'goal completion'
+        end
+
+        describe 'String of Goal' do
+          let(:goal) { goals.first }
+          it_behaves_like 'goal completion'
+        end
+
+      end
+    end
+
     describe "alternative recording" do
       before(:each) { Split.configuration.store_override = false }
 
