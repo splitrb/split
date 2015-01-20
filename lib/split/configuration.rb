@@ -141,6 +141,10 @@ module Split
             experiment_config[experiment_name.to_sym][:goals] = goals
           end
 
+          if metadata = value_for(settings, :metadata)
+            experiment_config[experiment_name.to_sym][:metadata] = metadata
+          end
+
           if (resettable = value_for(settings, :resettable)) != nil
             experiment_config[experiment_name.to_sym][:resettable] = resettable
           end

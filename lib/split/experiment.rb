@@ -6,6 +6,7 @@ module Split
     attr_accessor :goals
     attr_accessor :alternatives
     attr_accessor :alternative_probabilities
+    attr_accessor :metadata
 
     DEFAULT_OPTIONS = {
       :resettable => true
@@ -22,6 +23,7 @@ module Split
         set_alternatives_and_options(
           alternatives: load_alternatives_from_configuration,
           goals: load_goals_from_configuration,
+          metadata: load_metadata_from_configuration,
           resettable: exp_config[:resettable],
           algorithm: exp_config[:algorithm]
         )
@@ -29,6 +31,7 @@ module Split
         set_alternatives_and_options(
           alternatives: alternatives,
           goals: options[:goals],
+          metadata: options[:metadata],
           resettable: options[:resettable],
           algorithm: options[:algorithm]
         )
@@ -40,6 +43,7 @@ module Split
       self.goals = options[:goals]
       self.resettable = options[:resettable]
       self.algorithm = options[:algorithm]
+      self.metadata = options[:metadata]
     end
 
     def extract_alternatives_from_options(options)
@@ -56,6 +60,7 @@ module Split
         if exp_config
           alts = load_alternatives_from_configuration
           options[:goals] = load_goals_from_configuration
+          options[:metadata] = load_metadata_from_configuration
           options[:resettable] = exp_config[:resettable]
           options[:algorithm] = exp_config[:algorithm]
         end
@@ -79,16 +84,20 @@ module Split
         start unless Split.configuration.start_manually
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
         @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+        Split.redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
       else
         existing_alternatives = load_alternatives_from_redis
         existing_goals = load_goals_from_redis
-        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
+        existing_metadata = load_metadata_from_redis
+        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals && existing_metadata == @metadata
           reset
           @alternatives.each(&:delete)
           delete_goals
+          delete_metadata
           Split.redis.del(@name)
           @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
           @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+          Split.redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
         end
       end
 
@@ -221,6 +230,10 @@ module Split
       "#{key}:finished"
     end
 
+    def metadata_key
+      "#{name}:metadata"
+    end
+
     def resettable?
       resettable
     end
@@ -238,6 +251,7 @@ module Split
       Split.redis.srem(:experiments, name)
       Split.redis.del(name)
       delete_goals
+      delete_metadata
       Split.configuration.on_experiment_delete.call(self)
       increment_version
     end
@@ -246,12 +260,17 @@ module Split
       Split.redis.del(goals_key)
     end
 
+    def delete_metadata
+      Split.redis.del(metadata_key)
+    end
+
     def load_from_redis
       exp_config = Split.redis.hgetall(experiment_config_key)
       self.resettable = exp_config['resettable']
       self.algorithm = exp_config['algorithm']
       self.alternatives = load_alternatives_from_redis
       self.goals = load_goals_from_redis
+      self.metadata = load_metadata_from_redis
     end
 
     def calc_winning_alternatives
@@ -388,6 +407,10 @@ module Split
       "experiment_configurations/#{@name}"
     end
 
+    def load_metadata_from_configuration
+      metadata = Split.configuration.experiment_for(@name)[:metadata]
+    end
+
     def load_goals_from_configuration
       goals = Split.configuration.experiment_for(@name)[:goals]
       if goals.nil?
@@ -399,6 +422,11 @@ module Split
 
     def load_goals_from_redis
       Split.redis.lrange(goals_key, 0, -1)
+    end
+
+    def load_metadata_from_redis
+      meta = Split.redis.get(metadata_key)
+      JSON.parse(meta) unless meta.nil?
     end
 
     def load_alternatives_from_configuration

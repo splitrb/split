@@ -147,6 +147,29 @@ describe Split::Experiment do
 
     end
 
+    describe '#metadata' do
+      let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash, :metadata => meta) }
+      context 'simple hash' do
+        let(:meta) {  { 'basket' => 'a', 'cart' => 'b' } }
+        it "should persist metadata in redis" do
+          experiment.save
+          e = Split::ExperimentCatalog.find('basket_text')
+          expect(e).to eq(experiment)
+          expect(e.metadata).to eq(meta)
+        end
+      end
+
+      context 'nested hash' do
+        let(:meta) {  { 'basket' => { 'one' => 'two' }, 'cart' => 'b' } }
+        it "should persist metadata in redis" do
+          experiment.save
+          e = Split::ExperimentCatalog.find('basket_text')
+          expect(e).to eq(experiment)
+          expect(e.metadata).to eq(meta)
+        end
+      end
+    end
+
     it "should persist algorithm in redis" do
       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash)
       experiment.save

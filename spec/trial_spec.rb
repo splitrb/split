@@ -33,6 +33,27 @@ describe Split::Trial do
     end
   end
 
+  describe "metadata" do
+    let(:alternatives) { ['basket', 'cart'] }
+    let(:metadata) { Hash[alternatives.map { |k| [k, "Metadata for #{k}"] }] }
+    let(:experiment) do
+      Split::Experiment.new('basket_text', :alternatives => alternatives, :metadata => metadata).save
+    end
+
+    it 'has metadata on each trial' do
+      trial = Split::Trial.new(:experiment => experiment, :user => user, :metadata => metadata['cart'],
+                               :override => 'cart')
+      expect(trial.metadata).to eq(metadata['cart'])
+    end
+
+    it 'has metadata on each trial from the experiment' do
+      trial = Split::Trial.new(:experiment => experiment, :user => user)
+      trial.choose!
+      expect(trial.metadata).to eq(metadata[trial.alternative.name])
+      expect(trial.metadata).to match /#{trial.alternative.name}/
+    end
+  end
+
   describe "#choose!" do
     def expect_alternative(trial, alternative_name)
       3.times do

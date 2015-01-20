@@ -90,6 +90,36 @@ describe Split::Configuration do
         end
       end
 
+      context "in a configuration with metadata" do
+        before do
+          experiments_yaml = <<-eos
+            my_experiment:
+              alternatives:
+                - name: Control Opt
+                  percent: 67
+                - name: Alt One
+                  percent: 10
+                - name: Alt Two
+                  percent: 23
+              metadata:
+                Control Opt:
+                  text: 'Control Option'
+                Alt One:
+                  text: 'Alternative One'
+                Alt Two:
+                  text: 'Alternative Two'
+              resettable: false
+            eos
+          @config.experiments = YAML.load(experiments_yaml)
+        end
+
+        it 'should have metadata on the experiment' do
+          meta = @config.normalized_experiments[:my_experiment][:metadata]
+          expect(meta).to_not be nil
+          expect(meta['Control Opt']['text']).to eq('Control Option')
+        end
+      end
+
       context "in a complex configuration" do
         before do
           experiments_yaml = <<-eos
@@ -120,6 +150,7 @@ describe Split::Configuration do
           expect(@config.metrics).not_to be_nil
           expect(@config.metrics.keys).to eq([:my_metric])
         end
+
       end
     end
 
