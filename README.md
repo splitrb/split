@@ -119,7 +119,7 @@ You can find more examples, tutorials and guides on the [wiki](https://github.co
 
 ## Statistical Validity
 
-Split has two options for you to use to determine which alternative is the best. 
+Split has two options for you to use to determine which alternative is the best.
 
 The first option (default on the dashboard) uses a z test (n>30) for the difference between your control and alternative conversion rates to calculate statistical significance. This test will tell you whether an alternative is better or worse than your control, but it will not distinguish between which alternative is the best in an experiment with multiple alternatives. Split will only tell you if your experiment is 90%, 95%, or 99% significant, and this test only works if you have more than 30 participants and 5 conversions for each branch.
 
@@ -364,6 +364,8 @@ Split.configure do |config|
 end
 ```
 
+You can set different Redis host via environment variable ```REDIS_URL```.
+
 ### Filtering
 
 In most scenarios you don't want to have AB-Testing enabled for web spiders, robots or special groups of users.
@@ -503,7 +505,7 @@ To complete a goal conversion, you do it like:
 finished("link_color" => "purchase")
 ```
 
-**NOTE:** This does not mean that a single experiment can have/complete progressive goals. 
+**NOTE:** This does not mean that a single experiment can have/complete progressive goals.
 
 **Good Example**: Test if listing Plan A first result in more conversions to Plan A (goal: "plana_conversion") or Plan B (goal: "planb_conversion").
 
@@ -601,11 +603,11 @@ end
 
 ## Algorithms
 
-By default, Split ships with `Split::Algorithms::WeightedSample` that randomly selects from possible alternatives for a traditional a/b test. 
+By default, Split ships with `Split::Algorithms::WeightedSample` that randomly selects from possible alternatives for a traditional a/b test.
 It is possible to specify static weights to favor certain alternatives.
 
-`Split::Algorithms::Whiplash` is an implementation of a [multi-armed bandit algorithm](http://stevehanov.ca/blog/index.php?id=132). 
-This algorithm will automatically weight the alternatives based on their relative performance, 
+`Split::Algorithms::Whiplash` is an implementation of a [multi-armed bandit algorithm](http://stevehanov.ca/blog/index.php?id=132).
+This algorithm will automatically weight the alternatives based on their relative performance,
 choosing the better-performing ones more often as trials are completed.
 
 Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file.
