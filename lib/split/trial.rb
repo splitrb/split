@@ -26,14 +26,12 @@ module Split
       end
     end
 
-    def complete!(goals, context = nil)
-      goals = goals || []
-
+    def complete!(goals=[], context = nil)
       if alternative
-        if goals.empty?
+        if Array(goals).empty?
           alternative.increment_completion
         else
-          goals.each {|g| alternative.increment_completion(g) }
+          Array(goals).each {|g| alternative.increment_completion(g) }
         end
 
         context.send(Split.configuration.on_trial_complete, self) \
