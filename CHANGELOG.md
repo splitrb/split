@@ -1,3 +1,14 @@
+## 1.2.0 (January 24th, 2015)
+
+Features
+
+  - Configure redis using environment variables if available (@saratovsource , #293)
+  - Store metadata on experiment configuration (@dekz, #291)
+
+Bugfixes:
+
+ - Revert the Trial#complete! public API to support noargs (@dekz, #292)
+
 ## 1.1.0 (January 9th, 2015)
 
 Features:
