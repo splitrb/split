@@ -445,6 +445,28 @@ and:
 finished("my_first_experiment")
 ```
 
+You can also add meta data for each experiment, very useful when you need more than an alternative name to change behaviour:
+
+```yaml
+my_first_experiment:
+  alternatives:
+    - a
+    - b
+    meta:
+      a:
+        text: "Have a fantastic day"
+        b:
+          text: "Don't get hit by a bus"
+```
+
+This allows for some advanced experiment configuration using methods like:
+
+```ruby
+trial.alternative.name # => "a"
+
+trial.metadata['text'] # => "Have a fantastic day"
+```
+
 #### Metrics
 
 You might wish to track generic metrics, such as conversions, and use
