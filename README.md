@@ -250,7 +250,7 @@ For example:
 
 ``` ruby
 Split.configure do |config|
-  config.on_trial_choose   = :log_trial_choice
+  config.on_trial_choose   = :log_trial_choose
   config.on_trial_complete = :log_trial_complete
 end
 ```
