@@ -455,8 +455,8 @@ my_first_experiment:
     meta:
       a:
         text: "Have a fantastic day"
-        b:
-          text: "Don't get hit by a bus"
+      b:
+        text: "Don't get hit by a bus"
 ```
 
 This allows for some advanced experiment configuration using methods like:
@@ -465,6 +465,15 @@ This allows for some advanced experiment configuration using methods like:
 trial.alternative.name # => "a"
 
 trial.metadata['text'] # => "Have a fantastic day"
+```
+
+or in views:
+
+```erb
+<% ab_test("my_first_experiment") do |alternative, meta| %>
+  <%= alternative %>
+  <small><%= meta['text'] %></small>
+<% end %>
 ```
 
 #### Metrics
