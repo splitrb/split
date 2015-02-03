@@ -198,6 +198,26 @@ describe Split::Helper do
     end
   end
 
+  describe 'metadata' do
+    before do
+      Split.configuration.experiments = {
+        :my_experiment => {
+          :alternatives => ["one", "two"],
+          :resettable => false,
+          :metadata => { 'one' => 'Meta1', 'two' => 'Meta2' }
+        }
+      }
+    end
+
+    it 'should be passed to helper block' do
+      @params = {'my_experiment' => 'one'}
+      expect(ab_test('my_experiment')).to eq 'one'
+      expect(ab_test('my_experiment') do |alternative, meta|
+        meta
+      end).to eq('Meta1')
+    end
+  end
+
   describe 'finished' do
     before(:each) do
       @experiment_name = 'link_color'

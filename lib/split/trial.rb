@@ -15,7 +15,7 @@ module Split
     end
 
     def metadata
-      @metadata ||= experiment.metadata[alternative.name]
+      @metadata ||= experiment.metadata[alternative.name] if experiment.metadata
     end
 
     def alternative
