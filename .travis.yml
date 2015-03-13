@@ -1,11 +1,12 @@
 language: ruby
 rvm:
-  - 2.1.5
+  - 2.2.0
 
 gemfile:
   - gemfiles/3.2.gemfile
   - gemfiles/4.0.gemfile
   - gemfiles/4.1.gemfile
+  - gemfiles/4.2.gemfile
 
 services:
    - redis-server
