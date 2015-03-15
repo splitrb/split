@@ -7,22 +7,19 @@ module Split
     ADAPTERS = {
       :cookie => Split::Persistence::CookieAdapter,
       :session => Split::Persistence::SessionAdapter
-    }
+    }.freeze
 
     def self.adapter
       if persistence_config.is_a?(Symbol)
-        adapter_class = ADAPTERS[persistence_config]
-        raise Split::InvalidPersistenceAdapterError unless adapter_class
+        ADAPTERS.fetch(persistence_config) { raise Split::InvalidPersistenceAdapterError }
       else
-        adapter_class = persistence_config
+        persistence_config
       end
-      adapter_class
     end
-
-    private
 
     def self.persistence_config
       Split.configuration.persistence
     end
+    private_class_method :persistence_config
   end
 end

@@ -84,8 +84,6 @@ module Split
       end
     end
 
-    private
-
     def self.normalize_metric(label)
       if Hash === label
         metric_name = label.keys.first
@@ -96,5 +94,7 @@ module Split
       end
       return metric_name, goals
     end
+    private_class_method :normalize_metric
+
   end
 end

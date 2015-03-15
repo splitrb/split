@@ -12,13 +12,8 @@ module Split
     end
 
     def self.find(name)
-      if Split.redis.exists(name)
-        obj = Experiment.new name
-        obj.load_from_redis
-      else
-        obj = nil
-      end
-      obj
+      return unless Split.redis.exists(name)
+      Experiment.new(name).tap { |exp| exp.load_from_redis }
     end
 
     def self.find_or_initialize(metric_descriptor, control = nil, *alternatives)
@@ -39,8 +34,6 @@ module Split
       experiment.save
     end
 
-    private
-
     def self.normalize_experiment(metric_descriptor)
       if Hash === metric_descriptor
         experiment_name = metric_descriptor.keys.first
@@ -51,6 +44,7 @@ module Split
       end
       return experiment_name, goals
     end
+    private_class_method :normalize_experiment
 
   end
 end
