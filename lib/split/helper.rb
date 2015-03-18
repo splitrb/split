@@ -1,5 +1,6 @@
 module Split
   module Helper
+    module_function
 
     def ab_test(metric_descriptor, control = nil, *alternatives)
       begin
@@ -128,8 +129,6 @@ module Split
       end
       return experiment_pairs
     end
-
-    protected
 
     def normalize_metric(metric_descriptor)
       if Hash === metric_descriptor
