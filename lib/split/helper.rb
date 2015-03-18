@@ -63,7 +63,6 @@ module Split
       end
     end
 
-
     def finished(metric_descriptor, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_metric(metric_descriptor)

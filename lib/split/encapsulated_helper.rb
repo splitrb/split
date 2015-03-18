@@ -2,7 +2,7 @@
 # mix into our model classes.
 #
 # This module exposes only two methods
-#  - ab_test and 
+#  - ab_test and
 #  - ab_test_finished
 # that can safely be mixed into any class.
 #

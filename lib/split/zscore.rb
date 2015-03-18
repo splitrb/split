@@ -34,7 +34,7 @@ module Split
 
       # Formula for pooled error of the difference of the means: root(π*(1-π)*(1/na+1/nc)
       # π = (xa + xc) / (na + nc)
-      pi = (p_1*n_1 + p_2*n_2)/(n_1 + n_2) 
+      pi = (p_1*n_1 + p_2*n_2)/(n_1 + n_2)
       s_p = Math.sqrt(pi*(1-pi)*(1/n_1 + 1/n_2))
 
       # Formula for unpooled error of the difference of the means: root(sa**2/na + sc**2/nc)
