@@ -14,9 +14,12 @@ module Split
 
     class ContextShim
       include Split::Helper
+      public :ab_test, :finished
+
       def initialize(context)
         @context = context
       end
+
       def ab_user
         @ab_user ||= Split::Persistence.adapter.new(@context)
       end
