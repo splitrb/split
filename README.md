@@ -1,4 +1,4 @@
-# Split
+# [Split](http://libraries.io/rubygems/split)
 
 Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
 
