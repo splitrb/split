@@ -11,6 +11,11 @@ Bugfixes:
 
 ## 1.1.0 (January 9th, 2015)
 
+Changes:
+
+  - Public class methods on `Split::Experiment` (e.g., `find_or_create`)
+    have been moved to `Split::ExperimentCatalog`.
+
 Features:
 
   - Decouple trial from Split::Helper (@joshdover, #286)

@@ -614,7 +614,7 @@ conduct experiments that are not tied to a web session.
 
 ```ruby
 # create a new experiment
-experiment = Split::Experiment.find_or_create('color', 'red', 'blue')
+experiment = Split::ExperimentCatalog.find_or_create('color', 'red', 'blue')
 # create a new trial
 trial = Split::Trial.new(:experiment => experiment)
 # run trial
