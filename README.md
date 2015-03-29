@@ -115,7 +115,7 @@ Example: Conversion tracking (in a view)
 Thanks for signing up, dude! <% finished("signup_page_redesign") %>
 ```
 
-You can find more examples, tutorials and guides on the [wiki](https://github.com/andrew/split/wiki).
+You can find more examples, tutorials and guides on the [wiki](https://github.com/splitrb/split/wiki).
 
 ## Statistical Validity
 
@@ -650,8 +650,8 @@ end
 
 ## Extensions
 
-  - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
-  - [Split::Analytics](http://github.com/andrew/split-analytics) - push test data to google analytics
+  - [Split::Export](http://github.com/splitrb/split-export) - easily export ab test data out of Split
+  - [Split::Analytics](http://github.com/splitrb/split-analytics) - push test data to google analytics
   - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - store experiment data in mongoid (still uses redis)
   - [Split::Cacheable](https://github.com/harrystech/split_cacheable) - automatically create cache buckets per test
   - [Split::Counters](https://github.com/bernardkroes/split-counters) - add counters per experiment and alternative
@@ -668,12 +668,12 @@ Ryan bates has produced an excellent 10 minute screencast about split on the Rai
 
 ## Contributors
 
-Over 70 different people have contributed to the project, you can see them all here: https://github.com/andrew/split/graphs/contributors
+Over 70 different people have contributed to the project, you can see them all here: https://github.com/splitrb/split/graphs/contributors
 
 ## Development
 
-Source hosted at [GitHub](http://github.com/andrew/split).
-Report Issues/Feature requests on [GitHub Issues](http://github.com/andrew/split/issues).
+Source hosted at [GitHub](http://github.com/splitrb/split).
+Report Issues/Feature requests on [GitHub Issues](http://github.com/splitrb/split/issues).
 Discussion at [Google Groups](https://groups.google.com/d/forum/split-ruby)
 
 Tests can be ran with `rake spec`
@@ -691,4 +691,4 @@ Tests can be ran with `rake spec`
 
 ## Copyright
 
-Copyright (c) 2015 Andrew Nesbitt. See [LICENSE](https://github.com/andrew/split/blob/master/LICENSE) for details.
+Copyright (c) 2015 Andrew Nesbitt. See [LICENSE](https://github.com/splitrb/split/blob/master/LICENSE) for details.
