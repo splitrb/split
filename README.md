@@ -87,7 +87,7 @@ Example: View
 
 ```erb
 <% ab_test("login_button", "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
-  <%= img_tag(button_file, :alt => "Login!") %>
+  <%= image_tag(button_file, :alt => "Login!") %>
 <% end %>
 ```
 
