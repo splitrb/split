@@ -16,7 +16,7 @@ module Split
         else
           control_variable(experiment.control)
         end
-      rescue Errno::ECONNREFUSED, Redis::CannotConnectError => e
+      rescue Errno::ECONNREFUSED, Redis::CannotConnectError, SocketError => e
         raise(e) unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
 
