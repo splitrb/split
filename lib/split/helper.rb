@@ -29,7 +29,8 @@ module Split
       end
 
       if block_given?
-        yield(alternative, (trial.metadata if trial))
+        metadata = trial ? trial.metadata : {}
+        yield(alternative, metadata)
       else
         alternative
       end
