@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'sinatra',         '>= 1.2.6'
   s.add_dependency 'simple-random'
 
-  s.add_development_dependency 'bundler',     '~> 1.9'
+  s.add_development_dependency 'bundler',     '~> 1.7'
   s.add_development_dependency 'coveralls'
   s.add_development_dependency 'rack-test'
   s.add_development_dependency 'rake'
