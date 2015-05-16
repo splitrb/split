@@ -7,10 +7,10 @@ Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and 
 Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
-[![Build Status](https://secure.travis-ci.org/andrew/split.svg?branch=master)](http://travis-ci.org/andrew/split)
-[![Dependency Status](https://gemnasium.com/andrew/split.svg)](https://gemnasium.com/andrew/split)
-[![Code Climate](https://codeclimate.com/github/andrew/split.svg)](https://codeclimate.com/github/andrew/split)
-[![Coverage Status](http://img.shields.io/coveralls/andrew/split.svg)](https://coveralls.io/r/andrew/split)
+[![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](http://travis-ci.org/splitrb/split)
+[![Dependency Status](https://gemnasium.com/splitrb/split.svg)](https://gemnasium.com/splitrb/split)
+[![Code Climate](https://codeclimate.com/github/splitrb/split.svg)](https://codeclimate.com/github/splitrb/split)
+[![Coverage Status](http://img.shields.io/coveralls/splitrb/split.svg)](https://coveralls.io/r/splitrb/split)
 
 ## Requirements
 
