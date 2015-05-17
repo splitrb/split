@@ -1,3 +1,23 @@
+## 1.2.1 (May 17th, 2015)
+
+Features
+
+ - Handle redis DNS resolution failures gracefully (@fusion2004, #310)
+ - Push metadata to ab_test block (@ekorneeff, #296)
+ - Helper methods are now private when included in controllers (@ipoval, #303)
+
+Bugfixes:
+
+ - Return an empty hash as metadata when Split is disabled (@tomasdundacek, #313)
+ - Don't use capture helper from ActionView (@tomasdundacek, #312)
+
+Misc:
+
+ - Remove body "max-width" from dashboard (@xicreative, #299)
+ - fix private for class methods (@ipoval, #301)
+ - minor memoization fix in spec (@ipoval, #304)
+ - Minor documentation fixes (#295, #297, #305, #308)
+
 ## 1.2.0 (January 24th, 2015)
 
 Features
