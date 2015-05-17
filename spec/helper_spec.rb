@@ -216,6 +216,17 @@ describe Split::Helper do
         meta
       end).to eq('Meta1')
     end
+
+    it 'should pass empty hash to helper block if library disabled' do
+      Split.configure do |config|
+        config.enabled = false
+      end
+
+      expect(ab_test('my_experiment')).to eq 'one'
+      expect(ab_test('my_experiment') do |_, meta|
+        meta
+      end).to eq({})
+    end
   end
 
   describe 'finished' do
