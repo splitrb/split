@@ -130,6 +130,10 @@ describe Split::Helper do
       expect(ab_user).not_to receive(:[]=)
       ab_test('link_color', 'blue', 'red')
     end
+    
+    it "should force the control alternative when force_control argument is passed as true" do
+      expect(ab_test('link_color', 'blue', 'red', force_control=true)).to eq('blue')
+    end
 
     context "when store_override is set" do
       before { Split.configuration.store_override = true }
