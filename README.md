@@ -139,11 +139,11 @@ Perhaps you only want to show an alternative to 10% of your visitors because it 
 To do this you can pass a weight with each alternative in the following ways:
 
 ```ruby
-ab_test('homepage design', {'Old' => 20}, {'New' => 2})
+ab_test('homepage design', {'Old' => 18}, {'New' => 2})
 
-ab_test('homepage design', 'Old', {'New' => 0.1})
+ab_test('homepage design', 'Old', {'New' => 1.0/9})
 
-ab_test('homepage design', {'Old' => 10}, 'New')
+ab_test('homepage design', {'Old' => 9}, 'New')
 ```
 
 This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
