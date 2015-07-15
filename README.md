@@ -23,47 +23,29 @@ Split only supports redis 2.0 or greater.
 If you're on OS X, Homebrew is the simplest way to install Redis:
 
 ```bash
-$ brew install redis
-$ redis-server /usr/local/etc/redis.conf
+brew install redis
+redis-server /usr/local/etc/redis.conf
 ```
 
 You now have a Redis daemon running on 6379.
 
 ## Setup
 
-If you are using bundler add split to your Gemfile:
-
-``` ruby
-gem 'split'
-```
-
-Then run:
-
 ```bash
-$ bundle install
+gem install split
 ```
 
-Otherwise install the gem:
+### Rails
 
-```bash
-$ gem install split
-```
-
-and require it in your project:
-
-```ruby
-require 'split'
-```
-
-### Rails 3
-
-Split is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
+Adding `gem 'split'` to your Gemfile will autoloaded it when rails starts up, as long as you've configured redis it will 'just work'.
 
 ### Sinatra
 
 To configure sinatra with Split you need to enable sessions and mix in the helper methods. Add the following lines at the top of your sinatra app:
 
 ```ruby
+require 'split'
+
 class MySinatraApp < Sinatra::Base
   enable :sessions
   helpers Split::Helper
