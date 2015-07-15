@@ -68,8 +68,8 @@ It can be used to render different templates, show different text or any other c
 Example: View
 
 ```erb
-<% ab_test("login_button", "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
-  <%= image_tag(button_file, :alt => "Login!") %>
+<% ab_test(:login_button, "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
+  <%= image_tag(button_file, alt: "Login!") %>
 <% end %>
 ```
 
@@ -78,7 +78,7 @@ Example: Controller
 ```ruby
 def register_new_user
   # See what level of free points maximizes users' decision to buy replacement points.
-  @starter_points = ab_test("new_user_free_points", '100', '200', '300')
+  @starter_points = ab_test(:new_user_free_points, '100', '200', '300')
 end
 ```
 
@@ -87,14 +87,14 @@ Example: Conversion tracking (in a controller!)
 ```ruby
 def buy_new_points
   # some business logic
-  finished("new_user_free_points")
+  finished(:new_user_free_points)
 end
 ```
 
 Example: Conversion tracking (in a view)
 
 ```erb
-Thanks for signing up, dude! <% finished("signup_page_redesign") %>
+Thanks for signing up, dude! <% finished(:signup_page_redesign) %>
 ```
 
 You can find more examples, tutorials and guides on the [wiki](https://github.com/splitrb/split/wiki).
@@ -121,11 +121,11 @@ Perhaps you only want to show an alternative to 10% of your visitors because it 
 To do this you can pass a weight with each alternative in the following ways:
 
 ```ruby
-ab_test('homepage design', {'Old' => 18}, {'New' => 2})
+ab_test(:homepage_design, {'Old' => 18}, {'New' => 2})
 
-ab_test('homepage design', 'Old', {'New' => 1.0/9})
+ab_test(:homepage_design, 'Old', {'New' => 1.0/9})
 
-ab_test('homepage design', {'Old' => 9}, 'New')
+ab_test(:homepage_design', {'Old' => 9}, 'New')
 ```
 
 This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
@@ -161,7 +161,7 @@ When a user completes a test their session is reset so that they may start the t
 To stop this behaviour you can pass the following option to the `finished` method:
 
 ```ruby
-finished('experiment_name', :reset => false)
+finished(:experiment_name, reset: false)
 ```
 
 The user will then always see the alternative they started with.
@@ -202,9 +202,9 @@ Using Redis will allow ab_users to persist across sessions or machines.
 
 ```ruby
 Split.configure do |config|
-  config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => proc { |context| context.current_user_id })
+  config.persistence = Split::Persistence::RedisAdapter.with_config(lookup_by: -> (context) { context.current_user_id })
   # Equivalent
-  # config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => :current_user_id }
+  # config.persistence = Split::Persistence::RedisAdapter.with_config(lookup_by: :current_user_id)
 end
 ```
 
@@ -276,8 +276,8 @@ For example:
 
 ``` ruby
 Split.configure do |config|
-  config.on_experiment_reset  = proc{ |experiment| # Do something on reset }
-  config.on_experiment_delete = proc{ |experiment| # Do something else on delete }
+  config.on_experiment_reset  = -> (example) { # Do something on reset }
+  config.on_experiment_delete = -> (experiment) { # Do something else on delete }
 end
 ```
 
@@ -298,13 +298,13 @@ run Rack::URLMap.new \
 However, if you are using Rails 3: You can mount this inside your app routes by first adding this to the Gemfile:
 
 ```ruby
-gem 'split', :require => 'split/dashboard'
+gem 'split', require: 'split/dashboard'
 ```
 
 Then adding this to config/routes.rb
 
 ```ruby
-mount Split::Dashboard, :at => 'split'
+mount Split::Dashboard, at: 'split'
 ```
 
 You may want to password protect that page, you can do so with `Rack::Auth::Basic` (in your split initializer file)
@@ -317,11 +317,11 @@ end
 
 You can even use Devise or any other Warden-based authentication method to authorize users. Just replace `mount Split::Dashboard, :at => 'split'` in `config/routes.rb` with the following:
 ```ruby
-match "/split" => Split::Dashboard, :anchor => false, :via => [:get, :post], :constraints => lambda { |request|
+match "/split" => Split::Dashboard, anchor: false, via: [:get, :post], constraints: -> (request) do
   request.env['warden'].authenticated? # are we authenticated?
   request.env['warden'].authenticate! # authenticate if not already
   # or even check any other condition such as request.env['warden'].user.is_admin?
-}
+end
 ```
 
 More information on this [here](http://steve.dynedge.co.uk/2011/12/09/controlling-access-to-routes-and-rack-apps-in-rails-3-with-devise-and-warden/)
@@ -337,7 +337,7 @@ You can override the default configuration options of Split like so:
 ```ruby
 Split.configure do |config|
   config.db_failover = true # handle redis errors gracefully
-  config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
+  config.db_failover_on_db_error = -> (error) { Rails.logger.error(error.message) }
   config.allow_multiple_experiments = true
   config.enabled = true
   config.persistence = Split::Persistence::SessionAdapter
@@ -363,7 +363,7 @@ Split.configure do |config|
   config.ignore_ip_addresses << '81.19.48.130' # or regex: /81\.19\.48\.[0-9]+/
 
   # or provide your own filter functionality, the default is proc{ |request| is_robot? || is_ignored_ip_address? }
-  config.ignore_filter = proc{ |request| CustomExcludeLogic.excludes?(request) }
+  config.ignore_filter = -> (request) { CustomExcludeLogic.excludes?(request) }
 end
 ```
 
@@ -376,15 +376,15 @@ algorithm and if the experiment resets once finished:
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    "my_first_experiment" => {
-      :alternatives => ["a", "b"],
-      :resettable => false
+    my_first_experiment: {
+      alternatives: ["a", "b"],
+      resettable: false
     },
-    "my_second_experiment" => {
-      :algorithm => 'Split::Algorithms::Whiplash',
-      :alternatives => [
-        { :name => "a", :percent => 67 },
-        { :name => "b", :percent => 33 }
+    :my_second_experiment => {
+      algorithm: 'Split::Algorithms::Whiplash',
+      alternatives: [
+        { name: "a", percent: 67 },
+        { name: "b", percent: 33 }
       ]
     }
   }
@@ -418,13 +418,13 @@ my_second_experiment:
 This simplifies the calls from your code:
 
 ```ruby
-ab_test("my_first_experiment")
+ab_test(:my_first_experiment)
 ```
 
 and:
 
 ```ruby
-finished("my_first_experiment")
+finished(:my_first_experiment)
 ```
 
 You can also add meta data for each experiment, very useful when you need more than an alternative name to change behaviour:
@@ -468,9 +468,9 @@ the `:metric` option.
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    "my_first_experiment" => {
-      :alternatives => ["a", "b"],
-      :metric => :my_metric,
+    my_first_experiment: {
+      alternatives: ["a", "b"],
+      metric: :my_metric,
     }
   }
 end
@@ -496,7 +496,7 @@ You might wish to allow an experiment to have multiple, distinguishable goals.
 The API to define goals for an experiment is this:
 
 ```ruby
-ab_test({"link_color" => ["purchase", "refund"]}, "red", "blue")
+ab_test({link_color: ["purchase", "refund"]}, "red", "blue")
 ```
 
 or you can you can define them in a configuration file:
@@ -504,9 +504,9 @@ or you can you can define them in a configuration file:
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    "link_color" => {
-      :alternatives => ["red", "blue"],
-      :goals => ["purchase", "refund"]
+    link_color: {
+      alternatives: ["red", "blue"],
+      goals: ["purchase", "refund"]
     }
   }
 end
@@ -515,7 +515,7 @@ end
 To complete a goal conversion, you do it like:
 
 ```ruby
-finished("link_color" => "purchase")
+finished(link_color: "purchase")
 ```
 
 **NOTE:** This does not mean that a single experiment can have/complete progressive goals.
