@@ -317,7 +317,7 @@ end
 
 You can even use Devise or any other Warden-based authentication method to authorize users. Just replace `mount Split::Dashboard, :at => 'split'` in `config/routes.rb` with the following:
 ```ruby
-match "/split" => Split::Dashboard, anchor: false, via: [:get, :post], constraints: -> (request) do
+match "/split" => Split::Dashboard, anchor: false, via: [:get, :post, :delete], constraints: -> (request) do
   request.env['warden'].authenticated? # are we authenticated?
   request.env['warden'].authenticate! # authenticate if not already
   # or even check any other condition such as request.env['warden'].user.is_admin?
