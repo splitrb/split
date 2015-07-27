@@ -343,10 +343,11 @@ Split.configure do |config|
   config.persistence = Split::Persistence::SessionAdapter
   #config.start_manually = false ## new test will have to be started manually from the admin panel. default false
   config.include_rails_helper = true
+  config.redis_url = "custom.redis.url:6380"
 end
 ```
 
-You can set different Redis host via environment variable ```REDIS_URL```.
+Split looks for the Redis host in the environment variable ```REDIS_URL``` then defaults to ```localhost:6379``` if not specified by configure block.
 
 ### Filtering
 

@@ -19,6 +19,7 @@ module Split
     attr_accessor :on_experiment_delete
     attr_accessor :include_rails_helper
     attr_accessor :beta_probability_simulations
+    attr_accessor :redis_url
 
     attr_reader :experiments
 
@@ -204,6 +205,7 @@ module Split
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
       @beta_probability_simulations = 10000
+      @redis_url = ENV.fetch('REDIS_URL', 'localhost:6379')
     end
 
     private

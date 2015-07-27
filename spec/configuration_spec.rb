@@ -210,4 +210,22 @@ describe Split::Configuration do
 
     expect(@config.normalized_experiments).to eq({:my_experiment=>{:alternatives=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}})
   end
+
+  context "configuration URL" do
+    it "should default to local redis server" do
+      expect(@config.redis_url).to eq("localhost:6379")
+    end
+
+    it "should allow for redis url to be configured" do
+      @config.redis_url = "custom_redis_url"
+      expect(@config.redis_url).to eq("custom_redis_url")
+    end
+
+    context "provided REDIS_URL environment variable" do
+      it "should use the ENV variable" do
+        ENV['REDIS_URL'] = "env_redis_url"
+        expect(Split::Configuration.new.redis_url).to eq("env_redis_url")
+      end
+    end
+  end
 end
