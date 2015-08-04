@@ -435,11 +435,11 @@ my_first_experiment:
   alternatives:
     - a
     - b
-    meta:
-      a:
-        text: "Have a fantastic day"
-      b:
-        text: "Don't get hit by a bus"
+  metadata:
+    a:
+      text: "Have a fantastic day"
+    b:
+      text: "Don't get hit by a bus"
 ```
 
 This allows for some advanced experiment configuration using methods like:
