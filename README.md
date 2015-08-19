@@ -436,8 +436,8 @@ Split.configure do |config|
     my_first_experiment: {
       alternatives: ["a", "b"],
       metadata: {
-        "checkbox" => {"text" => "Have a fantastic day"},
-        "radio"    => {"text" => "Don't get hit by a bus"},
+        "a" => {"text" => "Have a fantastic day"},
+        "b" => {"text" => "Don't get hit by a bus"},
       }
     },
   }
