@@ -430,6 +430,20 @@ finished(:my_first_experiment)
 
 You can also add meta data for each experiment, very useful when you need more than an alternative name to change behaviour:
 
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    my_first_experiment: {
+      alternatives: ["a", "b"],
+      metadata: {
+        "checkbox" => {"text" => "Have a fantastic day"},
+        "radio"    => {"text" => "Don't get hit by a bus"},
+      }
+    },
+  }
+end
+```
+
 ```yaml
 my_first_experiment:
   alternatives:
