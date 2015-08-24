@@ -143,7 +143,7 @@ will always have red buttons. This won't be stored in your session or count towa
 
 In the event you want to disable all tests without having to know the individual experiment names, add a `SPLIT_DISABLE` query parameter.
 
-    http://myawesomesite.com?SPLIT_DISABLE=trues
+    http://myawesomesite.com?SPLIT_DISABLE=true
 
 It is not required to send `SPLIT_DISABLE=false` to activate Split.
 
