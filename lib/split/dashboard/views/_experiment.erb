@@ -4,9 +4,7 @@
   <% experiment_class = "experiment" %>
 <% end %>
 
-<% unless experiment.calc_time == Time.now.day %>
-  <% experiment.estimate_winning_alternative %>
-<% end %>
+<% experiment.calc_winning_alternatives %>
 
 <div class="<%= experiment_class %>">
   <div class="experiment-header">

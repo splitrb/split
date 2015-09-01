@@ -428,6 +428,13 @@ describe Split::Experiment do
       p_goal2 = alt.p_winner(goal2)
       expect(p_goal1).not_to be_within(0.04).of(p_goal2)
     end
+
+    it "should return nil and not re-calculate probabilities if they have already been calculated today" do
+      experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
+      experiment_calc_time = Time.now.utc.to_i / 86400
+      experiment.calc_time = experiment_calc_time
+      expect(experiment.calc_winning_alternatives).to be nil
+    end
   end
 
 end
