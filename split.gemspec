@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.licenses    = ['MIT']
   s.email       = ["andrewnez@gmail.com"]
   s.homepage    = "https://github.com/splitrb/split"
-  s.summary     = %q{Rack based split testing framework}
+  s.summary     = "Rack based split testing framework"
 
   s.required_ruby_version = '>= 1.9.2'
 
