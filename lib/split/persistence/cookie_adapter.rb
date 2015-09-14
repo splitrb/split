@@ -4,10 +4,9 @@ module Split
   module Persistence
     class CookieAdapter
 
-      EXPIRES = Time.now + 31536000 # One year from now
-
       def initialize(context)
         @cookies = context.send(:cookies)
+        @expires = Time.now + cookie_length_config
       end
 
       def [](key)
@@ -31,7 +30,7 @@ module Split
       def set_cookie(value)
         @cookies[:split] = {
           :value => JSON.generate(value),
-          :expires => EXPIRES
+          :expires => @expires
         }
       end
 
@@ -45,6 +44,10 @@ module Split
         else
           {}
         end
+      end
+
+      def cookie_length_config
+        Split.configuration.persistence_cookie_length
       end
 
     end

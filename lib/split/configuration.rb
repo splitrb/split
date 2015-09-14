@@ -10,6 +10,7 @@ module Split
     attr_accessor :allow_multiple_experiments
     attr_accessor :enabled
     attr_accessor :persistence
+    attr_accessor :persistence_cookie_length
     attr_accessor :algorithm
     attr_accessor :store_override
     attr_accessor :start_manually
@@ -202,6 +203,7 @@ module Split
       @enabled = true
       @experiments = {}
       @persistence = Split::Persistence::SessionAdapter
+      @persistence_cookie_length = 31536000 # One year from now
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
       @beta_probability_simulations = 10000
