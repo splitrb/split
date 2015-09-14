@@ -215,7 +215,7 @@ Options:
 #### Custom Adapter
 
 Your custom adapter needs to implement the same API as existing adapters.
-See `Split::Persistance::CookieAdapter` or `Split::Persistence::SessionAdapter` for a starting point.
+See `Split::Persistence::CookieAdapter` or `Split::Persistence::SessionAdapter` for a starting point.
 
 ```ruby
 Split.configure do |config|
