@@ -194,7 +194,7 @@ Split.configure do |config|
 end
 ```
 
-By default, cookies will expire in 1 year. To change that, set the `persistence_cookie_length` in the configuration.
+By default, cookies will expire in 1 year. To change that, set the `persistence_cookie_length` in the configuration (unit of time in seconds).
 
 ```ruby
 Split.configure do |config|
