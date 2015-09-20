@@ -449,7 +449,7 @@ describe Split::Helper do
       expect(active_experiments.first[0]).to eq "def"
       expect(active_experiments.first[1]).to eq alternative
     end
-    
+
     it 'should show an active test when an experiment is on a later version' do
       experiment.reset
       expect(experiment.version).to eq(1)
@@ -480,6 +480,111 @@ describe Split::Helper do
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq "ghi"
       expect(active_experiments.first[1]).to eq another_alternative
+    end
+  end
+
+  describe 'ensure_alternative_or_exclude' do
+    let(:alternatives) { %w[blue red] }
+    let(:current_alternative) { ab_user['link_color'] }
+    let(:other_alternative) { (alternatives - [current_alternative]).first }
+
+    context 'when ab_test was called before' do
+
+      before { ab_test('link_color', 'blue', 'red') }
+
+      it 'should decrement the counter if the desired alternative is not the current' do
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+
+        ensure_alternative_or_exclude('link_color', other_alternative)
+
+        expect(ab_test('link_color', 'blue', 'red')).to eq(other_alternative)
+
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(0)
+      end
+
+      it 'should not decrement the counter if the desired alternative is the current' do
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+
+        ensure_alternative_or_exclude('link_color', current_alternative)
+
+        expect(ab_test('link_color', 'blue', 'red')).to eq(current_alternative)
+
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+      end
+
+      it 'should not decrement the counter more than once' do
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+
+        ensure_alternative_or_exclude('link_color', other_alternative)
+        ensure_alternative_or_exclude('link_color', other_alternative)
+
+        expect(ab_test('link_color', 'blue', 'red')).to eq(other_alternative)
+
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(0)
+      end
+
+      it 'should increment the conversions if the forced alternative is the current' do
+        expect(Split::Alternative.new(other_alternative, 'link_color').completed_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').completed_count).to eq(0)
+
+        ensure_alternative_or_exclude('link_color', current_alternative)
+
+        expect(ab_test('link_color', 'blue', 'red')).to eq(current_alternative)
+        finished(experiment.name, reset: false)
+
+        expect(Split::Alternative.new(other_alternative, 'link_color').completed_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').completed_count).to eq(1)
+      end
+
+      it 'should increment the conversions if the forced alternative is not the current' do
+        expect(Split::Alternative.new(other_alternative, 'link_color').completed_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').completed_count).to eq(0)
+
+        ensure_alternative_or_exclude('link_color', other_alternative)
+
+        expect(ab_test('link_color', 'blue', 'red')).to eq(other_alternative)
+        finished(experiment.name, reset: false)
+
+        expect(Split::Alternative.new(other_alternative, 'link_color').completed_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').completed_count).to eq(0)
+      end
+    end
+
+    context 'when ab_test was not previously called' do
+
+      it 'should increment the participant counter' do
+        ensure_alternative_or_exclude('link_color', 'red')
+        expect(ab_test('link_color', 'blue', 'red')).to eq('red')
+
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+      end
+
+      it 'should not increment the participant counter more than once' do
+        ensure_alternative_or_exclude('link_color', 'red')
+        ensure_alternative_or_exclude('link_color', 'red')
+
+        expect(ab_test('link_color', 'blue', 'red')).to eq('red')
+
+        expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+      end
+
+      it 'should increment the completed counter' do
+        ensure_alternative_or_exclude('link_color', 'red')
+        expect(ab_test('link_color', 'blue', 'red')).to eq('red')
+
+        finished(experiment.name, reset: false)
+
+        expect(Split::Alternative.new(other_alternative, experiment.name).completed_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, experiment.name).completed_count).to eq(1)
+      end
     end
   end
 
