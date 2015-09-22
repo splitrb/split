@@ -499,6 +499,7 @@ describe Split::Helper do
         ensure_alternative_or_exclude('link_color', other_alternative)
 
         expect(ab_test('link_color', 'blue', 'red')).to eq(other_alternative)
+        expect(active_experiments).not_to include('link_color')
 
         expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
         expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(0)
@@ -511,6 +512,7 @@ describe Split::Helper do
         ensure_alternative_or_exclude('link_color', current_alternative)
 
         expect(ab_test('link_color', 'blue', 'red')).to eq(current_alternative)
+        expect(active_experiments.keys).to eq(%w[link_color])
 
         expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
         expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
@@ -524,6 +526,7 @@ describe Split::Helper do
         ensure_alternative_or_exclude('link_color', other_alternative)
 
         expect(ab_test('link_color', 'blue', 'red')).to eq(other_alternative)
+        expect(active_experiments).not_to include('link_color')
 
         expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
         expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(0)
@@ -536,19 +539,23 @@ describe Split::Helper do
         ensure_alternative_or_exclude('link_color', current_alternative)
 
         expect(ab_test('link_color', 'blue', 'red')).to eq(current_alternative)
+        expect(active_experiments.keys).to eq(%w[link_color])
+
         finished(experiment.name, reset: false)
 
         expect(Split::Alternative.new(other_alternative, 'link_color').completed_count).to eq(0)
         expect(Split::Alternative.new(current_alternative, 'link_color').completed_count).to eq(1)
       end
 
-      it 'should increment the conversions if the forced alternative is not the current' do
+      it 'should not increment the conversions if the forced alternative is not the current' do
         expect(Split::Alternative.new(other_alternative, 'link_color').completed_count).to eq(0)
         expect(Split::Alternative.new(current_alternative, 'link_color').completed_count).to eq(0)
 
         ensure_alternative_or_exclude('link_color', other_alternative)
 
         expect(ab_test('link_color', 'blue', 'red')).to eq(other_alternative)
+        expect(active_experiments).not_to include('link_color')
+
         finished(experiment.name, reset: false)
 
         expect(Split::Alternative.new(other_alternative, 'link_color').completed_count).to eq(0)
@@ -561,6 +568,7 @@ describe Split::Helper do
       it 'should increment the participant counter' do
         ensure_alternative_or_exclude('link_color', 'red')
         expect(ab_test('link_color', 'blue', 'red')).to eq('red')
+        expect(active_experiments.keys).to eq(%w[link_color])
 
         expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
         expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
@@ -571,6 +579,7 @@ describe Split::Helper do
         ensure_alternative_or_exclude('link_color', 'red')
 
         expect(ab_test('link_color', 'blue', 'red')).to eq('red')
+        expect(active_experiments.keys).to eq(%w[link_color])
 
         expect(Split::Alternative.new(other_alternative, 'link_color').participant_count).to eq(0)
         expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)

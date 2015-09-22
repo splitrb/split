@@ -2,7 +2,6 @@ ENV['RACK_ENV'] = "test"
 
 require 'rubygems'
 require 'bundler/setup'
-require 'pry'
 
 require 'coveralls'
 Coveralls.wear!

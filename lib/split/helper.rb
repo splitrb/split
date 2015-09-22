@@ -109,6 +109,10 @@ module Split
 
       Split::Alternative.new(current_alternative, experiment.key).decrement_participation
       params[experiment_name] = alternative
+      exclude_visitor(experiment)
+    end
+
+    def exclude_visitor(experiment)
       ab_user[experiment.excluded_key] = true
     end
 
@@ -117,7 +121,7 @@ module Split
     end
 
     def exclude_visitor?(experiment)
-      instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || ab_user.key?(experiment.excluded_key)
+      instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || ab_user[experiment.excluded_key]
     end
 
     def is_robot?
@@ -138,7 +142,7 @@ module Split
       ab_user.keys.each do |key|
         key_without_version = key.split(/\:\d(?!\:)/)[0]
         Metric.possible_experiments(key_without_version).each do |experiment|
-          if !experiment.has_winner?
+          if !experiment.has_winner? and !ab_user.keys.include?(experiment.excluded_key)
             experiment_pairs[key_without_version] = ab_user[key]
           end
         end
