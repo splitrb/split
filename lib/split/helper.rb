@@ -93,22 +93,25 @@ module Split
       alternative_name
     end
 
-    def ensure_alternative_or_exclude(experiment_name, alternative)
+    # alternative can be either a string or an array of strings
+    def ensure_alternative_or_exclude(experiment_name, alternatives)
       return if @alternative_ensured
+      alternatives = Array(alternatives)
+
       # if ab_user was not called before, then force the alternative and manually increment the counter.
       unless experiment = ExperimentCatalog.find(experiment_name)
-        ab_user[experiment_name] = alternative
-        Split::Alternative.new(alternative, experiment_name).increment_participation
+        ab_user[experiment_name] = default_alternative = alternatives.first
+        Split::Alternative.new(default_alternative, experiment_name).increment_participation
         @alternative_ensured = true
         return
       end
 
       current_alternative = ab_user[experiment.key]
 
-      return if exclude_visitor?(experiment) || current_alternative == alternative
+      return if exclude_visitor?(experiment) || alternatives.include?(current_alternative)
 
       Split::Alternative.new(current_alternative, experiment.key).decrement_participation
-      params[experiment_name] = alternative
+      params[experiment_name] = alternatives.sample
       exclude_visitor(experiment)
     end
 

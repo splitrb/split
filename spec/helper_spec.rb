@@ -595,6 +595,58 @@ describe Split::Helper do
         expect(Split::Alternative.new(current_alternative, experiment.name).completed_count).to eq(1)
       end
     end
+
+    context 'multiple alternatives' do
+      let(:other_alternatives) { (alternatives - [current_alternative]) }
+
+      before { ab_test('link_color', 'blue', 'red', 'black') }
+
+      it 'should decrement the counter if the none of the desired alternatives are the current' do
+        expect(Split::Alternative.new(other_alternatives.first, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(other_alternatives.last, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+
+        ensure_alternative_or_exclude('link_color', other_alternatives)
+
+        expect(other_alternatives).to include(ab_test('link_color', 'blue', 'red', 'black'))
+        expect(active_experiments).not_to include('link_color')
+
+        expect(Split::Alternative.new(other_alternatives.first, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(other_alternatives.last, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(0)
+      end
+
+      it 'should not decrement the counter if any of the desired alternative are the current' do
+        expect(Split::Alternative.new(other_alternatives.first, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(other_alternatives.last, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+
+        ensure_alternative_or_exclude('link_color', [current_alternative, other_alternatives.first])
+
+        expect(ab_test('link_color', 'blue', 'red', 'black')).to eq(current_alternative)
+        expect(active_experiments.keys).to eq(%w[link_color])
+
+        expect(Split::Alternative.new(other_alternatives.first, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(other_alternatives.last, 'link_color').participant_count).to eq(0)
+        expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+      end
+
+      context 'when ab_test was not previously called' do
+
+        let(:valid_alternatives) { %w[red blue] }
+
+        it 'should increment the participant counter' do
+          ensure_alternative_or_exclude('link_color', valid_alternatives)
+          expect(valid_alternatives).to include(ab_test('link_color', 'blue', 'red', 'black'))
+          expect(active_experiments.keys).to eq(%w[link_color])
+
+          expect(Split::Alternative.new(other_alternatives.first, 'link_color').participant_count).to eq(0)
+          expect(Split::Alternative.new(other_alternatives.last, 'link_color').participant_count).to eq(0)
+          expect(Split::Alternative.new(current_alternative, 'link_color').participant_count).to eq(1)
+        end
+
+      end
+    end
   end
 
   describe 'when user is a robot' do
