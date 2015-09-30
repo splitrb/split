@@ -73,23 +73,23 @@ module Split
     def save
       validate!
       Split.redis.with do |conn|
-        conn.pipelined do
-          if new_record?
-            conn.sadd(:experiments, name)
-            start unless Split.configuration.start_manually
+        if new_record?
+          conn.sadd(:experiments, name)
+          start unless Split.configuration.start_manually
+          @alternatives.reverse.each {|a| conn.lpush(name, a.name) }
+          @goals.reverse.each {|a| conn.lpush(goals_key, a) } unless @goals.nil?
+        else
+          existing_alternatives = load_alternatives_from_redis
+          existing_goals = load_goals_from_redis
+          unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
+            reset
+            @alternatives.each(&:delete)
+            delete_goals
+            conn.del(@name)
+            
             @alternatives.reverse.each {|a| conn.lpush(name, a.name)}
-            @goals.reverse.each {|a| conn.lpush(goals_key, a)} unless @goals.nil?
-          else
-            existing_alternatives = load_alternatives_from_redis
-            existing_goals = load_goals_from_redis
-            unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
-              reset
-              @alternatives.each(&:delete)
-              delete_goals
-              conn.del(@name)
-              @alternatives.reverse.each {|a| conn.lpush(name, a.name)}
-              @goals.reverse.each {|a| conn.lpush(goals_key, a)} unless @goals.nil?
-            end
+                  
+            @goals.reverse.each {|a| conn.lpush(goals_key, a) } unless @goals.nil?
           end
 
           conn.hset(experiment_config_key, :resettable, resettable)
@@ -252,7 +252,7 @@ module Split
 
     def delete
       Split.redis.with do |conn|
-        conn.pipelined do
+        #conn.pipelined do
           alternatives.each(&:delete)
           reset_winner
           conn.srem(:experiments, name)
@@ -260,7 +260,7 @@ module Split
           delete_goals
           Split.configuration.on_experiment_delete.call(self)
           increment_version
-        end
+        #end
       end
     end
 
@@ -313,18 +313,18 @@ module Split
 
     def load_alternatives_from_redis
       Split.redis.with do |conn|
-        conn.pipelined do
-          case conn.type(@name)
-          when 'set' # convert legacy sets to lists
-            alts = conn.smembers(@name)
-            conn.del(@name)
-            alts.reverse.each {|a| conn.lpush(@name, a) }
-            conn.lrange(@name, 0, -1)
-          else
-            conn.lrange(@name, 0, -1)
-          end
+        
+        case conn.type(@name)
+        when 'set' # convert legacy sets to lists
+          alts = conn.smembers(@name)
+          conn.del(@name)
+          alts.reverse.each {|a| conn.lpush(@name, a) }
+          conn.lrange(@name, 0, -1)
+        else
+          conn.lrange(@name, 0, -1)
         end
       end
     end
+    
   end
 end
