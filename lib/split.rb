@@ -32,16 +32,19 @@ module Split
   def redis=(server)
     if server.respond_to? :split
       if server["redis://"]
-        redis = Redis.connect(:url => server, :thread_safe => true)
+        redis = Redis.connect(:url => server, :thread_safe => true) 
       else
         server, namespace = server.split('/', 2)
         host, port, db = server.split(':')
         redis = Redis.new(:host => host, :port => port,
-          :thread_safe => true, :db => db)
+            :thread_safe => true, :db => db)
+        
       end
       namespace ||= :split
 
-      @redis = Redis::Namespace.new(namespace, :redis => redis)
+      @redis = ConnectionPool.new(size: 10, timeout: 5) { 
+        Redis::Namespace.new(namespace, :redis => redis)
+      }
     elsif server.respond_to? :namespace=
       @redis = server
     else

@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 gem "appraisal"
 gem "rails", "4.0.0.rc1"
-gem "split", :path=>"../"
+gem "split", :path => "../../"
+gem "connection_pool"
 
-gemspec :path=>"../"
+gemspec :path => "../"

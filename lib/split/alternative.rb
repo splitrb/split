@@ -30,16 +30,22 @@ module Split
     end
 
     def participant_count
-      Split.redis.hget(key, 'participant_count').to_i
+      Split.redis.with do |conn|
+        conn.hget(key, 'participant_count').to_i
+      end
     end
 
     def participant_count=(count)
-      Split.redis.hset(key, 'participant_count', count.to_i)
+      Split.redis.with do |conn|
+        conn.hset(key, 'participant_count', count.to_i)
+      end
     end
 
     def completed_count(goal = nil)
       field = set_field(goal)
-      Split.redis.hget(key, field).to_i
+      Split.redis.with do |conn|
+        conn.hget(key, field).to_i
+      end
     end
 
     def all_completed_count
@@ -64,16 +70,22 @@ module Split
 
     def set_completed_count (count, goal = nil)
       field = set_field(goal)
-      Split.redis.hset(key, field, count.to_i)
+      Split.redis.with do |conn|
+        conn.hset(key, field, count.to_i)
+      end
     end
 
     def increment_participation
-      Split.redis.hincrby key, 'participant_count', 1
+      Split.redis.with do |conn|
+        conn.hincrby key, 'participant_count', 1
+      end
     end
 
     def increment_completion(goal = nil)
       field = set_field(goal)
-      Split.redis.hincrby(key, field, 1)
+      Split.redis.with do |conn|
+        conn.hincrby(key, field, 1)
+      end
     end
 
     def control?
@@ -110,8 +122,10 @@ module Split
     end
 
     def save
-      Split.redis.hsetnx key, 'participant_count', 0
-      Split.redis.hsetnx key, 'completed_count', 0
+      Split.redis.with do |conn|
+        conn.hsetnx key, 'participant_count', 0
+        conn.hsetnx key, 'completed_count', 0
+      end
     end
 
     def validate!
@@ -121,17 +135,21 @@ module Split
     end
 
     def reset
-      Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
-      unless goals.empty?
-        goals.each do |g|
-          field = "completed_count:#{g}"
-          Split.redis.hset key, field, 0
+      Split.redis.with do |conn|
+        conn.hmset key, 'participant_count', 0, 'completed_count', 0
+        unless goals.empty?
+          goals.each do |g|
+            field = "completed_count:#{g}"
+            conn.hset key, field, 0
+          end
         end
       end
     end
 
     def delete
-      Split.redis.del(key)
+      Split.redis.with do |conn|
+        conn.del(key)
+      end
     end
 
     private

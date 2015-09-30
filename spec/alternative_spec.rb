@@ -125,7 +125,9 @@ describe Split::Alternative do
 
   it "should save to redis" do
     alternative.save
-    Split.redis.exists('basket_text:Basket').should be true
+    Split.redis.with do |conn|
+      conn.exists('basket_text:Basket').should be true
+    end
   end
 
   it "should increment participation count" do
