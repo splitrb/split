@@ -91,10 +91,9 @@ module Split
                   
             @goals.reverse.each {|a| conn.lpush(goals_key, a) } unless @goals.nil?
           end
-
-          conn.hset(experiment_config_key, :resettable, resettable)
-          conn.hset(experiment_config_key, :algorithm, algorithm.to_s)
         end
+        conn.hset(experiment_config_key, :resettable, resettable)
+        conn.hset(experiment_config_key, :algorithm, algorithm.to_s)
       end
       self
     end

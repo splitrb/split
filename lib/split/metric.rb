@@ -58,11 +58,12 @@ module Split
         redis_metrics = conn.hgetall(:metrics).collect do |key, value|
           find(key)
         end
+      
+        configuration_metrics = Split.configuration.metrics.collect do |key, value|
+          new(name: key, experiments: value)
+        end
+        redis_metrics | configuration_metrics
       end
-      configuration_metrics = Split.configuration.metrics.collect do |key, value|
-        new(name: key, experiments: value)
-      end
-      redis_metrics | configuration_metrics
     end
 
     def self.possible_experiments(metric_name)
