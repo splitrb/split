@@ -83,7 +83,8 @@ module Split
         Split.redis.sadd(:experiments, name)
         start unless Split.configuration.start_manually
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-        @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+        save_goals
+        save_metadata
         Split.redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
       else
         existing_alternatives = load_alternatives_from_redis
@@ -96,8 +97,8 @@ module Split
           delete_metadata
           Split.redis.del(@name)
           @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-          @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
-          Split.redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
+          save_goals
+          save_metadata
         end
       end
 
@@ -449,6 +450,14 @@ module Split
       else
         Split.redis.lrange(@name, 0, -1)
       end
+    end
+
+    def save_goals
+      @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+    end
+
+    def save_metadata
+      Split.redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
     end
 
   end
