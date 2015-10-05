@@ -228,4 +228,16 @@ describe Split::Configuration do
       end
     end
   end
+
+  context "persistence cookie length" do
+    it "should default to 1 year" do
+      expect(@config.persistence_cookie_length).to eq(31536000)
+    end
+
+    it "should allow the persistence cookie length to be configured" do
+      @config.persistence_cookie_length = 2592000
+      expect(@config.persistence_cookie_length).to eq(2592000)
+    end
+  end
+
 end
