@@ -275,17 +275,22 @@ module Split
     end
 
     def calc_winning_alternatives
-      if goals.empty?
-        self.estimate_winning_alternative
-      else
-        goals.each do |goal|
-          self.estimate_winning_alternative(goal)
+      # Super simple cache so that we only recalculate winning alternatives once per day
+      days_since_epoch = Time.now.utc.to_i / 86400
+
+      if self.calc_time != days_since_epoch
+        if goals.empty?
+          self.estimate_winning_alternative
+        else
+          goals.each do |goal|
+            self.estimate_winning_alternative(goal)
+          end
         end
+
+        self.calc_time = days_since_epoch
+
+        self.save
       end
-
-      calc_time = Time.now.day
-
-      self.save
     end
 
     def estimate_winning_alternative(goal = nil)
@@ -391,7 +396,7 @@ module Split
     end
 
     def calc_time
-      Split.redis.hget(experiment_config_key, :calc_time)
+      Split.redis.hget(experiment_config_key, :calc_time).to_i
     end
 
     def jstring(goal = nil)
