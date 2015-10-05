@@ -116,9 +116,10 @@ module Split
     def active_experiments
       experiment_pairs = {}
       ab_user.keys.each do |key|
-        Metric.possible_experiments(key).each do |experiment|
+        key_without_version = key.split(/\:\d(?!\:)/)[0]
+        Metric.possible_experiments(key_without_version).each do |experiment|
           if !experiment.has_winner?
-            experiment_pairs[key] = ab_user[key]
+            experiment_pairs[key_without_version] = ab_user[key]
           end
         end
       end

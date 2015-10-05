@@ -449,6 +449,14 @@ describe Split::Helper do
       expect(active_experiments.first[0]).to eq "def"
       expect(active_experiments.first[1]).to eq alternative
     end
+    
+    it 'should show an active test when an experiment is on a later version' do
+      experiment.reset
+      expect(experiment.version).to eq(1)
+      ab_test('link_color', 'blue', 'red')
+      expect(active_experiments.count).to eq 1
+      expect(active_experiments.first[0]).to eq "link_color"
+    end
 
     it 'should show multiple tests' do
       Split.configure do |config|
