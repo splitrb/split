@@ -310,12 +310,12 @@ module Split
 
       @alternative_probabilities = calc_alternative_probabilities(winning_counts, Split.configuration.beta_probability_simulations)
 
-      write_to_alternatives(@alternative_probabilities, goal)
+      write_to_alternatives(goal)
 
       self.save
     end
 
-    def write_to_alternatives(alternative_probabilities, goal = nil)
+    def write_to_alternatives(goal = nil)
       alternatives.each do |alternative|
         alternative.set_p_winner(@alternative_probabilities[alternative], goal)
       end
