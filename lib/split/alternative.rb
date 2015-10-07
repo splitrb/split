@@ -52,7 +52,6 @@ module Split
       field = set_value_field(goal)
       Split.redis.with do |conn|
         list = conn.lrange(key + field, 0, -1)
-        puts list.inspect
         if list.size > 0
           list.sum{|n| n.to_f}/list.size
         else
@@ -119,8 +118,6 @@ module Split
       Split.redis.with do |conn|
         field = set_field(goal)
         if value
-          puts "SAVING VALUE"
-          puts value
           conn.lpush(key + set_value_field(goal), value)
         end
         conn.hincrby(key, field, 1)
@@ -180,26 +177,8 @@ module Split
         non_zeros_b = control
       end
 
-      puts("non_zeros_a")
-      puts("-----------------------------------------------")
-      puts(non_zeros_a.inspect)
-      puts("-----------------------------------------------")
-      puts("non_zeros_b")
-      puts("-----------------------------------------------")
-      puts(non_zeros_b.inspect)
-      puts("-----------------------------------------------")
-
       total_a = self.participant_count
       total_b = experiment.control.participant_count
-
-      puts("total_a")
-      puts("-----------------------------------------------")
-      puts(total_a.inspect)
-      puts("-----------------------------------------------")
-      puts("total_b")
-      puts("-----------------------------------------------")
-      puts(total_b.inspect)
-      puts("-----------------------------------------------")
 
       alpha = 1
       beta = 1
@@ -243,8 +222,6 @@ module Split
     end
 
     def bayesian_combined_probability(alternative, control)
-      puts("BAYESIAN COMBINED PROBABILITY")
-      puts("-----------------------------------------------")
       a_rps_samps, b_rps_samps = bayesian_combined_samples(alternative, control)
 
       sum = 0
@@ -257,8 +234,6 @@ module Split
     end
 
     def bayesian_combined_samples(alternative, control)
-      puts("BAYESIAN COMBINED SAMPLES")
-      puts("-----------------------------------------------")
       a_conv_samps, b_conv_samps = beta_samples(alternative, control)
       a_order_samps, b_order_samps = log_normal_samples(alternative, control)
 
@@ -269,8 +244,6 @@ module Split
     end
 
     def bayesian_beta_probability(alternative, control)
-      puts("BAYESIAN BETA PROBABILITY")
-      puts("-----------------------------------------------")
       a_samples, b_samples = beta_samples(alternative, control)
 
       sum = 0
@@ -295,16 +268,8 @@ module Split
 
       # step 3: get posterior samples
       a_posterior_samples = draw_log_normal_means(a_data,m0,k0,s_sq0,v0)
-      puts("a_posterior_samples")
-      puts("--------------------------------")
-      # puts(a_posterior_samples.inspect)
-      # a_posterior_samples = [ 132.21672467, 104.79249553,  97.47489145, 201.3726052,  129.03142744, 233.90944597, 524.59244505, 142.80788793, 159.97628083, 167.96562996]
-      b_posterior_samples = draw_log_normal_means(b_data,m0,k0,s_sq0,v0)
-      puts("b_posterior_samples")
-      puts("--------------------------------")
-      # puts(b_posterior_samples.inspect)
-      # b_posterior_samples = [  73.64035435, 100.94395081, 125.39778487,  75.84193507,  61.06892854, 153.61498405, 119.50436212,  77.33575107, 103.04974504, 219.81910446]
 
+      b_posterior_samples = draw_log_normal_means(b_data,m0,k0,s_sq0,v0)
       return a_posterior_samples, b_posterior_samples
     end
 
@@ -319,8 +284,6 @@ module Split
         end
       end
       prob_A_greater_B = sum.to_f/a_posterior_samples.size.to_f
-      # prob_A_greater_B = mean(a_posterior_samples > b_posterior_samples)
-      puts prob_A_greater_B
 
       # or you can do more complicated lift calculations
       diff = [a_posterior_samples, b_posterior_samples].transpose.map {|x| x.reduce(:-)}
@@ -344,30 +307,21 @@ module Split
 
       # get samples from the posterior
       mu_samples, sig_sq_samples = draw_mus_and_sigmas(log_data,m0,k0,s_sq0,v0,n_samples)
-      # transform into log-normal means
-      puts("sig_sq_samples/2")
-      puts "--------------------------------"
-      # puts sig_sq_samples.collect{|n|n/2}.inspect
-      puts "--------------------------------"
+
       log_normal_mean_samples = [sig_sq_samples.collect{|n|n/2}, mu_samples].transpose.map {|x| x.reduce(:+)}.collect{|n| Math.exp(n)}
-      # log_normal_mean_samples = ( + ).collect{|n| Math.exp(n)}
-      puts "--------------------------------"
-      # puts log_normal_mean_samples.inspect
+
       return log_normal_mean_samples
     end
 
     def draw_mus_and_sigmas(data,m0,k0,s_sq0,v0,n_samples)
       # number of samples
       n = data.size
-      puts n
+
       # find the mean of the data
       the_mean = data.sum{|n| n.to_f}/data.size
-      puts "sum: #{data.sum{|n| n.to_f}}"
-      puts "size: #{data.size}"
-      puts the_mean
+
       # sum of squared differences between data and mean
       ssd = data.sum{|n| (n-the_mean)**2}
-      puts ssd
 
       # combining the prior with the data - page 79 of Gelman et al.
       # to make sense of this note that
@@ -389,31 +343,15 @@ module Split
       (size=n_samples).times do
         sig_sq_samples << random_generator.inverse_gamma(alpha, beta)
       end
-      # sig_sq_samples = [ 3.93387767, 2.86873865, 1.37857381, 1.44969198, 1.73889165, 4.40767376, 2.8204655,  5.40070993, 2.61998073, 2.43945704]
-
-      puts("sig_sq_samples")
-      puts("--------------------------------")
-      # puts(sig_sq_samples.inspect)
 
       # 2) draw means from a normal conditioned on the drawn sigmas
       # (params: mean_norm, var_norm)
       mean_norm = mN
-      puts("mean_norm")
-      puts("--------------------------------")
-      puts(mean_norm)
       var_norm = sig_sq_samples.collect{|n| Math.sqrt(n/kN)}
-      puts("var_norm")
-      puts("--------------------------------")
-      # puts(var_norm.inspect)
       mu_samples = []
       var_norm.each do |var|
         mu_samples << random_generator.normal(mean_norm, var)
       end
-      # mu_samples = [ 3.83535981, 4.32951363, 3.4837355,  4.04552639, 3.34382522, 3.44135176, 4.04160632, 3.05436931, 3.72039264, 3.31144501]
-
-      puts("mu_samples")
-      puts("--------------------------------")
-      # puts(mu_samples.inspect)
 
       # 3) return the mu_samples and sig_sq_samples
       return mu_samples, sig_sq_samples

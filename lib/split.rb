@@ -35,8 +35,7 @@ module Split
       if server["redis://"]
         namespace ||= :split
         @redis = ConnectionPool.new(size:10, timeout: 5) {
-          Redis::Namespace.new(namespace, :redis => Redis.new(:host => host, :port => port,
-            :thread_safe => true, :db => db))
+          Redis.connect(:url => server, :thread_safe => true)
           }
       else
         server, namespace = server.split('/', 2)
