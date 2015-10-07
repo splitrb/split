@@ -17,6 +17,7 @@ end
 
 require 'split/engine' if defined?(Rails) && Rails::VERSION::MAJOR >= 3
 require 'redis/namespace'
+require 'connection_pool'
 
 module Split
   extend self
@@ -32,20 +33,28 @@ module Split
   def redis=(server)
     if server.respond_to? :split
       if server["redis://"]
-        redis = Redis.connect(:url => server, :thread_safe => true)
+        namespace ||= :split
+        @redis = ConnectionPool.new(size:10, timeout: 5) {
+          Redis::Namespace.new(namespace, :redis => Redis.new(:host => host, :port => port,
+            :thread_safe => true, :db => db))
+          }
       else
         server, namespace = server.split('/', 2)
+        namespace ||= :split
         host, port, db = server.split(':')
-        redis = Redis.new(:host => host, :port => port,
-          :thread_safe => true, :db => db)
+        @redis = ConnectionPool.new(size:10, timeout: 5) {
+          Redis::Namespace.new(namespace, :redis => Redis.new(:host => host, :port => port,
+            :thread_safe => true, :db => db))
+          }
       end
-      namespace ||= :split
-
-      @redis = Redis::Namespace.new(namespace, :redis => redis)
+      
     elsif server.respond_to? :namespace=
-      @redis = server
+      @redis = ConnectionPool.new(size: 10, timeout: 5) { server }
     else
-      @redis = Redis::Namespace.new(:split, :redis => server)
+      @redis = ConnectionPool.new(size:10, timeout: 5) {
+        Redis::Namespace.new(namespace, :redis => Redis.new(:host => host, :port => port,
+          :thread_safe => true, :db => db))
+        }
     end
   end
 

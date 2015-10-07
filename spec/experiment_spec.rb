@@ -40,7 +40,9 @@ describe Split::Experiment do
 
     it "should save to redis" do
       experiment.save
-      Split.redis.exists('basket_text').should be true
+      Split.redis.with do |conn|
+        conn.exists('basket_text').should be true
+      end
     end
 
     it "should save the start time to redis" do
@@ -70,8 +72,9 @@ describe Split::Experiment do
       experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
       Time.stub(:now => experiment_start_time)
       experiment.save
-      Split.redis.hset(:experiment_start_times, experiment.name, experiment_start_time)
-
+      Split.redis.with do |conn|
+        conn.hset(:experiment_start_times, experiment.name, experiment_start_time)
+      end
       Split::Experiment.find('basket_text').start_time.should == experiment_start_time
     end
 
@@ -79,17 +82,19 @@ describe Split::Experiment do
       experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
       Time.stub(:now => experiment_start_time)
       experiment.save
-
-      Split.redis.hdel(:experiment_start_times, experiment.name)
-
+      Split.redis.with do |conn|
+        conn.hdel(:experiment_start_times, experiment.name)
+      end
       Split::Experiment.find('basket_text').start_time.should == nil
     end
 
     it "should not create duplicates when saving multiple times" do
       experiment.save
       experiment.save
-      Split.redis.exists('basket_text').should be true
-      Split.redis.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+      Split.redis.with do |conn|
+        conn.exists('basket_text').should be true
+        conn.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+      end
     end
 
     describe 'new record?' do
@@ -172,7 +177,9 @@ describe Split::Experiment do
       experiment.save
 
       experiment.delete
-      Split.redis.exists('link_color').should be false
+      Split.redis.with do |conn|
+        conn.exists('link_color').should be false
+      end
       Split::Experiment.find('link_color').should be_nil
     end
 
