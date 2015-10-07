@@ -89,6 +89,10 @@ module Split
       Split.redis.hincrby key, 'participant_count', 1
     end
 
+    def decrement_participation
+      Split.redis.hincrby key, 'participant_count', -1
+    end
+
     def increment_completion(goal = nil)
       field = set_field(goal)
       Split.redis.hincrby(key, field, 1)
