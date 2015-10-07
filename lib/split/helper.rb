@@ -118,6 +118,14 @@ module Split
       params[experiment_name] if override_present?(experiment_name)
     end
 
+    def default_present?(experiment_name)
+      defined?(params) && params["#{experiment_name}_default"]
+    end
+
+    def default_alternative(experiment_name)
+      params["#{experiment_name}_default"] if default_present?(experiment_name)
+    end
+
     def begin_experiment(experiment, alternative_name = nil)
       alternative_name ||= experiment.control.name
       ab_user[experiment.key] = alternative_name
@@ -187,7 +195,10 @@ module Split
 
     def start_trial(trial)
       experiment = trial.experiment
-      if experiment.has_winner?
+      if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
+        ret = override_alternative(experiment.name)
+        ab_user[experiment.key] = ret if Split.configuration.store_override
+      elsif experiment.has_winner?
         ret = experiment.winner.name
       else
         clean_old_versions(experiment)
@@ -196,8 +207,8 @@ module Split
         else
           if ab_user[experiment.key]
             ret = ab_user[experiment.key]
-          elsif override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
-            trial.alternative = override_alternative(experiment.name)
+          elsif default_present?(experiment.name) and experiment[default_alternative(experiment.name)]
+            trial.alternative = default_alternative(experiment.name)
             trial.record!
             call_trial_choose_hook(trial)
             ret = begin_experiment(experiment, trial.alternative.name)
