@@ -95,23 +95,39 @@ module Split
 
     # alternative can be either a string or an array of strings
     def ensure_alternative_or_exclude(experiment_name, alternatives)
-      return if @alternative_ensured
       alternatives = Array(alternatives)
+      experiment   = ExperimentCatalog.find(experiment_name)
 
-      # if ab_user was not called before, then force the alternative and manually increment the counter.
-      unless experiment = ExperimentCatalog.find(experiment_name)
-        ab_user[experiment_name] = default_alternative = alternatives.first
-        Split::Alternative.new(default_alternative, experiment_name).increment_participation
-        @alternative_ensured = true
+      # This is called if the experiment is not yet created. Since we can't created (we need the alternatives
+      # configuration to be passed to this method), we exclude the user, and when `ab_test` is called after
+      # the experiment is created. This means the first user will be excluded from the test and will have
+      # the control alternative
+      if !experiment
+        experiment = Experiment.new(experiment_name)
+        exclude_visitor(experiment)
+        return
+      end
+
+      # If the user doesn't have an alternative set, we override the alternative and we manually increment the
+      # participant count, since split doesn't do it when an alternative is overriden
+      unless ab_user[experiment.key]
+        params[experiment_name] = ab_user[experiment.key] = alternatives.sample
+        Split::Alternative.new(ab_user[experiment.key], experiment_name).increment_participation
         return
       end
 
       current_alternative = ab_user[experiment.key]
 
-      return if exclude_visitor?(experiment) || alternatives.include?(current_alternative)
+      # We don't decrement the participant count if the visitor is included or if the desired alternative
+      # was already chosen by split before
+      if exclude_visitor?(experiment) || alternatives.include?(current_alternative)
+        params[experiment_name] ||= current_alternative
+        return
+      end
 
-      Split::Alternative.new(current_alternative, experiment.key).decrement_participation
-      params[experiment_name] = alternatives.sample
+      # We decrement the participant count if the desired alternative was not chosen by split before
+      Split::Alternative.new(current_alternative, experiment_name).decrement_participation
+      params[experiment_name] = ab_user[experiment.key] = alternatives.sample
       exclude_visitor(experiment)
     end
 
