@@ -51,7 +51,7 @@ module Split
       @redis = ConnectionPool.new(size: 10, timeout: 5) { server }
     else
       @redis = ConnectionPool.new(size:10, timeout: 5) {
-        Redis::Namespace.new(namespace, :redis => Redis.new(:host => host, :port => port,
+        Redis::Namespace.new(:split, :redis => Redis.new(:host => host, :port => port,
           :thread_safe => true, :db => db))
         }
     end
