@@ -118,6 +118,14 @@ module Split
       params[experiment_name] if override_present?(experiment_name)
     end
 
+    def default_present?(experiment_name)
+      defined?(params) && params["#{experiment_name}_default"]
+    end
+
+    def default_alternative(experiment_name)
+      params["#{experiment_name}_default"] if default_present?(experiment_name)
+    end
+
     def begin_experiment(experiment, alternative_name = nil)
       alternative_name ||= experiment.control.name
       ab_user[experiment.key] = alternative_name
@@ -199,6 +207,11 @@ module Split
         else
           if ab_user[experiment.key]
             ret = ab_user[experiment.key]
+          elsif default_present?(experiment.name) and experiment[default_alternative(experiment.name)]
+            trial.alternative = default_alternative(experiment.name)
+            trial.record!
+            call_trial_choose_hook(trial)
+            ret = begin_experiment(experiment, trial.alternative.name)
           else
             trial.choose!
             call_trial_choose_hook(trial)
