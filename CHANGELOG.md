@@ -1,3 +1,21 @@
+## 1.3.0 (October 20th, 2015)
+
+Features
+
+ - allow for custom redis_url different from ENV variable (@davidgrieser, #323)
+ - add ability to change the length of the persistence cookie (@peterylai, #335)
+
+Bugfixes:
+
+ - Rescue from Redis::BaseError instead of Redis::CannotConnectError (@nfm, #342)
+ - Fix active experiments when experiment is on a later version (@ndrisso, #331)
+ - Fix caching of winning alternative (@nfm, #329)
+
+Misc:
+
+ - Remove duplication from Experiment#save (@pakallis, #333)
+ - Remove unnecessary argument from Experiment#write_to_alternative (@t4deu, #332)
+
 ## 1.2.1 (May 17th, 2015)
 
 Features
