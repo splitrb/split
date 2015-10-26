@@ -125,7 +125,7 @@ ab_test(:homepage_design, {'Old' => 18}, {'New' => 2})
 
 ab_test(:homepage_design, 'Old', {'New' => 1.0/9})
 
-ab_test(:homepage_design', {'Old' => 9}, 'New')
+ab_test(:homepage_design, {'Old' => 9}, 'New')
 ```
 
 This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
