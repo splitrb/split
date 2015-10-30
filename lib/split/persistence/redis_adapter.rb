@@ -19,27 +19,19 @@ module Split
       end
 
       def [](field)
-        Split.redis.with do |conn|
-          conn.hget(redis_key, field)
-        end
+        Split.redis.hget(redis_key, field)
       end
 
       def []=(field, value)
-        Split.redis.with do |conn|
-          conn.hset(redis_key, field, value)
-        end
+        Split.redis.hset(redis_key, field, value)
       end
 
       def delete(field)
-        Split.redis.with do |conn|
-          conn.hdel(redis_key, field)
-        end
+        Split.redis.hdel(redis_key, field)
       end
 
       def keys
-        Split.redis.with do |conn|
-          conn.hkeys(redis_key)
-        end
+        Split.redis.hkeys(redis_key)
       end
 
       def self.with_config(options={})

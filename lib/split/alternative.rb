@@ -30,33 +30,25 @@ module Split
     end
 
     def participant_count
-      Split.redis.with do |conn|
-        conn.hget(key, 'participant_count').to_i
-      end
+      Split.redis.hget(key, 'participant_count').to_i
     end
 
     def participant_count=(count)
-      Split.redis.with do |conn|
-        conn.hset(key, 'participant_count', count.to_i)
-      end
+      Split.redis.hset(key, 'participant_count', count.to_i)
     end
 
     def completed_count(goal = nil)
       field = set_field(goal)
-      Split.redis.with do |conn|
-        conn.hget(key, field).to_i
-      end
+      Split.redis.hget(key, field).to_i
     end
 
     def completed_value(goal = nil)
       field = set_value_field(goal)
-      Split.redis.with do |conn|
-        list = conn.lrange(key + field, 0, -1)
-        if list.size > 0
-          list.sum{|n| n.to_f}/list.size
-        else
-          "N/A"
-        end
+      list = Split.redis.lrange(key + field, 0, -1)
+      if list.size > 0
+        list.sum{|n| n.to_f}/list.size
+      else
+        "N/A"
       end
     end
 
@@ -70,9 +62,7 @@ module Split
 
     def completed_values(goal = nil)
       field = set_value_field(goal)
-      Split.redis.with do |conn|
-        list = conn.lrange(key + field, 0, -1).collect{|n| n.to_f}
-      end
+      list = Split.redis.lrange(key + field, 0, -1).collect{|n| n.to_f}
     end
 
     def all_completed_count
@@ -103,25 +93,19 @@ module Split
 
     def set_completed_count (count, goal = nil)
       field = set_field(goal)
-      Split.redis.with do |conn|
-        conn.hset(key, field, count.to_i)
-      end
+      Split.redis.hset(key, field, count.to_i)
     end
 
     def increment_participation
-      Split.redis.with do |conn|
-        conn.hincrby key, 'participant_count', 1
-      end
+      Split.redis.hincrby key, 'participant_count', 1
     end
 
     def increment_completion(goal = nil, value = nil)
-      Split.redis.with do |conn|
-        field = set_field(goal)
-        if value
-          conn.lpush(key + set_value_field(goal), value)
-        end
-        conn.hincrby(key, field, 1)
+      field = set_field(goal)
+      if value
+        Split.redis.lpush(key + set_value_field(goal), value)
       end
+      Split.redis.hincrby(key, field, 1)
     end
 
     def control?
@@ -358,10 +342,8 @@ module Split
     end
 
     def save
-      Split.redis.with do |conn|
-        conn.hsetnx key, 'participant_count', 0
-        conn.hsetnx key, 'completed_count', 0
-      end
+      Split.redis.hsetnx key, 'participant_count', 0
+      Split.redis.hsetnx key, 'completed_count', 0
     end
 
     def validate!
@@ -371,23 +353,19 @@ module Split
     end
 
     def reset
-      Split.redis.with do |conn|
-        conn.hmset key, 'participant_count', 0, 'completed_count', 0
-        unless goals.empty?
-          goals.each do |g|
-            field = "completed_count:#{g}"
-            value_field = set_value_field(g)
-            conn.hset key, field, 0
-            conn.del(key + value_field)
-          end
+      Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
+      unless goals.empty?
+        goals.each do |g|
+          field = "completed_count:#{g}"
+          value_field = set_value_field(g)
+          Split.redis.hset key, field, 0
+          Split.redis.del(key + value_field)
         end
       end
     end
 
     def delete
-      Split.redis.with do |conn|
-        conn.del(key)
-      end
+      Split.redis.del(key)
     end
 
     private

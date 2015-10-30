@@ -17,9 +17,7 @@ RSpec.configure do |config|
   config.order = 'random'
   config.before(:each) do
     Split.configuration = Split::Configuration.new
-    Split.redis.with do |conn|
-      conn.flushall
-    end
+    Split.redis.flushall
     @ab_user = {}
     params = nil
   end

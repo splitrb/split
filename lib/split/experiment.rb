@@ -73,29 +73,26 @@ module Split
     def save
       validate!
 
-      Split.redis.with do |conn|
-        
-        if new_record?
-          conn.sadd(:experiments, name)
-          start unless Split.configuration.start_manually
-          @alternatives.reverse.each {|a| conn.lpush(name, a.name)}
-          @goals.reverse.each {|a| conn.lpush(goals_key, a)} unless @goals.nil?
-        else
-          existing_alternatives = load_alternatives_from_redis
-          existing_goals = load_goals_from_redis
-          unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
-            reset
-            @alternatives.each(&:delete)
-            delete_goals
-            conn.del(@name)
-            @alternatives.reverse.each {|a| conn.lpush(name, a.name)}
-            @goals.reverse.each {|a| conn.lpush(goals_key, a)} unless @goals.nil?
-          end
+      if new_record?
+        Split.redis.sadd(:experiments, name)
+        start unless Split.configuration.start_manually
+        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
+        @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
+      else
+        existing_alternatives = load_alternatives_from_redis
+        existing_goals = load_goals_from_redis
+        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals
+          reset
+          @alternatives.each(&:delete)
+          delete_goals
+          Split.redis.del(@name)
+          @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
+          @goals.reverse.each {|a| Split.redis.lpush(goals_key, a)} unless @goals.nil?
         end
-
-        conn.hset(experiment_config_key, :resettable, resettable)
-        conn.hset(experiment_config_key, :algorithm, algorithm.to_s) 
       end
+
+      Split.redis.hset(experiment_config_key, :resettable, resettable)
+      Split.redis.hset(experiment_config_key, :algorithm, algorithm.to_s) 
       self
     end
 
@@ -110,9 +107,7 @@ module Split
     end
 
     def new_record?
-      Split.redis.with do |conn|
-      !conn.exists(name)
-      end
+      !Split.redis.exists(name)
     end
 
     def ==(obj)
@@ -146,12 +141,10 @@ module Split
     end
 
     def winner
-      Split.redis.with do |conn|
-        if w = conn.hget(:experiment_winner, name)
-          Split::Alternative.new(w, name)
-        else
-          nil
-        end
+      if w = Split.redis.hget(:experiment_winner, name)
+        Split::Alternative.new(w, name)
+      else
+        nil
       end
     end
 
@@ -160,9 +153,7 @@ module Split
     end
 
     def winner=(winner_name)
-      Split.redis.with do |conn|
-        conn.hset(:experiment_winner, name, winner_name.to_s)
-      end
+      Split.redis.hset(:experiment_winner, name, winner_name.to_s)
     end
 
     def participant_count
@@ -174,27 +165,21 @@ module Split
     end
 
     def reset_winner
-      Split.redis.with do |conn|
-        conn.hdel(:experiment_winner, name)
-      end
+      Split.redis.hdel(:experiment_winner, name)
     end
 
     def start
-      Split.redis.with do |conn|
-        conn.hset(:experiment_start_times, @name, Time.now.to_i)
-      end
+      Split.redis.hset(:experiment_start_times, @name, Time.now.to_i)
     end
 
     def start_time
-      Split.redis.with do |conn|
-        t = conn.hget(:experiment_start_times, @name)
-        if t
-          # Check if stored time is an integer
-          if t =~ /^[-+]?[0-9]+$/
-            t = Time.at(t.to_i)
-          else
-            t = Time.parse(t)
-          end
+      t = Split.redis.hget(:experiment_start_times, @name)
+      if t
+        # Check if stored time is an integer
+        if t =~ /^[-+]?[0-9]+$/
+          t = Time.at(t.to_i)
+        else
+          t = Time.parse(t)
         end
       end
     end
@@ -212,15 +197,11 @@ module Split
     end
 
     def version
-      Split.redis.with do |conn|
-        @version ||= (conn.get("#{name.to_s}:version").to_i || 0)
-      end
+      @version ||= (Split.redis.get("#{name.to_s}:version").to_i || 0)
     end
 
     def increment_version
-      Split.redis.with do |conn|
-        @version = conn.incr("#{name}:version")
-      end
+      @version = Split.redis.incr("#{name}:version")
     end
 
     def key(goal=nil)
@@ -263,31 +244,25 @@ module Split
     end
 
     def delete
-      Split.redis.with do |conn|
-        alternatives.each(&:delete)
-        reset_winner
-        conn.srem(:experiments, name)
-        conn.del(name)
-        delete_goals
-        Split.configuration.on_experiment_delete.call(self)
-        increment_version
-      end
+      alternatives.each(&:delete)
+      reset_winner
+      Split.redis.srem(:experiments, name)
+      Split.redis.del(name)
+      delete_goals
+      Split.configuration.on_experiment_delete.call(self)
+      increment_version
     end
 
     def delete_goals
-      Split.redis.with do |conn|
-        conn.del(goals_key)
-      end
+      Split.redis.del(goals_key)
     end
 
     def load_from_redis
-      Split.redis.with do |conn|
-        exp_config = conn.hgetall(experiment_config_key)
-        self.resettable = exp_config['resettable']
-        self.algorithm = exp_config['algorithm']
-        self.alternatives = load_alternatives_from_redis
-        self.goals = load_goals_from_redis
-      end
+      exp_config = Split.redis.hgetall(experiment_config_key)
+      self.resettable = exp_config['resettable']
+      self.algorithm = exp_config['algorithm']
+      self.alternatives = load_alternatives_from_redis
+      self.goals = load_goals_from_redis
     end
 
     protected
@@ -306,9 +281,7 @@ module Split
     end
 
     def load_goals_from_redis
-      Split.redis.with do |conn|
-        conn.lrange(goals_key, 0, -1)
-      end
+      Split.redis.lrange(goals_key, 0, -1)
     end
 
     def load_alternatives_from_configuration
@@ -322,16 +295,14 @@ module Split
     end
 
     def load_alternatives_from_redis
-      Split.redis.with do |conn|
-        case conn.type(@name)
-        when 'set' # convert legacy sets to lists
-          alts = conn.smembers(@name)
-          conn.del(@name)
-          alts.reverse.each {|a| Split.redis.lpush(@name, a) }
-          conn.lrange(@name, 0, -1)
-        else
-          conn.lrange(@name, 0, -1)
-        end
+      case Split.redis.type(@name)
+      when 'set' # convert legacy sets to lists
+        alts = Split.redis.smembers(@name)
+        Split.redis.del(@name)
+        alts.reverse.each {|a| Split.redis.lpush(@name, a) }
+        Split.redis.lrange(@name, 0, -1)
+      else
+        Split.redis.lrange(@name, 0, -1)
       end
     end
   end

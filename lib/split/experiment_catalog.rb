@@ -2,10 +2,8 @@ module Split
   class ExperimentCatalog
     # Return all experiments
     def self.all
-      Split.redis.with do |conn|
-        # Call compact to prevent nil experiments from being returned -- seems to happen during gem upgrades
-        conn.smembers(:experiments).map {|e| find(e)}.compact
-      end
+      # Call compact to prevent nil experiments from being returned -- seems to happen during gem upgrades
+      Split.redis.smembers(:experiments).map {|e| find(e)}.compact
     end
 
     # Return experiments without a winner (considered "active") first
@@ -15,11 +13,9 @@ module Split
 
     def self.find(name)
       obj = nil
-      Split.redis.with do |conn|
-        if conn.exists(name)
-          obj = Experiment.new name
-          obj.load_from_redis
-        end
+      if Split.redis.exists(name)
+        obj = Experiment.new name
+        obj.load_from_redis
       end
       obj
     end
