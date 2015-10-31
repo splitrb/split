@@ -163,7 +163,9 @@ describe Split::Dashboard do
   it "should handle experiments without a start date" do
     experiment_start_time = Time.parse('2011-07-07')
     Time.stub(:now => experiment_start_time)
-    Split.redis.hdel(:experiment_start_times, experiment.name)
+    Split.redis.with do |conn|
+      conn.hdel(:experiment_start_times, experiment.name)
+    end
 
     get '/'
 
