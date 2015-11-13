@@ -64,9 +64,13 @@
         <tr>
           <td></td>
           <td></td>
-          <td><strong>AOV</strong></td>
+          <td><strong>Order</strong></td>
           <td>
-            <%= number_to_currency(alternative.completed_value(goal)) %>
+            <% if goal.humanize != "Item purchase" %>
+              <%= number_to_currency(alternative.completed_value(goal)) %>
+            <% else %>
+              <%= alternative.completed_value(goal) %>
+            <% end %>
             <% if experiment.control.completed_value(goal) != "N/A" && experiment.control.completed_value(goal) > 0 && !alternative.control? %>
               <% if alternative.completed_value(goal) > experiment.control.completed_value(goal) %>
               <span class='better'>
@@ -90,9 +94,13 @@
         <tr>
           <td></td>
           <td></td>
-          <td><strong>RPS</strong></td>
+          <td><strong>Session</strong></td>
           <td>
-            <%= number_to_currency(alternative.combined_value(goal)) %>
+            <% if goal.humanize != "Item purchase" %>
+              <%= number_to_currency(alternative.combined_value(goal)) %>
+            <% else %>
+              <%= alternative.combined_value(goal) %>
+            <% end %>
             <% if experiment.control.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > 0 && !alternative.control? %>
               <% if alternative.combined_value(goal) > experiment.control.combined_value(goal) %>
               <span class='better'>
