@@ -60,7 +60,7 @@ module Split
     end
 
     def finish_experiment(experiment, options = {:reset => true})
-      return true if experiment.has_winner?
+      return true if experiment.has_winner? unless options[:skip_win_check]
       should_reset = experiment.resettable? && options[:reset]
       alternative_name = ab_user[experiment.key]
 
@@ -99,10 +99,17 @@ module Split
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_experiment(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
-
+      
+      # optimization
+      winners = Split.redis.with do |conn|
+        conn.hgetall(:experiment_winner)
+      end || {}
+      
       if experiments.any?
         experiments.each do |experiment|
-          finish_experiment(experiment, options.merge(:goals => goals))
+          next unless winners[experiment.name].nil?
+          finish_experiment(experiment, options.merge(:goals => goals, 
+                                                      :skip_win_check => true))
         end
       end
     rescue => e
