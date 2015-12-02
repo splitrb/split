@@ -63,16 +63,23 @@ module Split
       return true if experiment.has_winner? unless options[:skip_win_check]
       should_reset = experiment.resettable? && options[:reset]
       
-      alternative_name = if options[:alternatives]
-        name = options[:alternatives][experiment.key]
-        Rails.logger.debug("found alternative #{name} for experiment #{experiment.name}")
-        name
-      else 
-        ab_user[experiment.key]
-      end
+      alternative_name = 
+        if options[:alternatives]
+          options[:alternatives][experiment.key]
+        else 
+          ab_user[experiment.key]
+        end
       if options[:goals].any?
         options[:goals].each do |goal|
-          if ab_user[experiment.finished_key(goal)] && !should_reset
+          goal_is_finished = 
+            if options[:finished_goals]
+              goal = options[:finished_goals][experiment.finished_key(goal)]
+              Rails.logger.debug("goal for #{experiment.finished_key(goal)} is #{goal}")
+              goal
+            else
+              ab_user[experiment.finished_key(goal)]
+            end
+          if goal_is_finished && !should_reset
             return true
           else
             trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value])
@@ -113,15 +120,24 @@ module Split
       
       keys = experiments.map(&:key)
       alternatives = ab_user.hmget(keys)
-      
       alt_map = Hash[*keys.zip(alternatives).flatten]
+      
+      exp_finished_goal_keys = []
+      goals.each do |goal|
+        experiments.each do |experiment|
+          exp_finished_goal_keys << experiment.finished_key(goal)
+        end
+      end
+      finished_goals = ab_user.hmget(exp_finished_goal_keys)
+      goal_map = Hash[*exp_finished_goal_keys.zip(finished_goals).flatten]
       
       if experiments.any?
         experiments.each do |experiment|
           next unless winners[experiment.name].nil?
           finish_experiment(experiment, options.merge(goals: goals, 
                                                       skip_win_check: true,
-                                                      alternatives: alt_map))
+                                                      alternatives: alt_map,
+                                                      finished_goals: goal_map))
         end
       end
     rescue => e
