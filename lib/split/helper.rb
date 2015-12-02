@@ -62,8 +62,14 @@ module Split
     def finish_experiment(experiment, options = {:reset => true})
       return true if experiment.has_winner? unless options[:skip_win_check]
       should_reset = experiment.resettable? && options[:reset]
-      alternative_name = ab_user[experiment.key]
-
+      
+      alternative_name = if options[:alternatives]
+        name = options[:alternatives][experiment.key]
+        Rails.logger.debug("found alternative #{name} for experiment #{experiment.name}")
+        name
+      else 
+        ab_user[experiment.key]
+      end
       if options[:goals].any?
         options[:goals].each do |goal|
           if ab_user[experiment.finished_key(goal)] && !should_reset
@@ -105,13 +111,17 @@ module Split
         conn.hgetall(:experiment_winner)
       end || {}
       
-      Rails.logger.debug("#{winners}")
+      keys = experiments.map(&:key)
+      alternatives = ab_user.hmget(keys)
+      
+      alt_map = Hash[*keys.zip(alternatives).flatten]
       
       if experiments.any?
         experiments.each do |experiment|
           next unless winners[experiment.name].nil?
-          finish_experiment(experiment, options.merge(:goals => goals, 
-                                                      :skip_win_check => true))
+          finish_experiment(experiment, options.merge(goals: goals, 
+                                                      skip_win_check: true,
+                                                      alternatives: alt_map))
         end
       end
     rescue => e

@@ -23,6 +23,12 @@ module Split
           conn.hget(redis_key, field)
         end
       end
+      
+      def hmget(fields)
+        Split.redis.with do |conn|
+          conn.hmget(redis_key, fields)
+        end
+      end
 
       def []=(field, value)
         Split.redis.with do |conn|
