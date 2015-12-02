@@ -105,6 +105,8 @@ module Split
         conn.hgetall(:experiment_winner)
       end || {}
       
+      Rails.logger.debug("#{winners}")
+      
       if experiments.any?
         experiments.each do |experiment|
           next unless winners[experiment.name].nil?

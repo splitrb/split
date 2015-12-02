@@ -146,6 +146,7 @@ module Split
     end
 
     def winner
+      Rails.logger.debug("checking winner of #{name}")
       Split.redis.with do |conn|
         if w = conn.hget(:experiment_winner, name)
           Split::Alternative.new(w, name)
