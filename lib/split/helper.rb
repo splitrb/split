@@ -73,9 +73,7 @@ module Split
         options[:goals].each do |goal|
           goal_is_finished = 
             if options[:finished_goals]
-              goal = options[:finished_goals][experiment.finished_key(goal)]
-              #Rails.logger.debug("goal for #{experiment.finished_key(goal)} is #{goal}")
-              goal
+              options[:finished_goals][experiment.finished_key(goal)]
             else
               ab_user[experiment.finished_key(goal)]
             end
