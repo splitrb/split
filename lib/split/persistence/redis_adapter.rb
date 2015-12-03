@@ -25,6 +25,7 @@ module Split
       end
       
       def hmget(fields)
+        puts fields
         Split.redis.with do |conn|
           conn.hmget(redis_key, fields)
         end

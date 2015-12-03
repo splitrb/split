@@ -74,7 +74,7 @@ module Split
           goal_is_finished = 
             if options[:finished_goals]
               goal = options[:finished_goals][experiment.finished_key(goal)]
-              Rails.logger.debug("goal for #{experiment.finished_key(goal)} is #{goal}")
+              #Rails.logger.debug("goal for #{experiment.finished_key(goal)} is #{goal}")
               goal
             else
               ab_user[experiment.finished_key(goal)]
@@ -112,32 +112,40 @@ module Split
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_experiment(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
+    
       
-      # optimization
-      winners = Split.redis.with do |conn|
-        conn.hgetall(:experiment_winner)
-      end || {}
-      
-      keys = experiments.map(&:key)
-      alternatives = ab_user.hmget(keys)
-      alt_map = Hash[*keys.zip(alternatives).flatten]
-      
-      exp_finished_goal_keys = []
-      goals.each do |goal|
-        experiments.each do |experiment|
-          exp_finished_goal_keys << experiment.finished_key(goal)
+      # redis optimization useful for when we're finishing a goal shared by 
+      # many experiments and want to eliminate N calls to redis
+      extra_options = {}
+      winners = {}
+      if (ab_user.respond_to? :hmget)
+        winners = Split.redis.with do |conn|
+          conn.hgetall(:experiment_winner)
+        end || {}
+        
+        keys = experiments.map(&:key)
+    
+        alternatives = ab_user.hmget(keys)
+        alt_map = Hash[*keys.zip(alternatives).flatten]
+        
+        exp_finished_goal_keys = []
+        goals.each do |goal|
+          experiments.each do |experiment|
+            exp_finished_goal_keys << experiment.finished_key(goal)
+          end
         end
+        finished_goals = ab_user.hmget(exp_finished_goal_keys)
+        goal_map = Hash[*exp_finished_goal_keys.zip(finished_goals).flatten]
+        extra_options = { skip_win_check: true,
+                          alternatives: alt_map,
+                          finished_goals: goal_map }
       end
-      finished_goals = ab_user.hmget(exp_finished_goal_keys)
-      goal_map = Hash[*exp_finished_goal_keys.zip(finished_goals).flatten]
       
       if experiments.any?
         experiments.each do |experiment|
           next unless winners[experiment.name].nil?
-          finish_experiment(experiment, options.merge(goals: goals, 
-                                                      skip_win_check: true,
-                                                      alternatives: alt_map,
-                                                      finished_goals: goal_map))
+          finish_experiment(experiment, options.merge(goals: goals)
+                                               .merge(extra_options))
         end
       end
     rescue => e
