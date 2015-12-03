@@ -81,7 +81,7 @@ module Split
             return true
           else
             trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value])
-            call_trial_complete_hook(trial) if trial.complete!
+            call_trial_complete_hook(trial) if trial.complete!()
 
             if should_reset
               reset!(experiment, goal)
@@ -142,6 +142,7 @@ module Split
       if experiments.any?
         experiments.each do |experiment|
           next unless winners[experiment.name].nil?
+          experiment.has_no_winner!
           finish_experiment(experiment, options.merge(goals: goals)
                                                .merge(extra_options))
         end
@@ -234,12 +235,12 @@ module Split
       Hash === control ? control.keys.first : control
     end
 
-    def start_trial(trial)
+    def start_trial(trial, check_winner = true)
       experiment = trial.experiment
       if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
         ret = override_alternative(experiment.name)
         ab_user[experiment.key] = ret if Split.configuration.store_override
-      elsif experiment.has_winner?
+      elsif check_winner && experiment.has_winner?
         ret = experiment.winner.name
       else
         clean_old_versions(experiment)
