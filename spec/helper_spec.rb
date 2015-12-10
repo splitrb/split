@@ -19,11 +19,11 @@ describe Split::Helper do
     end
 
     it "should raise the appropriate error when passed integers for alternatives" do
-      expect(lambda { ab_test('xyz', 1, 2, 3) }).to raise_error
+      expect(lambda { ab_test('xyz', 1, 2, 3) }).to raise_error(ArgumentError)
     end
 
     it "should raise the appropriate error when passed symbols for alternatives" do
-      expect(lambda { ab_test('xyz', :a, :b, :c) }).to raise_error
+      expect(lambda { ab_test('xyz', :a, :b, :c) }).to raise_error(ArgumentError)
     end
 
     it "should not raise error when passed an array for goals" do
@@ -449,7 +449,7 @@ describe Split::Helper do
       expect(active_experiments.first[0]).to eq "def"
       expect(active_experiments.first[1]).to eq alternative
     end
-    
+
     it 'should show an active test when an experiment is on a later version' do
       experiment.reset
       expect(experiment.version).to eq(1)
@@ -696,13 +696,13 @@ describe Split::Helper do
 
       describe 'ab_test' do
         it 'should raise an exception' do
-          expect(lambda { ab_test('link_color', 'blue', 'red') }).to raise_error
+          expect(lambda { ab_test('link_color', 'blue', 'red') }).to raise_error(Errno::ECONNREFUSED)
         end
       end
 
       describe 'finished' do
         it 'should raise an exception' do
-          expect(lambda { finished('link_color') }).to raise_error
+          expect(lambda { finished('link_color') }).to raise_error(Errno::ECONNREFUSED)
         end
       end
 
@@ -907,11 +907,11 @@ describe Split::Helper do
 
     it "fails gracefully if config is missing experiment" do
       Split.configuration.experiments = { :other_experiment => { :foo => "Bar" } }
-      expect(lambda { ab_test :my_experiment }).to raise_error
+      expect(lambda { ab_test :my_experiment }).to raise_error(Split::ExperimentNotFound)
     end
 
     it "fails gracefully if config is missing" do
-      expect(lambda { Split.configuration.experiments = nil }).to raise_error
+      expect(lambda { Split.configuration.experiments = nil }).to raise_error(Split::InvalidExperimentsFormatError)
     end
 
     it "fails gracefully if config is missing alternatives" do

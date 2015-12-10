@@ -343,8 +343,8 @@ describe Split::Experiment do
 
   describe 'alternatives passed as non-strings' do
     it "should throw an exception if an alternative is passed that is not a string" do
-      expect(lambda { Split::ExperimentCatalog.find_or_create('link_color', :blue, :red) }).to raise_error
-      expect(lambda { Split::ExperimentCatalog.find_or_create('link_enabled', true, false) }).to raise_error
+      expect(lambda { Split::ExperimentCatalog.find_or_create('link_color', :blue, :red) }).to raise_error(ArgumentError)
+      expect(lambda { Split::ExperimentCatalog.find_or_create('link_enabled', true, false) }).to raise_error(ArgumentError)
     end
   end
 
