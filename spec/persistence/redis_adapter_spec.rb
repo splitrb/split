@@ -11,8 +11,7 @@ describe Split::Persistence::RedisAdapter do
 
     context 'default' do
       it 'should raise error with prompt to set lookup_by' do
-        expect{Split::Persistence::RedisAdapter.new(context)
-              }.to raise_error
+        expect{Split::Persistence::RedisAdapter.new(context)}.to raise_error(RuntimeError)
       end
     end
 

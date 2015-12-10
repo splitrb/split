@@ -182,7 +182,7 @@ describe Split::Configuration do
           let(:input) { '' }
 
           it "should raise an error" do
-            expect { @config.experiments = yaml }.to raise_error
+            expect { @config.experiments = yaml }.to raise_error(Split::InvalidExperimentsFormatError)
           end
         end
 
@@ -190,7 +190,7 @@ describe Split::Configuration do
           let(:input) { '---' }
 
           it "should raise an error" do
-            expect { @config.experiments = yaml }.to raise_error
+            expect { @config.experiments = yaml }.to raise_error(Split::InvalidExperimentsFormatError)
           end
         end
       end

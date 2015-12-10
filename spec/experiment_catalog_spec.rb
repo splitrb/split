@@ -13,11 +13,11 @@ describe Split::ExperimentCatalog do
     end
 
     it "should raise the appropriate error when passed integers for alternatives" do
-      expect { subject.find_or_create('xyz', 1, 2, 3) }.to raise_error
+      expect { subject.find_or_create('xyz', 1, 2, 3) }.to raise_error(ArgumentError)
     end
 
     it "should raise the appropriate error when passed symbols for alternatives" do
-      expect { subject.find_or_create('xyz', :a, :b, :c) }.to raise_error
+      expect { subject.find_or_create('xyz', :a, :b, :c) }.to raise_error(ArgumentError)
     end
 
     it "should not raise error when passed an array for goals" do
