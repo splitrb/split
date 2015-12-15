@@ -303,7 +303,7 @@ module Split
 
     def draw_log_normal_means(data,m0,k0,s_sq0,v0,n_samples=10000)
       # log transform the data
-      log_data = data.collect{|n| Math.log(n)}
+      log_data = data.select{|n| n > 0}.collect{|n| Math.log(n)}
 
       # get samples from the posterior
       mu_samples, sig_sq_samples = draw_mus_and_sigmas(log_data,m0,k0,s_sq0,v0,n_samples)
