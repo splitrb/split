@@ -60,17 +60,28 @@ module Split
     end
 
     def finish_experiment(experiment, options = {:reset => true})
-      return true if experiment.has_winner?
+      return true if experiment.has_winner? unless options[:skip_win_check]
       should_reset = experiment.resettable? && options[:reset]
-      alternative_name = ab_user[experiment.key]
-
+      
+      alternative_name = 
+        if options[:alternatives]
+          options[:alternatives][experiment.key]
+        else 
+          ab_user[experiment.key]
+        end
       if options[:goals].any?
         options[:goals].each do |goal|
-          if ab_user[experiment.finished_key(goal)] && !should_reset
+          goal_is_finished = 
+            if options[:finished_goals]
+              options[:finished_goals][experiment.finished_key(goal)]
+            else
+              ab_user[experiment.finished_key(goal)]
+            end
+          if goal_is_finished && !should_reset
             return true
           else
             trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value])
-            call_trial_complete_hook(trial) if trial.complete!
+            call_trial_complete_hook(trial) if trial.complete!()
 
             if should_reset
               reset!(experiment, goal)
@@ -99,10 +110,41 @@ module Split
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_experiment(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
-
+    
+      
+      # redis optimization useful for when we're finishing a goal shared by 
+      # many experiments and want to eliminate N calls to redis
+      extra_options = {}
+      winners = {}
+      if (ab_user.respond_to? :hmget)
+        winners = Split.redis.with do |conn|
+          conn.hgetall(:experiment_winner)
+        end || {}
+        
+        keys = experiments.map(&:key)
+    
+        alternatives = ab_user.hmget(keys)
+        alt_map = Hash[*keys.zip(alternatives).flatten]
+        
+        exp_finished_goal_keys = []
+        goals.each do |goal|
+          experiments.each do |experiment|
+            exp_finished_goal_keys << experiment.finished_key(goal)
+          end
+        end
+        finished_goals = ab_user.hmget(exp_finished_goal_keys)
+        goal_map = Hash[*exp_finished_goal_keys.zip(finished_goals).flatten]
+        extra_options = { skip_win_check: true,
+                          alternatives: alt_map,
+                          finished_goals: goal_map }
+      end
+      
       if experiments.any?
         experiments.each do |experiment|
-          finish_experiment(experiment, options.merge(:goals => goals))
+          next unless winners[experiment.name].nil?
+          experiment.has_no_winner!
+          finish_experiment(experiment, options.merge(goals: goals)
+                                               .merge(extra_options))
         end
       end
     rescue => e
@@ -193,12 +235,12 @@ module Split
       Hash === control ? control.keys.first : control
     end
 
-    def start_trial(trial)
+    def start_trial(trial, check_winner = true)
       experiment = trial.experiment
       if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
         ret = override_alternative(experiment.name)
         ab_user[experiment.key] = ret if Split.configuration.store_override
-      elsif experiment.has_winner?
+      elsif check_winner && experiment.has_winner?
         ret = experiment.winner.name
       else
         clean_old_versions(experiment)

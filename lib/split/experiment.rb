@@ -156,7 +156,15 @@ module Split
     end
 
     def has_winner?
-      !winner.nil?
+      @has_winner.nil? ? !winner.nil? : @has_winner
+    end
+    
+    def has_winner!
+      @has_winner = true
+    end
+    
+    def has_no_winner!
+      @has_winner = false
     end
 
     def winner=(winner_name)
