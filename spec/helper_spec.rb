@@ -916,7 +916,7 @@ describe Split::Helper do
 
     it "fails gracefully if config is missing alternatives" do
       Split.configuration.experiments[:my_experiment] = { :foo => "Bar" }
-      expect(lambda { ab_test :my_experiment }).to raise_error
+      expect(lambda { ab_test :my_experiment }).to raise_error(NoMethodError)
     end
   end
 
