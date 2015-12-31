@@ -29,32 +29,32 @@ module Split
       erb :index
     end
 
-    post '/:experiment' do
+    post '/experiment' do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @alternative = Split::Alternative.new(params[:alternative], params[:experiment])
       @experiment.winner = @alternative.name
       redirect url('/')
     end
 
-    post '/start/:experiment' do
+    post '/start' do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.start
       redirect url('/')
     end
 
-    post '/reset/:experiment' do
+    post '/reset' do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.reset
       redirect url('/')
     end
 
-    post '/reopen/:experiment' do
+    post '/reopen' do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.reset_winner
       redirect url('/')
     end
 
-    delete '/:experiment' do
+    delete '/experiment' do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.delete
       redirect url('/')
