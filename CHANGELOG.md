@@ -1,3 +1,9 @@
+## 1.3.1 (January 1st, 2016)
+
+Bugfixes:
+
+- Fix the dashboard for experiments with ‘/‘ in the name. (@craigmcnamara, #349)
+
 ## 1.3.0 (October 20th, 2015)
 
 Features:
