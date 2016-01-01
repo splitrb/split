@@ -400,11 +400,12 @@ module Split
     end
 
     def jstring(goal = nil)
-      unless goal.nil?
-        jstring = name + "-" + goal
-      else
-        jstring = name
-      end
+      js_id = if goal.nil?
+                name
+              else
+                name + "-" + goal
+              end
+      js_id.gsub('/', '--')
     end
 
     protected

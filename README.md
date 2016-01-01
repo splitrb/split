@@ -661,6 +661,7 @@ end
   - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - store experiment data in mongoid (still uses redis)
   - [Split::Cacheable](https://github.com/harrystech/split_cacheable) - automatically create cache buckets per test
   - [Split::Counters](https://github.com/bernardkroes/split-counters) - add counters per experiment and alternative
+  - [Split::Cli](https://github.com/craigmcnamara/split-cli) - a CLI to trigger Split A/B tests
 
 ## Screencast
 
