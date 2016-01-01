@@ -1,6 +1,6 @@
 ## 1.3.0 (October 20th, 2015)
 
-Features
+Features:
 
  - allow for custom redis_url different from ENV variable (@davidgrieser, #323)
  - add ability to change the length of the persistence cookie (@peterylai, #335)
@@ -18,7 +18,7 @@ Misc:
 
 ## 1.2.1 (May 17th, 2015)
 
-Features
+Features:
 
  - Handle redis DNS resolution failures gracefully (@fusion2004, #310)
  - Push metadata to ab_test block (@ekorneeff, #296)
@@ -38,7 +38,7 @@ Misc:
 
 ## 1.2.0 (January 24th, 2015)
 
-Features
+Features:
 
   - Configure redis using environment variables if available (@saratovsource , #293)
   - Store metadata on experiment configuration (@dekz, #291)
@@ -108,7 +108,7 @@ Features:
 
   - You can now reopen experiment from the dashboard (@mikezaby, #235)
 
-Misc
+Misc:
 
   - Internal code tidy up (@IanVaughan, #238)
 
@@ -123,7 +123,7 @@ Bugfixes:
 
   - Fixed start button not being displayed in some cases (@vigosan, #219)
 
-Misc
+Misc:
 
   - Experiment#initialize refactoring (@nberger, #224)
   - Extract ExperimentStore into a seperate class (@nberger, #225)
