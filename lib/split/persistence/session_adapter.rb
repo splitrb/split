@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Split
   module Persistence
     class SessionAdapter
