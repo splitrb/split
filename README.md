@@ -698,4 +698,4 @@ Tests can be ran with `rake spec`
 
 ## Copyright
 
-Copyright (c) 2015 Andrew Nesbitt. See [LICENSE](https://github.com/splitrb/split/blob/master/LICENSE) for details.
+Copyright (c) 2016 Andrew Nesbitt. See [LICENSE](https://github.com/splitrb/split/blob/master/LICENSE) for details.
