@@ -1,3 +1,9 @@
+## 1.3.2 (January 2nd, 2016)
+
+Bugfixes:
+
+- Fix deleting experiments in from the updated dashboard (@craigmcnamara, #352)
+
 ## 1.3.1 (January 1st, 2016)
 
 Bugfixes:
