@@ -12,7 +12,7 @@
     <input type="submit" value="Start">
   </form>
 <% end %>
-<form action="<%= url "/?experiment=#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
+<form action="<%= url "/experiment?experiment=#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
   <input type="hidden" name="_method" value="delete"/>
   <input type="submit" value="Delete" class="red">
 </form>
