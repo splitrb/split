@@ -8,7 +8,6 @@ Split is designed to be hacker friendly, allowing for maximum customisation and 
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
 [![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](http://travis-ci.org/splitrb/split)
-[![Dependency Status](https://gemnasium.com/splitrb/split.svg)](https://gemnasium.com/splitrb/split)
 [![Code Climate](https://codeclimate.com/github/splitrb/split.svg)](https://codeclimate.com/github/splitrb/split)
 [![Coverage Status](http://img.shields.io/coveralls/splitrb/split.svg)](https://coveralls.io/r/splitrb/split)
 
