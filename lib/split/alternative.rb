@@ -69,10 +69,16 @@ module Split
     end
 
     def completed_values(goal = nil)
-      field = set_value_field(goal)
-      Split.redis.with do |conn|
-        list = conn.lrange(key + field, 0, -1).collect{|n| n.to_f}
+      unless @completed_values
+        @completed_values = HashWithIndifferentAccess.new
+        self.goals.each do |goal|
+          field = set_value_field(goal)
+          @completed_values[goal] = Split.redis.with do |conn|
+            list = conn.lrange(key + field, 0, -1).collect{|n| n.to_f}
+          end
+        end
       end
+      @completed_values[goal] || []
     end
 
     def all_completed_count
