@@ -75,7 +75,7 @@ module Split
           field = set_value_field(goal)
           @completed_values[goal] = Split.redis.with do |conn|
             list = conn.lrange(key + field, 0, -1).collect{|n| n.to_f}
-          end
+          end.collect{|n| [0,n].max}
         end
       end
       @completed_values[goal] || []
@@ -168,7 +168,7 @@ module Split
       return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if !self.completed_values(goal).blank? && !experiment.control.completed_values(goal).blank?
-        bayesian_log_normal_probability(self.completed_values(goal).collect{|n| [0,n].max}, experiment.control.completed_values(goal).collect{|n| [0,n].max})
+        bayesian_log_normal_probability(self.completed_values(goal), experiment.control.completed_values(goal))
       else
         "N/A"
       end
@@ -221,7 +221,7 @@ module Split
       return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if self.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > 0
-        bayesian_combined_probability(self.completed_values(goal).collect{|n| [0,n].max}, experiment.control.completed_values(goal).collect{|n| [0,n].max})
+        bayesian_combined_probability(self.completed_values(goal), experiment.control.completed_values(goal))
       else
         "N/A"
       end
