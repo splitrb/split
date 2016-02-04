@@ -30,7 +30,7 @@ module Split
     end
 
     def participant_count
-      Split.redis.with do |conn|
+      @participant_count ||= Split.redis.with do |conn|
         conn.hget(key, 'participant_count').to_i
       end
     end
@@ -42,22 +42,34 @@ module Split
     end
 
     def completed_count(goal = nil)
-      field = set_field(goal)
-      Split.redis.with do |conn|
-        conn.hget(key, field).to_i
+      unless @completed_count
+        @completed_count = HashWithIndifferentAccess.new
+        self.goals.each do |goal|
+          field = set_field(goal)
+          @completed_count[goal] = Split.redis.with do |conn|
+            conn.hget(key, field).to_i
+          end
+        end
       end
+      @completed_count[goal] || []
     end
 
     def completed_value(goal = nil)
-      field = set_value_field(goal)
-      Split.redis.with do |conn|
-        list = conn.lrange(key + field, 0, -1)
-        if list.size > 0
-          list.sum{|n| n.to_f}/list.size
-        else
-          "N/A"
+      unless @completed_value
+        @completed_value = HashWithIndifferentAccess.new
+        self.goals.each do |goal|
+          field = set_value_field(goal)
+          @completed_value[goal] = Split.redis.with do |conn|
+            list = conn.lrange(key + field, 0, -1)
+            if list.size > 0
+              list.sum{|n| n.to_f}/list.size
+            else
+              "N/A"
+            end
+          end
         end
       end
+      @completed_value[goal] || []
     end
 
     def combined_value(goal = nil)
