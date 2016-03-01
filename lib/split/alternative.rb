@@ -51,7 +51,7 @@ module Split
           end
         end
       end
-      @completed_count[goal] || []
+      @completed_count[goal] || 0
     end
 
     def completed_value(goal = nil)
