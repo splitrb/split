@@ -4,3 +4,4 @@ gemspec
 
 gem "appraisal"
 gem "simple-random"
+gem "activesupport"
