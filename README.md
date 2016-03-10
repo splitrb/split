@@ -36,7 +36,7 @@ gem install split
 
 ### Rails
 
-Adding `gem 'split'` to your Gemfile will autoloaded it when rails starts up, as long as you've configured redis it will 'just work'.
+Adding `gem 'split'` to your Gemfile will autoload it when rails starts up, as long as you've configured redis it will 'just work'.
 
 ### Sinatra
 
