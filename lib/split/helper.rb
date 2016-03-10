@@ -23,7 +23,7 @@ module Split
 
         ret = if Split.configuration.enabled
           experiment.save
-          start_trial( Trial.new(:experiment => experiment) )
+          start_trial( Trial.new(:experiment => experiment, :user => ab_user.split_id) )
         else
           control_variable(control)
         end
@@ -71,21 +71,25 @@ module Split
         end
       if options[:goals].any?
         options[:goals].each do |goal|
+          # if the goal is finished and not resettable, we call it a day
           goal_is_finished = 
-            if options[:finished_goals]
+            if options[:finished_goals] # sometimes we pass in finished goals
               options[:finished_goals][experiment.finished_key(goal)]
-            else
+            else # other times we have to query redis to get finished goals for this user
               ab_user[experiment.finished_key(goal)]
             end
           if goal_is_finished && !should_reset
             return true
           else
-            trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value])
-            call_trial_complete_hook(trial) if trial.complete!()
+            trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value], :user => ab_user.split_id)
+            # trial.complete!() calls alternative.increment_completion
+            # So this is where counts and values are incremented. 
+            trial.complete!() 
+            call_trial_complete_hook(trial)
 
-            if should_reset
+            if should_reset # reset the goal if it's resettable
               reset!(experiment, goal)
-            else
+            else # if not resettable we say that this user has finished this goal
               ab_user[experiment.finished_key(goal)] = true
             end
           end
@@ -94,7 +98,7 @@ module Split
         if ab_user[experiment.finished_key] && !should_reset
           return true
         else
-          trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals], :value => options[:value])
+          trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals], :value => options[:value], :user => ab_user.split_id)
           call_trial_complete_hook(trial) if trial.complete!
 
           if should_reset
@@ -142,7 +146,7 @@ module Split
       if experiments.any?
         experiments.each do |experiment|
           next unless winners[experiment.name].nil?
-          experiment.has_no_winner!
+          experiment.has_no_winner! # we falsify has_winner so the counts continue to accumulate
           finish_experiment(experiment, options.merge(goals: goals)
                                                .merge(extra_options))
         end
@@ -237,22 +241,30 @@ module Split
 
     def start_trial(trial, check_winner = true)
       experiment = trial.experiment
+      # if an alternative is specified in URL params, we change the user bucket to that alternative
       if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
-        ret = override_alternative(experiment.name)
-        ab_user[experiment.key] = ret if Split.configuration.store_override
+        if Split.configuration.store_override
+          ret = override_alternative(experiment.name)
+          ab_user[experiment.key] = ret 
+          trial.alternative = ret
+          call_trial_choose_hook(trial)
+        end
+        # we always just go with the winner if already chosen
       elsif check_winner && experiment.has_winner?
         ret = experiment.winner.name
       else
-        clean_old_versions(experiment)
+        clean_old_versions(experiment) # remove previous versions from Redis
         if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
           ret = experiment.control.name
         else
-          if ab_user[experiment.key]
+          if ab_user[experiment.key] # stay in the same bucket if already bucketed
             ret = ab_user[experiment.key]
+          # when a default alternative is given in URL params and the user is not bucketed yet
           elsif default_present?(experiment.name) and experiment[default_alternative(experiment.name)]
             trial.alternative = default_alternative(experiment.name)
-            trial.record!
+            trial.record! # increment participant counts
             call_trial_choose_hook(trial)
+            # bucket the user into the altnerative and store in Redis
             ret = begin_experiment(experiment, trial.alternative.name)
           else
             trial.choose!

@@ -115,6 +115,16 @@ module Split
       end
     end
 
+    def to_hash
+      {
+        version: self.version,
+        algorithm: self.algorithm,
+        resettable: self.resettable,
+        started_at: self.start_time,
+        ended_at: self.end_time
+      }
+    end
+
     def ==(obj)
       self.name == obj.name
     end
@@ -171,6 +181,7 @@ module Split
       Split.redis.with do |conn|
         conn.hset(:experiment_winner, name, winner_name.to_s)
       end
+      set_end_time
     end
 
     def participant_count
@@ -184,6 +195,26 @@ module Split
     def reset_winner
       Split.redis.with do |conn|
         conn.hdel(:experiment_winner, name)
+      end
+    end
+
+    def end_time
+      Split.redis.with do |conn|
+        t = conn.hget(:experiment_end_times, @name)
+        if t
+          # Check if stored time is an integer
+          if t =~ /^[-+]?[0-9]+$/
+            t = Time.at(t.to_i)
+          else
+            t = Time.parse(t)
+          end
+        end
+      end
+    end
+
+    def set_end_time
+      Split.redis.with do |conn|
+        conn.hset(:experiment_end_times, name, Time.now.to_i)
       end
     end
 

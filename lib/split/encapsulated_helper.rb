@@ -11,7 +11,11 @@
 #
 module Split
   module EncapsulatedHelper
-
+    
+    def self.included(base)
+        base.extend(ClassMethods)
+    end
+    
     class ContextShim
       include Split::Helper
       def initialize(context, original_params)
@@ -42,7 +46,26 @@ module Split
         ret
       end
     end
+    module ClassMethods
+      def get_experiment_info(experiment_name)
+        exp = Split::Experiment.find(experiment_name)
+        if exp.nil?
+          return nil
+        else
+          exp.load_from_redis
+          return exp.to_hash
+        end
+      end
 
+      def get_alternative_percentage(experiment_name, alternative_name)
+        exp = Split::Experiment.find(experiment_name)
+        return nil if exp.nil?
+        exp.load_from_redis
+        alternative = exp.alternatives.find{|alt| alt.name == alternative_name}
+        return alternative.nil? ? nil : {percentage: alternative.weight, version: version}
+      end
+    end
+    
     def ab_test_finished(*arguments)
       split_context_shim.finished *arguments
     end
