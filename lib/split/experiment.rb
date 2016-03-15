@@ -5,7 +5,8 @@ module Split
     attr_accessor :resettable
     attr_accessor :goals
     attr_accessor :alternatives
-
+    attr_accessor :max_participant_count
+    
     DEFAULT_OPTIONS = {
       :resettable => true,
     }
@@ -22,14 +23,16 @@ module Split
           alternatives: load_alternatives_from_configuration,
           goals: load_goals_from_configuration,
           resettable: exp_config[:resettable],
-          algorithm: exp_config[:algorithm]
+          algorithm: exp_config[:algorithm],
+          max_participant_count: exp_config[:max_participant_count]
         )
       else
         set_alternatives_and_options(
           alternatives: alternatives,
           goals: options[:goals],
           resettable: options[:resettable],
-          algorithm: options[:algorithm]
+          algorithm: options[:algorithm],
+          max_participant_count: options[:max_participant_count]
         )
       end
     end
@@ -39,6 +42,9 @@ module Split
       self.goals = options[:goals]
       self.resettable = options[:resettable]
       self.algorithm = options[:algorithm]
+      unless options[:max_participant_count].nil?
+        self.max_participant_count = options[:max_participant_count].to_i
+      end
     end
 
     def extract_alternatives_from_options(options)
@@ -94,7 +100,8 @@ module Split
         end
 
         conn.hset(experiment_config_key, :resettable, resettable)
-        conn.hset(experiment_config_key, :algorithm, algorithm.to_s) 
+        conn.hset(experiment_config_key, :algorithm, algorithm.to_s)
+        conn.hset(experiment_config_key, :max_participant_count, max_participant_count) unless max_participant_count.nil?
       end
       self
     end
@@ -137,6 +144,10 @@ module Split
       @algorithm ||= Split.configuration.algorithm
     end
 
+    def max_participant_count=(max_participant_count)
+      @max_participant_count = max_participant_count.to_i
+    end
+
     def algorithm=(algorithm)
       @algorithm = algorithm.is_a?(String) ? algorithm.constantize : algorithm
     end
@@ -162,6 +173,16 @@ module Split
         else
           nil
         end
+      end
+    end
+
+    def has_enough_participants?
+      if max_participant_count.nil? # it's never enough if no max participant count is set
+        false
+      elsif max_participant_count > participant_count # this can trigger as many as 4 Redis queries
+        false
+      else
+        true
       end
     end
 
@@ -213,6 +234,7 @@ module Split
     end
 
     def set_end_time
+      Split.configuration.on_experiment_end.call(self)
       Split.redis.with do |conn|
         conn.hset(:experiment_end_times, name, Time.now.to_i)
       end
@@ -326,6 +348,9 @@ module Split
         self.algorithm = exp_config['algorithm']
         self.alternatives = load_alternatives_from_redis
         self.goals = load_goals_from_redis
+        unless exp_config['max_participant_count'].nil?
+          self.max_participant_count = exp_config['max_participant_count'].to_i
+        end
       end
     end
 

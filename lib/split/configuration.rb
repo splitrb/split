@@ -17,6 +17,8 @@ module Split
     attr_accessor :on_trial_complete
     attr_accessor :on_experiment_reset
     attr_accessor :on_experiment_delete
+    attr_accessor :on_experiment_max_out
+    attr_accessor :on_experiment_end
     attr_accessor :include_rails_helper
 
     attr_reader :experiments
@@ -143,6 +145,10 @@ module Split
           if (resettable = value_for(settings, :resettable)) != nil
             experiment_config[experiment_name.to_sym][:resettable] = resettable
           end
+          
+          if (max_participant_count = value_for(settings, :max_participant_count)) != nil
+            experiment_config[experiment_name.to_sym][:max_participant_count] = max_participant_count.to_i
+          end
         end
 
         experiment_config
@@ -190,7 +196,9 @@ module Split
       @db_failover = false
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
       @on_experiment_reset = proc{|experiment|}
+      @on_experiment_max_out = proc{|experiment|}
       @on_experiment_delete = proc{|experiment|}
+      @on_experiment_end = proc{|experiment|}
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true

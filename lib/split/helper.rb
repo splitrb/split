@@ -138,7 +138,7 @@ module Split
         end
         finished_goals = ab_user.hmget(exp_finished_goal_keys)
         goal_map = Hash[*exp_finished_goal_keys.zip(finished_goals).flatten]
-        extra_options = { skip_win_check: true,
+        extra_options = { skip_win_check: true, # we skip the winner check so the goals continue to accumulate
                           alternatives: alt_map,
                           finished_goals: goal_map }
       end
@@ -174,6 +174,11 @@ module Split
 
     def begin_experiment(experiment, alternative_name = nil)
       alternative_name ||= experiment.control.name
+      # check if experiment total participant count is enough. This should only be called once
+      if experiment.has_enough_participants?
+        experiment.set_end_time # this will also invoke on_experiment_end hook
+        call_experiment_max_out_hook(experiment) 
+      end
       ab_user[experiment.key] = alternative_name
       alternative_name
     end
@@ -249,9 +254,12 @@ module Split
           trial.alternative = ret
           call_trial_choose_hook(trial)
         end
-        # we always just go with the winner if already chosen
+      # we always just go with the winner if already chosen
       elsif check_winner && experiment.has_winner?
         ret = experiment.winner.name
+      # we go with the control if enough participants
+      elsif experiment.has_enough_participants? 
+        ret = experiment.control.name
       else
         clean_old_versions(experiment) # remove previous versions from Redis
         if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
@@ -267,7 +275,7 @@ module Split
             # bucket the user into the altnerative and store in Redis
             ret = begin_experiment(experiment, trial.alternative.name)
           else
-            trial.choose!
+            trial.choose! # this calls trial.record! which increments participant counts
             call_trial_choose_hook(trial)
             ret = begin_experiment(experiment, trial.alternative.name)
           end
@@ -279,6 +287,10 @@ module Split
 
     def not_started?(experiment)
       experiment.start_time.nil?
+    end
+
+    def call_experiment_max_out_hook(experiment)
+      Split.configuration.on_experiment_max_out.call(self)
     end
 
     def call_trial_choose_hook(trial)
