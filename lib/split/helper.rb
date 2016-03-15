@@ -23,7 +23,7 @@ module Split
 
         ret = if Split.configuration.enabled
           experiment.save
-          start_trial( Trial.new(:experiment => experiment, :user => ab_user.split_id) )
+          start_trial( Trial.new(:experiment => experiment, :user => ab_user_split_id) )
         else
           control_variable(control)
         end
@@ -81,7 +81,7 @@ module Split
           if goal_is_finished && !should_reset
             return true
           else
-            trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value], :user => ab_user.split_id)
+            trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value], :user => ab_user_split_id)
             # trial.complete!() calls alternative.increment_completion
             # So this is where counts and values are incremented. 
             trial.complete!() 
@@ -98,7 +98,7 @@ module Split
         if ab_user[experiment.finished_key] && !should_reset
           return true
         else
-          trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals], :value => options[:value], :user => ab_user.split_id)
+          trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals], :value => options[:value], :user => ab_user_split_id)
           call_trial_complete_hook(trial) if trial.complete!
 
           if should_reset
@@ -181,6 +181,14 @@ module Split
       end
       ab_user[experiment.key] = alternative_name
       alternative_name
+    end
+
+    def ab_user_split_id
+      if ab_user.respond_to? :split_id
+        ab_user.split_id
+      else
+        nil
+      end
     end
 
     def ab_user
