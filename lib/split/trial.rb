@@ -3,12 +3,14 @@ module Split
     attr_accessor :experiment
     attr_accessor :goals
     attr_accessor :value
-
+    attr_accessor :user
+    
     def initialize(attrs = {})
       self.experiment = attrs[:experiment]  if !attrs[:experiment].nil?
       self.alternative = attrs[:alternative] if !attrs[:alternative].nil?
       self.goals = attrs[:goals].nil? ? [] : attrs[:goals]
       self.value = attrs[:value] if !attrs[:value].nil?
+      self.user = attrs[:user] if !attrs[:user].nil?
     end
 
     def alternative

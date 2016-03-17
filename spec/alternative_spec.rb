@@ -133,6 +133,9 @@ describe Split::Alternative do
   it "should increment participation count" do
     old_participant_count = alternative.participant_count
     alternative.increment_participation
+    
+    alternative.unmemoize # so we can reload data from Redis
+    
     alternative.participant_count.should eql(old_participant_count+1)
   end
 
@@ -144,8 +147,9 @@ describe Split::Alternative do
     alternative.increment_completion
     alternative.increment_completion(goal1)
     alternative.increment_completion(goal2)
-
-    alternative.completed_count.should eql(old_default_completed_count+1)
+    alternative.unmemoize # so we can reload data from Redis
+    
+    # alternative.completed_count.should eql(old_default_completed_count+1) # We don't maintain 
     alternative.completed_count(goal1).should eql(old_completed_count_for_goal1+1)
     alternative.completed_count(goal2).should eql(old_completed_count_for_goal2+1)
   end

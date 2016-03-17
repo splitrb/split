@@ -1,5 +1,5 @@
 require 'split/zscore'
-
+require 'active_support/all'
 # TODO - take out require and implement using file paths?
 
 module Split
@@ -25,6 +25,13 @@ module Split
       name
     end
 
+    def unmemoize
+      @participant_count = nil
+      @completed_count = nil
+      @completed_value = nil
+      @completed_values = nil
+    end
+
     def goals
       self.experiment.goals
     end
@@ -43,20 +50,21 @@ module Split
 
     def completed_count(goal = nil)
       unless @completed_count
-        @completed_count = HashWithIndifferentAccess.new
-        self.goals.each do |goal|
+        @completed_count = ActiveSupport::HashWithIndifferentAccess.new
+        # add nil so we include overall completed count
+        (self.goals + [nil]).each do |goal|
           field = set_field(goal)
           @completed_count[goal] = Split.redis.with do |conn|
             conn.hget(key, field).to_i
           end
         end
       end
-      @completed_count[goal] || []
+      @completed_count[goal] || 0
     end
 
     def completed_value(goal = nil)
       unless @completed_value
-        @completed_value = HashWithIndifferentAccess.new
+        @completed_value = ActiveSupport::HashWithIndifferentAccess.new
         self.goals.each do |goal|
           field = set_value_field(goal)
           @completed_value[goal] = Split.redis.with do |conn|
@@ -82,7 +90,7 @@ module Split
 
     def completed_values(goal = nil)
       unless @completed_values
-        @completed_values = HashWithIndifferentAccess.new
+        @completed_values = ActiveSupport::HashWithIndifferentAccess.new
         self.goals.each do |goal|
           field = set_value_field(goal)
           @completed_values[goal] = Split.redis.with do |conn|

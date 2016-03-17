@@ -9,6 +9,7 @@ describe Split::Trial do
     trial.experiment.should == experiment
     trial.alternative.should == alternative
     trial.goals.should == []
+    trial.user.should be_nil
   end
 
   describe "alternative" do
@@ -17,6 +18,12 @@ describe Split::Trial do
       trial = Split::Trial.new(:experiment => experiment = double('experiment'), :alternative => alternative)
       trial.should_not_receive(:choose)
       trial.alternative.should == alternative
+    end
+
+    it "should use the user if sepcified" do
+      alternative = double('alternative', :kind_of? => Split::Alternative)
+      trial = Split::Trial.new(:experiment => experiment = double('experiment'), :alternative => alternative, :user => 1234)
+      trial.user.should eq(1234)
     end
 
     it "should populate alternative with a full alternative object after calling choose" do

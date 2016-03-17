@@ -12,10 +12,15 @@ module Split
           else
             key_frag = context.send(lookup_by)
           end
+          @split_id = key_frag
           @redis_key = "#{self.class.config[:namespace]}:#{key_frag}"
         else
           raise "Please configure lookup_by"
         end
+      end
+
+      def split_id
+        @split_id 
       end
 
       def [](field)

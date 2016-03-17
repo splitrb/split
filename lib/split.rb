@@ -1,4 +1,5 @@
 %w[algorithms
+   dashboard
    alternative
    configuration
    exceptions
