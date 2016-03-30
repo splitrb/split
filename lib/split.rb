@@ -5,6 +5,7 @@
    experiment
    experiment_catalog
    extensions
+   goals_collection
    helper
    metric
    persistence
