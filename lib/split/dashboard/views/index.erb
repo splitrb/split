@@ -2,7 +2,9 @@
   <p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
 
   <input type="text" placeholder="Begin typing to filter" id="filter" />
-  <input type="button" id="clear-filter" value="Clear filter" />
+  <input type="button" id="toggle-completed" value="Hide completed" />
+  <input type="button" id="toggle-active" value="Hide active" />
+  <input type="button" id="clear-filter" value="Clear filters" />
 
   <% @experiments.each do |experiment| %>
     <% if experiment.goals.empty? %>
