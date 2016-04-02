@@ -1,3 +1,10 @@
+## 1.4.0 (April 2nd, 2016)
+
+Features:
+
+- Added experiment filters to dashboard (@ccallebs, #363, #364)
+- Added Contributor Covenant Code of Conduct
+
 ## 1.3.2 (January 2nd, 2016)
 
 Bugfixes:
