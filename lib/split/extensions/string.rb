@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 class String
   # Constatntize is often provided by ActiveSupport, but ActiveSupport is not a dependency of Split.
   unless method_defined?(:constantize)
