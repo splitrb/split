@@ -6,7 +6,7 @@
 
 <% experiment.calc_winning_alternatives %>
 
-<div class="<%= experiment_class %>" data-name="<%= experiment.name %>">
+<div class="<%= experiment_class %>" data-name="<%= experiment.name %>" data-complete="<%= experiment.has_winner? %>">
   <div class="experiment-header">
     <h2>
       Experiment: <%= experiment.name %>
