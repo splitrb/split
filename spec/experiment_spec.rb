@@ -104,18 +104,6 @@ describe Split::Experiment do
       end
     end
 
-    describe 'find' do
-      it "should return an existing experiment" do
-        experiment.save
-        experiment = Split::ExperimentCatalog.find('basket_text')
-        expect(experiment.name).to eq('basket_text')
-      end
-
-      it "should return an existing experiment" do
-        expect(Split::ExperimentCatalog.find('non_existent_experiment')).to be_nil
-      end
-    end
-
     describe 'control' do
       it 'should be the first alternative' do
         experiment.save
