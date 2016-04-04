@@ -628,7 +628,7 @@ trial.choose!
 trial.alternative.name
 
 # if the goal has been achieved, increment the successful completions for this alternative.
-if goal_acheived?
+if goal_achieved?
   trial.complete!
 end
 
