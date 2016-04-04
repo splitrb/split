@@ -104,18 +104,6 @@ describe Split::Experiment do
       end
     end
 
-    describe 'find' do
-      it "should return an existing experiment" do
-        experiment.save
-        experiment = Split::ExperimentCatalog.find('basket_text')
-        expect(experiment.name).to eq('basket_text')
-      end
-
-      it "should return an existing experiment" do
-        expect(Split::ExperimentCatalog.find('non_existent_experiment')).to be_nil
-      end
-    end
-
     describe 'control' do
       it 'should be the first alternative' do
         experiment.save
@@ -291,31 +279,38 @@ describe Split::Experiment do
     end
   end
 
-  describe 'next_alternative' do
-    let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'red', 'green') }
+  describe '#next_alternative' do
+    context 'with multiple alternatives' do
+      let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'red', 'green') }
 
-    it "should always return the winner if one exists" do
-      green = Split::Alternative.new('green', 'link_color')
-      experiment.winner = 'green'
+      context 'with winner' do
+        it "should always return the winner" do
+          green = Split::Alternative.new('green', 'link_color')
+          experiment.winner = 'green'
 
-      expect(experiment.next_alternative.name).to eq('green')
-      green.increment_participation
+          expect(experiment.next_alternative.name).to eq('green')
+          green.increment_participation
 
-      expect(experiment.next_alternative.name).to eq('green')
+          expect(experiment.next_alternative.name).to eq('green')
+        end
+      end
+
+      context 'without winner' do
+        it "should use the specified algorithm" do
+          experiment.algorithm = Split::Algorithms::Whiplash
+          expect(experiment.algorithm).to receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
+          expect(experiment.next_alternative.name).to eq('green')
+        end
+      end
     end
 
-    it "should use the specified algorithm if a winner does not exist" do
-      experiment.algorithm = Split::Algorithms::Whiplash
-      expect(experiment.algorithm).to receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
-      expect(experiment.next_alternative.name).to eq('green')
-    end
-  end
+    context 'with single alternative' do
+      let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue') }
 
-  describe 'single alternative' do
-    let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue') }
-
-    it "should always return the color blue" do
-      expect(experiment.next_alternative.name).to eq('blue')
+      it "should always return the only alternative" do
+        expect(experiment.next_alternative.name).to eq('blue')
+        expect(experiment.next_alternative.name).to eq('blue')
+      end
     end
   end
 
@@ -432,8 +427,7 @@ describe Split::Experiment do
 
     it "should return nil and not re-calculate probabilities if they have already been calculated today" do
       experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
-      experiment_calc_time = Time.now.utc.to_i / 86400
-      experiment.calc_time = experiment_calc_time
+      expect(experiment.calc_winning_alternatives).not_to be nil
       expect(experiment.calc_winning_alternatives).to be nil
     end
   end

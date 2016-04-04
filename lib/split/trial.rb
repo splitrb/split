@@ -55,7 +55,7 @@ module Split
 
       if @options[:override]
         self.alternative = @options[:override]
-      elsif @options[:disabled] || !Split.configuration.enabled
+      elsif @options[:disabled] || Split.configuration.disabled?
         self.alternative = @experiment.control
       elsif @experiment.has_winner?
         self.alternative = @experiment.winner
