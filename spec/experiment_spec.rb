@@ -279,31 +279,38 @@ describe Split::Experiment do
     end
   end
 
-  describe 'next_alternative' do
-    let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'red', 'green') }
+  describe '#next_alternative' do
+    context 'with multiple alternatives' do
+      let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'red', 'green') }
 
-    it "should always return the winner if one exists" do
-      green = Split::Alternative.new('green', 'link_color')
-      experiment.winner = 'green'
+      context 'with winner' do
+        it "should always return the winner" do
+          green = Split::Alternative.new('green', 'link_color')
+          experiment.winner = 'green'
 
-      expect(experiment.next_alternative.name).to eq('green')
-      green.increment_participation
+          expect(experiment.next_alternative.name).to eq('green')
+          green.increment_participation
 
-      expect(experiment.next_alternative.name).to eq('green')
+          expect(experiment.next_alternative.name).to eq('green')
+        end
+      end
+
+      context 'without winner' do
+        it "should use the specified algorithm" do
+          experiment.algorithm = Split::Algorithms::Whiplash
+          expect(experiment.algorithm).to receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
+          expect(experiment.next_alternative.name).to eq('green')
+        end
+      end
     end
 
-    it "should use the specified algorithm if a winner does not exist" do
-      experiment.algorithm = Split::Algorithms::Whiplash
-      expect(experiment.algorithm).to receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
-      expect(experiment.next_alternative.name).to eq('green')
-    end
-  end
+    context 'with single alternative' do
+      let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue') }
 
-  describe 'single alternative' do
-    let(:experiment) { Split::ExperimentCatalog.find_or_create('link_color', 'blue') }
-
-    it "should always return the color blue" do
-      expect(experiment.next_alternative.name).to eq('blue')
+      it "should always return the only alternative" do
+        expect(experiment.next_alternative.name).to eq('blue')
+        expect(experiment.next_alternative.name).to eq('blue')
+      end
     end
   end
 
