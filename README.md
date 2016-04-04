@@ -445,9 +445,9 @@ Split.configure do |config|
       alternatives: ["a", "b"],
       metadata: {
         "a" => {"text" => "Have a fantastic day"},
-        "b" => {"text" => "Don't get hit by a bus"},
+        "b" => {"text" => "Don't get hit by a bus"}
       }
-    },
+    }
   }
 end
 ```
