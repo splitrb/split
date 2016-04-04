@@ -427,8 +427,7 @@ describe Split::Experiment do
 
     it "should return nil and not re-calculate probabilities if they have already been calculated today" do
       experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
-      experiment_calc_time = Time.now.utc.to_i / 86400
-      experiment.calc_time = experiment_calc_time
+      expect(experiment.calc_winning_alternatives).not_to be nil
       expect(experiment.calc_winning_alternatives).to be nil
     end
   end
