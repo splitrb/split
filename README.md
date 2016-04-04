@@ -493,7 +493,7 @@ Split.configure do |config|
   config.experiments = {
     my_first_experiment: {
       alternatives: ["a", "b"],
-      metric: :my_metric,
+      metric: :my_metric
     }
   }
 end
