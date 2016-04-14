@@ -6,6 +6,7 @@ module Split
     attr_accessor :goals
     attr_accessor :alternatives
     attr_accessor :max_participant_count
+    attr_accessor :wiki_url
     
     DEFAULT_OPTIONS = {
       :resettable => true,
@@ -140,6 +141,10 @@ module Split
       alternatives.find{|a| a.name == name}
     end
 
+    def wiki_url
+      @wiki_url ||= load_wiki_url_from_redis
+    end
+
     def algorithm
       @algorithm ||= Split.configuration.algorithm
     end
@@ -165,7 +170,14 @@ module Split
         end
       end
     end
-
+    
+    def wiki_url= url
+      @wiki_url = url
+      Split.redis.with do |conn|
+        conn.hset(:wiki_urls, @name, @wiki_url)
+      end
+    end
+    
     def winner
       Split.redis.with do |conn|
         if w = conn.hget(:experiment_winner, name)
@@ -382,6 +394,12 @@ module Split
         alts.keys
       else
         alts.flatten
+      end
+    end
+
+    def load_wiki_url_from_redis
+      Split.redis.with do |conn|
+        @wiki_url = conn.hget(:wiki_urls, @name)
       end
     end
 

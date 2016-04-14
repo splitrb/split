@@ -67,6 +67,12 @@ module Split
       @experiment.start
       redirect url('/')
     end
+    
+    post '/wiki/:experiment' do
+      @experiment = Split::Experiment.find(params[:experiment])
+      @experiment.wiki_url = params[:wiki_url]
+      redirect url('/')
+    end
 
     post '/reset/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
