@@ -6,7 +6,6 @@ module Split
     def ab_test(metric_descriptor, control = nil, *alternatives)
       begin
         experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
-
         alternative = if Split.configuration.enabled
           experiment.save
           trial = Trial.new(:user => ab_user, :experiment => experiment,
@@ -94,7 +93,7 @@ module Split
     end
 
     def ab_user
-      @ab_user ||= Split::Persistence.adapter.new(self)
+      @ab_user ||= User.new(self)
     end
 
     def exclude_visitor?

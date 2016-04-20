@@ -12,6 +12,7 @@
    persistence
    encapsulated_helper
    trial
+   user
    version
    zscore].each do |f|
   require "split/#{f}"
