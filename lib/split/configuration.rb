@@ -19,6 +19,8 @@ module Split
     attr_accessor :on_trial_complete
     attr_accessor :on_experiment_reset
     attr_accessor :on_experiment_delete
+    attr_accessor :on_before_experiment_reset
+    attr_accessor :on_before_experiment_delete
     attr_accessor :include_rails_helper
     attr_accessor :beta_probability_simulations
     attr_accessor :redis_url
@@ -199,6 +201,8 @@ module Split
       @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
       @on_experiment_reset = proc{|experiment|}
       @on_experiment_delete = proc{|experiment|}
+      @on_before_experiment_reset = proc{|experiment|}
+      @on_before_experiment_delete = proc{|experiment|}
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true

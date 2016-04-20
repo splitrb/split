@@ -239,6 +239,7 @@ module Split
     end
 
     def reset
+      Split.configuration.on_before_experiment_reset.call(self)
       alternatives.each(&:reset)
       reset_winner
       Split.configuration.on_experiment_reset.call(self)
@@ -246,6 +247,7 @@ module Split
     end
 
     def delete
+      Split.configuration.on_before_experiment_delete.call(self)
       alternatives.each(&:delete)
       reset_winner
       Split.redis.srem(:experiments, name)

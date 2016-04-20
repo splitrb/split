@@ -284,8 +284,12 @@ For example:
 
 ``` ruby
 Split.configure do |config|
+  # after experiment reset or deleted
   config.on_experiment_reset  = -> (example) { # Do something on reset }
   config.on_experiment_delete = -> (experiment) { # Do something else on delete }
+  # before experiment reset or deleted
+  config.on_before_experiment_reset  = -> (example) { # Do something on reset }
+  config.on_before_experiment_delete = -> (experiment) { # Do something else on delete }
 end
 ```
 
