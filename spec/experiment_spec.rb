@@ -203,6 +203,13 @@ describe Split::Experiment do
       expect(Split.configuration.on_before_experiment_delete).to receive(:call)
       experiment.delete
     end
+
+    it 'should reset the start time if the experiment should be manually started' do
+      Split.configuration.start_manually = true
+      experiment.start
+      experiment.delete
+      expect(experiment.start_time).to be_nil
+    end
   end
 
 
