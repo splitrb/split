@@ -198,6 +198,11 @@ describe Split::Experiment do
       expect(Split.configuration.on_experiment_delete).to receive(:call)
       experiment.delete
     end
+
+    it "should call the on_before_experiment_delete hook" do
+      expect(Split.configuration.on_before_experiment_delete).to receive(:call)
+      experiment.delete
+    end
   end
 
 
@@ -262,6 +267,11 @@ describe Split::Experiment do
 
     it "should call the on_experiment_reset hook" do
       expect(Split.configuration.on_experiment_reset).to receive(:call)
+      experiment.reset
+    end
+
+    it "should call the on_before_experiment_reset hook" do
+      expect(Split.configuration.on_before_experiment_reset).to receive(:call)
       experiment.reset
     end
   end
