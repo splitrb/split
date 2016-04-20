@@ -49,6 +49,7 @@ module Split
     # method is guaranteed to only run once, and will skip the alternative choosing process if run
     # a second time.
     def choose!(context = nil)
+      @user.cleanup_old_experiments
       # Only run the process once
       return alternative if @alternative_choosen
 

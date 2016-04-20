@@ -18,9 +18,13 @@ RSpec.configure do |config|
   config.before(:each) do
     Split.configuration = Split::Configuration.new
     Split.redis.flushall
-    @ab_user = {}
+    @ab_user = mock_user
     params = nil
   end
+end
+
+def mock_user
+  Split::User.new(double(session: {}))
 end
 
 def session

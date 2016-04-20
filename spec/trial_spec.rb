@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'split/trial'
 
 describe Split::Trial do
-  let(:user) { Split::Persistence.adapter.new(double(session: {})) }
+  let(:user) { mock_user }
   let(:experiment) do
     Split::Experiment.new('basket_text', :alternatives => ['basket', 'cart']).save
   end

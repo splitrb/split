@@ -165,6 +165,8 @@ finished(:experiment_name, reset: false)
 
 The user will then always see the alternative they started with.
 
+Any old unfinished experiment key will be deleted from the user's data storage if the experiment had been removed or is over and a winner had been chosen. This allows a user to enroll into any new experiment in cases when the `allow_multiple_experiments` config option is set to `false`.
+
 ### Multiple experiments at once
 
 By default Split will avoid users participating in multiple experiments at once. This means you are less likely to skew results by adding in more variation to your tests.

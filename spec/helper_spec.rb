@@ -171,7 +171,7 @@ describe Split::Helper do
     it "should only let a user participate in one experiment at a time" do
       link_color = ab_test('link_color', 'blue', 'red')
       ab_test('button_size', 'small', 'big')
-      expect(ab_user).to eq({'link_color' => link_color})
+      expect(ab_user['link_color']).to eq(link_color)
       big = Split::Alternative.new('big', 'button_size')
       expect(big.participant_count).to eq(0)
       small = Split::Alternative.new('small', 'button_size')
@@ -184,7 +184,8 @@ describe Split::Helper do
       end
       link_color = ab_test('link_color', 'blue', 'red')
       button_size = ab_test('button_size', 'small', 'big')
-      expect(ab_user).to eq({'link_color' => link_color, 'button_size' => button_size})
+      expect(ab_user['link_color']).to eq(link_color)
+      expect(ab_user['button_size']).to eq(button_size)
       button_size_alt = Split::Alternative.new(button_size, 'button_size')
       expect(button_size_alt.participant_count).to eq(1)
     end
@@ -192,9 +193,9 @@ describe Split::Helper do
     it "should not over-write a finished key when an experiment is on a later version" do
       experiment.increment_version
       ab_user = { experiment.key => 'blue', experiment.finished_key => true }
-      finshed_session = ab_user.dup
+      finished_session = ab_user.dup
       ab_test('link_color', 'blue', 'red')
-      expect(ab_user).to eq(finshed_session)
+      expect(ab_user).to eq(finished_session)
     end
   end
 
@@ -246,7 +247,8 @@ describe Split::Helper do
 
     it "should set experiment's finished key if reset is false" do
       finished(@experiment_name, {:reset => false})
-      expect(ab_user).to eq(@experiment.key => @alternative_name, @experiment.finished_key => true)
+      expect(ab_user[@experiment.key]).to eq(@alternative_name)
+      expect(ab_user[@experiment.finished_key]).to eq(true)
     end
 
     it 'should not increment the counter if reset is false and the experiment has been already finished' do
@@ -278,30 +280,31 @@ describe Split::Helper do
     end
 
     it "should clear out the user's participation from their session" do
-      expect(ab_user).to eq(@experiment.key => @alternative_name)
+      expect(ab_user[@experiment.key]).to eq(@alternative_name)
       finished(@experiment_name)
-      expect(ab_user).to eq({})
+      expect(ab_user.keys).to be_empty
     end
 
     it "should not clear out the users session if reset is false" do
-      expect(ab_user).to eq(@experiment.key => @alternative_name)
+      expect(ab_user[@experiment.key]).to eq(@alternative_name)
       finished(@experiment_name, {:reset => false})
-      expect(ab_user).to eq(@experiment.key => @alternative_name, @experiment.finished_key => true)
+      expect(ab_user[@experiment.key]).to eq(@alternative_name)
+      expect(ab_user[@experiment.finished_key]).to eq(true)
     end
 
     it "should reset the users session when experiment is not versioned" do
-      expect(ab_user).to eq(@experiment.key => @alternative_name)
+      expect(ab_user[@experiment.key]).to eq(@alternative_name)
       finished(@experiment_name)
-      expect(ab_user).to eq({})
+      expect(ab_user.keys).to be_empty
     end
 
     it "should reset the users session when experiment is versioned" do
       @experiment.increment_version
       @alternative_name = ab_test(@experiment_name, *@alternatives)
 
-      expect(ab_user).to eq(@experiment.key => @alternative_name)
+      expect(ab_user[@experiment.key]).to eq(@alternative_name)
       finished(@experiment_name)
-      expect(ab_user).to eq({})
+      expect(ab_user.keys).to be_empty
     end
 
     it "should do nothing where the experiment was not started by this user" do
@@ -336,7 +339,8 @@ describe Split::Helper do
       experiment = Split::ExperimentCatalog.find :my_experiment
 
       finished :my_experiment
-      expect(ab_user).to eq(experiment.key => alternative, experiment.finished_key => true)
+      expect(ab_user[experiment.key]).to eq(alternative)
+      expect(ab_user[experiment.finished_key]).to eq(true)
     end
   end
 
@@ -617,28 +621,28 @@ describe Split::Helper do
     it "should use version zero if no version is present" do
       alternative_name = ab_test('link_color', 'blue', 'red')
       expect(experiment.version).to eq(0)
-      expect(ab_user).to eq({'link_color' => alternative_name})
+      expect(ab_user['link_color']).to eq(alternative_name)
     end
 
     it "should save the version of the experiment to the session" do
       experiment.reset
       expect(experiment.version).to eq(1)
       alternative_name = ab_test('link_color', 'blue', 'red')
-      expect(ab_user).to eq({'link_color:1' => alternative_name})
+      expect(ab_user['link_color:1']).to eq(alternative_name)
     end
 
     it "should load the experiment even if the version is not 0" do
       experiment.reset
       expect(experiment.version).to eq(1)
       alternative_name = ab_test('link_color', 'blue', 'red')
-      expect(ab_user).to eq({'link_color:1' => alternative_name})
+      expect(ab_user['link_color:1']).to eq(alternative_name)
       return_alternative_name = ab_test('link_color', 'blue', 'red')
       expect(return_alternative_name).to eq(alternative_name)
     end
 
     it "should reset the session of a user on an older version of the experiment" do
       alternative_name = ab_test('link_color', 'blue', 'red')
-      expect(ab_user).to eq({'link_color' => alternative_name})
+      expect(ab_user['link_color']).to eq(alternative_name)
       alternative = Split::Alternative.new(alternative_name, 'link_color')
       expect(alternative.participant_count).to eq(1)
 
@@ -655,7 +659,7 @@ describe Split::Helper do
 
     it "should cleanup old versions of experiments from the session" do
       alternative_name = ab_test('link_color', 'blue', 'red')
-      expect(ab_user).to eq({'link_color' => alternative_name})
+      expect(ab_user['link_color']).to eq(alternative_name)
       alternative = Split::Alternative.new(alternative_name, 'link_color')
       expect(alternative.participant_count).to eq(1)
 
@@ -665,12 +669,12 @@ describe Split::Helper do
       expect(alternative.participant_count).to eq(0)
 
       new_alternative_name = ab_test('link_color', 'blue', 'red')
-      expect(ab_user).to eq({'link_color:1' => new_alternative_name})
+      expect(ab_user['link_color:1']).to eq(new_alternative_name)
     end
 
     it "should only count completion of users on the current version" do
       alternative_name = ab_test('link_color', 'blue', 'red')
-      expect(ab_user).to eq({'link_color' => alternative_name})
+      expect(ab_user['link_color']).to eq(alternative_name)
       alternative = Split::Alternative.new(alternative_name, 'link_color')
 
       experiment.reset
