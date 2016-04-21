@@ -1,3 +1,14 @@
+## 1.4.1 (April 21st, 2016)
+
+Bugfixes:
+
+- respect manual start configuration after an experiment has been deleted (@mtyeh411, #372)
+
+Misc:
+
+- Introduce goals collection to reduce complexity of Experiment#save (@pakallis, #365)
+- Revise specs according to http://betterspecs.org/ (@hkliya, #369)
+
 ## 1.4.0 (April 2nd, 2016)
 
 Features:
