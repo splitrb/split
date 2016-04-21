@@ -151,7 +151,7 @@ It is not required to send `SPLIT_DISABLE=false` to activate Split.
 By default new AB tests will be active right after deployment. In case you would like to start new test a while after
 the deploy, you can do it by setting the `start_manually` configuration option to `true`.
 
-After choosing this option tests won't be started right after deploy, but after pressing the `Start` button in Split admin dashboard.
+After choosing this option tests won't be started right after deploy, but after pressing the `Start` button in Split admin dashboard.  If a test is deleted from the Split dashboard, then it can only be started after pressing the `Start` button whenever being re-initialized.
 
 ### Reset after completion
 
