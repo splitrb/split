@@ -248,6 +248,9 @@ module Split
 
     def delete
       Split.configuration.on_before_experiment_delete.call(self)
+      if Split.configuration.start_manually
+        Split.redis.hdel(:experiment_start_times, @name)
+      end
       alternatives.each(&:delete)
       reset_winner
       Split.redis.srem(:experiments, name)
