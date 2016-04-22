@@ -2,9 +2,9 @@
 # Split's helper exposes all kinds of methods we don't want to
 # mix into our model classes.
 #
-# This module exposes only two methods
-#  - ab_test and
-#  - ab_test_finished
+# This module exposes only two methods:
+#  - ab_test()
+#  - finished()
 # that can safely be mixed into any class.
 #
 # Passes the instance of the class that it's mixed into to the
@@ -41,10 +41,6 @@ module Split
       else
         ret
       end
-    end
-
-    def ab_test_finished(*arguments)
-      split_context_shim.finished *arguments
     end
 
     private
