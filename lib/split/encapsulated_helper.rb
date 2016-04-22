@@ -22,7 +22,7 @@ module Split
       end
 
       def ab_user
-        @ab_user ||= Split::Persistence.adapter.new(@context)
+        @ab_user ||= Split::User.new(@context)
       end
     end
 
