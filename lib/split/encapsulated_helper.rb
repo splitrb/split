@@ -2,9 +2,9 @@
 # Split's helper exposes all kinds of methods we don't want to
 # mix into our model classes.
 #
-# This module exposes only two methods
-#  - ab_test and
-#  - ab_test_finished
+# This module exposes only two methods:
+#  - ab_test()
+#  - finished()
 # that can safely be mixed into any class.
 #
 # Passes the instance of the class that it's mixed into to the
@@ -44,6 +44,7 @@ module Split
     end
 
     def ab_test_finished(*arguments)
+      warn 'DEPRECATION WARNING: ab_test_finished is deprecated and will be removed from Split 1.5.0'
       split_context_shim.finished *arguments
     end
 
