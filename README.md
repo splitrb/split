@@ -242,7 +242,8 @@ For example:
 
 ``` ruby
 Split.configure do |config|
-  config.on_trial_choose   = :log_trial_choose
+  config.on_trial  = :log_trial # run on every trial
+  config.on_trial_choose   = :log_trial_choose # run on trials with new users only
   config.on_trial_complete = :log_trial_complete
 end
 ```
@@ -251,8 +252,13 @@ Set these attributes to a method name available in the same context as the
 `ab_test` method. These methods should accept one argument, a `Trial` instance.
 
 ``` ruby
-def log_trial_choose(trial)
+def log_trial(trial)
   logger.info "experiment=%s alternative=%s user=%s" %
+    [ trial.experiment.name, trial.alternative, current_user.id ]
+end
+
+def log_trial_choose(trial)
+  logger.info "[new user] experiment=%s alternative=%s user=%s" %
     [ trial.experiment.name, trial.alternative, current_user.id ]
 end
 

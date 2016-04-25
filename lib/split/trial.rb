@@ -41,8 +41,7 @@ module Split
           Array(goals).each {|g| alternative.increment_completion(g) }
         end
 
-        context.send(Split.configuration.on_trial_complete, self) \
-            if Split.configuration.on_trial_complete && context
+        run_callback context, Split.configuration.on_trial_complete
       end
     end
 
@@ -73,18 +72,21 @@ module Split
           # Increment the number of participants since we are actually choosing a new alternative
           self.alternative.increment_participation
 
-          # Run the post-choosing hook on the context
-          context.send(Split.configuration.on_trial_choose, self) \
-              if Split.configuration.on_trial_choose && context
+          run_callback context, Split.configuration.on_trial_choose
         end
       end
 
       @user[@experiment.key] = alternative.name if should_store_alternative?
       @alternative_choosen = true
+      run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled?
       alternative
     end
 
     private
+
+    def run_callback(context, callback_name)
+      context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
+    end
 
     def should_store_alternative?
       if @options[:override] || @options[:disabled]
