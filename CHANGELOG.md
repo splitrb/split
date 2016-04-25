@@ -1,3 +1,9 @@
+## 1.4.2 (April 25th, 2016)
+
+Misc:
+
+- Deprecated some legacy methods (@andreibondarev, #374)
+
 ## 1.4.1 (April 21st, 2016)
 
 Bugfixes:
