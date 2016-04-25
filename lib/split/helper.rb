@@ -86,6 +86,13 @@ module Split
       defined?(params) && params['SPLIT_DISABLE']
     end
 
+    def begin_experiment(experiment, alternative_name = nil)
+      warn 'DEPRECATION WARNING: begin_experiment is deprecated and will be removed from Split 1.5.0'
+      alternative_name ||= experiment.control.name
+      ab_user[experiment.key] = alternative_name
+      alternative_name
+    end
+
     def ab_user
       @ab_user ||= User.new(self)
     end

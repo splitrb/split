@@ -43,6 +43,11 @@ module Split
       end
     end
 
+    def ab_test_finished(*arguments)
+      warn 'DEPRECATION WARNING: ab_test_finished is deprecated and will be removed from Split 1.5.0'
+      split_context_shim.finished *arguments
+    end
+
     private
 
     # instantiate and memoize a context shim in case of multiple ab_test* calls
