@@ -151,6 +151,10 @@ module Split
             experiment_config[experiment_name.to_sym][:metadata] = metadata
           end
 
+          if algorithm = value_for(settings, :algorithm)
+            experiment_config[experiment_name.to_sym][:algorithm] = algorithm
+          end
+
           if (resettable = value_for(settings, :resettable)) != nil
             experiment_config[experiment_name.to_sym][:resettable] = resettable
           end
