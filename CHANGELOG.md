@@ -1,3 +1,17 @@
+## 1.4.3 (April 28th, 2016)
+
+Features:
+
+- add on_trial callback whenever a trial is started (@mtyeh411, #375)
+
+Bugfixes:
+
+- Allow algorithm configuration at experiment level (@007sumit, #376)
+
+Misc:
+
+- only choose override if it exists as valid alternative (@spheric, #377)
+
 ## 1.4.2 (April 25th, 2016)
 
 Misc:
