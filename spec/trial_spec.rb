@@ -4,8 +4,9 @@ require 'split/trial'
 
 describe Split::Trial do
   let(:user) { mock_user }
+  let(:alternatives) { ['basket', 'cart'] }
   let(:experiment) do
-    Split::Experiment.new('basket_text', :alternatives => ['basket', 'cart']).save
+    Split::Experiment.new('basket_text', :alternatives => alternatives).save
   end
 
   it "should be initializeable" do
@@ -35,7 +36,6 @@ describe Split::Trial do
   end
 
   describe "metadata" do
-    let(:alternatives) { ['basket', 'cart'] }
     let(:metadata) { Hash[alternatives.map { |k| [k, "Metadata for #{k}"] }] }
     let(:experiment) do
       Split::Experiment.new('basket_text', :alternatives => alternatives, :metadata => metadata).save
@@ -83,22 +83,29 @@ describe Split::Trial do
     def expect_alternative(trial, alternative_name)
       3.times do
         trial.choose! context
-        expect(trial.alternative.name).to eq(alternative_name)
+        expect(alternative_name).to include(trial.alternative.name)
       end
     end
 
     context "when override is present" do
+      let(:override) { 'cart' }
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment, :override => 'cart')
+        Split::Trial.new(:user => user, :experiment => experiment, :override => override)
       end
 
       it_behaves_like 'a trial with callbacks'
 
       it "picks the override" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'cart')
         expect(experiment).to_not receive(:next_alternative)
+        expect_alternative(trial, override)
+      end
 
-        expect_alternative(trial, 'cart')
+      context "when alternative doesn't exist" do
+        let(:override) { nil }
+        it 'falls back on next_alternative' do
+          expect(experiment).to receive(:next_alternative).and_call_original
+          expect_alternative(trial, alternatives)
+        end
       end
     end
 

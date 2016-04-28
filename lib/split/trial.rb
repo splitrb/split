@@ -53,7 +53,7 @@ module Split
       # Only run the process once
       return alternative if @alternative_choosen
 
-      if @options[:override]
+      if override_is_alternative?
         self.alternative = @options[:override]
       elsif @options[:disabled] || Split.configuration.disabled?
         self.alternative = @experiment.control
@@ -86,6 +86,10 @@ module Split
 
     def run_callback(context, callback_name)
       context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
+    end
+
+    def override_is_alternative?
+      @experiment.alternatives.map(&:name).include?(@options[:override])
     end
 
     def should_store_alternative?
