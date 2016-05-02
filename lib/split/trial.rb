@@ -55,6 +55,9 @@ module Split
 
       if override_is_alternative?
         self.alternative = @options[:override]
+        if should_store_alternative? && !@user[@experiment.key]
+          self.alternative.increment_participation
+        end
       elsif @options[:disabled] || Split.configuration.disabled?
         self.alternative = @experiment.control
       elsif @experiment.has_winner?
