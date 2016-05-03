@@ -115,16 +115,7 @@ module Split
     end
 
     def active_experiments
-      experiment_pairs = {}
-      ab_user.keys.each do |key|
-        key_without_version = key.split(/\:\d(?!\:)/)[0]
-        Metric.possible_experiments(key_without_version).each do |experiment|
-          if !experiment.has_winner?
-            experiment_pairs[key_without_version] = ab_user[key]
-          end
-        end
-      end
-      return experiment_pairs
+      ab_user.active_experiments
     end
 
     def normalize_metric(metric_descriptor)
