@@ -553,6 +553,12 @@ To complete a goal conversion, you do it like:
 finished(link_color: "purchase")
 ```
 
+Note that if you pass additional options, that should be a separate hash:
+
+```ruby
+finished({ link_color: "purchase" }, reset: false)
+```
+
 **NOTE:** This does not mean that a single experiment can have/complete progressive goals.
 
 **Good Example**: Test if listing Plan A first result in more conversions to Plan A (goal: "plana_conversion") or Plan B (goal: "planb_conversion").
