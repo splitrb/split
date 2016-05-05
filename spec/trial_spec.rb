@@ -239,6 +239,7 @@ describe Split::Trial do
         Split.configuration.store_override = true
         expect(user).to receive("[]=")
         trial.choose!
+        expect(trial.alternative.participant_count).to eq(1)
       end
 
       it "does not store when store_override is false" do
