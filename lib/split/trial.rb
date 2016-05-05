@@ -49,7 +49,7 @@ module Split
     # method is guaranteed to only run once, and will skip the alternative choosing process if run
     # a second time.
     def choose!(context = nil)
-      @user.cleanup_old_experiments
+      @user.cleanup_old_experiments!
       # Only run the process once
       return alternative if @alternative_choosen
 
@@ -105,22 +105,12 @@ module Split
 
     def cleanup_old_versions
       if @experiment.version > 0
-        keys = @user.keys.select { |k| k.match(Regexp.new(@experiment.name)) }
-        keys_without_experiment(keys).each { |key| @user.delete(key) }
+        @user.cleanup_old_versions!(@experiment)
       end
     end
 
     def exclude_user?
-      @options[:exclude] || @experiment.start_time.nil? || max_experiments_reached?
-    end
-
-    def max_experiments_reached?
-      !Split.configuration.allow_multiple_experiments &&
-          keys_without_experiment(@user.keys).length > 0
-    end
-
-    def keys_without_experiment(keys)
-      keys.reject { |k| k.match(Regexp.new("^#{@experiment.key}(:finished)?$")) }
+      @options[:exclude] || @experiment.start_time.nil? || @user.max_experiments_reached?(@experiment.key)
     end
   end
 end
