@@ -559,11 +559,15 @@ Note that if you pass additional options, that should be a separate hash:
 finished({ link_color: "purchase" }, reset: false)
 ```
 
-**NOTE:** This does not mean that a single experiment can have/complete progressive goals.
+**NOTE:** This does not mean that a single experiment can complete more than one goal.
+
+Once you finish one of the goals, the test is considered to be completed, and finishing the other goal will no longer register. (Assuming the test runs with `reset: false`.)
 
 **Good Example**: Test if listing Plan A first result in more conversions to Plan A (goal: "plana_conversion") or Plan B (goal: "planb_conversion").
 
 **Bad Example**: Test if button color increases conversion rate through multiple steps of a funnel. THIS WILL NOT WORK.
+
+**Bad Example**: Test both how button color affects signup *and* how it affects login, at the same time. THIS WILL NOT WORK.
 
 ### DB failover solution
 
