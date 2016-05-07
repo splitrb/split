@@ -231,7 +231,7 @@ describe Split::Helper do
     end
   end
 
-  describe 'finished' do
+  describe 'ab_finished' do
     before(:each) do
       @experiment_name = 'link_color'
       @alternatives = ['blue', 'red']
@@ -241,19 +241,19 @@ describe Split::Helper do
     end
 
     it 'should increment the counter for the completed alternative' do
-      finished(@experiment_name)
+      ab_finished(@experiment_name)
       new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
       expect(new_completion_count).to eq(@previous_completion_count + 1)
     end
 
     it "should set experiment's finished key if reset is false" do
-      finished(@experiment_name, {:reset => false})
+      ab_finished(@experiment_name, {:reset => false})
       expect(ab_user[@experiment.key]).to eq(@alternative_name)
       expect(ab_user[@experiment.finished_key]).to eq(true)
     end
 
     it 'should not increment the counter if reset is false and the experiment has been already finished' do
-      2.times { finished(@experiment_name, {:reset => false}) }
+      2.times { ab_finished(@experiment_name, {:reset => false}) }
       new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
       expect(new_completion_count).to eq(@previous_completion_count + 1)
     end
@@ -266,7 +266,7 @@ describe Split::Helper do
       # the button size experiment, finishing it should not increase the
       # completion count for that alternative.
       expect(lambda {
-        finished('button_size')
+        ab_finished('button_size')
       }).not_to change { Split::Alternative.new('small', 'button_size').completed_count }
     end
 
@@ -276,26 +276,26 @@ describe Split::Helper do
       a = ab_test('button_size', 'small', 'big')
       expect(a).to eq('small')
       expect(lambda {
-        finished('button_size')
+        ab_finished('button_size')
       }).not_to change { Split::Alternative.new(a, 'button_size').completed_count }
     end
 
     it "should clear out the user's participation from their session" do
       expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      finished(@experiment_name)
+      ab_finished(@experiment_name)
       expect(ab_user.keys).to be_empty
     end
 
     it "should not clear out the users session if reset is false" do
       expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      finished(@experiment_name, {:reset => false})
+      ab_finished(@experiment_name, {:reset => false})
       expect(ab_user[@experiment.key]).to eq(@alternative_name)
       expect(ab_user[@experiment.finished_key]).to eq(true)
     end
 
     it "should reset the users session when experiment is not versioned" do
       expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      finished(@experiment_name)
+      ab_finished(@experiment_name)
       expect(ab_user.keys).to be_empty
     end
 
@@ -304,26 +304,26 @@ describe Split::Helper do
       @alternative_name = ab_test(@experiment_name, *@alternatives)
 
       expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      finished(@experiment_name)
+      ab_finished(@experiment_name)
       expect(ab_user.keys).to be_empty
     end
 
     it "should do nothing where the experiment was not started by this user" do
       ab_user = nil
-      expect(lambda { finished('some_experiment_not_started_by_the_user') }).not_to raise_exception
+      expect(lambda { ab_finished('some_experiment_not_started_by_the_user') }).not_to raise_exception
     end
 
     context "when on_trial_complete is set" do
       before { Split.configuration.on_trial_complete = :some_method }
       it "should call the method" do
         expect(self).to receive(:some_method)
-        finished(@experiment_name)
+        ab_finished(@experiment_name)
       end
 
       it "should not call the method without alternative" do
         ab_user[@experiment.key] = nil
         expect(self).not_to receive(:some_method)
-        finished(@experiment_name)
+        ab_finished(@experiment_name)
       end
     end
   end
@@ -339,7 +339,7 @@ describe Split::Helper do
       alternative = ab_test(:my_experiment)
       experiment = Split::ExperimentCatalog.find :my_experiment
 
-      finished :my_experiment
+      ab_finished :my_experiment
       expect(ab_user[experiment.key]).to eq(alternative)
       expect(ab_user[experiment.finished_key]).to eq(true)
     end
@@ -369,7 +369,7 @@ describe Split::Helper do
         :metric => :my_metric
       }
       should_finish_experiment :my_experiment
-      finished :my_metric
+      ab_finished :my_metric
     end
 
     it "completes all relevant tests" do
@@ -390,7 +390,7 @@ describe Split::Helper do
       should_finish_experiment :exp_1
       should_finish_experiment :exp_2, false
       should_finish_experiment :exp_3
-      finished :my_metric
+      ab_finished :my_metric
     end
 
     it "passes reset option" do
@@ -404,7 +404,7 @@ describe Split::Helper do
       alternative_name = ab_test(:my_exp)
       exp = Split::ExperimentCatalog.find :my_exp
 
-      finished :my_metric
+      ab_finished :my_metric
       expect(ab_user[exp.key]).to eq(alternative_name)
       expect(ab_user[exp.finished_key]).to be_truthy
     end
@@ -419,7 +419,7 @@ describe Split::Helper do
       alternative_name = ab_test(:my_exp)
       exp = Split::ExperimentCatalog.find :my_exp
 
-      finished :my_metric, :reset => false
+      ab_finished :my_metric, :reset => false
       expect(ab_user[exp.key]).to eq(alternative_name)
       expect(ab_user[exp.finished_key]).to be_truthy
     end
@@ -432,7 +432,7 @@ describe Split::Helper do
       previous_convertion_rate = Split::Alternative.new(alternative_name, 'link_color').conversion_rate
       expect(previous_convertion_rate).to eq(0.0)
 
-      finished('link_color')
+      ab_finished('link_color')
 
       new_convertion_rate = Split::Alternative.new(alternative_name, 'link_color').conversion_rate
       expect(new_convertion_rate).to eq(1.0)
@@ -449,7 +449,7 @@ describe Split::Helper do
 
     it 'should show a finished test' do
       alternative = ab_test('def', '4', '5', '6')
-      finished('def', {:reset => false})
+      ab_finished('def', {:reset => false})
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq "def"
       expect(active_experiments.first[1]).to eq alternative
@@ -519,7 +519,7 @@ describe Split::Helper do
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
-        finished('link_color')
+        ab_finished('link_color')
 
         new_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
@@ -573,7 +573,7 @@ describe Split::Helper do
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
-        finished('link_color')
+        ab_finished('link_color')
 
         new_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
@@ -681,7 +681,7 @@ describe Split::Helper do
       experiment.reset
       expect(experiment.version).to eq(1)
 
-      finished('link_color')
+      ab_finished('link_color')
       alternative = Split::Alternative.new(alternative_name, 'link_color')
       expect(alternative.completed_count).to eq(0)
     end
@@ -707,7 +707,7 @@ describe Split::Helper do
 
       describe 'finished' do
         it 'should raise an exception' do
-          expect(lambda { finished('link_color') }).to raise_error(Errno::ECONNREFUSED)
+          expect(lambda { ab_finished('link_color') }).to raise_error(Errno::ECONNREFUSED)
         end
       end
 
@@ -724,7 +724,7 @@ describe Split::Helper do
 
         it "should return control variable" do
           expect(ab_test('link_color', 'blue', 'red')).to eq('blue')
-          expect(lambda { finished('link_color') }).not_to raise_error
+          expect(lambda { ab_finished('link_color') }).not_to raise_error
         end
       end
     end
@@ -797,7 +797,7 @@ describe Split::Helper do
 
       describe 'finished' do
         it 'should not raise an exception' do
-          expect(lambda { finished('link_color') }).not_to raise_error
+          expect(lambda { ab_finished('link_color') }).not_to raise_error
         end
 
         it 'should call db_failover_on_db_error proc with error as parameter' do
@@ -808,7 +808,7 @@ describe Split::Helper do
           end
 
           expect(Split.configuration.db_failover_on_db_error).to receive(:call)
-          finished('link_color')
+          ab_finished('link_color')
         end
       end
     end
@@ -929,7 +929,7 @@ describe Split::Helper do
     experiment2 = Split::ExperimentCatalog.find_or_create('link_color2', 'blue', 'red')
     alternative_name = ab_test('link_color', 'blue', 'red')
     alternative_name2 = ab_test('link_color2', 'blue', 'red')
-    finished('link_color2')
+    ab_finished('link_color2')
 
     experiment2.alternatives.each do |alt|
       expect(alt.unfinished_count).to eq(0)
@@ -958,7 +958,7 @@ describe Split::Helper do
       end
     end
 
-    describe "finished" do
+    describe "ab_finished" do
       before do
         @alternative_name = ab_test(@experiment, *@alternatives)
       end
@@ -966,7 +966,7 @@ describe Split::Helper do
       it "should increment the counter for the specified-goal completed alternative" do
         expect(lambda {
           expect(lambda {
-            finished({"link_color" => ["purchase"]})
+            ab_finished({"link_color" => ["purchase"]})
           }).not_to change {
             Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
           }
