@@ -44,7 +44,7 @@ module Split
     end
 
     def ab_test_finished(*arguments)
-      warn 'DEPRECATION WARNING: ab_test_finished is deprecated and will be removed from Split 1.5.0'
+      warn 'DEPRECATION WARNING: ab_test_finished is deprecated and will be removed from Split 2.0.0'
       split_context_shim.finished *arguments
     end
 

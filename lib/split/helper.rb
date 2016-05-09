@@ -75,7 +75,7 @@ module Split
     end
 
     def finished(metric_descriptor, options = {:reset => true})
-      warn 'DEPRECATION WARNING: finished method was renamed to ab_finished and will be removed in Split 1.5.0'
+      warn 'DEPRECATION WARNING: finished method was renamed to ab_finished and will be removed in Split 2.0.0'
       ab_finished(metric_descriptor, options)
     end
 
@@ -92,7 +92,7 @@ module Split
     end
 
     def begin_experiment(experiment, alternative_name = nil)
-      warn 'DEPRECATION WARNING: begin_experiment is deprecated and will be removed from Split 1.5.0'
+      warn 'DEPRECATION WARNING: begin_experiment is deprecated and will be removed from Split 2.0.0'
       alternative_name ||= experiment.control.name
       ab_user[experiment.key] = alternative_name
       alternative_name
