@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'redis',           '>= 2.1'
   s.add_dependency 'redis-namespace', '>= 1.1.0'
   s.add_dependency 'sinatra',         '>= 1.2.6'
-  s.add_dependency 'simple-random'
+  s.add_dependency 'simple-random',   '>= 0.9.3'
 
   s.add_development_dependency 'bundler',     '~> 1.10'
   s.add_development_dependency 'coveralls',   '~> 0.8'
