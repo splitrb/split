@@ -1,3 +1,16 @@
+## 1.4.4 (May 9th, 2016)
+
+Bugfixes:
+
+- Increment participation if store override is true and no experiment key exists (@spheric, #380)
+
+Misc:
+
+- Deprecated `finished` method in favour of `ab_finished` (@andreibondarev, #389)
+- Added minimum version requirement to simple-random
+- Clarify finished with first option being a hash in Readme (@henrik, #382)
+- Refactoring the User abstraction (@andreibondarev, #384)
+
 ## 1.4.3 (April 28th, 2016)
 
 Features:
