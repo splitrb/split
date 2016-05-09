@@ -59,7 +59,7 @@ module Split
       end
     end
 
-    def finished(metric_descriptor, options = {:reset => true})
+    def ab_finished(metric_descriptor, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
@@ -72,6 +72,11 @@ module Split
     rescue => e
       raise unless Split.configuration.db_failover
       Split.configuration.db_failover_on_db_error.call(e)
+    end
+
+    def finished(metric_descriptor, options = {:reset => true})
+      warn 'DEPRECATION WARNING: finished method was renamed to ab_finished and will be removed in Split 1.5.0'
+      ab_finished(metric_descriptor, options)
     end
 
     def override_present?(experiment_name)

@@ -4,7 +4,7 @@
 #
 # This module exposes only two methods:
 #  - ab_test()
-#  - finished()
+#  - ab_finished()
 # that can safely be mixed into any class.
 #
 # Passes the instance of the class that it's mixed into to the
@@ -15,7 +15,7 @@ module Split
 
     class ContextShim
       include Split::Helper
-      public :ab_test, :finished
+      public :ab_test, :finished, :ab_finished
 
       def initialize(context)
         @context = context

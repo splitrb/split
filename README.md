@@ -62,7 +62,7 @@ To begin your ab test use the `ab_test` method, naming your experiment with the 
 
 It can be used to render different templates, show different text or any other case based logic.
 
-`finished` is used to make a completion of an experiment, or conversion.
+`ab_finished` is used to make a completion of an experiment, or conversion.
 
 Example: View
 
@@ -86,14 +86,14 @@ Example: Conversion tracking (in a controller!)
 ```ruby
 def buy_new_points
   # some business logic
-  finished(:new_user_free_points)
+  ab_finished(:new_user_free_points)
 end
 ```
 
 Example: Conversion tracking (in a view)
 
 ```erb
-Thanks for signing up, dude! <% finished(:signup_page_redesign) %>
+Thanks for signing up, dude! <% ab_finished(:signup_page_redesign) %>
 ```
 
 You can find more examples, tutorials and guides on the [wiki](https://github.com/splitrb/split/wiki).
@@ -157,10 +157,10 @@ After choosing this option tests won't be started right after deploy, but after 
 
 When a user completes a test their session is reset so that they may start the test again in the future.
 
-To stop this behaviour you can pass the following option to the `finished` method:
+To stop this behaviour you can pass the following option to the `ab_finished` method:
 
 ```ruby
-finished(:experiment_name, reset: false)
+ab_finished(:experiment_name, reset: false)
 ```
 
 The user will then always see the alternative they started with.
@@ -445,7 +445,7 @@ ab_test(:my_first_experiment)
 and:
 
 ```ruby
-finished(:my_first_experiment)
+ab_finished(:my_first_experiment)
 ```
 
 You can also add meta data for each experiment, very useful when you need more than an alternative name to change behaviour:
@@ -515,7 +515,7 @@ Your code may then track a completion using the metric instead of
 the experiment name:
 
 ```ruby
-finished(:my_metric)
+ab_finished(:my_metric)
 ```
 
 You can also create a new metric by instantiating and saving a new Metric object.
@@ -550,13 +550,13 @@ end
 To complete a goal conversion, you do it like:
 
 ```ruby
-finished(link_color: "purchase")
+ab_finished(link_color: "purchase")
 ```
 
 Note that if you pass additional options, that should be a separate hash:
 
 ```ruby
-finished({ link_color: "purchase" }, reset: false)
+ab_finished({ link_color: "purchase" }, reset: false)
 ```
 
 **NOTE:** This does not mean that a single experiment can complete more than one goal.
@@ -573,7 +573,7 @@ Once you finish one of the goals, the test is considered to be completed, and fi
 
 Due to the fact that Redis has no automatic failover mechanism, it's
 possible to switch on the `db_failover` config option, so that `ab_test`
-and `finished` will not crash in case of a db failure. `ab_test` always
+and `ab_finished` will not crash in case of a db failure. `ab_test` always
 delivers alternative A (the first one) in that case.
 
 It's also possible to set a `db_failover_on_db_error` callback (proc)
