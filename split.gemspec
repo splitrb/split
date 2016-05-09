@@ -20,12 +20,12 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.require_paths = ["lib"]
 
-  s.add_dependency 'redis',           '>= 2.1'
-  s.add_dependency 'redis-namespace', '>= 1.1.0'
-  s.add_dependency 'sinatra',         '>= 1.2.6'
-  s.add_dependency 'simple-random'
+  s.add_dependency 'redis',           '>= 3.3.0'
+  s.add_dependency 'redis-namespace', '>= 1.5.2'
+  s.add_dependency 'sinatra',         '>= 1.4.7'
+  s.add_dependency 'simple-random',   '>= 1.0.3'
 
-  s.add_development_dependency 'bundler',     '~> 1.10'
+  s.add_development_dependency 'bundler',     '~> 1.12'
   s.add_development_dependency 'coveralls',   '~> 0.8'
   s.add_development_dependency 'rack-test',   '~> 0.6'
   s.add_development_dependency 'rake',        '~> 11.1'
