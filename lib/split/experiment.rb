@@ -86,7 +86,6 @@ module Split
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
         goals_collection.save
         save_metadata
-        Split.redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
       else
         existing_alternatives = load_alternatives_from_redis
         existing_goals = Split::GoalsCollection.new(@name).load_from_redis
