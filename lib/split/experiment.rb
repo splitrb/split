@@ -67,10 +67,9 @@ module Split
         end
       end
 
-      self.alternatives = alts
-      self.goals = options[:goals]
-      self.algorithm = options[:algorithm]
-      self.resettable = options[:resettable]
+      options[:alternatives] = alts
+
+      set_alternatives_and_options(options)
 
       # calculate probability that each alternative is the winner
       @alternative_probabilities = {}
@@ -267,11 +266,16 @@ module Split
 
     def load_from_redis
       exp_config = Split.redis.hgetall(experiment_config_key)
-      self.resettable = exp_config['resettable']
-      self.algorithm = exp_config['algorithm']
-      self.alternatives = load_alternatives_from_redis
-      self.goals = Split::GoalsCollection.new(@name).load_from_redis
-      self.metadata = load_metadata_from_redis
+
+      options = {
+        resettable: exp_config['resettable'],
+        algorithm: exp_config['algorithm'],
+        alternatives: load_alternatives_from_redis,
+        goals: Split::GoalsCollection.new(@name).load_from_redis,
+        metadata: load_metadata_from_redis
+      }
+
+      set_alternatives_and_options(options)
     end
 
     def calc_winning_alternatives
