@@ -21,22 +21,18 @@ module Split
       alternatives = extract_alternatives_from_options(options)
 
       if alternatives.empty? && (exp_config = Split.configuration.experiment_for(name))
-        set_alternatives_and_options(
+        options = {
           alternatives: load_alternatives_from_configuration,
           goals: Split::GoalsCollection.new(@name).load_from_configuration,
           metadata: load_metadata_from_configuration,
           resettable: exp_config[:resettable],
           algorithm: exp_config[:algorithm]
-        )
+        }
       else
-        set_alternatives_and_options(
-          alternatives: alternatives,
-          goals: options[:goals],
-          metadata: options[:metadata],
-          resettable: options[:resettable],
-          algorithm: options[:algorithm]
-        )
+        options[:alternatives] = alternatives
       end
+
+      set_alternatives_and_options(options)
     end
 
     def set_alternatives_and_options(options)
