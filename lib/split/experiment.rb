@@ -246,10 +246,10 @@ module Split
     end
 
     def set_end_time
-      Split.configuration.on_experiment_end.call(self)
       Split.redis.with do |conn|
         conn.hset(:experiment_end_times, name, Time.now.to_i)
       end
+      Split.configuration.on_experiment_end.call(self)
     end
 
     def start
