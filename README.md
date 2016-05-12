@@ -700,11 +700,19 @@ Over 70 different people have contributed to the project, you can see them all h
 
 ## Development
 
-Source hosted at [GitHub](http://github.com/splitrb/split).
-Report Issues/Feature requests on [GitHub Issues](http://github.com/splitrb/split/issues).
-Discussion at [Google Groups](https://groups.google.com/d/forum/split-ruby)
+Run the tests like this:
 
-Tests can be ran with `rake spec`
+    # Start a Redis server in another tab.
+    redis-server
+
+    bundle
+    rake spec
+
+Source hosted at [GitHub](http://github.com/splitrb/split).
+
+Report Issues/Feature requests on [GitHub Issues](http://github.com/splitrb/split/issues).
+
+Discussion at [Google Groups](https://groups.google.com/d/forum/split-ruby).
 
 ### Note on Patches/Pull Requests
 
