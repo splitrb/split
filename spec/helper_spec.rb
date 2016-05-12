@@ -89,27 +89,33 @@ describe Split::Helper do
       expect(ab_test('link_color', 'blue', 'red')).to eq('orange')
     end
 
-    it "should allow the alternative to be force by passing it in the params" do
-      @params = {'link_color' => 'blue'}
+    it "should allow the alternative to be forced by passing it in the params" do
+      # ?ab_test[link_color]=blue
+      @params = { 'ab_test' => { 'link_color' => 'blue' } }
+
       alternative = ab_test('link_color', 'blue', 'red')
       expect(alternative).to eq('blue')
+
       alternative = ab_test('link_color', {'blue' => 1}, 'red' => 5)
       expect(alternative).to eq('blue')
-      @params = {'link_color' => 'red'}
+
+      @params = { 'ab_test' => { 'link_color' => 'red' } }
+
       alternative = ab_test('link_color', 'blue', 'red')
       expect(alternative).to eq('red')
+
       alternative = ab_test('link_color', {'blue' => 5}, 'red' => 1)
       expect(alternative).to eq('red')
     end
 
     it "should not allow an arbitrary alternative" do
-      @params = {'link_color' => 'pink'}
+      @params = { 'ab_test' => { 'link_color' => 'pink' } }
       alternative = ab_test('link_color', 'blue')
       expect(alternative).to eq('blue')
     end
 
     it "should not store the split when a param forced alternative" do
-      @params = {'link_color' => 'blue'}
+      @params = { 'ab_test' => { 'link_color' => 'blue' } }
       expect(ab_user).not_to receive(:[]=)
       ab_test('link_color', 'blue', 'red')
     end
@@ -136,7 +142,7 @@ describe Split::Helper do
       before { Split.configuration.store_override = true }
 
       it "should store the forced alternative" do
-        @params = {'link_color' => 'blue'}
+        @params = { 'ab_test' => { 'link_color' => 'blue' } }
         expect(ab_user).to receive(:[]=).with('link_color', 'blue')
         ab_test('link_color', 'blue', 'red')
       end
@@ -212,7 +218,7 @@ describe Split::Helper do
     end
 
     it 'should be passed to helper block' do
-      @params = {'my_experiment' => 'one'}
+      @params = { 'ab_test' => { 'my_experiment' => 'one' } }
       expect(ab_test('my_experiment')).to eq 'one'
       expect(ab_test('my_experiment') do |alternative, meta|
         meta
@@ -770,7 +776,7 @@ describe Split::Helper do
 
           context 'and given an override parameter' do
             it 'should use given override instead of the first alternative' do
-              @params = {'link_color' => 'red'}
+              @params = { 'ab_test' => { 'link_color' => 'red' } }
               expect(ab_test('link_color', 'blue', 'red')).to eq('red')
               expect(ab_test('link_color', 'blue', 'red', 'green')).to eq('red')
               expect(ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)).to eq('red')
