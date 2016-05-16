@@ -130,38 +130,32 @@ module Split
     end
 
     def normalized_experiments
-      if @experiments.nil?
-        nil
-      else
-        experiment_config = {}
-        @experiments.keys.each do |name|
-          experiment_config[name.to_sym] = {}
-        end
+      return nil if @experiments.nil?
 
-        @experiments.each do |experiment_name, settings|
-          if alternatives = value_for(settings, :alternatives)
-            experiment_config[experiment_name.to_sym][:alternatives] = normalize_alternatives(alternatives)
-          end
-
-          if goals = value_for(settings, :goals)
-            experiment_config[experiment_name.to_sym][:goals] = goals
-          end
-
-          if metadata = value_for(settings, :metadata)
-            experiment_config[experiment_name.to_sym][:metadata] = metadata
-          end
-
-          if algorithm = value_for(settings, :algorithm)
-            experiment_config[experiment_name.to_sym][:algorithm] = algorithm
-          end
-
-          if (resettable = value_for(settings, :resettable)) != nil
-            experiment_config[experiment_name.to_sym][:resettable] = resettable
-          end
-        end
-
-        experiment_config
+      experiment_config = {}
+      @experiments.keys.each do |name|
+        experiment_config[name.to_sym] = {}
       end
+
+      @experiments.each do |experiment_name, settings|
+        alternatives = if (alts = value_for(settings, :alternatives))
+                         normalize_alternatives(alts)
+                       end
+
+        experiment_data = {
+          alternatives: alternatives,
+          goals: value_for(settings, :goals),
+          metadata: value_for(settings, :metadata),
+          algorithm: value_for(settings, :algorithm),
+          resettable: value_for(settings, :resettable)
+        }
+
+        experiment_data.each do |name, value|
+          experiment_config[experiment_name.to_sym][name] = value if value != nil
+        end
+      end
+
+      experiment_config
     end
 
     def normalize_alternatives(alternatives)
