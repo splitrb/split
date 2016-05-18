@@ -62,7 +62,7 @@ module Split
         return nil if exp.nil?
         exp.load_from_redis
         alternative = exp.alternatives.find{|alt| alt.name == alternative_name}
-        return alternative.nil? ? nil : {percentage: alternative.weight, version: version}
+        return alternative.nil? ? nil : {percentage: alternative.weight, version: exp.version}
       end
     end
     
