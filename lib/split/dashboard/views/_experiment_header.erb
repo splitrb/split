@@ -5,7 +5,18 @@
     <% else %>
       Experiment: <a href="<%= url "/#{experiment.name}" %>"><%= experiment.name %></a><% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
       <div class='inline-controls'>
+        <a target="_blank" href="<%=experiment.wiki_url%>">Wiki</a>
+        <button onclick="changeWiki_<%=experiment.name%>()">change</button>
+        &nbsp&nbsp&nbsp&nbsp
         <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
+        <script>
+        function changeWiki_<%=experiment.name%>() {
+          var url = prompt("Enter the new wiki URL for <%=experiment.name%>", "");
+          $.post("<%= url "/wiki/#{experiment.name}" %>", {wiki_url: url}, function(){
+            location.reload();
+          })
+        }
+        </script>
         <%= erb :_controls, :locals => {:experiment => experiment} %>
       </div>
     <% end %>

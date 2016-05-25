@@ -1,5 +1,7 @@
 # Split
 
+Wiki page link: https://sites.google.com/a/touchofmodern.com/engineering/tomo-split
+
 Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
 
 Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
@@ -310,6 +312,8 @@ For example:
 Split.configure do |config|
   config.on_experiment_reset  = proc{ |experiment| # Do something on reset }
   config.on_experiment_delete = proc{ |experiment| # Do something else on delete }
+  config.on_experiment_max_out = proc{ |experiment| # Do something else on hitting the maximum participant count }
+  config.on_experiment_end = proc{ |experiment| # Do something else on end }
 end
 ```
 

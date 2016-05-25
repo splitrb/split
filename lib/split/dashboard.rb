@@ -42,6 +42,19 @@ module Split
       erb :experiment
     end
 
+    get '/:experiment/:goal' do
+      @experiment = Split::Experiment.find(params[:experiment])
+      @goal = params[:goal]
+      @metrics = Split::Metric.all
+
+      if Object.const_defined?('Rails')
+        @current_env = Rails.env.titlecase
+      else
+        @current_env = "Rack: #{Rack.version}"
+      end
+      erb :goal, :layout => false
+    end
+
     post '/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
       @alternative = Split::Alternative.new(params[:alternative], params[:experiment])
@@ -52,6 +65,12 @@ module Split
     post '/start/:experiment' do
       @experiment = Split::Experiment.find(params[:experiment])
       @experiment.start
+      redirect url('/')
+    end
+    
+    post '/wiki/:experiment' do
+      @experiment = Split::Experiment.find(params[:experiment])
+      @experiment.wiki_url = params[:wiki_url]
       redirect url('/')
     end
 

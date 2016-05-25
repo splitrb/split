@@ -1,6 +1,6 @@
 module Split
   MAJOR   = 0
-  MINOR   = 7
-  PATCH   = 2
+  MINOR   = 8
+  PATCH   = 5
   VERSION = [MAJOR, MINOR, PATCH].join('.')
 end

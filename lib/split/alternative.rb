@@ -1,5 +1,5 @@
 require 'split/zscore'
-
+require 'active_support/all'
 # TODO - take out require and implement using file paths?
 
 module Split
@@ -25,12 +25,19 @@ module Split
       name
     end
 
+    def unmemoize
+      @participant_count = nil
+      @completed_count = nil
+      @completed_value = nil
+      @completed_values = nil
+    end
+
     def goals
       self.experiment.goals
     end
 
     def participant_count
-      Split.redis.with do |conn|
+      @participant_count ||= Split.redis.with do |conn|
         conn.hget(key, 'participant_count').to_i
       end
     end
@@ -42,22 +49,35 @@ module Split
     end
 
     def completed_count(goal = nil)
-      field = set_field(goal)
-      Split.redis.with do |conn|
-        conn.hget(key, field).to_i
+      unless @completed_count
+        @completed_count = ActiveSupport::HashWithIndifferentAccess.new
+        # add nil so we include overall completed count
+        (self.goals + [nil]).each do |goal|
+          field = set_field(goal)
+          @completed_count[goal] = Split.redis.with do |conn|
+            conn.hget(key, field).to_i
+          end
+        end
       end
+      @completed_count[goal] || 0
     end
 
     def completed_value(goal = nil)
-      field = set_value_field(goal)
-      Split.redis.with do |conn|
-        list = conn.lrange(key + field, 0, -1)
-        if list.size > 0
-          list.sum{|n| n.to_f}/list.size
-        else
-          "N/A"
+      unless @completed_value
+        @completed_value = ActiveSupport::HashWithIndifferentAccess.new
+        self.goals.each do |goal|
+          field = set_value_field(goal)
+          @completed_value[goal] = Split.redis.with do |conn|
+            list = conn.lrange(key + field, 0, -1)
+            if list.size > 0
+              list.sum{|n| n.to_f}/list.size
+            else
+              "N/A"
+            end
+          end
         end
       end
+      @completed_value[goal] || []
     end
 
     def combined_value(goal = nil)
@@ -69,10 +89,16 @@ module Split
     end
 
     def completed_values(goal = nil)
-      field = set_value_field(goal)
-      Split.redis.with do |conn|
-        list = conn.lrange(key + field, 0, -1).collect{|n| n.to_f}
+      unless @completed_values
+        @completed_values = ActiveSupport::HashWithIndifferentAccess.new
+        self.goals.each do |goal|
+          field = set_value_field(goal)
+          @completed_values[goal] = Split.redis.with do |conn|
+            list = conn.lrange(key + field, 0, -1).collect{|n| n.to_f}
+          end.collect{|n| [0,n].max}
+        end
       end
+      @completed_values[goal] || []
     end
 
     def all_completed_count
@@ -134,7 +160,7 @@ module Split
     end
 
     def experiment
-      Split::Experiment.find(experiment_name)
+      @experiment ||= Split::Experiment.find(experiment_name)
     end
 
     def z_score(goal = nil)
@@ -162,7 +188,7 @@ module Split
       return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if !self.completed_values(goal).blank? && !experiment.control.completed_values(goal).blank?
-        bayesian_log_normal_probability(self.completed_values(goal).collect{|n| [0,n].max}, experiment.control.completed_values(goal).collect{|n| [0,n].max})
+        bayesian_log_normal_probability(self.completed_values(goal), experiment.control.completed_values(goal))
       else
         "N/A"
       end
@@ -215,7 +241,7 @@ module Split
       return "Needs 50+ participants." if self.completed_values(goal).size < 50
 
       if self.combined_value(goal) != "N/A" && experiment.control.combined_value(goal) > 0
-        bayesian_combined_probability(self.completed_values(goal).collect{|n| [0,n].max}, experiment.control.completed_values(goal).collect{|n| [0,n].max})
+        bayesian_combined_probability(self.completed_values(goal), experiment.control.completed_values(goal))
       else
         "N/A"
       end
@@ -303,7 +329,7 @@ module Split
 
     def draw_log_normal_means(data,m0,k0,s_sq0,v0,n_samples=10000)
       # log transform the data
-      log_data = data.collect{|n| Math.log(n)}
+      log_data = data.select{|n| n > 0}.collect{|n| Math.log(n)}
 
       # get samples from the posterior
       mu_samples, sig_sq_samples = draw_mus_and_sigmas(log_data,m0,k0,s_sq0,v0,n_samples)
