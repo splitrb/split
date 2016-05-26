@@ -47,6 +47,7 @@ module Split
       end
     end
     module ClassMethods
+      
       def get_experiment_info(experiment_name)
         exp = Split::Experiment.find(experiment_name)
         if exp.nil?

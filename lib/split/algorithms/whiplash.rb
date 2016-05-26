@@ -4,7 +4,7 @@ require 'simple-random'
 
 module Split
   module Algorithms
-    module Whiplash
+    module Whiplash      
       def self.choose_alternative(experiment)
         experiment[best_guess(experiment.alternatives)]
       end

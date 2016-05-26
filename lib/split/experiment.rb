@@ -271,6 +271,15 @@ module Split
         end
       end
     end
+    
+    #TODO: This currently only works with WeightedSample algorithm. 
+    def random_alternatives(num_participants)
+      if winner
+        Array.new(num_participants, winner)
+      else
+        algorithm.choose_alternatives(self, num_participants)
+      end
+    end
 
     def next_alternative
       winner || random_alternative

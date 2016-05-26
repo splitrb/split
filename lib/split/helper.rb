@@ -1,6 +1,100 @@
 module Split
   module Helper
+    def batch_ab_test(metric_descriptor, split_ids, check_winner = true)
+      if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
+        puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
+      end
+      
+      begin
+        experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
+        experiment_name = experiment_name_with_version.to_s.split(':')[0]
+        experiment = Split::Experiment.new(experiment_name)
+        control ||= experiment.control && experiment.control.name
+        
+        # this transformation from array to hash isn't too bad in terms of efficiency
+        ret = Hash[split_ids.collect{|split_id| [split_id, nil]}]
+        if Split.configuration.enabled
+          experiment.save
+          # we always just go with the winner if already chosen
+          if check_winner && experiment.has_winner?
+            winner_name = experiment.winner.name
+            ret.each {|k,v| ret[k] = winner_name}
+          # we go with the control if enough participants
+          elsif experiment.has_enough_participants? 
+            winner_name = experiment.winner.name
+            ret.each {|k,v| ret[k] = winner_name}
+          else
+            clean_old_versions(experiment) # remove previous versions from Redis
+            if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
+              control_name = experiment.control.name
+              ret.each {|k,v| ret[k] = control_name}
+            else # now we are in business. Time to find the buckeketed users and 
+                 # bucket the rest of the users.
+                 
+              # find all the ones that are bucketed 
+              #NOTE: only redis adapter now has this method written
+              mapped_alternatives = Split::Persistence.adapter.fetch_values_in_batch(split_ids, experiment.key)
+              unbucketed_split_ids = []
+              mapped_alternatives.each do |split_id, value|
+                if value.nil?
+                  unbucketed_split_ids << split_id 
+                else
+                  ret[split_id] = value
+                end
+              end
+              
+              new_bucketed_users_and_alternatives = {}
+              new_bucketed_users_and_alternative_names = {}
+              alternative_counts = {}
+              new_buckets = experiment.random_alternatives(unbucketed_split_ids.count)
+              unbucketed_split_ids.each_with_index do |split_id, index|
+                alternative = new_buckets[index]
+                alternative_counts[alternative] = 0 if alternative_counts[alternative].nil?
+                alternative_counts[alternative] += 1
+                new_bucketed_users_and_alternatives[split_id] = alternative
+                new_bucketed_users_and_alternative_names[split_id] = alternative.name
+              end
 
+              # increment participation counts
+              alternative_counts.each do |alt, count|
+                alt.participant_count = count
+              end
+
+              # this sets alternatives for each user
+              begin_experiment_in_batch(experiment, new_bucketed_users_and_alternative_names)
+              
+              # Let's not hit the call call_trial_choose_hook too hard.
+              # We only feed 100 trials a time.
+              new_bucketed_users_and_alternatives.each_slice(100) do |slice|
+                # prepare 100 trials
+                trials = []
+                slice.each do |elm|
+                  split_id = elm[0]
+                  altnerative = elm[1]
+                  trial = Trial.new(:experiment => experiment, :user => split_id)
+                  trial.alternative = altnerative
+                  trials << trial
+                end
+                
+                # batch process 100 trials in post choose hook
+                call_trial_choose_hook(trials)
+              end
+              # merge newly bucketed users into the return hash
+              ret.merge!(new_bucketed_users_and_alternative_names)
+            end
+          end  
+        else
+          control_name = control_variable(control)
+          ret.select{|k,v| v.nil?}.each{|k,v| ret[k] = control_name}
+        end
+      rescue Errno::ECONNREFUSED => e
+        raise(e) unless Split.configuration.db_failover
+        Split.configuration.db_failover_on_db_error.call(e)
+      ensure
+        ret ||= Hash[split_ids.collect{|split_id| [split_id, nil]}]
+      end
+    end
+    
     def ab_test(metric_descriptor, control=nil, *alternatives)
       if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
@@ -172,6 +266,18 @@ module Split
       params["#{experiment_name}_default"] if default_present?(experiment_name)
     end
 
+    
+    def begin_experiment_in_batch(experiment, users_and_alternative_names)
+      # set user key fields
+      Split::Persistence.adapter.set_values_in_batch(users_and_alternative_names, experiment.key)
+      # check if experiment total participant count is enough. This should only be called once
+      if experiment.has_enough_participants?
+        experiment.set_end_time # this will also invoke on_experiment_end hook
+        call_experiment_max_out_hook(experiment) 
+      end
+      # this method doesn't return meaningful value unlike begin_experiment
+    end
+    
     def begin_experiment(experiment, alternative_name = nil)
       alternative_name ||= experiment.control.name
       # check if experiment total participant count is enough. This should only be called once
