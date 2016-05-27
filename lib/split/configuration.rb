@@ -20,6 +20,7 @@ module Split
     attr_accessor :on_experiment_max_out
     attr_accessor :on_experiment_end
     attr_accessor :include_rails_helper
+    attr_accessor :redis_query_batch_size
 
     attr_reader :experiments
 
@@ -206,6 +207,7 @@ module Split
       @persistence = Split::Persistence::SessionAdapter
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
+      @redis_query_batch_size = 50000
     end
 
     private

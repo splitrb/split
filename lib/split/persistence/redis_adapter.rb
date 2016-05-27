@@ -2,7 +2,6 @@ module Split
   module Persistence
     class RedisAdapter
       DEFAULT_CONFIG = {:namespace => 'persistence'}.freeze
-      REDIS_QUERY_BATCH_SIZE = 50000
       
       attr_reader :redis_key
 
@@ -31,7 +30,7 @@ module Split
       def self.set_values_in_batch(split_ids_values_mapping, field)        
         Split.redis.with do |conn|
           conn.pipelined do
-            split_ids_values_mapping.keys.each_slice(REDIS_QUERY_BATCH_SIZE).each_with_index do |slice, slice_index|
+            split_ids_values_mapping.keys.each_slice(Split.configuration.redis_query_batch_size).each_with_index do |slice, slice_index|
               queries = []
               key_subarr = []
               slice.each_with_index do |split_id, index|
@@ -67,7 +66,7 @@ module Split
         arrays_of_alternatives = []
         Split.redis.with do |conn|
           conn.pipelined do
-            keys.each_slice(REDIS_QUERY_BATCH_SIZE).each_with_index do |slice, slice_index|
+            keys.each_slice(Split.configuration.redis_query_batch_size).each_with_index do |slice, slice_index|
               # construct lua script that runs multiple HGETs
               # note that Lua array by convention is 1-indexed so we
               # add 1 to the index in Lua. The returned Ruby array is 
@@ -91,7 +90,7 @@ module Split
         # we want to return hashes whose keys are split_id and 
         # values are the values of the corresponding field if exists.
         mapped_hashes = {}
-        keys.each_slice(REDIS_QUERY_BATCH_SIZE).each_with_index do |slice, slice_index|
+        keys.each_slice(Split.configuration.redis_query_batch_size).each_with_index do |slice, slice_index|
           slice.each_with_index do |key, index|
             alternative_name = arrays_of_alternatives[slice_index].value[index]
             mapped_hashes[get_split_id(key)] = alternative_name
