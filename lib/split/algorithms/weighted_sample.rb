@@ -2,6 +2,14 @@ module Split
   module Algorithms
     module WeightedSample
       
+      def self.rand_one_alternative(weight_mapping, total)
+        point = rand * total
+        weight_mapping.each do |n,w|
+          return n if w >= point
+          point -= w
+        end
+      end
+        
       def self.choose_alternatives(experiment, num_participants)
         weights = experiment.alternatives.map(&:weight)
         total = weights.inject(:+)
@@ -9,11 +17,7 @@ module Split
         
         alternatives_arr = []
         num_participants.times do |i|
-          point = rand * total
-          weight_mapping.each do |n,w|
-            alternatives_arr << n if w >= point
-            point -= w
-          end
+          alternatives_arr << rand_one_alternative(weight_mapping, total)
         end
         alternatives_arr
       end

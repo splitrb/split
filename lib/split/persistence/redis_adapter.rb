@@ -2,7 +2,8 @@ module Split
   module Persistence
     class RedisAdapter
       DEFAULT_CONFIG = {:namespace => 'persistence'}.freeze
-
+      REDIS_QUERY_BATCH_SIZE = 50000
+      
       attr_reader :redis_key
 
       def initialize(context)
@@ -27,40 +28,76 @@ module Split
       # set_values_in_batch and fetch_values_in_batch are class methods
       # for setting/fetching values in hashes in batch (in single HTTP request)
       ####
-      def self.set_values_in_batch(split_ids_values_mapping, field)
+      def self.set_values_in_batch(split_ids_values_mapping, field)        
         Split.redis.with do |conn|
-          ## redis pipeline will execute the commands 
-          # in batch (in single HTTP reuqest)
           conn.pipelined do
-            split_ids_values_mapping.each do |split_id, value|
-              key = get_redis_key(split_id)
-              conn.hset(key, field, value)
+            split_ids_values_mapping.keys.each_slice(REDIS_QUERY_BATCH_SIZE).each_with_index do |slice, slice_index|
+              queries = []
+              key_subarr = []
+              slice.each_with_index do |split_id, index|
+                key = get_redis_key(split_id)
+                value = split_ids_values_mapping[split_id]
+                queries << "redis.call('hset',KEYS[#{index+1}],ARGV[1],'#{value}')"
+                key_subarr << key
+              end
+
+              script = queries.join("\n")
+              conn.eval(script, key_subarr, [field])
             end
           end
         end
       end
       
+      ##NOTE: Our redis storage is namespaced, i.e. it prepends 'split:touchofmodern'
+      # to all the keys. For example an exemplary key is 'split:touchofmodern:persistence:65a641f4-06da-4599-83f4-f84f88cb30f4'.
+      # This gets tricky when calling redis.call() in Lua scripting. In Lua scripting, you can either 
+      # do inline arguments such as redis.call('hget', yourKey, yourField) or append keys and arguments such as 
+      # conn.eval("redis.call('hget', KEYS[1], ARGV[1])", [yourKey], [yourField]).
+      # As you can see, the first array in the arguments is an array of keys. 
+      # The second array in the arguments is an array of fields. 
+      # Redis library will smartly prepend your keys with the namespace. 
+      # However if you do it in inline fashion like conn.eval("redis.call('hget', 'persistence:65a641f4-06da-4599-83f4-f84f88cb30f4', 'yourField')",
+      # it won't prepend the namespace to the keys which causes you problem.
+      #
+      # Simply put, append keys as a key array and append fields as an argv array. Don't use inline.
       def self.fetch_values_in_batch(split_ids, field)
         keys = split_ids.map{|split_id| get_redis_key(split_id)}
-        # redis pipeline will execute the commands 
-        # in batch (in single HTTP reuqest)
-        mapped_hashes = {}
+        # redis pipeline will send requests without waiting for 
+        # each response
+        arrays_of_alternatives = []
         Split.redis.with do |conn|
           conn.pipelined do
-            keys.each do |key|
-              mapped_hashes[key] = conn.hget(key, field)
+            keys.each_slice(REDIS_QUERY_BATCH_SIZE).each_with_index do |slice, slice_index|
+              # construct lua script that runs multiple HGETs
+              # note that Lua array by convention is 1-indexed so we
+              # add 1 to the index in Lua. The returned Ruby array is 
+              # converted to zero-indexed. 
+              queries = []
+              key_subarr = []
+              queries << "local r={}"
+              slice.each_with_index do |key, index|
+                lua_index = index + 1
+                queries << "r[#{lua_index}]=redis.pcall('HGET', KEYS[#{lua_index}], ARGV[1])"
+                key_subarr << key
+              end
+              queries << "return r"
+              # this is a faster way to concatenate a lot of strings at once
+              script = queries.join("\n")
+              arrays_of_alternatives[slice_index] = conn.eval(script, key_subarr, [field])
             end
           end
         end
         
         # we want to return hashes whose keys are split_id and 
         # values are the values of the corresponding field if exists.
-        flattened_arr = mapped_hashes.map do |key, hash_future|
-          hash = hash_future.value
-          val = (hash.nil? || !(hash.is_a? Hash))? nil : hash[field]
-          [get_split_id(key), val]
+        mapped_hashes = {}
+        keys.each_slice(REDIS_QUERY_BATCH_SIZE).each_with_index do |slice, slice_index|
+          slice.each_with_index do |key, index|
+            alternative_name = arrays_of_alternatives[slice_index].value[index]
+            mapped_hashes[get_split_id(key)] = alternative_name
+          end
         end
-        Hash[flattened_arr]
+        mapped_hashes
       end
       
       # this is the composition of key as opposed to get_split_id

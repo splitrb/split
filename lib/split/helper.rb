@@ -28,44 +28,44 @@ module Split
             if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
               control_name = experiment.control.name
               ret.each {|k,v| ret[k] = control_name}
-            else # now we are in business. Time to find the buckeketed users and 
-                 # bucket the rest of the users.
+            else # now we are in business. Time to find the participants and 
+                 # assign the rest of the new users.
                  
-              # find all the ones that are bucketed 
+              # find all the ones that are assigned 
               #NOTE: only redis adapter now has this method written
               mapped_alternatives = Split::Persistence.adapter.fetch_values_in_batch(split_ids, experiment.key)
-              unbucketed_split_ids = []
+              unassigned_split_ids = []
               mapped_alternatives.each do |split_id, value|
                 if value.nil?
-                  unbucketed_split_ids << split_id 
+                  unassigned_split_ids << split_id 
                 else
                   ret[split_id] = value
                 end
               end
               
-              new_bucketed_users_and_alternatives = {}
-              new_bucketed_users_and_alternative_names = {}
+              # assign new users
+              newly_assigned_users_and_alternatives = {}
+              newly_assigned_users_and_alternative_names = {}
               alternative_counts = {}
-              new_buckets = experiment.random_alternatives(unbucketed_split_ids.count)
-              unbucketed_split_ids.each_with_index do |split_id, index|
-                alternative = new_buckets[index]
+              new_assignments = experiment.random_alternatives(unassigned_split_ids.count)
+              unassigned_split_ids.each_with_index do |split_id, index|
+                alternative = new_assignments[index]
                 alternative_counts[alternative] = 0 if alternative_counts[alternative].nil?
                 alternative_counts[alternative] += 1
-                new_bucketed_users_and_alternatives[split_id] = alternative
-                new_bucketed_users_and_alternative_names[split_id] = alternative.name
+                newly_assigned_users_and_alternatives[split_id] = alternative
+                newly_assigned_users_and_alternative_names[split_id] = alternative.name
               end
-
+              
               # increment participation counts
               alternative_counts.each do |alt, count|
-                alt.participant_count = count
+                alt.participant_count += count
               end
 
               # this sets alternatives for each user
-              begin_experiment_in_batch(experiment, new_bucketed_users_and_alternative_names)
-              
-              # Let's not hit the call call_trial_choose_hook too hard.
+              begin_experiment_in_batch(experiment, newly_assigned_users_and_alternative_names)
+              # Let's not hit call_trial_choose_hook too hard.
               # We only feed 100 trials a time.
-              new_bucketed_users_and_alternatives.each_slice(100) do |slice|
+              newly_assigned_users_and_alternatives.each_slice(100) do |slice|
                 # prepare 100 trials
                 trials = []
                 slice.each do |elm|
@@ -80,7 +80,7 @@ module Split
                 call_trial_choose_hook(trials)
               end
               # merge newly bucketed users into the return hash
-              ret.merge!(new_bucketed_users_and_alternative_names)
+              ret.merge!(newly_assigned_users_and_alternative_names)
             end
           end  
         else
