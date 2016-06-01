@@ -220,6 +220,8 @@ module Split
         end || {}
         
         keys = experiments.map(&:key)
+        
+        keys << nil if keys.empty?
     
         alternatives = ab_user.hmget(keys)
         alt_map = Hash[*keys.zip(alternatives).flatten]
@@ -230,6 +232,9 @@ module Split
             exp_finished_goal_keys << experiment.finished_key(goal)
           end
         end
+        
+        exp_finished_goal_keys << nil if exp_finished_goal_keys.empty?
+        
         finished_goals = ab_user.hmget(exp_finished_goal_keys)
         goal_map = Hash[*exp_finished_goal_keys.zip(finished_goals).flatten]
         extra_options = { skip_win_check: true, # we skip the winner check so the goals continue to accumulate
