@@ -67,15 +67,18 @@ module Split
 
         if exclude_user?
           self.alternative = @experiment.control
-        elsif @user[@experiment.key]
-          self.alternative = @user[@experiment.key]
         else
-          self.alternative = @experiment.next_alternative
+          value = @user[@experiment.key]
+          if value
+            self.alternative = value
+          else
+            self.alternative = @experiment.next_alternative
 
-          # Increment the number of participants since we are actually choosing a new alternative
-          self.alternative.increment_participation
+            # Increment the number of participants since we are actually choosing a new alternative
+            self.alternative.increment_participation
 
-          run_callback context, Split.configuration.on_trial_choose
+            run_callback context, Split.configuration.on_trial_choose
+          end
         end
       end
 
