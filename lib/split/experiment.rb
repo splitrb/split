@@ -35,6 +35,10 @@ module Split
       set_alternatives_and_options(options)
     end
 
+    def self.finished_key(key)
+      "#{key}:finished"
+    end
+
     def set_alternatives_and_options(options)
       self.alternatives = options[:alternatives]
       self.goals = options[:goals]
@@ -221,7 +225,7 @@ module Split
     end
 
     def finished_key
-      "#{key}:finished"
+      self.class.finished_key(key)
     end
 
     def metadata_key
