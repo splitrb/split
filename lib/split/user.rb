@@ -9,10 +9,11 @@ module Split
     end
 
     def cleanup_old_experiments!
-      user.keys.each do |key|
+      keys_without_finished(user.keys).each do |key|
         experiment = ExperimentCatalog.find key_without_version(key)
         if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
           user.delete key
+          user.delete Experiment.finished_key(key)
         end
       end
     end
@@ -43,6 +44,10 @@ module Split
 
     def keys_without_experiment(keys, experiment_key)
       keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+    end
+
+    def keys_without_finished(keys)
+      keys.reject { |k| k.include?(":finished") }
     end
 
     def key_without_version(key)
