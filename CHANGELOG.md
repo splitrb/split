@@ -1,3 +1,16 @@
+## 1.4.5 (June 7th, 2016)
+
+Bugfixes:
+
+- FIX Negative numbers on non-finished (@divineforest, #408)
+- Eliminate extra RedisAdapter hget (@karmakaze, #407)
+- Remove unecessary code from Experiment class (@pakallis, #391, #392, #393)
+
+Misc:
+
+- Simplify Configuration#normalized_experiments (@pakallis, #395)
+- Clarify test running instructions (@henrik, #397)
+
 ## 1.4.4 (May 9th, 2016)
 
 Bugfixes:
