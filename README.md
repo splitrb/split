@@ -221,6 +221,7 @@ end
 Options:
 * `lookup_by`: method to invoke per request for uniquely identifying ab_users (mandatory configuration)
 * `namespace`: separate namespace to store these persisted values (default "persistence")
+* `expire_seconds`: sets TTL for user key. (if a user is in multiple experiments most recent update will reset TTL for all their assignments)
 
 #### Custom Adapter
 
