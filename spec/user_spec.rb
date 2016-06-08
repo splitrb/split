@@ -60,4 +60,17 @@ describe Split::User do
       end
     end
   end
+
+  context "instantiated with custom adapter" do
+    let(:custom_adapter) { double(:persistence_adapter) }
+
+    before do
+      @subject = described_class.new(context, custom_adapter)
+    end
+
+    it "sets user to the custom adapter" do
+      expect(@subject.user).to eq(custom_adapter)
+    end
+  end
+
 end
