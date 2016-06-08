@@ -4,8 +4,8 @@ module Split
     def_delegators :@user, :keys, :[], :[]=, :delete
     attr_reader :user
 
-    def initialize(context)
-      @user = Split::Persistence.adapter.new(context)
+    def initialize(context, adapter=nil)
+      @user = adapter || Split::Persistence.adapter.new(context)
     end
 
     def cleanup_old_experiments!
