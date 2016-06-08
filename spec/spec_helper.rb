@@ -14,10 +14,15 @@ require 'complex' if RUBY_VERSION.match(/1\.8/)
 
 Dir['./spec/support/*.rb'].each { |f| require f }
 
+require "fakeredis"
+
+fakeredis = Redis.new
+
 RSpec.configure do |config|
   config.order = 'random'
   config.before(:each) do
     Split.configuration = Split::Configuration.new
+    Split.redis = fakeredis
     Split.redis.flushall
     @ab_user = mock_user
     params = nil

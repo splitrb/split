@@ -9,7 +9,5 @@ gemfile:
 before_install:
   - gem install bundler
 
-services:
-   - redis-server
 cache: bundler
 sudo: false
