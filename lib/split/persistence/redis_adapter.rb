@@ -27,21 +27,18 @@ module Split
       # set_values_in_batch and fetch_values_in_batch are class methods
       # for setting/fetching values in hashes in batch (in single HTTP request)
       ####
-      def self.set_values_in_batch(split_ids_values_mapping, field)        
-        Split.redis.with do |conn|
-          conn.pipelined do
-            split_ids_values_mapping.keys.each_slice(Split.configuration.redis_query_batch_size).each_with_index do |slice, slice_index|
-              queries = []
-              key_subarr = []
-              slice.each_with_index do |split_id, index|
-                key = get_redis_key(split_id)
-                value = split_ids_values_mapping[split_id]
-                queries << "redis.call('hset',KEYS[#{index+1}],ARGV[1],'#{value}')"
-                key_subarr << key
+      def self.set_values_in_batch(split_ids_values_mapping, field)
+        split_ids = split_ids_values_mapping.keys
+        # use 5 threads to run this in parallel
+        Parallel.each(split_ids.each_slice(split_ids.count/5).to_a, in_threads:5) do |slice_per_thread|
+          # slice up the workload further down to pipeline sizes
+          slice_per_thread.each_slice(Split.configuration.pipeline_size).each do |slice|
+            Split.redis.with do |conn|
+              conn.pipelined do
+                slice.each do |split_id|
+                  conn.hset(get_redis_key(split_id), field, split_ids_values_mapping[split_id])
+                end
               end
-
-              script = queries.join("\n")
-              conn.eval(script, key_subarr, [field])
             end
           end
         end
@@ -59,42 +56,24 @@ module Split
       # it won't prepend the namespace to the keys which causes you problem.
       #
       # Simply put, append keys as a key array and append fields as an argv array. Don't use inline.
+      # This function has evolved over several versions to enhance the performance. 
       def self.fetch_values_in_batch(split_ids, field)
-        keys = split_ids.map{|split_id| get_redis_key(split_id)}
-        # redis pipeline will send requests without waiting for 
-        # each response
-        arrays_of_alternatives = []
-        Split.redis.with do |conn|
-          conn.pipelined do
-            keys.each_slice(Split.configuration.redis_query_batch_size).each_with_index do |slice, slice_index|
-              # construct lua script that runs multiple HGETs
-              # note that Lua array by convention is 1-indexed so we
-              # add 1 to the index in Lua. The returned Ruby array is 
-              # converted to zero-indexed. 
-              queries = []
-              key_subarr = []
-              queries << "local r={}"
-              slice.each_with_index do |key, index|
-                lua_index = index + 1
-                queries << "r[#{lua_index}]=redis.pcall('HGET', KEYS[#{lua_index}], ARGV[1])"
-                key_subarr << key
+        mapped_hashes = Hash[split_ids.map{|split_id| [split_id, nil]}]
+        # use 5 threads to run this in parallel
+        Parallel.each(split_ids.each_slice(split_ids.count/5).to_a, in_threads:5) do |slice_per_thread|
+          # slice up the workload further down to pipeline sizes
+          slice_per_thread.each_slice(Split.configuration.pipeline_size).each do |slice|
+            Split.redis.with do |conn|
+              conn.pipelined do
+                slice.each do |split_id|
+                  mapped_hashes[split_id] = conn.hget(get_redis_key(split_id), field)
+                end
               end
-              queries << "return r"
-              # this is a faster way to concatenate a lot of strings at once
-              script = queries.join("\n")
-              arrays_of_alternatives[slice_index] = conn.eval(script, key_subarr, [field])
             end
           end
         end
-        
-        # we want to return hashes whose keys are split_id and 
-        # values are the values of the corresponding field if exists.
-        mapped_hashes = {}
-        keys.each_slice(Split.configuration.redis_query_batch_size).each_with_index do |slice, slice_index|
-          slice.each_with_index do |key, index|
-            alternative_name = arrays_of_alternatives[slice_index].value[index]
-            mapped_hashes[get_split_id(key)] = alternative_name
-          end
+        mapped_hashes.each do |split_id, future|
+          mapped_hashes[split_id] = future.value unless future == nil
         end
         mapped_hashes
       end
