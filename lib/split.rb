@@ -16,6 +16,7 @@
   require "split/#{f}"
 end
 
+require 'redis/connection/hiredis'
 require 'split/engine' if defined?(Rails) && Rails::VERSION::MAJOR >= 3
 require 'redis/namespace'
 require 'connection_pool'
