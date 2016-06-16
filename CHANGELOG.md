@@ -1,3 +1,9 @@
+## 1.6.0 (June 16th, 2016)
+
+Features:
+
+- Add Dual Redis(logged-in)/cookie(logged-out) persistence adapter (@karmakaze, #420)
+
 ## 1.5.0 (June 8th, 2016)
 
 Features:
