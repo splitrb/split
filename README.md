@@ -223,6 +223,25 @@ Options:
 * `namespace`: separate namespace to store these persisted values (default "persistence")
 * `expire_seconds`: sets TTL for user key. (if a user is in multiple experiments most recent update will reset TTL for all their assignments)
 
+#### Dual Adapter
+
+The Dual Adapter allows the use of different persistence adapters for logged-in and logged-out users. A common use case is to use Redis for logged-in users and Cookies for logged-out users.
+
+```ruby
+cookie_adapter = Split::Persistence::CookieAdapter
+redis_adapter = Split::Persistence::RedisAdapter.with_config(
+    lookup_by: -> (context) { context.send(:current_user).try(:id) },
+    expire_seconds: 2592000)
+
+Split.configure do |config|
+  config.persistence = Split::Persistence::DualAdapter.with_config(
+      logged_in: -> (context) { !context.send(:current_user).try(:id).nil? },
+      logged_in_adapter: redis_adapter,
+      logged_out_adapter: cookie_adapter)
+  config.persistence_cookie_length = 2592000 # 30 days
+end
+```
+
 #### Custom Adapter
 
 Your custom adapter needs to implement the same API as existing adapters.
