@@ -1,3 +1,14 @@
+## 1.5.0 (June 8th, 2016)
+
+Features:
+
+- Add `expire_seconds:` TTL option to RedisAdapter (@karmakaze, #409)
+- Optional custom persistence adapter (@ndelage, #411)
+
+Misc:
+
+- Use fakeredis for testing (@andrew, #412)
+
 ## 1.4.5 (June 7th, 2016)
 
 Bugfixes:
