@@ -19,8 +19,14 @@ module Split
     end
 
     def max_experiments_reached?(experiment_key)
-      !Split.configuration.allow_multiple_experiments &&
-        keys_without_experiment(user.keys, experiment_key).length > 0
+      if Split.configuration.allow_multiple_experiments == 'control'
+        experiments = active_experiments
+        count_control = experiments.values.count {|v| v == 'control'}
+        experiments.size > count_control
+      else
+        !Split.configuration.allow_multiple_experiments &&
+          keys_without_experiment(user.keys, experiment_key).length > 0
+      end
     end
 
     def cleanup_old_versions!(experiment)
