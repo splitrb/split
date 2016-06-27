@@ -191,6 +191,26 @@ describe Split::Helper do
       expect(button_size_alt.participant_count).to eq(1)
     end
 
+    it "should let a user participate in many experiment with one non-'control' alternative with allow_multiple_experiments = 'control'" do
+      Split.configure do |config|
+        config.allow_multiple_experiments = 'control'
+      end
+      groups = []
+      (0..100).each do |n|
+        alt = ab_test("test#{n}".to_sym, {'control' => (100 - n)}, {'test#{n}-alt' => n})
+        groups << alt
+      end
+
+      experiments = ab_user.active_experiments
+      expect(experiments.size).to be > 1
+
+      count_control = experiments.values.count { |g| g == 'control' }
+      expect(count_control).to eq(experiments.size - 1)
+
+      count_alts = groups.count { |g| g != 'control' }
+      expect(count_alts).to eq(1)
+    end
+
     it "should not over-write a finished key when an experiment is on a later version" do
       experiment.increment_version
       ab_user = { experiment.key => 'blue', experiment.finished_key => true }

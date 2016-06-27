@@ -171,13 +171,24 @@ Any old unfinished experiment key will be deleted from the user's data storage i
 
 By default Split will avoid users participating in multiple experiments at once. This means you are less likely to skew results by adding in more variation to your tests.
 
-To stop this behaviour and allow users to participate in multiple experiments at once enable the `allow_multiple_experiments` config option like so:
+To stop this behaviour and allow users to participate in multiple experiments at once set the `allow_multiple_experiments` config option to true like so:
 
 ```ruby
 Split.configure do |config|
   config.allow_multiple_experiments = true
 end
 ```
+
+This will allow the user to participate in any number of experiments and belong to any alternative in each experiment. This has the possible downside of a variation in one experiment influencing the outcome of another.
+
+To address this, setting the `allow_multiple_experiments` config option to 'control' like so:
+```ruby
+Split.configure do |config|
+  config.allow_multiple_experiments = 'control'
+end
+```
+
+For this to work, each and every experiment you define must have an alternative named 'control'. This will allow the user to participate in multiple experiments as long as the user belongs to the alternative 'control' in each experiment. As soon as the user belongs to an alternative named something other than 'control' the user may not participate in any more experiments. Calling ab_test(<other experiments>) will always return the first alternative without adding the user to that experiment.
 
 ### Experiment Persistence
 
