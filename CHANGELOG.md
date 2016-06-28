@@ -1,3 +1,9 @@
+## 1.7.0 (June 28th, 2016)
+
+Features:
+
+- Running concurrent experiments on same endpoint/view (@karmakaze, #421)
+
 ## 1.6.0 (June 16th, 2016)
 
 Features:
