@@ -30,7 +30,7 @@ module Split
       def self.set_values_in_batch(split_ids_values_mapping, field)
         split_ids = split_ids_values_mapping.keys
         # use 5 threads to run this in parallel
-        size_per_thread = (split_ids.count / 5) < 1 ? 1 : (split_ids.count / 5)
+        size_per_thread = [(split_ids.count / 5), 1].max
         Parallel.each(split_ids.each_slice(size_per_thread).to_a, in_threads:5) do |slice_per_thread|
           # slice up the workload further down to pipeline sizes
           slice_per_thread.each_slice(Split.configuration.pipeline_size).each do |slice|
@@ -61,7 +61,8 @@ module Split
       def self.fetch_values_in_batch(split_ids, field)
         mapped_hashes = Hash[split_ids.map{|split_id| [split_id, nil]}]
         # use 5 threads to run this in parallel
-        Parallel.each(split_ids.each_slice(split_ids.count/5).to_a, in_threads:5) do |slice_per_thread|
+        size_per_thread = [(split_ids.count / 5), 1].max
+        Parallel.each(split_ids.each_slice(size_per_thread).to_a, in_threads:5) do |slice_per_thread|
           # slice up the workload further down to pipeline sizes
           slice_per_thread.each_slice(Split.configuration.pipeline_size).each do |slice|
             Split.redis.with do |conn|
