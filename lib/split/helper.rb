@@ -63,21 +63,16 @@ module Split
 
               # this sets alternatives for each user
               begin_experiment_in_batch(experiment, newly_assigned_users_and_alternative_names)
-              # Let's not hit call_trial_choose_hook too hard.
-              # We only feed 100 trials a time.
-              newly_assigned_users_and_alternatives.each_slice(100) do |slice|
+
+              newly_assigned_users_and_alternatives.each do |elm|
                 # prepare 100 trials
-                trials = []
-                slice.each do |elm|
-                  split_id = elm[0]
-                  altnerative = elm[1]
-                  trial = Trial.new(:experiment => experiment, :user => split_id)
-                  trial.alternative = altnerative
-                  trials << trial
-                end
-                
-                # batch process 100 trials in post choose hook
-                call_trial_choose_hook(trials)
+                split_id = elm[0]
+                altnerative = elm[1]
+                trial = Trial.new(:experiment => experiment, :user => split_id)
+                trial.alternative = altnerative
+
+                # call post choose hook
+                call_trial_choose_hook(trial)
               end
               # merge newly bucketed users into the return hash
               ret.merge!(newly_assigned_users_and_alternative_names)
