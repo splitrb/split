@@ -76,11 +76,6 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
-    def finished(metric_descriptor, options = {:reset => true})
-      warn 'DEPRECATION WARNING: finished method was renamed to ab_finished and will be removed in Split 2.0.0'
-      ab_finished(metric_descriptor, options)
-    end
-
     def override_present?(experiment_name)
       override_alternative(experiment_name)
     end
@@ -91,13 +86,6 @@ module Split
 
     def split_generically_disabled?
       defined?(params) && params['SPLIT_DISABLE']
-    end
-
-    def begin_experiment(experiment, alternative_name = nil)
-      warn 'DEPRECATION WARNING: begin_experiment is deprecated and will be removed from Split 2.0.0'
-      alternative_name ||= experiment.control.name
-      ab_user[experiment.key] = alternative_name
-      alternative_name
     end
 
     def ab_user

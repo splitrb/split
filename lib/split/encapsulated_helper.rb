@@ -15,7 +15,7 @@ module Split
 
     class ContextShim
       include Split::Helper
-      public :ab_test, :finished, :ab_finished
+      public :ab_test, :ab_finished
 
       def initialize(context)
         @context = context
@@ -41,11 +41,6 @@ module Split
       else
         ret
       end
-    end
-
-    def ab_test_finished(*arguments)
-      warn 'DEPRECATION WARNING: ab_test_finished is deprecated and will be removed from Split 2.0.0'
-      split_context_shim.finished *arguments
     end
 
     private
