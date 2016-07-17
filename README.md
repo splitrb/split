@@ -136,7 +136,7 @@ You can do this by passing it as a parameter in the url.
 
 If you have an experiment called `button_color` with alternatives called `red` and `blue` used on your homepage, a url such as:
 
-    http://myawesomesite.com?button_color=red
+    http://myawesomesite.com?ab_test[button_color]=red
 
 will always have red buttons. This won't be stored in your session or count towards to results, unless you set the `store_override` configuration option.
 
