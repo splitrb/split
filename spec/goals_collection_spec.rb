@@ -24,7 +24,7 @@ describe Split::GoalsCollection do
   describe "#validate!" do
     it "should't raise ArgumentError if @goals is nil?" do
       goals_collection = Split::GoalsCollection.new('experiment_name')
-      expect { goals_collection.validate! }.not_to raise_error(ArgumentError)
+      expect { goals_collection.validate! }.not_to raise_error
     end
 
     it "should raise ArgumentError if @goals is not an Array" do
@@ -36,7 +36,7 @@ describe Split::GoalsCollection do
     it "should't raise ArgumentError if @goals is an array" do
       goals_collection = Split::GoalsCollection.
         new('experiment_name', ['an array'])
-      expect { goals_collection.validate! }.not_to raise_error(ArgumentError)
+      expect { goals_collection.validate! }.not_to raise_error
     end
   end
 
