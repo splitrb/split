@@ -1,3 +1,10 @@
+## 2.0.0 (July 17th, 2016)
+
+Breaking changes:
+
+- Removed deprecated `finished` and `begin_experiment` methods
+- Namespaced override param to avoid potential clashes (@henrik, #398)
+
 ## 1.7.0 (June 28th, 2016)
 
 Features:
