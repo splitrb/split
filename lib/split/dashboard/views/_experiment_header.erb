@@ -8,6 +8,8 @@
         <a target="_blank" href="<%=experiment.wiki_url%>">Wiki</a>
         <button onclick="changeWiki_<%=experiment.name%>()">change</button>
         &nbsp&nbsp&nbsp&nbsp
+        <a target="_blank" href="<%= url "/export/#{experiment.name}/json" %>"><button>export</button></a>
+        &nbsp&nbsp&nbsp&nbsp
         <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
         <script>
         function changeWiki_<%=experiment.name%>() {
