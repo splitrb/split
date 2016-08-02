@@ -173,8 +173,7 @@ module Split
             trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => Array(goal), :value => options[:value], :user => ab_user_split_id)
             # trial.complete!() calls alternative.increment_completion
             # So this is where counts and values are incremented. 
-            trial.complete!() 
-            call_trial_complete_hook(trial)
+            call_trial_complete_hook(trial) if trial.complete!()
 
             if should_reset # reset the goal if it's resettable
               reset!(experiment, goal)
@@ -188,7 +187,7 @@ module Split
           return true
         else
           trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals], :value => options[:value], :user => ab_user_split_id)
-          call_trial_complete_hook(trial) if trial.complete!
+          call_trial_complete_hook(trial) if trial.complete!()
 
           if should_reset
             reset!(experiment)
