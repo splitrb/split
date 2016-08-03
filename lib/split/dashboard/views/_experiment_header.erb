@@ -3,7 +3,7 @@
     <% if goal %>
       Goal: <%= goal.humanize %>
     <% else %>
-      Experiment: <a href="<%= url "/#{experiment.name}" %>"><%= experiment.name %></a><% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
+      Experiment: <a href="<%= url "/#{experiment.name}" %>"><%= experiment.name %></a><span class='version'>v<%= experiment.version %></span>
       <div class='inline-controls'>
         <a target="_blank" href="<%=experiment.wiki_url%>">Wiki</a>
         <button onclick="changeWiki_<%=experiment.name%>()">change</button>

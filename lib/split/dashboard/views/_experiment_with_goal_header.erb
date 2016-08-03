@@ -1,7 +1,7 @@
 <div class="experiment">
   <div class="experiment-header">
     <h2>
-      <a href="<%= url "/#{experiment.name}" %>"><%= experiment.name.humanize %></a><% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
+      <a href="<%= url "/#{experiment.name}" %>"><%= experiment.name.humanize %></a><span class='version'>v<%= experiment.version %></span>
     <% metrics = @metrics.select {|metric| metric.experiments.include? experiment} %>
     <% unless metrics.empty? %>
         <span class='goal'>[<%= metrics.map(&:name).join(', ') %>]</span>
