@@ -1,3 +1,9 @@
+## 2.1.0 (August 8th, 2016)
+
+Features
+
+- Support REDIS_PROVIDER variable used in Heroku (@kartikluke, #426)
+
 ## 2.0.0 (July 17th, 2016)
 
 Breaking changes:
