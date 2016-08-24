@@ -19,36 +19,27 @@
 end
 
 require 'split/engine' if defined?(Rails)
-require 'redis/namespace'
 
 module Split
   extend self
   attr_accessor :configuration
 
   # Accepts:
-  #   1. A 'hostname:port' string
-  #   2. A 'hostname:port:db' string (to select the Redis db)
-  #   3. A 'hostname:port/namespace' string (to set the Redis namespace)
-  #   4. A redis URL string 'redis://host:port'
-  #   5. An instance of `Redis`, `Redis::Client`, `Redis::DistRedis`,
-  #      or `Redis::Namespace`.
+  #   1. A redis URL (valid for `Redis.new(url: url)`)
+  #   2. an options hash compatible with `Redis.new`
+  #   3. or a valid Redis instance (one that responds to `#smembers`). Likely,
+  #      this will be an instance of either `Redis`, `Redis::Client`,
+  #      `Redis::DistRedis`, or `Redis::Namespace`.
   def redis=(server)
-    if server.respond_to? :split
-      if server["redis://"]
-        redis = Redis.connect(:url => server, :thread_safe => true)
-      else
-        server, namespace = server.split('/', 2)
-        host, port, db = server.split(':')
-        redis = Redis.new(:host => host, :port => port,
-          :thread_safe => true, :db => db)
-      end
-      namespace ||= :split
-
-      @redis = Redis::Namespace.new(namespace, :redis => redis)
-    elsif server.respond_to? :namespace=
-      @redis = server
+    @redis = if server.is_a?(String)
+      Redis.new(:url => server, :thread_safe => true)
+    elsif server.is_a?(Hash)
+      Redis.new(server.merge(:thread_safe => true))
+    elsif server.respond_to?(:smembers)
+      server
     else
-      @redis = Redis::Namespace.new(:split, :redis => server)
+      raise ArgumentError,
+        "You must supply a url, options hash or valid Redis connection instance"
     end
   end
 
