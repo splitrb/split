@@ -56,7 +56,7 @@ module Split
   # create a new one.
   def redis
     return @redis if @redis
-    self.redis = self.configuration.redis_url
+    self.redis = self.configuration.redis
     self.redis
   end
 
