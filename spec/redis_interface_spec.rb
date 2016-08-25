@@ -6,11 +6,11 @@ describe Split::RedisInterface do
 
   describe '#persist_list' do
     subject(:persist_list) do
-      interface.persist_list(list_name, ['a', 'b', 'c', 'd'])
+      interface.persist_list(list_name, %w(a b c d))
     end
 
     specify do
-      persist_list
+      expect(persist_list).to eq %w(a b c d)
       expect(Split.redis.lindex(list_name, 0)).to eq 'a'
       expect(Split.redis.lindex(list_name, 1)).to eq 'b'
       expect(Split.redis.lindex(list_name, 2)).to eq 'c'
@@ -20,7 +20,7 @@ describe Split::RedisInterface do
 
     context 'list is overwritten but not deleted' do
       specify do
-        persist_list
+        expect(persist_list).to eq %w(a b c d)
         interface.persist_list(list_name, ['z'])
         expect(Split.redis.lindex(list_name, 0)).to eq 'z'
         expect(Split.redis.llen(list_name)).to eq 1

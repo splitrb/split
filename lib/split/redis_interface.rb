@@ -15,6 +15,7 @@ module Split
         end
       end
       make_list_length(list_name, list_values.length)
+      list_values
     end
 
     def add_to_list(list_name, value)
