@@ -13,9 +13,7 @@ describe Split::Experiment do
     Split::Alternative.new(color, 'link_color')
   end
 
-  let(:experiment) {
-    new_experiment
-  }
+  let(:experiment) { new_experiment }
 
   let(:blue) { alternative("blue") }
   let(:green) { alternative("green") }
@@ -237,12 +235,20 @@ describe Split::Experiment do
     context 'without winner' do
       it 'returns false' do
         expect(experiment).to_not have_winner
-      end
+    end
     end
   end
 
   describe 'reset' do
-    before { experiment.save }
+    let(:reset_manually) { false }
+
+    before do
+      allow(Split.configuration).to receive(:reset_manually).and_return(reset_manually)
+      experiment.save
+      green.increment_participation
+      green.increment_participation
+    end
+
     it 'should reset all alternatives' do
       experiment.winner = 'green'
 
@@ -253,6 +259,46 @@ describe Split::Experiment do
 
       expect(green.participant_count).to eq(0)
       expect(green.completed_count).to eq(0)
+    end
+
+    context 'when experiment configuration is changed' do
+      before do
+        experiment.set_alternatives_and_options(alternatives: %w(blue red green zip))
+      end
+
+      it 'should reset all alternatives' do
+        experiment.save
+        expect(green.participant_count).to eq(0)
+        expect(green.completed_count).to eq(0)
+      end
+    end
+
+    context 'when reset_manually is set' do
+      let(:reset_manually) { true }
+
+      it 'does not reset any alternatives' do
+        experiment.winner = 'green'
+
+        expect(experiment.next_alternative.name).to eq('green')
+        green.increment_participation
+
+        experiment.reset
+
+        expect(green.participant_count).not_to eq(2)
+        expect(green.completed_count).to eq(0)
+      end
+
+      context 'when experiment configuration is changed' do
+        before do
+          experiment.set_alternatives_and_options(alternatives: %w(blue red green zip))
+        end
+
+        it 'should reset all alternatives' do
+          experiment.save
+          expect(green.participant_count).to eq(2)
+          expect(green.completed_count).to eq(0)
+        end
+      end
     end
 
     it 'should reset the winner' do

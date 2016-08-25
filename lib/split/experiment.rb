@@ -82,7 +82,7 @@ module Split
       if new_record?
         start unless Split.configuration.start_manually
       elsif experiment_configuration_has_changed?
-        reset
+        reset unless Split.configuration.reset_manually
       end
 
       persist_experiment_configuration if new_record? || experiment_configuration_has_changed?
