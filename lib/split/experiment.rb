@@ -89,10 +89,6 @@ module Split
         existing_metadata = load_metadata_from_redis
         unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals && existing_metadata == @metadata
           reset
-          @alternatives.each(&:delete)
-          goals_collection.delete
-          delete_metadata
-          Split.redis.del(@name)
           persist_configuration
         end
       end
@@ -451,9 +447,17 @@ module Split
     private
 
     def persist_configuration
+      remove_configuration unless new_record?
       @alternatives.reverse.each { |a| Split.redis.lpush(name, a.name) }
       goals_collection.save
       save_metadata
+    end
+
+    def remove_configuration
+      @alternatives.each(&:delete)
+      goals_collection.delete
+      delete_metadata
+      Split.redis.del(@name)
     end
 
     def goals_collection
