@@ -363,11 +363,12 @@ describe Split::Experiment do
       let(:reset_manually) { false }
 
       before do
-        allow(experiment).to receive(:new_record?).and_return(false)
+        experiment.save
         allow(Split.configuration).to receive(:reset_manually).and_return(reset_manually)
         green.increment_participation
         green.increment_participation
-        experiment.set_alternatives_and_options(alternatives: %w(blue red green zip))
+        experiment.set_alternatives_and_options(alternatives: %w(blue red green zip),
+                                                goals: %w(purchase))
         experiment.save
       end
 
