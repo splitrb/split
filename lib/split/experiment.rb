@@ -79,8 +79,9 @@ module Split
     def save
       validate!
 
+      redis = Split.redis
       if new_record?
-        Split.redis.sadd(:experiments, name)
+        redis.sadd(:experiments, name)
         start unless Split.configuration.start_manually
         persist_configuration
       elsif configuration_has_changed?
@@ -88,8 +89,8 @@ module Split
         persist_configuration
       end
 
-      Split.redis.hset(experiment_config_key, :resettable, resettable)
-      Split.redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
+      redis.hset(experiment_config_key, :resettable, resettable)
+      redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
       self
     end
 
