@@ -83,10 +83,10 @@ module Split
       if new_record?
         redis.sadd(:experiments, name)
         start unless Split.configuration.start_manually
-        persist_configuration
-      elsif configuration_has_changed?
+        persist_experiment_configuration
+      elsif experiment_configuration_has_changed?
         reset
-        persist_configuration
+        persist_experiment_configuration
       end
 
       redis.hset(experiment_config_key, :resettable, resettable)
@@ -442,21 +442,21 @@ module Split
 
     private
 
-    def persist_configuration
-      remove_configuration unless new_record?
+    def persist_experiment_configuration
+      remove_experiment_configuration unless new_record?
       @alternatives.reverse.each { |a| Split.redis.lpush(name, a.name) }
       goals_collection.save
       save_metadata
     end
 
-    def remove_configuration
+    def remove_experiment_configuration
       @alternatives.each(&:delete)
       goals_collection.delete
       delete_metadata
       Split.redis.del(@name)
     end
 
-    def configuration_has_changed?
+    def experiment_configuration_has_changed?
       existing_alternatives = load_alternatives_from_redis
       existing_goals = Split::GoalsCollection.new(@name).load_from_redis
       existing_metadata = load_metadata_from_redis
