@@ -79,9 +79,7 @@ module Split
     def save
       validate!
 
-      redis = Split.redis
       if new_record?
-        redis.sadd(:experiments, name)
         start unless Split.configuration.start_manually
         persist_experiment_configuration
       elsif experiment_configuration_has_changed?
@@ -89,6 +87,7 @@ module Split
         persist_experiment_configuration
       end
 
+      redis = Split.redis
       redis.hset(experiment_config_key, :resettable, resettable)
       redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
       self
@@ -237,12 +236,9 @@ module Split
       if Split.configuration.start_manually
         Split.redis.hdel(:experiment_start_times, @name)
       end
-      alternatives.each(&:delete)
       reset_winner
       Split.redis.srem(:experiments, name)
-      Split.redis.del(name)
-      goals_collection.delete
-      delete_metadata
+      remove_experiment_configuration
       Split.configuration.on_experiment_delete.call(self)
       increment_version
     end
@@ -444,6 +440,8 @@ module Split
 
     def persist_experiment_configuration
       remove_experiment_configuration unless new_record?
+      redis = Split.redis
+      redis.sadd(:experiments, name) unless redis.sismember(:experiments, name)
       @alternatives.reverse.each { |a| Split.redis.lpush(name, a.name) }
       goals_collection.save
       save_metadata
