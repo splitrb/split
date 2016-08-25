@@ -82,7 +82,7 @@ module Split
       if new_record?
         Split.redis.sadd(:experiments, name)
         start unless Split.configuration.start_manually
-        persist
+        persist_configuration
       else
         existing_alternatives = load_alternatives_from_redis
         existing_goals = Split::GoalsCollection.new(@name).load_from_redis
@@ -93,7 +93,7 @@ module Split
           goals_collection.delete
           delete_metadata
           Split.redis.del(@name)
-          persist
+          persist_configuration
         end
       end
 
@@ -450,7 +450,7 @@ module Split
 
     private
 
-    def persist
+    def persist_configuration
       @alternatives.reverse.each { |a| Split.redis.lpush(name, a.name) }
       goals_collection.save
       save_metadata
