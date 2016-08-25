@@ -9,9 +9,7 @@ module Split
     attr_accessor :alternative_probabilities
     attr_accessor :metadata
 
-    DEFAULT_OPTIONS = {
-      :resettable => true
-    }
+    DEFAULT_OPTIONS = { resettable: true }.freeze
 
     def initialize(name, options = {})
       options = DEFAULT_OPTIONS.merge(options)
@@ -51,8 +49,9 @@ module Split
       alts = options[:alternatives] || []
 
       if alts.length == 1
-        if alts[0].is_a? Hash
-          alts = alts[0].map{|k,v| {k => v} }
+        first_alternative = alts[0]
+        if first_alternative.is_a? Hash
+          alts = first_alternative.map { |key, value| { key => value } }
         end
       end
 
@@ -94,9 +93,9 @@ module Split
 
     def validate!
       if @alternatives.empty? && Split.configuration.experiment_for(@name).nil?
-        raise ExperimentNotFound.new("Experiment #{@name} not found")
+        raise ExperimentNotFound, "Experiment #{@name} not found"
       end
-      @alternatives.each {|a| a.validate! }
+      @alternatives.each(&:validate!)
       goals_collection.validate!
     end
 
@@ -104,12 +103,12 @@ module Split
       !redis.exists(name)
     end
 
-    def ==(obj)
-      self.name == obj.name
+    def ==(other)
+      name == other.name
     end
 
     def [](name)
-      alternatives.find{|a| a.name == name}
+      alternatives.find { |alternative| alternative.name == name }
     end
 
     def algorithm
@@ -135,10 +134,9 @@ module Split
     end
 
     def winner
-      if w = redis.hget(:experiment_winner, name)
-        Split::Alternative.new(w, name)
-      else
-        nil
+      experiment_winner = redis.hget(:experiment_winner, name)
+      unless experiment_winner.nil?
+        Split::Alternative.new(experiment_winner, name)
       end
     end
 
@@ -151,7 +149,7 @@ module Split
     end
 
     def participant_count
-      alternatives.inject(0){|sum,a| sum + a.participant_count}
+      alternatives.inject(0) { |a, e| a + e.participant_count }
     end
 
     def control
@@ -167,14 +165,11 @@ module Split
     end
 
     def start_time
-      t = redis.hget(:experiment_start_times, @name)
-      if t
+      time = redis.hget(:experiment_start_times, @name)
+      unless time.nil?
         # Check if stored time is an integer
-        if t =~ /^[-+]?[0-9]+$/
-          t = Time.at(t.to_i)
-        else
-          t = Time.parse(t)
-        end
+        return Time.at(time.to_i) if time =~ /^[-+]?[0-9]+$/
+        return Time.parse(time)
       end
     end
 
@@ -191,7 +186,7 @@ module Split
     end
 
     def version
-      @version ||= (redis.get("#{name.to_s}:version").to_i || 0)
+      @version ||= (redis.get("#{name}:version").to_i || 0)
     end
 
     def increment_version
@@ -231,19 +226,14 @@ module Split
     end
 
     def delete
-      Split.configuration.on_before_experiment_delete.call(self)
-      if Split.configuration.start_manually
-        redis.hdel(:experiment_start_times, @name)
-      end
+      split_configuration = Split.configuration
+      split_configuration.on_before_experiment_delete.call(self)
+      redis.hdel(:experiment_start_times, @name) if split_configuration.start_manually
       reset_winner
       redis.srem(:experiments, name)
       remove_experiment_configuration
-      Split.configuration.on_experiment_delete.call(self)
+      split_configuration.on_experiment_delete.call(self)
       increment_version
-    end
-
-    def delete_metadata
-      redis.del(metadata_key)
     end
 
     def load_from_redis
@@ -262,25 +252,25 @@ module Split
 
     def calc_winning_alternatives
       # Super simple cache so that we only recalculate winning alternatives once per day
-      days_since_epoch = Time.now.utc.to_i / 86400
+      days_since_epoch = Time.now.utc.to_i / 86_400
 
-      if self.calc_time != days_since_epoch
+      if calc_time != days_since_epoch
         if goals.empty?
-          self.estimate_winning_alternative
+          estimate_winning_alternative
         else
           goals.each do |goal|
-            self.estimate_winning_alternative(goal)
+            estimate_winning_alternative(goal)
           end
         end
 
         self.calc_time = days_since_epoch
 
-        self.save
+        save
       end
     end
 
     def estimate_winning_alternative(goal = nil)
-      # TODO - refactor out functionality to work with and without goals
+      # TODO: refactor out functionality to work with and without goals
 
       # initialize a hash of beta distributions based on the alternatives' conversion rates
       beta_params = calc_beta_params(goal)
@@ -303,7 +293,7 @@ module Split
 
       write_to_alternatives(goal)
 
-      self.save
+      save
     end
 
     def write_to_alternatives(goal = nil)
@@ -317,11 +307,11 @@ module Split
       winning_counts.each do |alternative, wins|
         alternative_probabilities[alternative] = wins / number_of_simulations.to_f
       end
-      return alternative_probabilities
+      alternative_probabilities
     end
 
     def count_simulated_wins(winning_alternatives)
-       # initialize a hash to keep track of winning alternative in simulations
+      # initialize a hash to keep track of winning alternative in simulations
       winning_counts = {}
       alternatives.each do |alternative|
         winning_counts[alternative] = 0
@@ -330,19 +320,16 @@ module Split
       winning_alternatives.each do |alternative|
         winning_counts[alternative] += 1
       end
-      return winning_counts
+      winning_counts
     end
 
     def find_simulated_winner(simulated_cr_hash)
       # figure out which alternative had the highest simulated conversion rate
-      winning_pair = ["",0.0]
+      winning_pair = ['', 0.0]
       simulated_cr_hash.each do |alternative, rate|
-        if rate > winning_pair[1]
-          winning_pair = [alternative, rate]
-        end
+        winning_pair = [alternative, rate] if rate > winning_pair[1]
       end
-      winner = winning_pair[0]
-      return winner
+      winning_pair[0]
     end
 
     def calc_simulated_conversion_rates(beta_params)
@@ -360,7 +347,7 @@ module Split
         simulated_cr_hash[alternative] = simulated_conversion_rate
       end
 
-      return simulated_cr_hash
+      simulated_cr_hash
     end
 
     def calc_beta_params(goal = nil)
@@ -374,7 +361,7 @@ module Split
 
         beta_params[alternative] = params
       end
-      return beta_params
+      beta_params
     end
 
     def calc_time=(time)
@@ -389,7 +376,7 @@ module Split
       js_id = if goal.nil?
                 name
               else
-                name + "-" + goal
+                name + '-' + goal
               end
       js_id.gsub('/', '--')
     end
@@ -401,7 +388,7 @@ module Split
     end
 
     def load_metadata_from_configuration
-      metadata = Split.configuration.experiment_for(@name)[:metadata]
+      Split.configuration.experiment_for(@name)[:metadata]
     end
 
     def load_metadata_from_redis
@@ -411,7 +398,7 @@ module Split
 
     def load_alternatives_from_configuration
       alts = Split.configuration.experiment_for(@name)[:alternatives]
-      raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
+      raise ArgumentError, 'Experiment configuration is missing :alternatives array' unless alts
       if alts.is_a?(Hash)
         alts.keys
       else
@@ -424,11 +411,9 @@ module Split
       when 'set' # convert legacy sets to lists
         alts = redis.smembers(@name)
         redis.del(@name)
-        alts.reverse.each {|a| redis.lpush(@name, a) }
-        redis.lrange(@name, 0, -1)
-      else
-        redis.lrange(@name, 0, -1)
+        alts.reverse.each { |alternative| redis.lpush(@name, alternative) }
       end
+      redis.lrange(@name, 0, -1)
     end
 
     private
@@ -451,7 +436,7 @@ module Split
     def remove_experiment_configuration
       @alternatives.each(&:delete)
       goals_collection.delete
-      delete_metadata
+      redis.del(metadata_key)
       redis.del(@name)
     end
 
