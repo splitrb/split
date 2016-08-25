@@ -11,6 +11,7 @@
    metric
    persistence
    encapsulated_helper
+   redis_interface
    trial
    user
    version

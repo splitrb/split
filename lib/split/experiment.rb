@@ -441,10 +441,15 @@ module Split
       Split.redis
     end
 
+    def redis_interface
+      RedisInterface.new
+    end
+
     def persist_experiment_configuration
       remove_experiment_configuration unless new_record?
       redis.sadd(:experiments, name) unless redis.sismember(:experiments, name)
-      @alternatives.reverse.each { |a| redis.lpush(name, a.name) }
+      alternative_names = @alternatives.map(&:name)
+      redis_interface.persist_list(name, alternative_names)
       goals_collection.save
       save_metadata
     end
