@@ -83,14 +83,9 @@ module Split
         Split.redis.sadd(:experiments, name)
         start unless Split.configuration.start_manually
         persist_configuration
-      else
-        existing_alternatives = load_alternatives_from_redis
-        existing_goals = Split::GoalsCollection.new(@name).load_from_redis
-        existing_metadata = load_metadata_from_redis
-        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals && existing_metadata == @metadata
-          reset
-          persist_configuration
-        end
+      elsif configuration_has_changed?
+        reset
+        persist_configuration
       end
 
       Split.redis.hset(experiment_config_key, :resettable, resettable)
@@ -458,6 +453,15 @@ module Split
       goals_collection.delete
       delete_metadata
       Split.redis.del(@name)
+    end
+
+    def configuration_has_changed?
+      existing_alternatives = load_alternatives_from_redis
+      existing_goals = Split::GoalsCollection.new(@name).load_from_redis
+      existing_metadata = load_metadata_from_redis
+      existing_alternatives != @alternatives.map(&:name) ||
+        existing_goals != @goals ||
+        existing_metadata != @metadata
     end
 
     def goals_collection
