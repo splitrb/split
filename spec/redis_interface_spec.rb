@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Split::RedisInterface do
   let(:list_name) { 'list_name' }
+  let(:set_name) { 'set_name' }
   let(:interface) { described_class.new }
 
   describe '#persist_list' do
@@ -94,6 +95,17 @@ describe Split::RedisInterface do
       make_list_length
       expect(Split.redis.lindex(list_name, 0)).to eq 'y'
       expect(Split.redis.llen(list_name)).to eq 1
+    end
+  end
+
+  describe '#add_to_set' do
+    subject(:add_to_set) do
+      interface.add_to_set(set_name, 'something')
+    end
+
+    specify do
+      add_to_set
+      expect(Split.redis.sismember(set_name, 'something')).to be true
     end
   end
 end

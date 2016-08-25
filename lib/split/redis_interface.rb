@@ -40,6 +40,10 @@ module Split
       end
     end
 
+    def add_to_set(set_name, value)
+      redis.sadd(set_name, value) unless redis.sismember(set_name, value)
+    end
+
     private
 
     attr_accessor :redis

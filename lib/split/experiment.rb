@@ -431,10 +431,6 @@ module Split
       end
     end
 
-    def save_metadata
-      redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
-    end
-
     private
 
     def redis
@@ -446,12 +442,10 @@ module Split
     end
 
     def persist_experiment_configuration
-      remove_experiment_configuration unless new_record?
-      redis.sadd(:experiments, name) unless redis.sismember(:experiments, name)
-      alternative_names = @alternatives.map(&:name)
-      redis_interface.persist_list(name, alternative_names)
+      redis_interface.add_to_set(:experiments, name)
+      redis_interface.persist_list(name, @alternatives.map(&:name))
       goals_collection.save
-      save_metadata
+      redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
     end
 
     def remove_experiment_configuration
