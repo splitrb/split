@@ -32,8 +32,7 @@ module Split
       # through to the original ab_test
       if block_given?
         if defined?(capture) # a block in a rails view
-          block = Proc.new { yield(ret) }
-          concat(capture(ret, &block))
+          concat(capture(ret, &Proc.new))
           false
         else
           yield(ret)

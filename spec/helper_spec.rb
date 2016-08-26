@@ -642,6 +642,22 @@ describe Split::Helper do
 
       it_behaves_like "a disabled test"
     end
+
+    context "when ignored other address" do
+      before do
+        @request = OpenStruct.new(:ip => '1.1.1.1')
+        Split.configure do |c|
+          c.ignore_ip_addresses << '81.19.48.130'
+        end
+      end
+
+      it "works as usual" do
+        alternative_name = ab_test('link_color', 'red', 'blue')
+        expect{
+          ab_finished('link_color')
+        }.to change(Split::Alternative.new(alternative_name, 'link_color'), :completed_count).by(1)
+      end
+    end
   end
 
   describe 'versioned experiments' do
@@ -774,7 +790,7 @@ describe Split::Helper do
             end
           end
 
-          expect(Split.configuration.db_failover_on_db_error).to receive(:call)
+          expect(Split.configuration.db_failover_on_db_error).to receive(:call).and_call_original
           ab_test('link_color', 'blue', 'red')
         end
 
@@ -833,7 +849,7 @@ describe Split::Helper do
             end
           end
 
-          expect(Split.configuration.db_failover_on_db_error).to receive(:call)
+          expect(Split.configuration.db_failover_on_db_error).to receive(:call).and_call_original
           ab_finished('link_color')
         end
       end
