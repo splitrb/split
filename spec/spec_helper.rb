@@ -16,21 +16,23 @@ Dir['./spec/support/*.rb'].each { |f| require f }
 
 require "fakeredis"
 
-fakeredis = Redis.new
+G_fakeredis = Redis.new
 
-RSpec.configure do |config|
-  config.order = 'random'
-  config.before(:each) do
+module GlobalSharedContext
+  extend RSpec::SharedContext
+  let(:mock_user){ Split::User.new(double(session: {})) }
+  before(:each) do
     Split.configuration = Split::Configuration.new
-    Split.redis = fakeredis
+    Split.redis = G_fakeredis
     Split.redis.flushall
     @ab_user = mock_user
     params = nil
   end
 end
 
-def mock_user
-  Split::User.new(double(session: {}))
+RSpec.configure do |config|
+  config.order = 'random'
+  config.include GlobalSharedContext
 end
 
 def session
