@@ -21,22 +21,21 @@ describe Split::EncapsulatedHelper do
     end
 
     it "calls the block with selected alternative" do
-      expect{|block| ab_test('link_color', 'red', 'red', &block) }.to yield_with_args('red')
+      expect{|block| ab_test('link_color', 'red', 'red', &block) }.to yield_with_args('red', nil)
     end
 
     context "inside a view" do
-      it "calls the block with alternative and concats captured block result" do
-        obj = Class.new{
-          include Split::EncapsulatedHelper
-          def capture *args
-            yield *args
-            "captured"
-          end
-        }.new
 
-        expect(obj).to receive(:concat).with("captured")
-        expect{|block| obj.ab_test('link_color', 'red', 'red', &block) }.to yield_with_args('red')
+      it "works inside ERB" do
+        require 'erb'
+        template = ERB.new(<<-ERB.split(/\s+/s).map(&:strip).join(' '), nil, "%")
+          foo <% ab_test(:foo, '1', '2') do |alt, meta| %>
+            static <%= alt %>
+          <% end %>
+        ERB
+        expect(template.result(binding)).to match /foo  static \d/
       end
+
     end
   end
 
