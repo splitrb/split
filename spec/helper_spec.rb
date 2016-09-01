@@ -197,24 +197,51 @@ describe Split::Helper do
       expect(button_size_alt.participant_count).to eq(1)
     end
 
-    it "should let a user participate in many experiment with one non-'control' alternative with allow_multiple_experiments = 'control'" do
-      Split.configure do |config|
-        config.allow_multiple_experiments = 'control'
+    context "with allow_multiple_experiments = 'control'" do
+      it "should let a user participate in many experiment with one non-'control' alternative" do
+        Split.configure do |config|
+          config.allow_multiple_experiments = 'control'
+        end
+        groups = 100.times.map do |n|
+          ab_test("test#{n}".to_sym, {'control' => (100 - n)}, {"test#{n}-alt" => n})
+        end
+
+        experiments = ab_user.active_experiments
+        expect(experiments.size).to be > 1
+
+        count_control = experiments.values.count { |g| g == 'control' }
+        expect(count_control).to eq(experiments.size - 1)
+
+        count_alts = groups.count { |g| g != 'control' }
+        expect(count_alts).to eq(1)
       end
-      groups = []
-      (0..100).each do |n|
-        alt = ab_test("test#{n}".to_sym, {'control' => (100 - n)}, {'test#{n}-alt' => n})
-        groups << alt
+
+      context "when user already has experiment" do
+        let(:mock_user){ Split::User.new(self, {'test_0' => 'test-alt'}) }
+        before{
+          Split.configure do |config|
+            config.allow_multiple_experiments = 'control'
+          end
+          Split::ExperimentCatalog.find_or_initialize('test_0', 'control', 'test-alt').save
+          Split::ExperimentCatalog.find_or_initialize('test_1', 'control', 'test-alt').save
+        }
+
+        it "should restore previously selected alternative" do
+          expect(ab_user.active_experiments.size).to eq 1
+          expect(ab_test(:test_0, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
+          expect(ab_test(:test_0, {'control' => 1}, {"test-alt" => 100})).to eq 'test-alt'
+        end
+
+        it "lets override existing choice" do
+          pending "this requires user store reset on first call not depending on whelther it is current trial"
+          @params = { 'ab_test' => { 'test_1' => 'test-alt' } }
+
+          expect(ab_test(:test_0, {'control' => 0}, {"test-alt" => 100})).to eq 'control'
+          expect(ab_test(:test_1, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
+        end
+
       end
 
-      experiments = ab_user.active_experiments
-      expect(experiments.size).to be > 1
-
-      count_control = experiments.values.count { |g| g == 'control' }
-      expect(count_control).to eq(experiments.size - 1)
-
-      count_alts = groups.count { |g| g != 'control' }
-      expect(count_alts).to eq(1)
     end
 
     it "should not over-write a finished key when an experiment is on a later version" do
@@ -642,6 +669,22 @@ describe Split::Helper do
 
       it_behaves_like "a disabled test"
     end
+
+    context "when ignored other address" do
+      before do
+        @request = OpenStruct.new(:ip => '1.1.1.1')
+        Split.configure do |c|
+          c.ignore_ip_addresses << '81.19.48.130'
+        end
+      end
+
+      it "works as usual" do
+        alternative_name = ab_test('link_color', 'red', 'blue')
+        expect{
+          ab_finished('link_color')
+        }.to change(Split::Alternative.new(alternative_name, 'link_color'), :completed_count).by(1)
+      end
+    end
   end
 
   describe 'versioned experiments' do
@@ -774,7 +817,7 @@ describe Split::Helper do
             end
           end
 
-          expect(Split.configuration.db_failover_on_db_error).to receive(:call)
+          expect(Split.configuration.db_failover_on_db_error).to receive(:call).and_call_original
           ab_test('link_color', 'blue', 'red')
         end
 
@@ -833,7 +876,7 @@ describe Split::Helper do
             end
           end
 
-          expect(Split.configuration.db_failover_on_db_error).to receive(:call)
+          expect(Split.configuration.db_failover_on_db_error).to receive(:call).and_call_original
           ab_finished('link_color')
         end
       end

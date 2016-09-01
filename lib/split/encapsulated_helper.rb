@@ -26,21 +26,8 @@ module Split
       end
     end
 
-    def ab_test(*arguments)
-      ret = split_context_shim.ab_test(*arguments)
-      # TODO there must be a better way to pass a block straight
-      # through to the original ab_test
-      if block_given?
-        if defined?(capture) # a block in a rails view
-          block = Proc.new { yield(ret) }
-          concat(capture(ret, &block))
-          false
-        else
-          yield(ret)
-        end
-      else
-        ret
-      end
+    def ab_test(*arguments,&block)
+      split_context_shim.ab_test(*arguments,&block)
     end
 
     private

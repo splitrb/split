@@ -21,7 +21,7 @@ module Split
     def max_experiments_reached?(experiment_key)
       if Split.configuration.allow_multiple_experiments == 'control'
         experiments = active_experiments
-        count_control = experiments.values.count {|v| v == 'control'}
+        count_control = experiments.count {|k,v| k == experiment_key || v == 'control'}
         experiments.size > count_control
       else
         !Split.configuration.allow_multiple_experiments &&
