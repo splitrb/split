@@ -24,7 +24,7 @@ module Split
     attr_accessor :on_before_experiment_delete
     attr_accessor :include_rails_helper
     attr_accessor :beta_probability_simulations
-    attr_accessor :redis_url
+    attr_accessor :redis
 
     attr_reader :experiments
 
@@ -211,7 +211,17 @@ module Split
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
       @beta_probability_simulations = 10000
-      @redis_url = ENV.fetch(ENV.fetch('REDIS_PROVIDER', 'REDIS_URL'), 'localhost:6379')
+      @redis = ENV.fetch(ENV.fetch('REDIS_PROVIDER', 'REDIS_URL'), 'redis://localhost:6379')
+    end
+
+    def redis_url=(value)
+      warn '[DEPRECATED] `redis_url=` is deprecated in favor of `redis=`'
+      self.redis = value
+    end
+
+    def redis_url
+      warn '[DEPRECATED] `redis_url` is deprecated in favor of `redis`'
+      self.redis
     end
 
     private
