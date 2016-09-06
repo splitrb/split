@@ -80,29 +80,15 @@ module Split
       validate!
 
       if new_record?
-        Split.redis.sadd(:experiments, name)
         start unless Split.configuration.start_manually
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-        goals_collection.save
-        save_metadata
-      else
-        existing_alternatives = load_alternatives_from_redis
-        existing_goals = Split::GoalsCollection.new(@name).load_from_redis
-        existing_metadata = load_metadata_from_redis
-        unless existing_alternatives == @alternatives.map(&:name) && existing_goals == @goals && existing_metadata == @metadata
-          reset
-          @alternatives.each(&:delete)
-          goals_collection.delete
-          delete_metadata
-          Split.redis.del(@name)
-          @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name)}
-          goals_collection.save
-          save_metadata
-        end
+      elsif experiment_configuration_has_changed?
+        reset unless Split.configuration.reset_manually
       end
 
-      Split.redis.hset(experiment_config_key, :resettable, resettable)
-      Split.redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
+      persist_experiment_configuration if new_record? || experiment_configuration_has_changed?
+
+      redis.hset(experiment_config_key, :resettable, resettable)
+      redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
       self
     end
 
@@ -115,7 +101,7 @@ module Split
     end
 
     def new_record?
-      !Split.redis.exists(name)
+      !redis.exists(name)
     end
 
     def ==(obj)
@@ -149,7 +135,7 @@ module Split
     end
 
     def winner
-      if w = Split.redis.hget(:experiment_winner, name)
+      if w = redis.hget(:experiment_winner, name)
         Split::Alternative.new(w, name)
       else
         nil
@@ -161,7 +147,7 @@ module Split
     end
 
     def winner=(winner_name)
-      Split.redis.hset(:experiment_winner, name, winner_name.to_s)
+      redis.hset(:experiment_winner, name, winner_name.to_s)
     end
 
     def participant_count
@@ -173,15 +159,15 @@ module Split
     end
 
     def reset_winner
-      Split.redis.hdel(:experiment_winner, name)
+      redis.hdel(:experiment_winner, name)
     end
 
     def start
-      Split.redis.hset(:experiment_start_times, @name, Time.now.to_i)
+      redis.hset(:experiment_start_times, @name, Time.now.to_i)
     end
 
     def start_time
-      t = Split.redis.hget(:experiment_start_times, @name)
+      t = redis.hget(:experiment_start_times, @name)
       if t
         # Check if stored time is an integer
         if t =~ /^[-+]?[0-9]+$/
@@ -205,11 +191,11 @@ module Split
     end
 
     def version
-      @version ||= (Split.redis.get("#{name.to_s}:version").to_i || 0)
+      @version ||= (redis.get("#{name.to_s}:version").to_i || 0)
     end
 
     def increment_version
-      @version = Split.redis.incr("#{name}:version")
+      @version = redis.incr("#{name}:version")
     end
 
     def key
@@ -247,24 +233,21 @@ module Split
     def delete
       Split.configuration.on_before_experiment_delete.call(self)
       if Split.configuration.start_manually
-        Split.redis.hdel(:experiment_start_times, @name)
+        redis.hdel(:experiment_start_times, @name)
       end
-      alternatives.each(&:delete)
       reset_winner
-      Split.redis.srem(:experiments, name)
-      Split.redis.del(name)
-      goals_collection.delete
-      delete_metadata
+      redis.srem(:experiments, name)
+      remove_experiment_configuration
       Split.configuration.on_experiment_delete.call(self)
       increment_version
     end
 
     def delete_metadata
-      Split.redis.del(metadata_key)
+      redis.del(metadata_key)
     end
 
     def load_from_redis
-      exp_config = Split.redis.hgetall(experiment_config_key)
+      exp_config = redis.hgetall(experiment_config_key)
 
       options = {
         resettable: exp_config['resettable'],
@@ -395,11 +378,11 @@ module Split
     end
 
     def calc_time=(time)
-      Split.redis.hset(experiment_config_key, :calc_time, time)
+      redis.hset(experiment_config_key, :calc_time, time)
     end
 
     def calc_time
-      Split.redis.hget(experiment_config_key, :calc_time).to_i
+      redis.hget(experiment_config_key, :calc_time).to_i
     end
 
     def jstring(goal = nil)
@@ -422,7 +405,7 @@ module Split
     end
 
     def load_metadata_from_redis
-      meta = Split.redis.get(metadata_key)
+      meta = redis.get(metadata_key)
       JSON.parse(meta) unless meta.nil?
     end
 
@@ -437,22 +420,49 @@ module Split
     end
 
     def load_alternatives_from_redis
-      case Split.redis.type(@name)
+      case redis.type(@name)
       when 'set' # convert legacy sets to lists
-        alts = Split.redis.smembers(@name)
-        Split.redis.del(@name)
-        alts.reverse.each {|a| Split.redis.lpush(@name, a) }
-        Split.redis.lrange(@name, 0, -1)
+        alts = redis.smembers(@name)
+        redis.del(@name)
+        alts.reverse.each {|a| redis.lpush(@name, a) }
+        redis.lrange(@name, 0, -1)
       else
-        Split.redis.lrange(@name, 0, -1)
+        redis.lrange(@name, 0, -1)
       end
     end
 
-    def save_metadata
-      Split.redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
+    private
+
+    def redis
+      Split.redis
     end
 
-    private
+    def redis_interface
+      RedisInterface.new
+    end
+
+    def persist_experiment_configuration
+      redis_interface.add_to_set(:experiments, name)
+      redis_interface.persist_list(name, @alternatives.map(&:name))
+      goals_collection.save
+      redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
+    end
+
+    def remove_experiment_configuration
+      @alternatives.each(&:delete)
+      goals_collection.delete
+      delete_metadata
+      redis.del(@name)
+    end
+
+    def experiment_configuration_has_changed?
+      existing_alternatives = load_alternatives_from_redis
+      existing_goals = Split::GoalsCollection.new(@name).load_from_redis
+      existing_metadata = load_metadata_from_redis
+      existing_alternatives != @alternatives.map(&:name) ||
+        existing_goals != @goals ||
+        existing_metadata != @metadata
+    end
 
     def goals_collection
       Split::GoalsCollection.new(@name, @goals)

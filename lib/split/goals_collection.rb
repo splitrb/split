@@ -22,7 +22,7 @@ module Split
 
     def save
       return false if @goals.nil?
-      @goals.reverse.each { |goal| Split.redis.lpush(goals_key, goal) }
+      RedisInterface.new.persist_list(goals_key, @goals)
     end
 
     def validate!

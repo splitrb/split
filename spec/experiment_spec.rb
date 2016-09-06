@@ -13,9 +13,7 @@ describe Split::Experiment do
     Split::Alternative.new(color, 'link_color')
   end
 
-  let(:experiment) {
-    new_experiment
-  }
+  let(:experiment) { new_experiment }
 
   let(:blue) { alternative("blue") }
   let(:green) { alternative("green") }
@@ -242,7 +240,15 @@ describe Split::Experiment do
   end
 
   describe 'reset' do
-    before { experiment.save }
+    let(:reset_manually) { false }
+
+    before do
+      allow(Split.configuration).to receive(:reset_manually).and_return(reset_manually)
+      experiment.save
+      green.increment_participation
+      green.increment_participation
+    end
+
     it 'should reset all alternatives' do
       experiment.winner = 'green'
 
@@ -352,6 +358,34 @@ describe Split::Experiment do
       same_experiment_again = same_but_different_alternative
       expect(same_experiment_again.version).to eq(1)
     end
+
+    context 'when experiment configuration is changed' do
+      let(:reset_manually) { false }
+
+      before do
+        experiment.save
+        allow(Split.configuration).to receive(:reset_manually).and_return(reset_manually)
+        green.increment_participation
+        green.increment_participation
+        experiment.set_alternatives_and_options(alternatives: %w(blue red green zip),
+                                                goals: %w(purchase))
+        experiment.save
+      end
+
+      it 'resets all alternatives' do
+        expect(green.participant_count).to eq(0)
+        expect(green.completed_count).to eq(0)
+      end
+
+      context 'when reset_manually is set' do
+        let(:reset_manually) { true }
+
+        it 'does not reset alternatives' do
+          expect(green.participant_count).to eq(2)
+          expect(green.completed_count).to eq(0)
+        end
+      end
+    end
   end
 
   describe 'alternatives passed as non-strings' do
@@ -448,5 +482,4 @@ describe Split::Experiment do
       expect(experiment.calc_winning_alternatives).to be nil
     end
   end
-
 end
