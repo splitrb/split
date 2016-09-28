@@ -73,6 +73,21 @@ describe Split::Dashboard do
     end
   end
 
+  describe "force alternative" do
+    let!(:user) do
+      Split::User.new(@app, { experiment.name => 'a' })
+    end
+
+    before do
+      allow(Split::User).to receive(:new).and_return(user)
+    end
+
+    it "should set current user's alternative" do
+      post "/force_alternative?experiment=#{experiment.name}", alternative: "b"
+      expect(user[experiment.name]).to eq("b")
+    end
+  end
+
   describe "index page" do
     context "with winner" do
       before { experiment.winner = 'red' }

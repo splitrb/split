@@ -51,6 +51,10 @@
           <% if alternative.control? %>
             <em>control</em>
           <% end %>
+          <form action="<%= url('force_alternative') + '?experiment=' + experiment.name %>" method='post'>
+            <input type='hidden' name='alternative' value='<%= h alternative.name %>'>
+            <input type="submit" value="Force for current user" class="green">
+          </form>
         </td>
         <td><%= alternative.participant_count %></td>
         <td><%= alternative.unfinished_count %></td>
