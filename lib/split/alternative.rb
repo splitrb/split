@@ -33,8 +33,7 @@ module Split
 
     def p_winner(goal = nil)
       field = set_prob_field(goal)
-      @p_winner = Split.redis.hget(key, field).to_f
-      return @p_winner
+      Split.redis.hget(key, field).to_f
     end
 
     def set_p_winner(prob, goal = nil)
