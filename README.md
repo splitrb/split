@@ -725,18 +725,22 @@ If you're running multiple, separate instances of Split you may want
 to namespace the keyspaces so they do not overlap. This is not unlike
 the approach taken by many memcached clients.
 
-This feature is provided by the [redis-namespace](https://github.com/defunkt/redis-namespace) library, which
-Split uses by default to separate the keys it manages from other keys
-in your Redis server.
+This feature can be provided by the [redis-namespace](https://github.com/defunkt/redis-namespace)
+library. To configure Split to use `Redis::Namespace`, do the following:
 
-Simply use the `Split.redis.namespace` accessor:
+1. Add `redis-namespace` to your Gemfile:
 
-```ruby
-Split.redis.namespace = "split:blog"
-```
+  ```ruby
+  gem 'redis-namespace'
+  ```
 
-We recommend sticking this in your initializer somewhere after Redis
-is configured.
+2. Configure `Split.redis` to use a `Redis::Namespace` instance (possible in an
+   intializer):
+
+  ```ruby
+  redis = Redis.new(url: ENV['REDIS_URL']) # or whatever config you want
+  Split.redis = Redis::Namespace.new(:your_namespace, redis: redis)
+  ```
 
 ## Outside of a Web Session
 
