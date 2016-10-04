@@ -473,7 +473,12 @@ Split.configure do |config|
 end
 ```
 
-Split looks for the Redis host in the environment variable `REDIS_URL` then defaults to `redis://localhost:6379` if not specified by configure block.
+Split looks for the Redis host in the environment variable `REDIS_URL` then
+defaults to `redis://localhost:6379` if not specified by configure block.
+
+On platforms like Heroku, Split will use the value of `REDIS_PROVIDER` to
+determine which env variable key to use when retrieving the host config. This
+defaults to `REDIS_URL`.
 
 ### Filtering
 
