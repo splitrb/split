@@ -713,7 +713,7 @@ Split has a `redis` setter which can be given a string or a Redis
 object. This means if you're already using Redis in your app, Split
 can re-use the existing connection.
 
-String: `Split.redis = 'localhost:6379'`
+String: `Split.redis = 'redis://localhost:6379'`
 
 Redis: `Split.redis = $redis`
 
@@ -724,11 +724,11 @@ appropriately.
 Here's our `config/split.yml`:
 
 ```yml
-development: localhost:6379
-test: localhost:6379
-staging: redis1.example.com:6379
-fi: localhost:6379
-production: redis1.example.com:6379
+development: redis://localhost:6379
+test: redis://localhost:6379
+staging: redis://redis1.example.com:6379
+fi: redis://localhost:6379
+production: redis://redis1.example.com:6379
 ```
 
 And our initializer:
