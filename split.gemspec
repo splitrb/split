@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'simple-random',   '>= 0.9.3'
 
   s.add_development_dependency 'bundler',     '~> 1.10'
-  s.add_development_dependency 'coveralls',   '~> 0.8'
+  s.add_development_dependency 'simplecov',   '~> 0.12'
   s.add_development_dependency 'rack-test',   '~> 0.6'
   s.add_development_dependency 'rake',        '~> 11.1'
   s.add_development_dependency 'rspec',       '~> 3.4'

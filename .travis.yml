@@ -9,5 +9,8 @@ gemfile:
 before_install:
   - gem install bundler
 
+script:
+  - RAILS_ENV=test bundle exec rake spec && bundle exec codeclimate-test-reporter
+
 cache: bundler
 sudo: false
