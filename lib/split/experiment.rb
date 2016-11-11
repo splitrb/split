@@ -135,8 +135,9 @@ module Split
     end
 
     def winner
-      if w = redis.hget(:experiment_winner, name)
-        Split::Alternative.new(w, name)
+      experiment_winner = redis.hget(:experiment_winner, name)
+      if experiment_winner
+        Split::Alternative.new(experiment_winner, name)
       else
         nil
       end
@@ -171,9 +172,9 @@ module Split
       if t
         # Check if stored time is an integer
         if t =~ /^[-+]?[0-9]+$/
-          t = Time.at(t.to_i)
+          Time.at(t.to_i)
         else
-          t = Time.parse(t)
+          Time.parse(t)
         end
       end
     end
@@ -191,7 +192,7 @@ module Split
     end
 
     def version
-      @version ||= (redis.get("#{name.to_s}:version").to_i || 0)
+      @version ||= (redis.get("#{name}:version").to_i || 0)
     end
 
     def increment_version
@@ -280,8 +281,6 @@ module Split
     end
 
     def estimate_winning_alternative(goal = nil)
-      # TODO - refactor out functionality to work with and without goals
-
       # initialize a hash of beta distributions based on the alternatives' conversion rates
       beta_params = calc_beta_params(goal)
 
@@ -401,7 +400,7 @@ module Split
     end
 
     def load_metadata_from_configuration
-      metadata = Split.configuration.experiment_for(@name)[:metadata]
+      Split.configuration.experiment_for(@name)[:metadata]
     end
 
     def load_metadata_from_redis
