@@ -1,6 +1,28 @@
+## 2.2.0 (November 11th, 2016)
+
+Features:
+
+- Remove dependency on Redis::Namespace (@bschaeffer, #425)
+- Make resetting on experiment change optional (@moggyboy, #430)
+- Add ability to force alternative on dashboard (@ccallebs, #437)
+
+Bugfixes:
+
+- Fix variations reset across page loads for multiple=control and improve coverage (@Vasfed, #432)
+
+Misc:
+
+- Remove Explicit Return (@BradHudson, #441)
+- Update Redis config docs (@bschaeffer, #422)
+- Harden HTTP Basic snippet against timing attacks (@eliotsykes, #443)
+- Removed a couple old ruby 1.8 hacks (@andrew, #456)
+- Run tests on rails 5 (@andrew, #457)
+- Fixed a few codeclimate warnings (@andrew, #458)
+- Use codeclimate for test coverage (@andrew #455)
+
 ## 2.1.0 (August 8th, 2016)
 
-Features
+Features:
 
 - Support REDIS_PROVIDER variable used in Heroku (@kartikluke, #426)
 
