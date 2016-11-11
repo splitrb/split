@@ -30,6 +30,11 @@ module Split
       erb :index
     end
 
+    post '/force_alternative' do
+      Split::User.new(self)[params[:experiment]] = params[:alternative]
+      redirect url('/')
+    end
+
     post '/experiment' do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @alternative = Split::Alternative.new(params[:alternative], params[:experiment])
