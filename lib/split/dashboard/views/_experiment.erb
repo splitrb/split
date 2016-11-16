@@ -5,6 +5,25 @@
 <% end %>
 
 <% experiment.calc_winning_alternatives %>
+<%
+  extra_columns = []
+  experiment.alternatives.each do |alternative|
+    extra_info = alternative.extra_info || {}
+    extra_columns += extra_info.keys
+  end
+
+  extra_columns.uniq!
+  summary_texts = {}
+  extra_columns.each do |column|
+    extra_infos = experiment.alternatives.map(&:extra_info).select{|extra_info| extra_info && extra_info[column] }
+    if extra_infos[0][column].kind_of?(Numeric)
+      summary_texts[column] = extra_infos.inject(0){|sum, extra_info| sum += extra_info[column]}
+    else
+      summary_texts[column] = "N/A"
+    end
+  end
+%>
+
 
 <div class="<%= experiment_class %>" data-name="<%= experiment.name %>" data-complete="<%= experiment.has_winner? %>">
   <div class="experiment-header">
@@ -32,6 +51,9 @@
       <th>Non-finished</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
+      <% extra_columns.each do |column| %>
+        <th><%= column %></th>
+      <% end %>
       <th>
         <form>
           <select id="dropdown-<%=experiment.jstring(goal)%>" name="dropdown-<%=experiment.jstring(goal)%>">
@@ -82,6 +104,9 @@
             });
           });
         </script>
+        <% extra_columns.each do |column| %>
+          <td><%= alternative.extra_info && alternative.extra_info[column] %></td>
+        <% end %>
         <td>
           <div class="box-<%=experiment.jstring(goal)%> confidence-<%=experiment.jstring(goal)%>">
             <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
@@ -90,7 +115,7 @@
           <div class="box-<%=experiment.jstring(goal)%> probability-<%=experiment.jstring(goal)%>">
             <span title="p_winner: <%= round(alternative.p_winner(goal), 3) %>"><%= number_to_percentage(round(alternative.p_winner(goal), 3)) %>%</span>
           </div>
-        </td>        
+        </td>
         <td>
           <% if experiment.has_winner? %>
             <% if experiment.winner.name == alternative.name %>
@@ -118,6 +143,11 @@
       <td><%= total_unfinished %></td>
       <td><%= total_completed %></td>
       <td>N/A</td>
+      <% extra_columns.each do |column| %>
+        <td>
+          <%= summary_texts[column] %>
+        </td>
+      <% end %>
       <td>N/A</td>
       <td>N/A</td>
     </tr>

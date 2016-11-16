@@ -8,6 +8,7 @@ module Split
     attr_accessor :name
     attr_accessor :experiment_name
     attr_accessor :weight
+    attr_accessor :recorded_info
 
     include Zscore
 
@@ -127,10 +128,37 @@ module Split
       z_score = Split::Zscore.calculate(p_a, n_a, p_c, n_c)
     end
 
+    def extra_info
+      data = Split.redis.hget(key, 'recorded_info')
+      if data && data.length > 1
+        begin
+          JSON.parse(data)
+        rescue
+          {}
+        end
+      else
+        {}
+      end
+    end
+
+    def record_extra_info(k, value = 1)
+      @recorded_info = self.extra_info || {}
+
+      if value.kind_of?(Numeric)
+        @recorded_info[k] ||= 0
+        @recorded_info[k] += value
+      else
+        @recorded_info[k] = value
+      end
+
+      Split.redis.hset key, 'recorded_info', (@recorded_info || {}).to_json
+    end
+
     def save
       Split.redis.hsetnx key, 'participant_count', 0
       Split.redis.hsetnx key, 'completed_count', 0
       Split.redis.hsetnx key, 'p_winner', p_winner
+      Split.redis.hsetnx key, 'recorded_info', (@recorded_info || {}).to_json
     end
 
     def validate!
@@ -140,7 +168,7 @@ module Split
     end
 
     def reset
-      Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
+      Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0, 'recorded_info', nil
       unless goals.empty?
         goals.each do |g|
           field = "completed_count:#{g}"
