@@ -130,6 +130,24 @@ module Split
       @metrics
     end
 
+    # TODO: dry (with #metrics)
+    def scores
+      return @scores if defined? @scores
+      @scores = {}
+      if self.experiments
+        self.experiments.each do |experiment_name, experiment_data|
+          scores = value_for(experiment_data, :scores) rescue nil
+          scores.each do |score_name|
+            if score_name
+              @scores[score_name.to_sym] ||= []
+              @scores[score_name.to_sym] << Split::Experiment.new(experiment_name)
+            end
+          end
+        end
+      end
+      @scores
+    end
+
     def normalized_experiments
       return nil if @experiments.nil?
 
@@ -148,7 +166,8 @@ module Split
           goals: value_for(settings, :goals),
           metadata: value_for(settings, :metadata),
           algorithm: value_for(settings, :algorithm),
-          resettable: value_for(settings, :resettable)
+          resettable: value_for(settings, :resettable),
+          scores: value_for(settings, :scores) || []
         }
 
         experiment_data.each do |name, value|

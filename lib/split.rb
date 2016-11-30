@@ -12,6 +12,8 @@
    persistence
    encapsulated_helper
    redis_interface
+   score
+   scores_collection
    trial
    user
    version

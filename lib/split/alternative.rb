@@ -31,6 +31,10 @@ module Split
       self.experiment.goals
     end
 
+    def scores
+      self.experiment.scores
+    end
+
     def p_winner(goal = nil)
       field = set_prob_field(goal)
       @p_winner = Split.redis.hget(key, field).to_f
@@ -64,6 +68,10 @@ module Split
       end
     end
 
+    def score(score_name)
+      Split.redis.hget(key, "score:#{score_name}")
+    end
+
     def unfinished_count
       participant_count - all_completed_count
     end
@@ -92,6 +100,10 @@ module Split
     def increment_completion(goal = nil)
       field = set_field(goal)
       Split.redis.hincrby(key, field, 1)
+    end
+
+    def increment_score(score_name, value = 1)
+      Split.redis.hincrby key, "score:#{score_name}", value
     end
 
     def control?
@@ -147,20 +159,26 @@ module Split
           Split.redis.hset key, field, 0
         end
       end
+      unless scores.empty?
+        scores.each do |s|
+          field = "score:#{s}"
+          Split.redis.hset key, field, 0
+        end
+      end
     end
 
     def delete
       Split.redis.del(key)
     end
 
+    def key
+      "#{experiment_name}:#{name}"
+    end
+
     private
 
     def hash_with_correct_values?(name)
       Hash === name && String === name.keys.first && Float(name.values.first) rescue false
-    end
-
-    def key
-      "#{experiment_name}:#{name}"
     end
   end
 end

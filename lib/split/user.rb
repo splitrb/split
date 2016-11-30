@@ -49,11 +49,11 @@ module Split
     private
 
     def keys_without_experiment(keys, experiment_key)
-      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished|:\\w+:scored)?$")) }
     end
 
     def keys_without_finished(keys)
-      keys.reject { |k| k.include?(":finished") }
+      keys.reject { |k| k.include?(":finished") || k.include?(':scored') }
     end
 
     def key_without_version(key)
