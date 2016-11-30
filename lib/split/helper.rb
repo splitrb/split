@@ -76,6 +76,22 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
+    def score_experiment(experiment, score_name, score_value)
+      return true if experiment.has_winner? || ab_user[experiment.scored_key(score_name)]
+      alternative_name = ab_user[experiment.key]
+      trial = Trial.new(user: ab_user, experiment: experiment, alternative: alternative_name)
+      trial.score!(score_name, score_value)
+      ab_user[experiment.scored_key(score_name)] = true
+    end
+
+    def ab_score(score_name, score_value = 1)
+      return if exclude_visitor? || Split.configuration.disabled?
+      experiments = Score.possible_experiments(score_name)
+      experiments.each do |experiment|
+        score_experiment(experiment, score_name, score_value)
+      end
+    end
+
     def override_present?(experiment_name)
       override_alternative(experiment_name)
     end

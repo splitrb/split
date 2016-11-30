@@ -45,6 +45,11 @@ module Split
       end
     end
 
+    def score!(score_name, score_value = 1)
+      return unless alternative
+      alternative.increment_score(score_name, score_value)
+    end
+
     # Choose an alternative, add a participant, and save the alternative choice on the user. This
     # method is guaranteed to only run once, and will skip the alternative choosing process if run
     # a second time.

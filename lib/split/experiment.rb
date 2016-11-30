@@ -8,6 +8,7 @@ module Split
     attr_accessor :alternatives
     attr_accessor :alternative_probabilities
     attr_accessor :metadata
+    attr_accessor :scores
 
     DEFAULT_OPTIONS = {
       :resettable => true
@@ -26,7 +27,8 @@ module Split
           goals: Split::GoalsCollection.new(@name).load_from_configuration,
           metadata: load_metadata_from_configuration,
           resettable: exp_config[:resettable],
-          algorithm: exp_config[:algorithm]
+          algorithm: exp_config[:algorithm],
+          scores: Split::ScoresCollection.new(@name).load_from_configuration
         }
       else
         options[:alternatives] = alternatives
@@ -45,6 +47,7 @@ module Split
       self.resettable = options[:resettable]
       self.algorithm = options[:algorithm]
       self.metadata = options[:metadata]
+      self.scores = options[:scores]
     end
 
     def extract_alternatives_from_options(options)
@@ -64,6 +67,7 @@ module Split
           options[:metadata] = load_metadata_from_configuration
           options[:resettable] = exp_config[:resettable]
           options[:algorithm] = exp_config[:algorithm]
+          options[:scores] = Split::ScoresCollection.new(@name).load_from_configuration
         end
       end
 
@@ -98,6 +102,7 @@ module Split
       end
       @alternatives.each {|a| a.validate! }
       goals_collection.validate!
+      scores_collection.validate!
     end
 
     def new_record?
@@ -215,6 +220,10 @@ module Split
       self.class.finished_key(key)
     end
 
+    def scored_key(score_name)
+      "#{key}:#{score_name}:scored"
+    end
+
     def metadata_key
       "#{name}:metadata"
     end
@@ -255,7 +264,8 @@ module Split
         algorithm: exp_config['algorithm'],
         alternatives: load_alternatives_from_redis,
         goals: Split::GoalsCollection.new(@name).load_from_redis,
-        metadata: load_metadata_from_redis
+        metadata: load_metadata_from_redis,
+        scores: Split::ScoresCollection.new(@name).load_from_redis
       }
 
       set_alternatives_and_options(options)
@@ -444,12 +454,14 @@ module Split
       redis_interface.add_to_set(:experiments, name)
       redis_interface.persist_list(name, @alternatives.map(&:name))
       goals_collection.save
+      scores_collection.save
       redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
     end
 
     def remove_experiment_configuration
       @alternatives.each(&:delete)
       goals_collection.delete
+      scores_collection.delete
       delete_metadata
       redis.del(@name)
     end
@@ -458,13 +470,20 @@ module Split
       existing_alternatives = load_alternatives_from_redis
       existing_goals = Split::GoalsCollection.new(@name).load_from_redis
       existing_metadata = load_metadata_from_redis
+      existing_scores = Split::ScoresCollection.new(@name).load_from_redis
+
       existing_alternatives != @alternatives.map(&:name) ||
-        existing_goals != @goals ||
-        existing_metadata != @metadata
+      existing_goals != @goals ||
+      existing_metadata != @metadata ||
+      existing_scores != @scores
     end
 
     def goals_collection
       Split::GoalsCollection.new(@name, @goals)
+    end
+
+    def scores_collection
+      Split::ScoresCollection.new(@name, @scores)
     end
   end
 end

@@ -21,6 +21,8 @@ module Split
 
       @metrics = Split::Metric.all
 
+      @scores = Split::Score.all
+
       # Display Rails Environment mode (or Rack version if not using Rails)
       if Object.const_defined?('Rails')
         @current_env = Rails.env.titlecase
