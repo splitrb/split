@@ -274,4 +274,35 @@ describe Split::Alternative do
       expect(control.z_score(goal2)).to eq('N/A')
     end
   end
+
+  describe "extra_info" do
+    it "reads saved value of recorded_info in redis" do
+      saved_recorded_info = {"key_1" => 1, "key_2" => "2"}
+      Split.redis.hset "#{alternative.experiment_name}:#{alternative.name}", 'recorded_info', saved_recorded_info.to_json
+      extra_info = alternative.extra_info
+
+      expect(extra_info).to eql(saved_recorded_info)
+    end
+  end
+
+  describe "record_extra_info" do
+    it "saves key" do
+      alternative.record_extra_info("signup", 1)
+      expect(alternative.extra_info["signup"]).to eql(1)
+    end
+
+    it "adds value to saved key's value second argument is number" do
+      alternative.record_extra_info("signup", 1)
+      alternative.record_extra_info("signup", 2)
+      expect(alternative.extra_info["signup"]).to eql(3)
+    end
+
+    it "sets saved's key value to the second argument if it's a string" do
+      alternative.record_extra_info("signup", "Value 1")
+      expect(alternative.extra_info["signup"]).to eql("Value 1")
+
+      alternative.record_extra_info("signup", "Value 2")
+      expect(alternative.extra_info["signup"]).to eql("Value 2")
+    end
+  end
 end

@@ -76,6 +76,26 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
+    def ab_record_extra_info(metric_descriptor, key, value = 1)
+      return if exclude_visitor? || Split.configuration.disabled?
+      metric_descriptor, goals = normalize_metric(metric_descriptor)
+      experiments = Metric.possible_experiments(metric_descriptor)
+
+      if experiments.any?
+        experiments.each do |experiment|
+          alternative_name = ab_user[experiment.key]
+
+          if alternative_name
+            alternative = experiment.alternatives.find{|alt| alt.name == alternative_name}
+            alternative.record_extra_info(key, value) if alternative
+          end
+        end
+      end
+    rescue => e
+      raise unless Split.configuration.db_failover
+      Split.configuration.db_failover_on_db_error.call(e)
+    end
+
     def override_present?(experiment_name)
       override_alternative(experiment_name)
     end
