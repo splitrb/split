@@ -97,9 +97,13 @@ module Split
       }
     end
 
-    def experiments= experiments
-      raise InvalidExperimentsFormatError.new('Experiments must be a Hash') unless experiments.respond_to?(:keys)
+    def experiments=(experiments)
+      raise InvalidExperimentsFormatError, 'Experiments must be a Hash' unless experiments.respond_to?(:keys)
       @experiments = experiments
+      experiments.keys.each do |experiment_name|
+        Split::ExperimentCatalog.find_or_create(experiment_name)
+      end
+      @experiments
     end
 
     def disabled?
@@ -107,18 +111,22 @@ module Split
     end
 
     def experiment_for(name)
-      if normalized_experiments
-        # TODO symbols
-        normalized_experiments[name.to_sym]
-      end
+      return unless normalized_experiments
+      # TODO: symbols
+      normalized_experiments[name.to_sym]
     end
 
     def metrics
       return @metrics if defined?(@metrics)
       @metrics = {}
-      if self.experiments
-        self.experiments.each do |key, value|
-          metrics = value_for(value, :metric) rescue nil
+      if experiments
+        experiments.each do |key, value|
+          metrics =
+            begin
+              value_for(value, :metric)
+            rescue
+              nil
+            end
           Array(metrics).each do |metric_name|
             if metric_name
               @metrics[metric_name.to_sym] ||= []
@@ -129,6 +137,33 @@ module Split
       end
       @metrics
     end
+
+    def scores
+      return @scores if defined?(@scores)
+      @scores = {}
+      if experiments
+        experiments.each do |experiment_name, experiment_data|
+          scores =
+            begin
+              value_for(experiment_data, :scores)
+            rescue
+              nil
+            end
+          scores.each do |score_name|
+            if score_name
+              @scores[score_name] ||= []
+              @scores[score_name] << Split::ExperimentCatalog.find_or_create(experiment_name)
+            end
+          end
+        end
+      end
+      @scores
+    end
+
+    DEFAULT_OPTIONS = {
+      resettable: true,
+      scores: []
+    }.freeze
 
     def normalized_experiments
       return nil if @experiments.nil?
@@ -148,11 +183,13 @@ module Split
           goals: value_for(settings, :goals),
           metadata: value_for(settings, :metadata),
           algorithm: value_for(settings, :algorithm),
-          resettable: value_for(settings, :resettable)
+          resettable: value_for(settings, :resettable),
+          scores: value_for(settings, :scores)
         }
 
         experiment_data.each do |name, value|
-          experiment_config[experiment_name.to_sym][name] = value if value != nil
+          value = DEFAULT_OPTIONS[name] if value.nil?
+          experiment_config[experiment_name.to_sym][name] = value unless value.nil?
         end
       end
 
@@ -160,9 +197,9 @@ module Split
     end
 
     def normalize_alternatives(alternatives)
-      given_probability, num_with_probability = alternatives.inject([0,0]) do |a,v|
+      given_probability, num_with_probability = alternatives.inject([0, 0]) do |a, v|
         p, n = a
-        if percent = value_for(v, :percent)
+        if (percent = value_for(v, :percent))
           [p + percent, n + 1]
         else
           a
@@ -176,18 +213,16 @@ module Split
         alternatives = alternatives.map do |v|
           if (name = value_for(v, :name)) && (percent = value_for(v, :percent))
             { name => percent / 100.0 }
-          elsif name = value_for(v, :name)
+          elsif (name = value_for(v, :name))
             { name => unassigned_probability }
           else
             { v => unassigned_probability }
           end
         end
-
-        [alternatives.shift, alternatives]
       else
         alternatives = alternatives.dup
-        [alternatives.shift, alternatives]
       end
+      [alternatives.shift, alternatives]
     end
 
     def robot_regex
@@ -196,22 +231,22 @@ module Split
 
     def initialize
       @ignore_ip_addresses = []
-      @ignore_filter = proc{ |request| is_robot? || is_ignored_ip_address? }
+      @ignore_filter = proc { |_request| is_robot? || is_ignored_ip_address? }
       @db_failover = false
-      @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
-      @on_experiment_reset = proc{|experiment|}
-      @on_experiment_delete = proc{|experiment|}
-      @on_before_experiment_reset = proc{|experiment|}
-      @on_before_experiment_delete = proc{|experiment|}
+      @db_failover_on_db_error = proc { |error| } # e.g. use Rails logger here
+      @on_experiment_reset = proc { |experiment| }
+      @on_experiment_delete = proc { |experiment| }
+      @on_before_experiment_reset = proc { |experiment| }
+      @on_before_experiment_delete = proc { |experiment| }
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true
       @experiments = {}
       @persistence = Split::Persistence::SessionAdapter
-      @persistence_cookie_length = 31536000 # One year from now
+      @persistence_cookie_length = 31_536_000 # One year from now
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
-      @beta_probability_simulations = 10000
+      @beta_probability_simulations = 10_000
       @redis = ENV.fetch(ENV.fetch('REDIS_PROVIDER', 'REDIS_URL'), 'redis://localhost:6379')
     end
 
@@ -222,15 +257,14 @@ module Split
 
     def redis_url
       warn '[DEPRECATED] `redis_url` is deprecated in favor of `redis`'
-      self.redis
+      redis
     end
 
     private
 
     def value_for(hash, key)
-      if hash.kind_of?(Hash)
-        hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
-      end
+      return unless hash.is_a?(Hash)
+      hash.key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
     end
 
     def escaped_bots

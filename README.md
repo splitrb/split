@@ -649,6 +649,65 @@ Split::Metric.new(:my_metric)
 Split::Metric.save
 ```
 
+#### Scores
+
+You can also track generic values alongside each alternatives. You can use the
+configuration hash to do this with the `:scores` option:
+
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    my_first_experiment: {
+      alternatives: ["alt_one", "alt_two"],
+      scores: ["score_one", "score_two"]
+    },
+    my_second_experiment: {
+      alternatives: ["alt_three", "alt_four"],
+      scores: ["score_one", "score_three"]
+    }
+  }
+end
+```
+
+Consider the case when you want to track specific value to each of the ongoing
+experiments, you can do so by calling:
+
+```ruby
+ab_score('score_one', 100)
+```
+in a session where the user enrolls to `my_first_experiment` and `my_second_experiment`
+simultaneously, each alternative chosen on both experiment will then has its score
+`score_one` incremented by 100. These scores are also being displayed on split
+dashboard.
+
+You can also give a score but only add the value at later point:
+
+```ruby
+# in a controller
+ab_add_delayed_score('score_one', 'product_123', 100, 60)
+
+# anywhere in the code
+ab_apply_delayed_score('score_one', 'product_123')
+```
+`ab_add_delayed_score` will keep track of the score and current running experiments
+(without actually adding the value to the total score yet), and `ab_apply_delayed_score`
+will then add the value to each tracked alternatives. From left to right, the
+parameters for `ab_add_delayed_score` are:
+- 'score_one' - String, the name of the score
+- 'product_123' - String, identifier for the delayed score
+- 100 - Integer, the value of the score (optional, default: 1)
+- 60 - Integer, the TTL in seconds for the delayed score before it's deleted from
+database and can't be applied afterwards. (optional, default: 1 day)
+
+Only the first 2 parameters are used for `ab_apply_delayed_score`
+
+It is also possible to directly add a score to an alternative without being in a
+web session:
+
+```ruby
+Split::Helper.ab_score_alternative(:my_first_experiment, "alt_one", "score_one", 100)
+```
+
 #### Goals
 
 You might wish to allow an experiment to have multiple, distinguishable goals.

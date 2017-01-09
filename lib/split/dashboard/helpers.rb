@@ -6,14 +6,14 @@ module Split
     end
 
     def url(*path_parts)
-      [ path_prefix, path_parts ].join("/").squeeze('/')
+      [path_prefix, path_parts].join('/').squeeze('/')
     end
 
     def path_prefix
       request.env['SCRIPT_NAME']
     end
 
-    def number_to_percentage(number, precision = 2)
+    def number_to_percentage(number, _precision = 2)
       round(number * 100)
     end
 
@@ -35,7 +35,15 @@ module Split
       else
         'Insufficient confidence'
       end
+    end
 
+    # Display Rails Environment mode (or Rack version if not using Rails)
+    def current_env
+      if Object.const_defined?('Rails')
+        Rails.env.titlecase
+      else
+        "Rack: #{Rack.version}"
+      end
     end
   end
 end

@@ -15,8 +15,8 @@ module Split
 
         def arm_guess(participants, completions)
           a = [participants, 0].max
-          b = [participants-completions, 0].max
-          s = SimpleRandom.new; s.set_seed; s.beta(a+fairness_constant, b+fairness_constant)
+          b = [participants - completions, 0].max
+          s = SimpleRandom.new; s.set_seed; s.beta(a + fairness_constant, b + fairness_constant)
         end
 
         def best_guess(alternatives)
@@ -25,7 +25,7 @@ module Split
             guesses[alternative.name] = arm_guess(alternative.participant_count, alternative.all_completed_count)
           end
           gmax = guesses.values.max
-          best = guesses.keys.select { |name| guesses[name] ==  gmax }
+          best = guesses.keys.select { |name| guesses[name] == gmax }
           best.sample
         end
 

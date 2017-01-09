@@ -5,35 +5,27 @@ module Split
     attr_accessor :experiments
 
     def initialize(attrs = {})
-      attrs.each do |key,value|
-        if self.respond_to?("#{key}=")
-          self.send("#{key}=", value)
-        end
+      attrs.each do |key, value|
+        send("#{key}=", value) if respond_to?("#{key}=")
       end
     end
 
     def self.load_from_redis(name)
       metric = Split.redis.hget(:metrics, name)
-      if metric
-        experiment_names = metric.split(',')
+      return unless metric
 
-        experiments = experiment_names.collect do |experiment_name|
-          Split::ExperimentCatalog.find(experiment_name)
-        end
-
-        Split::Metric.new(:name => name, :experiments => experiments)
-      else
-        nil
+      experiment_names = metric.split(',')
+      experiments = experiment_names.collect do |experiment_name|
+        Split::ExperimentCatalog.find(experiment_name)
       end
+
+      Split::Metric.new(name: name, experiments: experiments)
     end
 
     def self.load_from_configuration(name)
       metrics = Split.configuration.metrics
-      if metrics && metrics[name]
-        Split::Metric.new(:experiments => metrics[name], :name => name)
-      else
-        nil
-      end
+      return unless metrics && metrics[name]
+      Split::Metric.new(experiments: metrics[name], name: name)
     end
 
     def self.find(name)
@@ -53,7 +45,7 @@ module Split
     end
 
     def self.all
-      redis_metrics = Split.redis.hgetall(:metrics).collect do |key, value|
+      redis_metrics = Split.redis.hgetall(:metrics).collect do |key, _value|
         find(key)
       end
       configuration_metrics = Split.configuration.metrics.collect do |key, value|
@@ -64,14 +56,10 @@ module Split
 
     def self.possible_experiments(metric_name)
       experiments = []
-      metric  = Split::Metric.find(metric_name)
-      if metric
-        experiments << metric.experiments
-      end
+      metric = Split::Metric.find(metric_name)
+      experiments << metric.experiments if metric
       experiment = Split::ExperimentCatalog.find(metric_name)
-      if experiment
-        experiments << experiment
-      end
+      experiments << experiment if experiment
       experiments.flatten
     end
 
@@ -80,22 +68,19 @@ module Split
     end
 
     def complete!
-      experiments.each do |experiment|
-        experiment.complete!
-      end
+      experiments.each(&:complete!)
     end
 
     def self.normalize_metric(label)
-      if Hash === label
+      if label.is_a?(Hash)
         metric_name = label.keys.first
         goals = label.values.first
       else
         metric_name = label
         goals = []
       end
-      return metric_name, goals
+      [metric_name, goals]
     end
     private_class_method :normalize_metric
-
   end
 end

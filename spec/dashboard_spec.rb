@@ -42,11 +42,11 @@ describe Split::Dashboard do
     context "experiment without goals" do
       it "should display a Start button" do
         experiment
-        get '/'
+        get "experiments/#{experiment.name}"
         expect(last_response.body).to include('Start')
 
         post "/start?experiment=#{experiment.name}"
-        get '/'
+        get "experiments/#{experiment.name}"
         expect(last_response.body).to include('Reset Data')
         expect(last_response.body).not_to include('Metrics:')
       end
@@ -55,7 +55,7 @@ describe Split::Dashboard do
     context "experiment with metrics" do
       it "should display the names of associated metrics" do
         metric
-        get '/'
+        get "/experiments/#{experiment.name}"
         expect(last_response.body).to include('Metrics:testmetric')
       end
     end
@@ -63,11 +63,11 @@ describe Split::Dashboard do
     context "with goals" do
       it "should display a Start button" do
         experiment_with_goals
-        get '/'
+        get "/experiments/#{experiment.name}"
         expect(last_response.body).to include('Start')
 
         post "/start?experiment=#{experiment.name}"
-        get '/'
+        get "/experiments/#{experiment.name}"
         expect(last_response.body).to include('Reset Data')
       end
     end
@@ -93,15 +93,14 @@ describe Split::Dashboard do
       before { experiment.winner = 'red' }
 
       it "displays `Reopen Experiment` button" do
-        get '/'
-
+        get "/experiments/#{experiment.name}"
         expect(last_response.body).to include('Reopen Experiment')
       end
     end
 
     context "without winner" do
       it "should not display `Reopen Experiment` button" do
-        get '/'
+        get "/experiments/#{experiment.name}"
 
         expect(last_response.body).to_not include('Reopen Experiment')
       end
@@ -171,7 +170,7 @@ describe Split::Dashboard do
     expect(Time).to receive(:now).at_least(:once).and_return(experiment_start_time)
     experiment
 
-    get '/'
+    get "/experiments/#{experiment.name}"
 
     expect(last_response.body).to include('<small>2011-07-07</small>')
   end
@@ -182,7 +181,7 @@ describe Split::Dashboard do
 
     Split.redis.hdel(:experiment_start_times, experiment.name)
 
-    get '/'
+    get "/experiments/#{experiment.name}"
 
     expect(last_response.body).to include('<small>Unknown</small>')
   end

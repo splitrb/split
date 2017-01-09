@@ -12,7 +12,6 @@
 #
 module Split
   module EncapsulatedHelper
-
     class ContextShim
       include Split::Helper
       public :ab_test, :ab_finished
@@ -26,8 +25,8 @@ module Split
       end
     end
 
-    def ab_test(*arguments,&block)
-      split_context_shim.ab_test(*arguments,&block)
+    def ab_test(*arguments, &block)
+      split_context_shim.ab_test(*arguments, &block)
     end
 
     private

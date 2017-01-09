@@ -1,21 +1,43 @@
 <% if @experiments.any? %>
-  <p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
+  <p class="intro">The list below contains all the registered experiments.</p>
 
   <input type="text" placeholder="Begin typing to filter" id="filter" />
   <input type="button" id="toggle-completed" value="Hide completed" />
   <input type="button" id="toggle-active" value="Hide active" />
   <input type="button" id="clear-filter" value="Clear filters" />
 
-  <% @experiments.each do |experiment| %>
-    <% if experiment.goals.empty? %>
-      <%= erb :_experiment, :locals => {:goal => nil, :experiment => experiment} %>
+  <div class="experiment" data-complete="false">
+    <div class="experiment-header">
+      <h2>Active Experiments</h2>
+    </div>
+    <% unless @experiments.first.first&.has_winner? %>
+      <table>
+        <% @experiments.first.each do |experiment| %>
+          <tr class="experiment" data-name="<%= experiment.name %>">
+            <td><a href="<%= url "/experiments/#{experiment.name}" %>"><%= experiment.name %></a></td>
+          </tr>
+        <% end %>
+      </table>
     <% else %>
-      <%= erb :_experiment_with_goal_header, :locals => {:experiment => experiment} %>
-      <% experiment.goals.each do |g| %>
-        <%= erb :_experiment, :locals => {:goal => g, :experiment => experiment} %>
-      <% end %>
+      <p class="intro">No currently active experiments.</p>
     <% end %>
-  <% end %>
+  </div>
+  <div class="experiment" data-complete="true">
+    <div class="experiment-header">
+      <h2>Completed Experiments</h2>
+    </div>
+    <% if @experiments.last.first&.has_winner? %>
+      <table>
+        <% @experiments.last.each do |experiment| %>
+          <tr class="experiment" data-name="<%= experiment.name %>">
+            <td><a href="<%= url "/experiments/#{experiment.name}" %>"><%= experiment.name %></a></td>
+          </trl>
+        <% end %>
+      </table>
+    <% else %>
+      <p class="intro">No currently completed experiments.</p>
+    <% end %>
+  </div>
 <% else %>
   <p class="intro">No experiments have started yet, you need to define them in your code and introduce them to your users.</p>
   <p class="intro">Check out the <a href='https://github.com/splitrb/split#readme'>Readme</a> for more help getting started.</p>

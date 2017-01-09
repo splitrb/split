@@ -1,7 +1,6 @@
 module Split
   class GoalsCollection
-
-    def initialize(experiment_name, goals=nil)
+    def initialize(experiment_name, goals = nil)
       @experiment_name = experiment_name
       @goals = goals
     end
@@ -14,7 +13,7 @@ module Split
       goals = Split.configuration.experiment_for(@experiment_name)[:goals]
 
       if goals.nil?
-        goals = []
+        []
       else
         goals.flatten
       end
@@ -26,9 +25,8 @@ module Split
     end
 
     def validate!
-      unless @goals.nil? || @goals.kind_of?(Array)
-        raise ArgumentError, 'Goals must be an array'
-      end
+      return if @goals.nil? || @goals.is_a?(Array)
+      raise ArgumentError, 'Goals must be an array'
     end
 
     def delete

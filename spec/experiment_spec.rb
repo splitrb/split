@@ -5,8 +5,8 @@ require 'split/algorithms'
 require 'time'
 
 describe Split::Experiment do
-  def new_experiment(goals=[])
-    Split::Experiment.new('link_color', :alternatives => ['blue', 'red', 'green'], :goals => goals)
+  def new_experiment(goals = [], scores = [])
+    Split::Experiment.new('link_color', :alternatives => ['blue', 'red', 'green'], :goals => goals, scores: scores)
   end
 
   def alternative(color)
@@ -35,6 +35,10 @@ describe Split::Experiment do
 
     it "should be resettable by default" do
       expect(experiment.resettable).to be_truthy
+    end
+
+    it 'should have empty (Array) scores by default' do
+      expect(experiment.scores).to be_empty
     end
 
     it "should save to redis" do
@@ -443,6 +447,29 @@ describe Split::Experiment do
         expect(experiment.goals).to eq(["purchase", "refund"])
         experiment = Split::ExperimentCatalog.find_or_create('link_color3', 'blue', 'red', 'green')
         expect(experiment.goals).to eq([])
+      end
+    end
+  end
+
+  describe 'specifying scores' do
+    let(:experiment) {
+      new_experiment([], ['score1'])
+    }
+
+    context 'when saving with different scores' do
+      def same_but_different_scores
+        Split::Experiment.new('link_color', alternatives: ['blue', 'red', 'green'], goals: [], scores: ['score2']).save
+      end
+
+      it 'should reset an experiment' do
+        same_but_different_scores
+        expect(experiment.scores.count).to eq 1
+        expect(Split::ExperimentCatalog.find('link_color').scores).to include 'score2'
+      end
+
+      it 'should have scores' do
+        expect(experiment.scores.count).to eq 1
+        expect(experiment.scores).to include 'score1'
       end
     end
   end

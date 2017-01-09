@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-%w[algorithms
+%w(algorithms
    alternative
    configuration
    exceptions
@@ -12,10 +12,12 @@
    persistence
    encapsulated_helper
    redis_interface
+   score
+   scores_collection
    trial
    user
    version
-   zscore].each do |f|
+   zscore).each do |f|
   require "split/#{f}"
 end
 
@@ -32,24 +34,25 @@ module Split
   #      this will be an instance of either `Redis`, `Redis::Client`,
   #      `Redis::DistRedis`, or `Redis::Namespace`.
   def redis=(server)
-    @redis = if server.is_a?(String)
-      Redis.new(:url => server, :thread_safe => true)
-    elsif server.is_a?(Hash)
-      Redis.new(server.merge(:thread_safe => true))
-    elsif server.respond_to?(:smembers)
-      server
-    else
-      raise ArgumentError,
-        "You must supply a url, options hash or valid Redis connection instance"
-    end
+    @redis =
+      if server.is_a?(String)
+        Redis.new(url: server, thread_safe: true)
+      elsif server.is_a?(Hash)
+        Redis.new(server.merge(thread_safe: true))
+      elsif server.respond_to?(:smembers)
+        server
+      else
+        raise ArgumentError,
+              'You must supply a url, options hash or valid Redis connection instance'
+      end
   end
 
   # Returns the current Redis connection. If none has been created, will
   # create a new one.
   def redis
     return @redis if @redis
-    self.redis = self.configuration.redis
-    self.redis
+    self.redis = configuration.redis
+    redis
   end
 
   # Call this method to modify defaults in your initializers.

@@ -2,78 +2,110 @@
 require 'spec_helper'
 
 describe Split::Configuration do
+  before(:each) { @config = Split.configuration }
 
-  before(:each) { @config = Split::Configuration.new }
-
-  it "should provide a default value for ignore_ip_addresses" do
+  it 'should provide a default value for ignore_ip_addresses' do
     expect(@config.ignore_ip_addresses).to eq([])
   end
 
-  it "should provide default values for db failover" do
+  it 'should provide default values for db failover' do
     expect(@config.db_failover).to be_falsey
     expect(@config.db_failover_on_db_error).to be_a Proc
   end
 
-  it "should not allow multiple experiments by default" do
+  it 'should not allow multiple experiments by default' do
     expect(@config.allow_multiple_experiments).to be_falsey
   end
 
-  it "should be enabled by default" do
+  it 'should be enabled by default' do
     expect(@config.enabled).to be_truthy
   end
 
-  it "disabled is the opposite of enabled" do
+  it 'disabled is the opposite of enabled' do
     @config.enabled = false
     expect(@config.disabled?).to be_truthy
   end
 
-  it "should not store the overridden test group per default" do
+  it 'should not store the overridden test group per default' do
     expect(@config.store_override).to be_falsey
   end
 
-  it "should provide a default pattern for robots" do
-    %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg YandexBot AdsBot-Google Wget curl bitlybot facebookexternalhit spider].each do |robot|
+  it 'should provide a default pattern for robots' do
+    %w(Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg YandexBot AdsBot-Google Wget curl bitlybot facebookexternalhit spider).each do |robot|
       expect(@config.robot_regex).to match(robot)
     end
 
-    expect(@config.robot_regex).to match("EventMachine HttpClient")
-    expect(@config.robot_regex).to match("libwww-perl/5.836")
-    expect(@config.robot_regex).to match("Pingdom.com_bot_version_1.4_(http://www.pingdom.com)")
+    expect(@config.robot_regex).to match('EventMachine HttpClient')
+    expect(@config.robot_regex).to match('libwww-perl/5.836')
+    expect(@config.robot_regex).to match('Pingdom.com_bot_version_1.4_(http://www.pingdom.com)')
 
-    expect(@config.robot_regex).to match(" - ")
+    expect(@config.robot_regex).to match(' - ')
   end
 
-  it "should accept real UAs with the robot regexp" do
-    expect(@config.robot_regex).not_to match("Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.4) Gecko/20091017 SeaMonkey/2.0")
-    expect(@config.robot_regex).not_to match("Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; F-6.0SP2-20041109; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 1.1.4322; InfoPath.3)")
+  it 'should accept real UAs with the robot regexp' do
+    expect(@config.robot_regex).not_to match('Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.4) Gecko/20091017 SeaMonkey/2.0')
+    expect(@config.robot_regex).not_to match('Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; F-6.0SP2-20041109; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022; .NET CLR 1.1.4322; InfoPath.3)')
   end
 
-  it "should allow adding a bot to the bot list" do
-    @config.bots["newbot"] = "An amazing test bot"
-    expect(@config.robot_regex).to match("newbot")
+  it 'should allow adding a bot to the bot list' do
+    @config.bots['newbot'] = 'An amazing test bot'
+    expect(@config.robot_regex).to match('newbot')
   end
 
-  it "should use the session adapter for persistence by default" do
+  it 'should use the session adapter for persistence by default' do
     expect(@config.persistence).to eq(Split::Persistence::SessionAdapter)
   end
 
-  it "should load a metric" do
-    @config.experiments = {:my_experiment=>
-        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
+  it 'should load a metric' do
+    @config.experiments = { my_experiment: { alternatives: %w(control_opt other_opt), metric: :my_metric } }
 
     expect(@config.metrics).not_to be_nil
     expect(@config.metrics.keys).to eq([:my_metric])
   end
 
-  it "should allow loading of experiment using experment_for" do
-    @config.experiments = {:my_experiment=>
-        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
-    expect(@config.experiment_for(:my_experiment)).to eq({:alternatives=>["control_opt", ["other_opt"]]})
+  describe '#scores' do
+    it 'should load the scores' do
+      @config.experiments = {
+        my_experiment: {
+          alternatives: %w(alt1 alt2),
+          scores: ['score1']
+        }
+      }
+
+      expect(@config.scores).not_to be_nil
+      expect(@config.scores.keys).to include 'score1'
+      expect(@config.scores['score1']).to include Split::ExperimentCatalog.find :my_experiment
+    end
+
+    it 'should map each score to experiments defined with it' do
+    end
+
+    context 'when an experiment is reset' do
+      it 'should reflect the changes the experiment mapped by a score' do
+        @config.experiments = {
+          my_experiment: {
+            alternatives: %w(alt1 alt2),
+            scores: ['score1']
+          }
+        }
+
+        experiment = Split::ExperimentCatalog.find_or_create(:my_experiment)
+        @config.scores['score1'].first.key # trigger memoization
+        experiment.reset
+        expect(@config.scores['score1'].first.key).to eq(experiment.key)
+      end
+    end
   end
 
-  context "when experiments are defined via YAML" do
-    context "as strings" do
-      context "in a basic configuration" do
+  it 'should allow loading of experiment using experment_for' do
+    @config.experiments = { my_experiment: { alternatives: %w(control_opt other_opt), metric: :my_metric } }
+    default_options = @config.class::DEFAULT_OPTIONS
+    expect(@config.experiment_for(:my_experiment)).to eq(default_options.merge(alternatives: ['control_opt', ['other_opt']]))
+  end
+
+  context 'when experiments are defined via YAML' do
+    context 'as strings' do
+      context 'in a basic configuration' do
         before do
           experiments_yaml = <<-eos
             my_experiment:
@@ -87,11 +119,12 @@ describe Split::Configuration do
         end
 
         it 'should normalize experiments' do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
+          default_options = @config.class::DEFAULT_OPTIONS
+          expect(@config.normalized_experiments).to eq(my_experiment: default_options.merge(resettable: false, alternatives: ['Control Opt', ['Alt One', 'Alt Two']]))
         end
       end
 
-      context "in a configuration with metadata" do
+      context 'in a configuration with metadata' do
         before do
           experiments_yaml = <<-eos
             my_experiment:
@@ -121,7 +154,7 @@ describe Split::Configuration do
         end
       end
 
-      context "in a complex configuration" do
+      context 'in a complex configuration' do
         before do
           experiments_yaml = <<-eos
             my_experiment:
@@ -134,30 +167,63 @@ describe Split::Configuration do
                   percent: 23
               resettable: false
               metric: my_metric
+              scores:
+                - score1
+                - score2
             another_experiment:
               alternatives:
                 - a
                 - b
+              scores:
+                - score1
+                - score3
             eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
-        it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>[{"Control Opt"=>0.67},
-            [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, :another_experiment=>{:alternatives=>["a", ["b"]]}})
+        it 'should normalize experiments' do
+          default_options = @config.class::DEFAULT_OPTIONS
+          expect(@config.normalized_experiments).to eq(
+            my_experiment: default_options.merge(
+              resettable: false,
+              alternatives: [
+                { 'Control Opt' => 0.67 },
+                [
+                  { 'Alt One' => 0.1 },
+                  { 'Alt Two' => 0.23 }
+                ]
+              ],
+              scores: %w(score1 score2)
+            ),
+            another_experiment: default_options.merge(
+              alternatives: ['a', ['b']],
+              scores: %w(score1 score3)
+            )
+          )
         end
 
-        it "should recognize metrics" do
+        it 'should recognize metrics' do
           expect(@config.metrics).not_to be_nil
           expect(@config.metrics.keys).to eq([:my_metric])
         end
 
+        it 'should recognize scores' do
+          exp1 = Split::ExperimentCatalog.find(:my_experiment)
+          exp2 = Split::ExperimentCatalog.find(:another_experiment)
+          expect(@config.scores).not_to be_nil
+          expect(@config.scores.keys).to eq(%w(score1 score2 score3))
+          expect(@config.scores['score1'].count).to eq 2
+          expect(@config.scores['score1']).to include(exp1, exp2)
+          expect(@config.scores['score2'].count).to eq 1
+          expect(@config.scores['score2']).to include(exp1)
+          expect(@config.scores['score3'].count).to eq 1
+          expect(@config.scores['score3']).to include(exp2)
+        end
       end
     end
 
-    context "as symbols" do
-
-      context "with valid YAML" do
+    context 'as symbols' do
+      context 'with valid YAML' do
         before do
           experiments_yaml = <<-eos
             :my_experiment:
@@ -170,27 +236,27 @@ describe Split::Configuration do
           @config.experiments = YAML.load(experiments_yaml)
         end
 
-        it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
+        it 'should normalize experiments' do
+          default_options = @config.class::DEFAULT_OPTIONS
+          expect(@config.normalized_experiments).to eq(my_experiment: default_options.merge(resettable: false, alternatives: ['Control Opt', ['Alt One', 'Alt Two']]))
         end
       end
 
-      context "with invalid YAML" do
-
+      context 'with invalid YAML' do
         let(:yaml) { YAML.load(input) }
 
-        context "with an empty string" do
+        context 'with an empty string' do
           let(:input) { '' }
 
-          it "should raise an error" do
+          it 'should raise an error' do
             expect { @config.experiments = yaml }.to raise_error(Split::InvalidExperimentsFormatError)
           end
         end
 
-        context "with just the YAML header" do
+        context 'with just the YAML header' do
           let(:input) { '---' }
 
-          it "should raise an error" do
+          it 'should raise an error' do
             expect { @config.experiments = yaml }.to raise_error(Split::InvalidExperimentsFormatError)
           end
         end
@@ -198,18 +264,19 @@ describe Split::Configuration do
     end
   end
 
-  it "should normalize experiments" do
+  it 'should normalize experiments' do
     @config.experiments = {
-      :my_experiment => {
-        :alternatives => [
-          { :name => "control_opt", :percent => 67 },
-          { :name => "second_opt", :percent => 10 },
-          { :name => "third_opt", :percent => 23 },
-        ],
+      my_experiment: {
+        alternatives: [
+          { name: 'control_opt', percent: 67 },
+          { name: 'second_opt', percent: 10 },
+          { name: 'third_opt', percent: 23 }
+        ]
       }
     }
 
-    expect(@config.normalized_experiments).to eq({:my_experiment=>{:alternatives=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}})
+    default_options = @config.class::DEFAULT_OPTIONS
+    expect(@config.normalized_experiments).to eq(my_experiment: default_options.merge(alternatives: [{ 'control_opt' => 0.67 }, [{ 'second_opt' => 0.1 }, { 'third_opt' => 0.23 }]]))
   end
 
   context 'redis_url configuration [DEPRECATED]' do
@@ -226,33 +293,32 @@ describe Split::Configuration do
     end
   end
 
-  context "redis configuration" do
-    it "should default to local redis server" do
-      expect(@config.redis).to eq("redis://localhost:6379")
+  context 'redis configuration' do
+    it 'should default to local redis server' do
+      expect(@config.redis).to eq('redis://localhost:6379')
     end
 
-    it "should allow for redis url to be configured" do
-      @config.redis = "custom_redis_url"
-      expect(@config.redis).to eq("custom_redis_url")
+    it 'should allow for redis url to be configured' do
+      @config.redis = 'custom_redis_url'
+      expect(@config.redis).to eq('custom_redis_url')
     end
 
-    context "provided REDIS_URL environment variable" do
-      it "should use the ENV variable" do
-        ENV['REDIS_URL'] = "env_redis_url"
-        expect(Split::Configuration.new.redis).to eq("env_redis_url")
+    context 'provided REDIS_URL environment variable' do
+      it 'should use the ENV variable' do
+        ENV['REDIS_URL'] = 'env_redis_url'
+        expect(Split::Configuration.new.redis).to eq('env_redis_url')
       end
     end
   end
 
-  context "persistence cookie length" do
-    it "should default to 1 year" do
-      expect(@config.persistence_cookie_length).to eq(31536000)
+  context 'persistence cookie length' do
+    it 'should default to 1 year' do
+      expect(@config.persistence_cookie_length).to eq(31_536_000)
     end
 
-    it "should allow the persistence cookie length to be configured" do
-      @config.persistence_cookie_length = 2592000
-      expect(@config.persistence_cookie_length).to eq(2592000)
+    it 'should allow the persistence cookie length to be configured' do
+      @config.persistence_cookie_length = 2_592_000
+      expect(@config.persistence_cookie_length).to eq(2_592_000)
     end
   end
-
 end

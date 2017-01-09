@@ -8,7 +8,7 @@ module Split
         total = weights.inject(:+)
         point = rand * total
 
-        experiment.alternatives.zip(weights).each do |n,w|
+        experiment.alternatives.zip(weights).each do |n, w|
           return n if w >= point
           point -= w
         end

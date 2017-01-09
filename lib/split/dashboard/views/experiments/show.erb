@@ -1,0 +1,9 @@
+<% experiment = @experiment %>
+<% if experiment.goals.empty? %>
+  <%= erb :'experiments/_experiment', :locals => {:goal => nil, :experiment => experiment} %>
+<% else %>
+  <%= erb :'experiments/_experiment_with_goal_header', :locals => {:experiment => experiment} %>
+  <% experiment.goals.each do |g| %>
+    <%= erb :'experiments/_experiment', :locals => {:goal => g, :experiment => experiment} %>
+  <% end %>
+<% end %>
