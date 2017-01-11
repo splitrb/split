@@ -10,6 +10,34 @@ describe Split::Helper do
     Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'red')
   end
 
+  describe '.with_user' do
+    let(:original_user) { double('original_user', id: 1) }
+    let(:given_user) { double('given_user', id: 2) }
+
+    before(:example) do
+      allow(original_user).to receive(:try).with(Symbol) { |method_name| original_user.send(method_name) }
+      allow(given_user).to receive(:try).with(Symbol) { |method_name| given_user.send(method_name) }
+      define_singleton_method(:current_user) { original_user }
+    end
+
+    it 'should temporarily replace current_user with given user' do
+      expect(current_user.id).to eq(1)
+      with_user(given_user) do
+        expect(current_user.id).to eq(2)
+      end
+      expect(current_user.id).to eq(1)
+    end
+
+    it 'should temporarily use redis adapter as current user persistence scheme' do
+      expect(ab_user.user.class.name).to eq('Split::Persistence::SessionAdapter')
+      with_user(given_user) do
+        expect(ab_user.user.class.name).to eq('Split::Persistence::RedisAdapter')
+        expect(ab_user.user.redis_key).to eq("persistence:#{given_user.id}")
+      end
+      expect(ab_user.user.class.name).to eq('Split::Persistence::SessionAdapter')
+    end
+  end
+
   describe 'ab_test' do
     it 'should not raise an error when passed strings for alternatives' do
       expect(-> { ab_test('xyz', '1', '2', '3') }).not_to raise_error
