@@ -1,8 +1,4 @@
 # frozen_string_literal: true
-%w[session_adapter cookie_adapter redis_adapter dual_adapter].each do |f|
-  require "split/persistence/#{f}"
-end
-
 module Split
   module Persistence
     ADAPTERS = {

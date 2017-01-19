@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 require 'spec_helper'
-require 'split/experiment'
-require 'split/algorithms'
 require 'time'
 
 describe Split::Experiment do

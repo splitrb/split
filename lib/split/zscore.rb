@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module Split
-  module Zscore
+  class Zscore
 
     include Math
 
