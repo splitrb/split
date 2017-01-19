@@ -1,16 +1,10 @@
 # frozen_string_literal: true
-require 'split/zscore'
-
-# TODO - take out require and implement using file paths?
-
 module Split
   class Alternative
     attr_accessor :name
     attr_accessor :experiment_name
     attr_accessor :weight
     attr_accessor :recorded_info
-
-    include Zscore
 
     def initialize(name, experiment_name)
       @experiment_name = experiment_name

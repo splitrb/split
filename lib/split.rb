@@ -1,23 +1,10 @@
 # frozen_string_literal: true
-%w[algorithms
-   alternative
-   configuration
-   exceptions
-   experiment
-   experiment_catalog
-   extensions
-   goals_collection
-   helper
-   metric
-   persistence
-   encapsulated_helper
-   redis_interface
-   trial
-   user
-   version
-   zscore].each do |f|
-  require "split/#{f}"
-end
+require 'redis'
+
+# Auto require all files except for those that include 'dashboard' or 'engine'
+Dir["#{File.expand_path(File.dirname(__FILE__))}/**/*.rb"].reject do |file|
+  file["dashboard"] || file["engine"]
+end.each { |file| require file }
 
 require 'split/engine' if defined?(Rails)
 
