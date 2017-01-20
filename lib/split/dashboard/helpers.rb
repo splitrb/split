@@ -18,7 +18,11 @@ module Split
     end
 
     def round(number, precision = 2)
-      BigDecimal.new(number.to_s).round(precision).to_f
+      begin
+        BigDecimal.new(number.to_s)
+      rescue ArgumentError
+        BigDecimal.new(0)
+      end.round(precision).to_f
     end
 
     def confidence_level(z_score)
