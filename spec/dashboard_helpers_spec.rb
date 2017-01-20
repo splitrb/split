@@ -24,5 +24,19 @@ describe Split::DashboardHelpers do
       expect(confidence_level(2.58)).to eq('99% confidence')
       expect(confidence_level(3.00)).to eq('99% confidence')
     end
+
+    describe '#round' do
+      it 'can round number strings' do
+        expect(round('3.1415')).to eq BigDecimal.new('3.14')
+      end
+
+      it 'can round number strings for precsion' do
+        expect(round('3.1415', 1)).to eq BigDecimal.new('3.1')
+      end
+
+      it 'can handle invalid number strings' do
+        expect(round('N/A')).to be_zero
+      end
+    end
   end
 end
