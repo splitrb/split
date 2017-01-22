@@ -1,5 +1,7 @@
 ## 2.2.0 (November 11th, 2016)
 
+**Backwards incompatible!** Redis keys are renamed. Please make sure all running tests are completed before you upgrade, as they will reset.
+
 Features:
 
 - Remove dependency on Redis::Namespace (@bschaeffer, #425)
