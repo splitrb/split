@@ -3,39 +3,51 @@ require 'spec_helper'
 require 'split/alternative'
 
 describe Split::Alternative do
-
-  let(:alternative) {
+  let(:alternative) do
     Split::Alternative.new('Basket', 'basket_text')
-  }
+  end
 
-  let(:alternative2) {
+  let(:alternative2) do
     Split::Alternative.new('Cart', 'basket_text')
-  }
+  end
 
-  let!(:experiment) {
+  let(:alternative3) do
+    Split::Alternative.new('sample', 'other_experiment')
+  end
+
+  let!(:experiment) do
     Split.configuration.experiments = {
       basket_text: {
-        goals: ['purchase', 'refund'],
-        alternatives: ['Basket', 'Cart'],
-        scores: ['score1', 'score2']
+        goals: %w(purchase refund),
+        alternatives: %w(Basket Cart),
+        scores: %w(score1 score2)
       }
     }
-    Split::ExperimentCatalog.find_or_create(:basket_text)
-  }
+    Split::ExperimentCatalog.find_or_create('basket_text')
+  end
 
-  let(:goal1) { "purchase" }
-  let(:goal2) { "refund" }
+  let(:goal1) { 'purchase' }
+  let(:goal2) { 'refund' }
   let(:score1) { 'score1' }
   let(:score2) { 'score2' }
 
-  it "should have goals" do
-    expect(alternative.goals).to eq(["purchase", "refund"])
+  it 'should have goals' do
+    expect(alternative.goals).to eq(%w(purchase refund))
   end
 
   describe '#scores' do
-    it 'returns score names' do
+    it 'should return score names' do
       expect(alternative.scores.count).to eq 2
       expect(alternative.scores).to include score1, score2
+    end
+
+    it 'should return empty array when no scores are defined' do
+      Split.configuration.experiments = {
+        other_experiment: {
+          alternatives: %w(sample alternatives)
+        }
+      }
+      expect(alternative3.scores).to be_empty
     end
   end
 
@@ -94,13 +106,13 @@ describe Split::Alternative do
     end
   end
 
-  it "should have and only return the name" do
+  it 'should have and only return the name' do
     expect(alternative.name).to eq('Basket')
   end
 
   describe 'weights' do
-    it "should set the weights" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => [{'Basket' => 0.6}, {"Cart" => 0.4}])
+    it 'should set the weights' do
+      experiment = Split::Experiment.new('basket_text', alternatives: [{ 'Basket' => 0.6 }, { 'Cart' => 0.4 }])
       first = experiment.alternatives[0]
       expect(first.name).to eq('Basket')
       expect(first.weight).to eq(0.6)
@@ -110,13 +122,13 @@ describe Split::Alternative do
       expect(second.weight).to eq(0.4)
     end
 
-    it "accepts probability on alternatives" do
+    it 'accepts probability on alternatives' do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt", :percent => 67 },
-            { :name => "second_opt", :percent => 10 },
-            { :name => "third_opt", :percent => 23 },
+        my_experiment: {
+          alternatives: [
+            { name: 'control_opt', percent: 67 },
+            { name: 'second_opt', percent: 10 },
+            { name: 'third_opt', percent: 23 }
           ]
         }
       }
@@ -130,24 +142,24 @@ describe Split::Alternative do
       expect(second.weight).to eq(0.1)
     end
 
-    it "accepts probability on some alternatives" do
+    it 'accepts probability on some alternatives' do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt", :percent => 34 },
-            "second_opt",
-            { :name => "third_opt", :percent => 23 },
-            "fourth_opt",
-          ],
+        my_experiment: {
+          alternatives: [
+            { name: 'control_opt', percent: 34 },
+            'second_opt',
+            { name: 'third_opt', percent: 23 },
+            'fourth_opt'
+          ]
         }
       }
       experiment = Split::Experiment.new(:my_experiment)
       alts = experiment.alternatives
       [
-        ["control_opt", 0.34],
-        ["second_opt", 0.215],
-        ["third_opt", 0.23],
-        ["fourth_opt", 0.215]
+        ['control_opt', 0.34],
+        ['second_opt', 0.215],
+        ['third_opt', 0.23],
+        ['fourth_opt', 0.215]
       ].each do |h|
         name, weight = h
         alt = alts.shift
@@ -156,22 +168,22 @@ describe Split::Alternative do
       end
     end
     #
-    it "allows name param without probability" do
+    it 'allows name param without probability' do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt" },
-            "second_opt",
-            { :name => "third_opt", :percent => 64 },
-          ],
+        my_experiment: {
+          alternatives: [
+            { name: 'control_opt' },
+            'second_opt',
+            { name: 'third_opt', percent: 64 }
+          ]
         }
       }
       experiment = Split::Experiment.new(:my_experiment)
       alts = experiment.alternatives
       [
-        ["control_opt", 0.18],
-        ["second_opt", 0.18],
-        ["third_opt", 0.64],
+        ['control_opt', 0.18],
+        ['second_opt', 0.18],
+        ['third_opt', 0.64]
       ].each do |h|
         name, weight = h
         alt = alts.shift
@@ -181,32 +193,32 @@ describe Split::Alternative do
     end
   end
 
-  it "should have a default participation count of 0" do
+  it 'should have a default participation count of 0' do
     expect(alternative.participant_count).to eq(0)
   end
 
-  it "should have a default completed count of 0 for each goal" do
+  it 'should have a default completed count of 0 for each goal' do
     expect(alternative.completed_count).to eq(0)
     expect(alternative.completed_count(goal1)).to eq(0)
     expect(alternative.completed_count(goal2)).to eq(0)
   end
 
-  it "should belong to an experiment" do
+  it 'should belong to an experiment' do
     expect(alternative.experiment.name).to eq(experiment.name)
   end
 
-  it "should save to redis" do
+  it 'should save to redis' do
     alternative.save
     expect(Split.redis.exists('basket_text:Basket')).to be true
   end
 
-  it "should increment participation count" do
+  it 'should increment participation count' do
     old_participant_count = alternative.participant_count
     alternative.increment_participation
-    expect(alternative.participant_count).to eq(old_participant_count+1)
+    expect(alternative.participant_count).to eq(old_participant_count + 1)
   end
 
-  it "should increment completed count for each goal" do
+  it 'should increment completed count for each goal' do
     old_default_completed_count = alternative.completed_count
     old_completed_count_for_goal1 = alternative.completed_count(goal1)
     old_completed_count_for_goal2 = alternative.completed_count(goal2)
@@ -215,12 +227,12 @@ describe Split::Alternative do
     alternative.increment_completion(goal1)
     alternative.increment_completion(goal2)
 
-    expect(alternative.completed_count).to eq(old_default_completed_count+1)
-    expect(alternative.completed_count(goal1)).to eq(old_completed_count_for_goal1+1)
-    expect(alternative.completed_count(goal2)).to eq(old_completed_count_for_goal2+1)
+    expect(alternative.completed_count).to eq(old_default_completed_count + 1)
+    expect(alternative.completed_count(goal1)).to eq(old_completed_count_for_goal1 + 1)
+    expect(alternative.completed_count(goal2)).to eq(old_completed_count_for_goal2 + 1)
   end
 
-  it "can be reset" do
+  it 'can be reset' do
     alternative.participant_count = 10
     alternative.set_completed_count(4, goal1)
     alternative.set_completed_count(5, goal2)
@@ -238,18 +250,18 @@ describe Split::Alternative do
     expect(alternative.score_participant_count(score2)).to eq 0
   end
 
-  it "should know if it is the control of an experiment" do
+  it 'should know if it is the control of an experiment' do
     expect(alternative.control?).to be_truthy
     expect(alternative2.control?).to be_falsey
   end
 
   describe 'unfinished_count' do
-    it "should be difference between participant and completed counts" do
+    it 'should be difference between participant and completed counts' do
       alternative.increment_participation
       expect(alternative.unfinished_count).to eq(alternative.participant_count)
     end
 
-    it "should return the correct unfinished_count" do
+    it 'should return the correct unfinished_count' do
       alternative.participant_count = 10
       alternative.set_completed_count(4, goal1)
       alternative.set_completed_count(3, goal2)
@@ -260,12 +272,12 @@ describe Split::Alternative do
   end
 
   describe 'conversion rate' do
-    it "should be 0 if there are no conversions" do
+    it 'should be 0 if there are no conversions' do
       expect(alternative.completed_count).to eq(0)
       expect(alternative.conversion_rate).to eq(0)
     end
 
-    it "calculate conversion rate" do
+    it 'calculate conversion rate' do
       expect(alternative).to receive(:participant_count).exactly(6).times.and_return(10)
       expect(alternative).to receive(:completed_count).and_return(4)
       expect(alternative.conversion_rate).to eq(0.4)
@@ -291,39 +303,38 @@ describe Split::Alternative do
     end
   end
 
-  describe "probability winner" do
+  describe 'probability winner' do
     before do
       experiment.calc_winning_alternatives
     end
 
-    it "should have a probability of being the winning alternative (p_winner)" do
+    it 'should have a probability of being the winning alternative (p_winner)' do
       expect(alternative.p_winner).not_to be_nil
     end
 
-    it "should have a probability of being the winner for each goal" do
+    it 'should have a probability of being the winner for each goal' do
       expect(alternative.p_winner(goal1)).not_to be_nil
     end
 
-    it "should be possible to set the p_winner" do
+    it 'should be possible to set the p_winner' do
       alternative.set_p_winner(0.5)
       expect(alternative.p_winner).to eq(0.5)
     end
 
-    it "should be possible to set the p_winner for each goal" do
+    it 'should be possible to set the p_winner for each goal' do
       alternative.set_p_winner(0.5, goal1)
       expect(alternative.p_winner(goal1)).to eq(0.5)
     end
   end
 
   describe 'z score' do
-
-    it "should return an error string when the control has 0 people" do
-      expect(alternative2.z_score).to eq("Needs 30+ participants.")
-      expect(alternative2.z_score(goal1)).to eq("Needs 30+ participants.")
-      expect(alternative2.z_score(goal2)).to eq("Needs 30+ participants.")
+    it 'should return an error string when the control has 0 people' do
+      expect(alternative2.z_score).to eq('Needs 30+ participants.')
+      expect(alternative2.z_score(goal1)).to eq('Needs 30+ participants.')
+      expect(alternative2.z_score(goal2)).to eq('Needs 30+ participants.')
     end
 
-    it "should return an error string when the data is skewed or incomplete as per the np > 5 test" do
+    it 'should return an error string when the data is skewed or incomplete as per the np > 5 test' do
       control = experiment.control
       control.participant_count = 100
       control.set_completed_count(50)
@@ -331,10 +342,10 @@ describe Split::Alternative do
       alternative2.participant_count = 50
       alternative2.set_completed_count(1)
 
-      expect(alternative2.z_score).to eq("Needs 5+ conversions.")
+      expect(alternative2.z_score).to eq('Needs 5+ conversions.')
     end
 
-    it "should return a float for a z_score given proper data" do
+    it 'should return a float for a z_score given proper data' do
       control = experiment.control
       control.participant_count = 120
       control.set_completed_count(20)
@@ -346,7 +357,7 @@ describe Split::Alternative do
       expect(alternative2.z_score).to_not eq(0)
     end
 
-    it "should correctly calculate a z_score given proper data" do
+    it 'should correctly calculate a z_score given proper data' do
       control = experiment.control
       control.participant_count = 126
       control.set_completed_count(89)
@@ -357,7 +368,7 @@ describe Split::Alternative do
       expect(alternative2.z_score.round(2)).to eq(2.58)
     end
 
-    it "should be N/A for the control" do
+    it 'should be N/A for the control' do
       control = experiment.control
       expect(control.z_score).to eq('N/A')
       expect(control.z_score(goal1)).to eq('N/A')

@@ -38,7 +38,7 @@ module Split
       return @scores if defined?(@scores)
       experiment_data = Split.configuration.experiments[experiment_name.to_s] || Split.configuration.experiments[experiment_name.to_sym]
       return (@scores = []) unless experiment_data
-      @scores = experiment_data[:scores] || experiment_data['scores']
+      @scores = experiment_data[:scores] || experiment_data['scores'] || []
     end
 
     def p_winner(goal = nil)

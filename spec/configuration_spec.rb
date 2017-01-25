@@ -77,7 +77,13 @@ describe Split::Configuration do
       expect(@config.scores['score1']).to include Split::ExperimentCatalog.find :my_experiment
     end
 
-    it 'should map each score to experiments defined with it' do
+    it 'should return empty hash when no scores are defined' do
+      @config.experiments = {
+        other_experiment: {
+          alternatives: %w(alt1 alt2)
+        }
+      }
+      expect(@config.scores).to be_empty
     end
 
     context 'when an experiment is reset' do

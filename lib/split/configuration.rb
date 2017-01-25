@@ -145,9 +145,9 @@ module Split
         experiments.each do |experiment_name, experiment_data|
           scores =
             begin
-              value_for(experiment_data, :scores)
+              value_for(experiment_data, :scores) || []
             rescue
-              nil
+              []
             end
           scores.each do |score_name|
             if score_name
