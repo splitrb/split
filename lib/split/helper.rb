@@ -34,6 +34,11 @@ module Split
     end
 
     def ab_test(metric_descriptor, control = nil, *alternatives, user: nil)
+      experiment_name_with_version, goals = ExperimentCatalog.normalize_experiment(metric_descriptor)
+      experiment_name = experiment_name_with_version.to_s.split(':')[0]
+      if (control || !alternatives.empty?) && Split.configuration.experiment_for(experiment_name)
+        raise StandardError, 'Experiment already defined via configurations; call ab_test with experiment name only.'
+      end
       with_user(user) do
         begin
           experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)

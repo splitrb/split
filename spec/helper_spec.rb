@@ -39,6 +39,20 @@ describe Split::Helper do
   end
 
   describe 'ab_test' do
+    context 'when passed strings of alternatives' do
+      context 'when the experiment already defined in configuration' do
+        it 'should raise an error' do
+          Split.configuration.experiments = {
+            sample_experiment: {
+              alternatives: %w(sample alternative),
+              scores: %w(score1 score2)
+            }
+          }
+          expect { ab_test(:sample_experiment, 'sample', 'alternative') }.to raise_error('Experiment already defined via configurations; call ab_test with experiment name only.')
+        end
+      end
+    end
+
     it 'should not raise an error when passed strings for alternatives' do
       expect(-> { ab_test('xyz', '1', '2', '3') }).not_to raise_error
     end
