@@ -132,7 +132,7 @@ end
 
 To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different alternatives which you wish to test on as the other arguments.
 
-`ab_test` returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on.
+`ab_test` returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on. You can also call `ab_test_result(<experiment_name>)` to get chosen alternative if the user has already seen the experiment (it will return `nil` otherwise).
 
 It can be used to render different templates, show different text or any other case based logic.
 

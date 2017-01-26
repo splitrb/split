@@ -121,6 +121,19 @@ module Split
       end
     end
 
+    def ab_test_result(experiment_name, options = { user: nil })
+      with_user(options[:user]) do
+        begin
+          experiment = ExperimentCatalog.find(experiment_name)
+          return nil unless experiment
+          ab_user[experiment.key]
+        rescue Errno::ECONNREFUSED, Redis::BaseError, SocketError => e
+          raise unless Split.configuration.db_failover
+          Split.configuration.db_failover_on_db_error.call(e)
+        end
+      end
+    end
+
     def unscored_user_experiments(score_name, options = { user: nil })
       with_user(options[:user]) do
         retval = []

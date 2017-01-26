@@ -293,6 +293,30 @@ describe Split::Helper do
     end
   end
 
+  describe 'ab_test_result' do
+    before(:example) do
+      Split.configuration.experiments = {
+        sample_experiment: {
+          alternatives: %w(alt1 alt2)
+        }
+      }
+    end
+    context 'with the name of an experiment do' do
+      let(:experiment_name) { 'sample_experiment' }
+      context 'when the user enrolls in the experiment' do
+        before(:example) { @chosen_alternative = ab_test(experiment_name) }
+        it 'should return chosen alternative for current_user' do
+          expect(ab_test_result(experiment_name)).to eq @chosen_alternative
+        end
+      end
+      context 'when the user does not participate in the experiment' do
+        it 'should return nil' do
+          expect(ab_test_result(experiment_name)).to be_nil
+        end
+      end
+    end
+  end
+
   describe 'metadata' do
     before do
       Split.configuration.experiments = {
