@@ -642,13 +642,6 @@ the experiment name:
 ab_finished(:my_metric)
 ```
 
-You can also create a new metric by instantiating and saving a new Metric object.
-
-```ruby
-Split::Metric.new(:my_metric)
-Split::Metric.save
-```
-
 #### Scores
 
 You can also track generic values alongside each alternatives. You can use the
