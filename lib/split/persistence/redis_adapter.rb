@@ -23,11 +23,11 @@ module Split
       end
 
       def [](field)
-        Split.redis.hget(redis_key, field)
+        redis_data[field.to_s]
       end
 
       def multi_get(*fields)
-        Split.redis.hmget(redis_key, *fields)
+        fields.map { |field| redis_data[field.to_s] }
       end
 
       def []=(field, value)
@@ -36,14 +36,17 @@ module Split
           expire_seconds = self.class.config[:expire_seconds]
           Split.redis.expire(redis_key, expire_seconds) if expire_seconds
         end
+        redis_data[field.to_s] = value
       end
 
       def delete(*fields)
         Split.redis.hdel(redis_key, fields)
+        fields = fields.map(&:to_s)
+        @redis_data = redis_data.reject { |k, _v| fields.include?(k) }
       end
 
       def keys
-        Split.redis.hkeys(redis_key)
+        redis_data.keys
       end
 
       def self.with_config(options = {})
@@ -58,6 +61,13 @@ module Split
       def self.reset_config!
         @config = DEFAULT_CONFIG.dup
       end
-    end
-  end
-end
+
+      private
+
+      def redis_data
+        return @redis_data if defined?(@redis_data)
+        @redis_data = Split.redis.hgetall(redis_key)
+      end
+    end # RedisPersistence
+  end # Persistence
+end # Split
