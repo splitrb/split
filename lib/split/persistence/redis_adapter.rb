@@ -41,8 +41,7 @@ module Split
 
       def delete(*fields)
         Split.redis.hdel(redis_key, fields)
-        fields = fields.map(&:to_s)
-        @redis_data = redis_data.reject { |k, _v| fields.include?(k) }
+        fields.each { |field| redis_data.delete(field.to_s) }
       end
 
       def keys
