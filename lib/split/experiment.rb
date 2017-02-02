@@ -258,15 +258,21 @@ module Split
     end
 
     def load_from_redis
-      exp_config = redis.hgetall(experiment_config_key)
+      exp_config, temp_alt, temp_goals, temp_scores, temp_meta = redis.pipelined do
+        redis.hgetall(experiment_config_key)
+        load_alternatives_from_redis
+        Split::GoalsCollection.new(@name).load_from_redis
+        Split::ScoresCollection.new(@name).load_from_redis
+        load_metadata_from_redis
+      end
 
       options = {
         resettable: exp_config['resettable'],
         algorithm: exp_config['algorithm'],
-        alternatives: load_alternatives_from_redis,
-        goals: Split::GoalsCollection.new(@name).load_from_redis,
-        metadata: load_metadata_from_redis,
-        scores: Split::ScoresCollection.new(@name).load_from_redis
+        alternatives: temp_alt,
+        goals: temp_goals,
+        metadata: temp_meta.nil? ? nil : JSON.parse(temp_meta),
+        scores: temp_scores
       }
 
       set_alternatives_and_options(options)
@@ -412,8 +418,7 @@ module Split
     end
 
     def load_metadata_from_redis
-      meta = redis.get(metadata_key)
-      JSON.parse(meta) unless meta.nil?
+      redis.get(metadata_key)
     end
 
     def load_alternatives_from_configuration
@@ -427,12 +432,6 @@ module Split
     end
 
     def load_alternatives_from_redis
-      case redis.type(@name)
-      when 'set' # convert legacy sets to lists
-        alts = redis.smembers(@name)
-        redis.del(@name)
-        alts.reverse.each { |a| redis.lpush(@name, a) }
-      end
       redis.lrange(@name, 0, -1)
     end
 
@@ -463,10 +462,13 @@ module Split
     end
 
     def experiment_configuration_has_changed?
-      existing_alternatives = load_alternatives_from_redis
-      existing_goals = Split::GoalsCollection.new(@name).load_from_redis
-      existing_metadata = load_metadata_from_redis
-      existing_scores = Split::ScoresCollection.new(@name).load_from_redis
+      existing_alternatives, existing_goals, existing_scores, temp_meta = redis.pipelined do
+        load_alternatives_from_redis
+        Split::GoalsCollection.new(@name).load_from_redis
+        Split::ScoresCollection.new(@name).load_from_redis
+        load_metadata_from_redis
+      end
+      existing_metadata = temp_meta.nil? ? nil : JSON.parse(temp_meta)
 
       existing_alternatives != @alternatives.map(&:name) ||
         existing_goals != @goals ||
