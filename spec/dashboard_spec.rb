@@ -14,33 +14,45 @@ describe Split::Dashboard do
     Split::Alternative.new(color, experiment.name)
   end
 
-  let(:experiment) {
-    Split::ExperimentCatalog.find_or_create("link_color", "blue", "red")
-  }
+  before(:example) do
+    Split.configuration.experiments = {
+      link_color: {
+        alternatives: [
+          { name: 'blue', percent: 50 },
+          { name: 'red', percent: 50 }
+        ],
+        goals: %w(goal_1 goal_2)
+      }
+    }
+  end
 
-  let(:experiment_with_goals) {
-    Split::ExperimentCatalog.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
-  }
+  let(:experiment) do
+    Split::ExperimentCatalog.find_or_create('link_color')
+  end
 
-  let(:metric) {
+  let(:experiment_with_goals) do
+    Split::ExperimentCatalog.find_or_create('link_color')
+  end
+
+  let(:metric) do
     Split::Metric.find_or_create(name: 'testmetric', experiments: [experiment, experiment_with_goals])
-  }
+  end
 
-  let(:red_link) { link("red") }
-  let(:blue_link) { link("blue") }
+  let(:red_link) { link('red') }
+  let(:blue_link) { link('blue') }
 
-  it "should respond to /" do
+  it 'should respond to /' do
     get '/'
     expect(last_response).to be_ok
   end
 
-  context "start experiment manually" do
+  context 'start experiment manually' do
     before do
       Split.configuration.start_manually = true
     end
 
-    context "experiment without goals" do
-      it "should display a Start button" do
+    context 'experiment without goals' do
+      it 'should display a Start button' do
         experiment
         get "experiments/#{experiment.name}"
         expect(last_response.body).to include('Start')
@@ -52,16 +64,16 @@ describe Split::Dashboard do
       end
     end
 
-    context "experiment with metrics" do
-      it "should display the names of associated metrics" do
+    context 'experiment with metrics' do
+      it 'should display the names of associated metrics' do
         metric
         get "/experiments/#{experiment.name}"
         expect(last_response.body).to include('Metrics:testmetric')
       end
     end
 
-    context "with goals" do
-      it "should display a Start button" do
+    context 'with goals' do
+      it 'should display a Start button' do
         experiment_with_goals
         get "/experiments/#{experiment.name}"
         expect(last_response.body).to include('Start')
@@ -73,9 +85,9 @@ describe Split::Dashboard do
     end
   end
 
-  describe "force alternative" do
+  describe 'force alternative' do
     let!(:user) do
-      Split::User.new(@app, { experiment.name => 'a' })
+      Split::User.new(@app, experiment.name => 'a')
     end
 
     before do
@@ -83,23 +95,23 @@ describe Split::Dashboard do
     end
 
     it "should set current user's alternative" do
-      post "/force_alternative?experiment=#{experiment.name}", alternative: "b"
-      expect(user[experiment.name]).to eq("b")
+      post "/force_alternative?experiment=#{experiment.name}", alternative: 'b'
+      expect(user[experiment.name]).to eq('b')
     end
   end
 
-  describe "index page" do
-    context "with winner" do
+  describe 'index page' do
+    context 'with winner' do
       before { experiment.winner = 'red' }
 
-      it "displays `Reopen Experiment` button" do
+      it 'displays `Reopen Experiment` button' do
         get "/experiments/#{experiment.name}"
         expect(last_response.body).to include('Reopen Experiment')
       end
     end
 
-    context "without winner" do
-      it "should not display `Reopen Experiment` button" do
+    context 'without winner' do
+      it 'should not display `Reopen Experiment` button' do
         get "/experiments/#{experiment.name}"
 
         expect(last_response.body).to_not include('Reopen Experiment')
@@ -107,7 +119,7 @@ describe Split::Dashboard do
     end
   end
 
-  describe "reopen experiment" do
+  describe 'reopen experiment' do
     before { experiment.winner = 'red' }
 
     it 'redirects' do
@@ -116,13 +128,14 @@ describe Split::Dashboard do
       expect(last_response).to be_redirect
     end
 
-    it "removes winner" do
+    it 'removes winner' do
       post "/reopen?experiment=#{experiment.name}"
 
-      expect(experiment).to_not have_winner
+      updated_experiment = Split::ExperimentCatalog.find experiment.name
+      expect(updated_experiment).to_not have_winner
     end
 
-    it "keeps existing stats" do
+    it 'keeps existing stats' do
       red_link.participant_count = 5
       blue_link.participant_count = 7
       experiment.winner = 'blue'
@@ -134,12 +147,15 @@ describe Split::Dashboard do
     end
   end
 
-  it "should reset an experiment" do
+  it 'should reset an experiment' do
     red_link.participant_count = 5
     blue_link.participant_count = 7
     experiment.winner = 'blue'
 
     post "/reset?experiment=#{experiment.name}"
+
+    # hef 2 reload because of memoiza tion
+    updated_experiment = Split::ExperimentCatalog.find(experiment.name)
 
     expect(last_response).to be_redirect
 
@@ -148,24 +164,27 @@ describe Split::Dashboard do
 
     expect(new_blue_count).to eq(0)
     expect(new_red_count).to eq(0)
-    expect(experiment.winner).to be_nil
+    expect(updated_experiment.winner).to be_nil
   end
 
-  it "should delete an experiment" do
+  it 'should delete an experiment' do
     delete "/experiment?experiment=#{experiment.name}"
     expect(last_response).to be_redirect
     expect(Split::ExperimentCatalog.find(experiment.name)).to be_nil
   end
 
-  it "should mark an alternative as the winner" do
+  it 'should mark an alternative as the winner' do
     expect(experiment.winner).to be_nil
-    post "/experiment?experiment=#{experiment.name}", :alternative => 'red'
+    post "/experiment?experiment=#{experiment.name}", alternative: 'red'
+
+    # hef 2 reload because of memoization
+    updated_experiment = Split::ExperimentCatalog.find(experiment.name)
 
     expect(last_response).to be_redirect
-    expect(experiment.winner.name).to eq('red')
+    expect(updated_experiment.winner.name).to eq('red')
   end
 
-  it "should display the start date" do
+  it 'should display the start date' do
     experiment_start_time = Time.parse('2011-07-07')
     expect(Time).to receive(:now).at_least(:once).and_return(experiment_start_time)
     experiment
@@ -175,7 +194,7 @@ describe Split::Dashboard do
     expect(last_response.body).to include('<small>2011-07-07</small>')
   end
 
-  it "should handle experiments without a start date" do
+  it 'should handle experiments without a start date' do
     experiment_start_time = Time.parse('2011-07-07')
     expect(Time).to receive(:now).at_least(:once).and_return(experiment_start_time)
 

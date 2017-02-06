@@ -52,7 +52,10 @@ module Split
     # method is guaranteed to only run once, and will skip the alternative choosing process if run
     # a second time.
     def choose!(context = nil)
-      @user.cleanup_old_experiments!
+      # only cleanup every now and then
+      # lazy af method lul but is fine
+      @user.cleanup_old_experiments! if rand(100) > 95
+
       # Only run the process once
       return alternative if @alternative_choosen
 
@@ -117,7 +120,7 @@ module Split
     end
 
     def cleanup_old_versions
-      @user.cleanup_old_versions!(@experiment) if @experiment.version > 0
+      @user.cleanup_old_versions!(@experiment) if @experiment.version.positive?
     end
 
     def exclude_user?

@@ -51,10 +51,10 @@ describe Split::Persistence::RedisAdapter do
     end
 
     context 'config with namespace and lookup_by' do
-      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc { 'frag' }, namespace: 'namer') }
+      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc { 'frag' }, namespace: 'persistence') }
 
-      it 'should be "namer"' do
-        expect(subject.redis_key).to eq('namer:frag')
+      it 'should be "persistence"' do
+        expect(subject.redis_key).to eq('persistence:frag')
       end
     end
   end

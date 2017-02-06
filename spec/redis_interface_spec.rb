@@ -97,15 +97,4 @@ describe Split::RedisInterface do
       expect(Split.redis.llen(list_name)).to eq 1
     end
   end
-
-  describe '#add_to_set' do
-    subject(:add_to_set) do
-      interface.add_to_set(set_name, 'something')
-    end
-
-    specify do
-      add_to_set
-      expect(Split.redis.sismember(set_name, 'something')).to be true
-    end
-  end
 end

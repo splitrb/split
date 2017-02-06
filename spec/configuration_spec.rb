@@ -71,6 +71,7 @@ describe Split::Configuration do
           scores: ['score1']
         }
       }
+      Split::ExperimentCatalog.find_or_create :my_experiment
 
       expect(@config.scores).not_to be_nil
       expect(@config.scores.keys).to include 'score1'
@@ -214,8 +215,8 @@ describe Split::Configuration do
         end
 
         it 'should recognize scores' do
-          exp1 = Split::ExperimentCatalog.find(:my_experiment)
-          exp2 = Split::ExperimentCatalog.find(:another_experiment)
+          exp1 = Split::ExperimentCatalog.find_or_create(:my_experiment)
+          exp2 = Split::ExperimentCatalog.find_or_create(:another_experiment)
           expect(@config.scores).not_to be_nil
           expect(@config.scores.keys).to eq(%w(score1 score2 score3))
           expect(@config.scores['score1'].count).to eq 2

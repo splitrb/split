@@ -100,9 +100,9 @@ module Split
     def experiments=(experiments)
       raise InvalidExperimentsFormatError, 'Experiments must be a Hash' unless experiments.respond_to?(:keys)
       @experiments = experiments
-      experiments.keys.each do |experiment_name|
-        Split::ExperimentCatalog.find_or_create(experiment_name)
-      end
+      # experiments.keys.each do |experiment_name|
+      #   Split::ExperimentCatalog.find_or_create(experiment_name)
+      # end
       @experiments
     end
 
@@ -139,22 +139,20 @@ module Split
     end
 
     def scores
-      return @scores if defined?(@scores)
       @scores = {}
-      if experiments
-        experiments.each do |experiment_name, experiment_data|
-          scores =
-            begin
-              value_for(experiment_data, :scores) || []
-            rescue
-              []
-            end
-          scores.each do |score_name|
-            if score_name
-              @scores[score_name] ||= []
-              @scores[score_name] << Split::ExperimentCatalog.find_or_create(experiment_name)
-            end
+      return @scores unless experiments
+      experiments.each do |experiment_name, experiment_data|
+        scores =
+          begin
+            value_for(experiment_data, :scores) || []
+          rescue
+            []
           end
+        scores.each do |score_name|
+          next unless score_name
+          @scores[score_name] ||= []
+          exp = Split::ExperimentCatalog.find(experiment_name)
+          @scores[score_name] << exp if exp
         end
       end
       @scores
@@ -246,7 +244,7 @@ module Split
       @persistence_cookie_length = 31_536_000 # One year from now
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
-      @beta_probability_simulations = 10_000
+      @beta_probability_simulations = 1000
       @redis = ENV.fetch(ENV.fetch('REDIS_PROVIDER', 'REDIS_URL'), 'redis://localhost:6379')
     end
 

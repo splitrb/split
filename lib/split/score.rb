@@ -35,7 +35,7 @@ module Split
       def add_delayed(score_name, label, alternatives, value = 1, ttl = 60 * 60 * 24)
         val_key = delayed_value_key(score_name, label)
         alt_key = delayed_alternatives_key(score_name, label)
-        Split.redis.multi do
+        Split.redis.pipelined do
           Split.redis.set(val_key, value)
           Split.redis.sadd(alt_key, alternatives.map(&:key))
           Split.redis.expire(val_key, ttl)
@@ -48,7 +48,7 @@ module Split
         alt_key = delayed_alternatives_key(score_name, label)
         value = delayed_value(score_name, label)
         alternatives = delayed_alternatives(score_name, label)
-        Split.redis.multi do
+        Split.redis.pipelined do
           alternatives.each do |alternative|
             alternative.increment_score(score_name, value)
             Split.redis.del(val_key)

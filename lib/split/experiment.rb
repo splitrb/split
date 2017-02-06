@@ -85,19 +85,11 @@ module Split
 
     def save
       validate!
-
-      is_new_record = new_record?
-      is_config_changed = experiment_configuration_has_changed?
-
-      if is_new_record
+      if new_record?
         start unless Split.configuration.start_manually
-      elsif is_config_changed
-        reset unless Split.configuration.reset_manually
+        redis.sadd(:experiments, name)
+        redis_data[:is_new_record] = false
       end
-
-      persist_experiment_configuration if is_new_record || is_config_changed
-
-      redis.hmset(experiment_config_key, :resettable, resettable, :algorithm, algorithm.to_s)
       self
     end
 
@@ -111,7 +103,7 @@ module Split
     end
 
     def new_record?
-      !redis.exists(name)
+      redis_data[:is_new_record]
     end
 
     def ==(other)
@@ -145,8 +137,8 @@ module Split
     end
 
     def winner
-      experiment_winner = redis.hget(:experiment_winner, name)
-      Split::Alternative.new(experiment_winner, name) if experiment_winner
+      return nil unless redis_data[:winner_name]
+      Split::Alternative.new(redis_data[:winner_name], name)
     end
 
     def has_winner?
@@ -155,6 +147,8 @@ module Split
 
     def winner=(winner_name)
       redis.hset(:experiment_winner, name, winner_name.to_s)
+      redis_data[:winner_name] = winner_name.to_s
+      winner
     end
 
     def participant_count
@@ -167,14 +161,17 @@ module Split
 
     def reset_winner
       redis.hdel(:experiment_winner, name)
+      redis_data[:winner_name] = nil
     end
 
     def start
-      redis.hset(:experiment_start_times, @name, Time.now.to_i)
+      time = Time.now.to_i
+      redis.hset(:experiment_start_times, @name, time)
+      redis_data[:start_time] = time.to_s
     end
 
     def start_time
-      t = redis.hget(:experiment_start_times, @name)
+      t = redis_data[:start_time]
       return unless t
       # Check if stored time is an integer
       if t =~ /^[-+]?[0-9]+$/
@@ -197,24 +194,19 @@ module Split
     end
 
     def version
-      redis.get("#{name}:version").to_i
+      redis_data[:version].to_i
     end
 
     def increment_version
-      redis.incr("#{name}:version")
+      redis_data[:version] = redis.incr("#{name}:version")
     end
 
     def key
-      ver = version
-      if ver > 0
-        "#{name}:#{ver}"
+      if version.positive?
+        "#{name}:#{version}"
       else
         name
       end
-    end
-
-    def goals_key
-      "#{name}:goals"
     end
 
     def finished_key
@@ -223,10 +215,6 @@ module Split
 
     def scored_key(score_name)
       self.class.scored_key(key, score_name)
-    end
-
-    def metadata_key
-      "#{name}:metadata"
     end
 
     def resettable?
@@ -245,44 +233,22 @@ module Split
       Split.configuration.on_before_experiment_delete.call(self)
       if Split.configuration.start_manually
         redis.hdel(:experiment_start_times, @name)
+        redis_data[:start_time] = nil
       end
       reset_winner
       redis.srem(:experiments, name)
-      remove_experiment_configuration
+      redis_data[:is_new_record] = true
+      alternatives.each(&:delete)
       Split.configuration.on_experiment_delete.call(self)
       increment_version
     end
 
-    def delete_metadata
-      redis.del(metadata_key)
-    end
-
     def load_from_redis
-      exp_config, temp_alt, temp_goals, temp_scores, temp_meta = redis.pipelined do
-        redis.hgetall(experiment_config_key)
-        load_alternatives_from_redis
-        Split::GoalsCollection.new(@name).load_from_redis
-        Split::ScoresCollection.new(@name).load_from_redis
-        load_metadata_from_redis
-      end
-
-      options = {
-        resettable: exp_config['resettable'],
-        algorithm: exp_config['algorithm'],
-        alternatives: temp_alt,
-        goals: temp_goals,
-        metadata: temp_meta.nil? ? nil : JSON.parse(temp_meta),
-        scores: temp_scores
-      }
-
-      set_alternatives_and_options(options)
+      redis_data
+      self
     end
 
     def calc_winning_alternatives
-      # Super simple cache so that we only recalculate winning alternatives once per day
-      days_since_epoch = Time.now.utc.to_i / 86_400
-      return unless calc_time != days_since_epoch
-
       if goals.empty?
         estimate_winning_alternative
       else
@@ -290,10 +256,7 @@ module Split
           estimate_winning_alternative(goal)
         end
       end
-
-      self.calc_time = days_since_epoch
-
-      save
+      self
     end
 
     def estimate_winning_alternative(goal = nil)
@@ -318,7 +281,7 @@ module Split
 
       write_to_alternatives(goal)
 
-      save
+      self
     end
 
     def write_to_alternatives(goal = nil)
@@ -390,14 +353,6 @@ module Split
       beta_params
     end
 
-    def calc_time=(time)
-      redis.hset(experiment_config_key, :calc_time, time)
-    end
-
-    def calc_time
-      redis.hget(experiment_config_key, :calc_time).to_i
-    end
-
     def jstring(goal = nil)
       js_id = if goal.nil?
                 name
@@ -409,16 +364,8 @@ module Split
 
     protected
 
-    def experiment_config_key
-      "experiment_configurations/#{@name}"
-    end
-
     def load_metadata_from_configuration
       Split.configuration.experiment_for(@name)[:metadata]
-    end
-
-    def load_metadata_from_redis
-      redis.get(metadata_key)
     end
 
     def load_alternatives_from_configuration
@@ -431,49 +378,34 @@ module Split
       end
     end
 
-    def load_alternatives_from_redis
-      redis.lrange(@name, 0, -1)
-    end
-
     private
 
     def redis
       Split.redis
     end
 
+    def redis_data
+      return @redis_data if defined?(@redis_data)
+      @redis_data = {}
+      tmp_version, tmp_winner_name, tmp_start_time, tmp_new_record = redis.pipelined do
+        redis.get("#{name}:version")
+        redis.hget(:experiment_winner, name)
+        redis.hget(:experiment_start_times, @name)
+        redis.sismember(:experiments, @name)
+      end
+      @redis_data[:version] = tmp_version
+      @redis_data[:winner_name] = tmp_winner_name
+      @redis_data[:start_time] = tmp_start_time
+      @redis_data[:is_new_record] = !tmp_new_record
+      @redis_data
+    end
+
     def redis_interface
       RedisInterface.new
     end
 
-    def persist_experiment_configuration
-      redis_interface.add_to_set(:experiments, name)
-      redis_interface.persist_list(name, @alternatives.map(&:name))
-      goals_collection.save
-      scores_collection.save
-      redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
-    end
-
-    def remove_experiment_configuration
+    def delete_alternatives
       @alternatives.each(&:delete)
-      goals_collection.delete
-      scores_collection.delete
-      delete_metadata
-      redis.del(@name)
-    end
-
-    def experiment_configuration_has_changed?
-      existing_alternatives, existing_goals, existing_scores, temp_meta = redis.pipelined do
-        load_alternatives_from_redis
-        Split::GoalsCollection.new(@name).load_from_redis
-        Split::ScoresCollection.new(@name).load_from_redis
-        load_metadata_from_redis
-      end
-      existing_metadata = temp_meta.nil? ? nil : JSON.parse(temp_meta)
-
-      existing_alternatives != @alternatives.map(&:name) ||
-        existing_goals != @goals ||
-        existing_metadata != @metadata ||
-        existing_scores != @scores
     end
 
     def goals_collection

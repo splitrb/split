@@ -33,10 +33,11 @@ module Split
       end
     end
 
-    def ab_test(metric_descriptor, control = nil, *alternatives, user: nil)
+    def ab_test(experiment_name, control = nil, *alternatives, user: nil)
       with_user(user) do
         begin
-          experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
+          experiment_name = experiment_name.keys[0] if experiment_name.is_a? Hash
+          experiment = ExperimentCatalog.find_or_initialize(experiment_name)
           alternative =
             if Split.configuration.enabled && !control && alternatives.empty?
               experiment.save
