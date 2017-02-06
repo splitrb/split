@@ -15,69 +15,60 @@ module Split
         ret = Hash[split_ids.collect{|split_id| [split_id, nil]}]
         if Split.configuration.enabled
           experiment.save
-          # we always just go with the winner if already chosen
-          if check_winner && experiment.has_winner?
-            winner_name = experiment.winner.name
-            ret.each {|k,v| ret[k] = winner_name}
-          # we go with the control if enough participants
-          elsif experiment.has_enough_participants? 
-            winner_name = experiment.winner.name
-            ret.each {|k,v| ret[k] = winner_name}
-          else
-            clean_old_versions(experiment) # remove previous versions from Redis
-            if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
-              control_name = experiment.control.name
-              ret.each {|k,v| ret[k] = control_name}
-            else # now we are in business. Time to find the participants and 
-                 # assign the rest of the new users.
-                 
-              # find all the ones that are assigned 
-              #NOTE: only redis adapter now has this method written
-              mapped_alternatives = Split::Persistence.adapter.fetch_values_in_batch(split_ids, experiment.key)
-              unassigned_split_ids = []
-              mapped_alternatives.each do |split_id, value|
-                if value.nil?
-                  unassigned_split_ids << split_id 
-                else
-                  ret[split_id] = value
-                end
-              end
-              
-              # assign new users
-              newly_assigned_users_and_alternatives = {}
-              newly_assigned_users_and_alternative_names = {}
-              alternative_counts = {}
-              new_assignments = experiment.random_alternatives(unassigned_split_ids.count)
-              unassigned_split_ids.each_with_index do |split_id, index|
-                alternative = new_assignments[index]
-                alternative_counts[alternative] = 0 if alternative_counts[alternative].nil?
-                alternative_counts[alternative] += 1
-                newly_assigned_users_and_alternatives[split_id] = alternative
-                newly_assigned_users_and_alternative_names[split_id] = alternative.name
-              end
-              
-              # increment participation counts
-              alternative_counts.each do |alt, count|
-                alt.participant_count += count
-              end
 
-              # this sets alternatives for each user
-              begin_experiment_in_batch(experiment, newly_assigned_users_and_alternative_names)
+          predetermined_alternative = predetermined_alternative(experiment)
 
-              newly_assigned_users_and_alternatives.each do |elm|
-                # prepare 100 trials
-                split_id = elm[0]
-                altnerative = elm[1]
-                trial = Trial.new(:experiment => experiment, :user => split_id)
-                trial.alternative = altnerative
+          if predetermined_alternative
+            ret.each {|k,v| ret[k] = predetermined_alternative}
+          else # now we are in business. Time to find the participants and
+               # assign the rest of the new users.
 
-                # call post choose hook
-                call_trial_choose_hook(trial)
+            # find all the ones that are assigned
+            #NOTE: only redis adapter now has this method written
+            mapped_alternatives = Split::Persistence.adapter.fetch_values_in_batch(split_ids, experiment.key)
+            unassigned_split_ids = []
+            mapped_alternatives.each do |split_id, value|
+              if value.nil?
+                unassigned_split_ids << split_id
+              else
+                ret[split_id] = value
               end
-              # merge newly bucketed users into the return hash
-              ret.merge!(newly_assigned_users_and_alternative_names)
             end
-          end  
+
+            # assign new users
+            newly_assigned_users_and_alternatives = {}
+            newly_assigned_users_and_alternative_names = {}
+            alternative_counts = {}
+            new_assignments = experiment.random_alternatives(unassigned_split_ids.count)
+            unassigned_split_ids.each_with_index do |split_id, index|
+              alternative = new_assignments[index]
+              alternative_counts[alternative] = 0 if alternative_counts[alternative].nil?
+              alternative_counts[alternative] += 1
+              newly_assigned_users_and_alternatives[split_id] = alternative
+              newly_assigned_users_and_alternative_names[split_id] = alternative.name
+            end
+
+            # increment participation counts
+            alternative_counts.each do |alt, count|
+              alt.participant_count += count
+            end
+
+            # this sets alternatives for each user
+            begin_experiment_in_batch(experiment, newly_assigned_users_and_alternative_names)
+
+            newly_assigned_users_and_alternatives.each do |elm|
+              # prepare 100 trials
+              split_id = elm[0]
+              altnerative = elm[1]
+              trial = Trial.new(:experiment => experiment, :user => split_id)
+              trial.alternative = altnerative
+
+              # call post choose hook
+              call_trial_choose_hook(trial)
+            end
+            # merge newly bucketed users into the return hash
+            ret.merge!(newly_assigned_users_and_alternative_names)
+          end
         else
           control_name = control_variable(control)
           ret.select{|k,v| v.nil?}.each{|k,v| ret[k] = control_name}
@@ -286,31 +277,41 @@ module Split
       Hash === control ? control.keys.first : control
     end
 
-    def start_trial(trial, check_winner = true)
-      experiment = trial.experiment
-      # if an alternative is specified in URL params, we change the user bucket to that alternative
+    def predetermined_alternative(experiment, check_winner = true)
       if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
         ret = override_alternative(experiment.name)
-      # we always just go with the winner if already chosen
+        # we always just go with the winner if already chosen
       elsif check_winner && experiment.has_winner?
         ret = experiment.winner.name
-      # we go with the control if enough participants
-      elsif experiment.has_enough_participants? 
+        # we go with the control if enough participants
+      elsif experiment.has_enough_participants?
         ret = experiment.control.name
       else
         if exclude_visitor? || not_started?(experiment)
           ret = experiment.control.name
         else
-          if experiment.participating?(split_id) # stay in the same bucket if already bucketed
-            trial.choose!
-          else
-            trial.choose! # this calls trial.record! which increments participant counts
-            call_trial_choose_hook(trial)
-            begin_experiment(experiment)
-          end
-
-          ret = trial.alternative.name
+          ret = nil
         end
+      end
+      ret
+    end
+
+    def start_trial(trial, check_winner = true)
+      experiment = trial.experiment
+      # if an alternative is specified in URL params, we change the user bucket to that alternative
+      predetermined_alternative = predetermined_alternative(experiment)
+      if predetermined_alternative
+        ret = predetermined_alternative
+      else
+        if experiment.participating?(split_id) # stay in the same bucket if already bucketed
+          trial.choose!
+        else
+          trial.choose! # this calls trial.record! which increments participant counts
+          call_trial_choose_hook(trial)
+          begin_experiment(experiment)
+        end
+
+        ret = trial.alternative.name
       end
 
       ret
