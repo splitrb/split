@@ -348,6 +348,18 @@ module Split
       end
     end
 
+    def cache_finished!(split_id, value, goal = nil)
+      @finished ||= {}
+
+      @finished[split_id] ||= {}
+
+      if goal
+        @finished[split_id][goal] = value
+      else
+        @finished[split_id]["nogoal"] = value
+      end
+    end
+
     def finish!(split_id, goal = nil)
       key = "#{self.key}:finished"
       key << ":#{goal}" if goal
@@ -361,6 +373,12 @@ module Split
       Split.redis.with do |conn|
         conn.sadd(key, split_id)
       end
+    end
+
+    def cache_participating!(split_id, value)
+      @participating ||= {}
+
+      @participating[split_id] = value
     end
 
     def participating?(split_id)
