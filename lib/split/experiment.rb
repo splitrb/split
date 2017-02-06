@@ -364,9 +364,19 @@ module Split
     end
 
     def participating?(split_id)
-      key = "#{self.key}:participants"
-      Split.redis.with do |conn|
-        conn.sismember(key, split_id)
+      @participating ||= {}
+
+      if !@participating[split_id].nil?
+        return @participating[split_id]
+      else
+        key = "#{self.key}:participants"
+        Split.redis.with do |conn|
+          conn.sismember(key, split_id)
+        end
+
+        @participating[split_id] = value
+
+        return value
       end
     end
 
