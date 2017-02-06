@@ -6,8 +6,20 @@ require 'spec_helper'
 describe Split::Helper do
   include Split::Helper
 
+  before(:example) do
+    Split.configuration.experiments = {
+      link_color: {
+        alternatives: [
+          { name: 'blue', percent: 10 },
+          { name: 'red', percent: 90 }
+        ],
+        goals: %w(purchase refund)
+      }
+    }
+  end
+
   let(:experiment) do
-    Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'red')
+    Split::ExperimentCatalog.find('link_color')
   end
 
   describe '.with_user' do
@@ -39,20 +51,6 @@ describe Split::Helper do
   end
 
   describe 'ab_test' do
-    context 'when passed strings of alternatives' do
-      context 'when the experiment already defined in configuration' do
-        it 'should raise an error' do
-          Split.configuration.experiments = {
-            sample_experiment: {
-              alternatives: %w(sample alternative),
-              scores: %w(score1 score2)
-            }
-          }
-          expect { ab_test(:sample_experiment, 'sample', 'alternative') }.to raise_error('Experiment already defined via configurations; call ab_test with experiment name only.')
-        end
-      end
-    end
-
     it 'should not raise an error when passed strings for alternatives' do
       expect(-> { ab_test('xyz', '1', '2', '3') }).not_to raise_error
     end
@@ -62,11 +60,23 @@ describe Split::Helper do
     end
 
     it 'should raise the appropriate error when passed integers for alternatives' do
-      expect(-> { ab_test('xyz', 1, 2, 3) }).to raise_error(ArgumentError)
+      expect do
+        Split.configuration.experiments = {
+          xyz: {
+            alternatives: [1, 2, 3]
+          }
+        }
+      end.to raise_error(ArgumentError)
     end
 
     it 'should raise the appropriate error when passed symbols for alternatives' do
-      expect(-> { ab_test('xyz', :a, :b, :c) }).to raise_error(ArgumentError)
+      expect do
+        Split.configuration.experiments = {
+          xyz: {
+            alternatives: [:a, :b, :c]
+          }
+        }
+      end.to raise_error(ArgumentError)
     end
 
     it 'should not raise error when passed an array for goals' do
@@ -78,7 +88,7 @@ describe Split::Helper do
     end
 
     it 'should assign a random alternative to a new user when there are an equal number of alternatives assigned' do
-      ab_test('link_color', 'blue', 'red')
+      ab_test('link_color')
       expect(%w(red blue)).to include(ab_user['link_color'])
     end
 
@@ -86,7 +96,7 @@ describe Split::Helper do
       previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
       previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
-      ab_test('link_color', 'blue', 'red')
+      ab_test('link_color')
 
       new_red_count = Split::Alternative.new('red', 'link_color').participant_count
       new_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -95,7 +105,7 @@ describe Split::Helper do
     end
 
     it 'should not increment the counter for an experiment that the user is not participating in' do
-      ab_test('link_color', 'blue', 'red')
+      ab_test('link_color')
       e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
       expect(lambda do
         # User shouldn't participate in this second experiment
@@ -122,31 +132,25 @@ describe Split::Helper do
     end
 
     it 'should return the given alternative for an existing user' do
-      expect(ab_test('link_color', 'blue', 'red')).to eq ab_test('link_color', 'blue', 'red')
+      expect(ab_test('link_color')).to eq ab_test('link_color')
     end
 
     it 'should always return the winner if one is present' do
       experiment.winner = 'orange'
 
-      expect(ab_test('link_color', 'blue', 'red')).to eq('orange')
+      expect(ab_test('link_color')).to eq('orange')
     end
 
     it 'should allow the alternative to be forced by passing it in the params' do
       # ?ab_test[link_color]=blue
       @params = { 'ab_test' => { 'link_color' => 'blue' } }
 
-      alternative = ab_test('link_color', 'blue', 'red')
-      expect(alternative).to eq('blue')
-
-      alternative = ab_test('link_color', { 'blue' => 1 }, 'red' => 5)
+      alternative = ab_test('link_color')
       expect(alternative).to eq('blue')
 
       @params = { 'ab_test' => { 'link_color' => 'red' } }
 
-      alternative = ab_test('link_color', 'blue', 'red')
-      expect(alternative).to eq('red')
-
-      alternative = ab_test('link_color', { 'blue' => 5 }, 'red' => 1)
+      alternative = ab_test('link_color')
       expect(alternative).to eq('red')
     end
 
@@ -159,12 +163,12 @@ describe Split::Helper do
     it 'should not store the split when a param forced alternative' do
       @params = { 'ab_test' => { 'link_color' => 'blue' } }
       expect(ab_user).not_to receive(:[]=)
-      ab_test('link_color', 'blue', 'red')
+      ab_test('link_color')
     end
 
     it 'SPLIT_DISABLE query parameter should also force the alternative (uses control)' do
       @params = { 'SPLIT_DISABLE' => 'true' }
-      alternative = ab_test('link_color', 'blue', 'red')
+      alternative = ab_test('link_color')
       expect(alternative).to eq('blue')
       alternative = ab_test('link_color', { 'blue' => 1 }, 'red' => 5)
       expect(alternative).to eq('blue')
@@ -177,7 +181,7 @@ describe Split::Helper do
     it 'should not store the split when Split generically disabled' do
       @params = { 'SPLIT_DISABLE' => 'true' }
       expect(ab_user).not_to receive(:[]=)
-      ab_test('link_color', 'blue', 'red')
+      ab_test('link_color')
     end
 
     context 'when store_override is set' do
@@ -186,7 +190,7 @@ describe Split::Helper do
       it 'should store the forced alternative' do
         @params = { 'ab_test' => { 'link_color' => 'blue' } }
         expect(ab_user).to receive(:[]=).with('link_color', 'blue')
-        ab_test('link_color', 'blue', 'red')
+        ab_test('link_color')
       end
     end
 
@@ -194,31 +198,23 @@ describe Split::Helper do
       before { Split.configuration.on_trial_choose = :some_method }
       it 'should call the method' do
         expect(self).to receive(:some_method)
-        ab_test('link_color', 'blue', 'red')
+        ab_test('link_color')
       end
     end
 
     it 'should allow passing a block' do
-      alt = ab_test('link_color', 'blue', 'red')
-      ret = ab_test('link_color', 'blue', 'red') { |alternative| "shared/#{alternative}" }
+      alt = ab_test('link_color')
+      ret = ab_test('link_color') { |alternative| "shared/#{alternative}" }
       expect(ret).to eq("shared/#{alt}")
     end
 
     it 'should allow the share of visitors see an alternative to be specified' do
-      ab_test('link_color', { 'blue' => 0.8 }, 'red' => 20)
+      ab_test('link_color')
       expect(%w(red blue)).to include(ab_user['link_color'])
     end
 
-    it 'should allow alternative weighting interface as a single hash' do
-      ab_test('link_color', { 'blue' => 0.01 }, 'red' => 0.2)
-      experiment = Split::ExperimentCatalog.find('link_color')
-      expect(experiment.alternatives.map(&:name)).to eq(%w(blue red))
-      # TODO: persist alternative weights
-      # expect(experiment.alternatives.collect{|a| a.weight}).to eq([0.01, 0.2])
-    end
-
     it 'should only let a user participate in one experiment at a time' do
-      link_color = ab_test('link_color', 'blue', 'red')
+      link_color = ab_test('link_color')
       ab_test('button_size', 'small', 'big')
       expect(ab_user['link_color']).to eq(link_color)
       big = Split::Alternative.new('big', 'button_size')
@@ -230,9 +226,12 @@ describe Split::Helper do
     it 'should let a user participate in many experiment with allow_multiple_experiments option' do
       Split.configure do |config|
         config.allow_multiple_experiments = true
+        config.experiments[:button_size] = {
+          alternatives: %w(small big)
+        }
       end
-      link_color = ab_test('link_color', 'blue', 'red')
-      button_size = ab_test('button_size', 'small', 'big')
+      link_color = ab_test('link_color')
+      button_size = ab_test('button_size')
       expect(ab_user['link_color']).to eq(link_color)
       expect(ab_user['button_size']).to eq(button_size)
       button_size_alt = Split::Alternative.new(button_size, 'button_size')
@@ -243,9 +242,20 @@ describe Split::Helper do
       it "should let a user participate in many experiment with one non-'control' alternative" do
         Split.configure do |config|
           config.allow_multiple_experiments = 'control'
+          config.experiments = Array.new(10) do |n|
+            [
+              "test#{n}".to_sym,
+              {
+                alternatives: [
+                  { name: 'control', percent: 10 - n },
+                  { name: "test#{n}-alt", percent: n }
+                ]
+              }
+            ]
+          end.to_h
         end
-        groups = Array.new(100) do |n|
-          ab_test("test#{n}".to_sym, { 'control' => (100 - n) }, "test#{n}-alt" => n)
+        groups = Array.new(10) do |n|
+          ab_test("test#{n}")
         end
 
         experiments = ab_user.active_experiments
@@ -263,23 +273,30 @@ describe Split::Helper do
         before do
           Split.configure do |config|
             config.allow_multiple_experiments = 'control'
+            config.experiments = {
+              test_0: {
+                alternatives: %w(control test-alt)
+              },
+              test_1: {
+                alternatives: %w(control test-alt)
+              }
+            }
           end
-          Split::ExperimentCatalog.find_or_initialize('test_0', 'control', 'test-alt').save
-          Split::ExperimentCatalog.find_or_initialize('test_1', 'control', 'test-alt').save
+          Split::ExperimentCatalog.find('test_0').save
+          Split::ExperimentCatalog.find('test_1').save
         end
 
         it 'should restore previously selected alternative' do
           expect(ab_user.active_experiments.size).to eq 1
-          expect(ab_test(:test_0, { 'control' => 100 }, 'test-alt' => 1)).to eq 'test-alt'
-          expect(ab_test(:test_0, { 'control' => 1 }, 'test-alt' => 100)).to eq 'test-alt'
+          expect(ab_test(:test_0)).to eq 'test-alt'
         end
 
         it 'lets override existing choice' do
           pending 'this requires user store reset on first call not depending on whelther it is current trial'
           @params = { 'ab_test' => { 'test_1' => 'test-alt' } }
 
-          expect(ab_test(:test_0, { 'control' => 0 }, 'test-alt' => 100)).to eq 'control'
-          expect(ab_test(:test_1, { 'control' => 100 }, 'test-alt' => 1)).to eq 'test-alt'
+          expect(ab_test(:test_0)).to eq 'control'
+          expect(ab_test(:test_1)).to eq 'test-alt'
         end
       end
     end
@@ -288,7 +305,7 @@ describe Split::Helper do
       experiment.increment_version
       ab_user = { experiment.key => 'blue', experiment.finished_key => true }
       finished_session = ab_user.dup
-      ab_test('link_color', 'blue', 'red')
+      ab_test('link_color')
       expect(ab_user).to eq(finished_session)
     end
   end
@@ -352,8 +369,8 @@ describe Split::Helper do
     before(:each) do
       @experiment_name = 'link_color'
       @alternatives = %w(blue red)
-      @experiment = Split::ExperimentCatalog.find_or_create(@experiment_name, *@alternatives)
-      @alternative_name = ab_test(@experiment_name, *@alternatives)
+      @experiment = Split::ExperimentCatalog.find(@experiment_name)
+      @alternative_name = ab_test(@experiment_name)
       @previous_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
     end
 
@@ -418,7 +435,7 @@ describe Split::Helper do
 
     it 'should reset the users session when experiment is versioned' do
       @experiment.increment_version
-      @alternative_name = ab_test(@experiment_name, *@alternatives)
+      @alternative_name = ab_test(@experiment_name)
 
       expect(ab_user[@experiment.key]).to eq(@alternative_name)
       ab_finished(@experiment_name)
@@ -881,7 +898,7 @@ describe Split::Helper do
 
   describe 'conversions' do
     it 'should return a conversion rate for an alternative' do
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color')
 
       previous_convertion_rate = Split::Alternative.new(alternative_name, 'link_color').conversion_rate
       expect(previous_convertion_rate).to eq(0.0)
@@ -894,15 +911,28 @@ describe Split::Helper do
   end
 
   describe 'active experiments' do
+    before(:example) do
+      Split.configure do |config|
+        config.experiments ||= {}
+        config.experiments = config.experiments.merge(
+          def: {
+            alternatives: %w(4 5 6)
+          },
+          ghi: {
+            alternatives: %w(7 8 9)
+          }
+        )
+      end
+    end
     it 'should show an active test' do
-      alternative = ab_test('def', '4', '5', '6')
+      alternative = ab_test('def')
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq 'def'
       expect(active_experiments.first[1]).to eq alternative
     end
 
     it 'should show a finished test' do
-      alternative = ab_test('def', '4', '5', '6')
+      alternative = ab_test('def')
       ab_finished('def', reset: false)
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq 'def'
@@ -912,7 +942,7 @@ describe Split::Helper do
     it 'should show an active test when an experiment is on a later version' do
       experiment.reset
       expect(experiment.version).to eq(1)
-      ab_test('link_color', 'blue', 'red')
+      ab_test('link_color')
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq 'link_color'
     end
@@ -921,8 +951,8 @@ describe Split::Helper do
       Split.configure do |config|
         config.allow_multiple_experiments = true
       end
-      alternative = ab_test('def', '4', '5', '6')
-      another_alternative = ab_test('ghi', '7', '8', '9')
+      alternative = ab_test('def')
+      another_alternative = ab_test('ghi')
       expect(active_experiments.count).to eq 2
       expect(active_experiments['def']).to eq alternative
       expect(active_experiments['ghi']).to eq another_alternative
@@ -932,10 +962,10 @@ describe Split::Helper do
       Split.configure do |config|
         config.allow_multiple_experiments = true
       end
-      e = Split::ExperimentCatalog.find_or_create('def', '4', '5', '6')
+      e = Split::ExperimentCatalog.find('def')
       e.winner = '4'
-      alternative = ab_test('def', '4', '5', '6')
-      another_alternative = ab_test('ghi', '7', '8', '9')
+      alternative = ab_test('def')
+      another_alternative = ab_test('ghi')
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq 'ghi'
       expect(active_experiments.first[1]).to eq another_alternative
@@ -949,7 +979,7 @@ describe Split::Helper do
 
     describe 'ab_test' do
       it 'should return the control' do
-        alternative = ab_test('link_color', 'blue', 'red')
+        alternative = ab_test('link_color')
         expect(alternative).to eq experiment.control.name
       end
 
@@ -957,7 +987,7 @@ describe Split::Helper do
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
-        ab_test('link_color', 'blue', 'red')
+        ab_test('link_color')
 
         new_red_count = Split::Alternative.new('red', 'link_color').participant_count
         new_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -968,7 +998,7 @@ describe Split::Helper do
 
     describe 'finished' do
       it 'should not increment the completed count' do
-        alternative_name = ab_test('link_color', 'blue', 'red')
+        alternative_name = ab_test('link_color')
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
@@ -990,7 +1020,7 @@ describe Split::Helper do
       end
 
       it 'ignores the ab_test' do
-        ab_test('link_color', 'blue', 'red')
+        ab_test('link_color')
 
         red_count = Split::Alternative.new('red', 'link_color').participant_count
         blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -1002,7 +1032,7 @@ describe Split::Helper do
   shared_examples_for 'a disabled test' do
     describe 'ab_test' do
       it 'should return the control' do
-        alternative = ab_test('link_color', 'blue', 'red')
+        alternative = ab_test('link_color')
         expect(alternative).to eq experiment.control.name
       end
 
@@ -1010,7 +1040,7 @@ describe Split::Helper do
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
-        ab_test('link_color', 'blue', 'red')
+        ab_test('link_color')
 
         new_red_count = Split::Alternative.new('red', 'link_color').participant_count
         new_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
@@ -1021,7 +1051,7 @@ describe Split::Helper do
 
     describe 'finished' do
       it 'should not increment the completed count' do
-        alternative_name = ab_test('link_color', 'blue', 'red')
+        alternative_name = ab_test('link_color')
 
         previous_completion_count = Split::Alternative.new(alternative_name, 'link_color').completed_count
 
@@ -1078,7 +1108,7 @@ describe Split::Helper do
       end
 
       it 'works as usual' do
-        alternative_name = ab_test('link_color', 'red', 'blue')
+        alternative_name = ab_test('link_color')
         expect do
           ab_finished('link_color')
         end.to change(Split::Alternative.new(alternative_name, 'link_color'), :completed_count).by(1)
@@ -1088,7 +1118,7 @@ describe Split::Helper do
 
   describe 'versioned experiments' do
     it 'should use version zero if no version is present' do
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color')
       expect(experiment.version).to eq(0)
       expect(ab_user['link_color']).to eq(alternative_name)
     end
@@ -1096,21 +1126,21 @@ describe Split::Helper do
     it 'should save the version of the experiment to the session' do
       experiment.reset
       expect(experiment.version).to eq(1)
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color')
       expect(ab_user['link_color:1']).to eq(alternative_name)
     end
 
     it 'should load the experiment even if the version is not 0' do
       experiment.reset
       expect(experiment.version).to eq(1)
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color')
       expect(ab_user['link_color:1']).to eq(alternative_name)
-      return_alternative_name = ab_test('link_color', 'blue', 'red')
+      return_alternative_name = ab_test('link_color')
       expect(return_alternative_name).to eq(alternative_name)
     end
 
     it 'should reset the session of a user on an older version of the experiment' do
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color')
       expect(ab_user['link_color']).to eq(alternative_name)
       alternative = Split::Alternative.new(alternative_name, 'link_color')
       expect(alternative.participant_count).to eq(1)
@@ -1120,14 +1150,14 @@ describe Split::Helper do
       alternative = Split::Alternative.new(alternative_name, 'link_color')
       expect(alternative.participant_count).to eq(0)
 
-      new_alternative_name = ab_test('link_color', 'blue', 'red')
+      new_alternative_name = ab_test('link_color')
       expect(ab_user['link_color:1']).to eq(new_alternative_name)
       new_alternative = Split::Alternative.new(new_alternative_name, 'link_color')
       expect(new_alternative.participant_count).to eq(1)
     end
 
     it 'should cleanup old versions of experiments from the session' do
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color')
       expect(ab_user['link_color']).to eq(alternative_name)
       alternative = Split::Alternative.new(alternative_name, 'link_color')
       expect(alternative.participant_count).to eq(1)
@@ -1137,12 +1167,12 @@ describe Split::Helper do
       alternative = Split::Alternative.new(alternative_name, 'link_color')
       expect(alternative.participant_count).to eq(0)
 
-      new_alternative_name = ab_test('link_color', 'blue', 'red')
+      new_alternative_name = ab_test('link_color')
       expect(ab_user['link_color:1']).to eq(new_alternative_name)
     end
 
     it 'should only count completion of users on the current version' do
-      alternative_name = ab_test('link_color', 'blue', 'red')
+      alternative_name = ab_test('link_color')
       expect(ab_user['link_color']).to eq(alternative_name)
       alternative = Split::Alternative.new(alternative_name, 'link_color')
 
@@ -1169,7 +1199,7 @@ describe Split::Helper do
 
       describe 'ab_test' do
         it 'should raise an exception' do
-          expect(-> { ab_test('link_color', 'blue', 'red') }).to raise_error(Errno::ECONNREFUSED)
+          expect(-> { ab_test('link_color') }).to raise_error(Errno::ECONNREFUSED)
         end
       end
 
@@ -1187,11 +1217,11 @@ describe Split::Helper do
         end
 
         it 'should not attempt to connect to redis' do
-          expect(-> { ab_test('link_color', 'blue', 'red') }).not_to raise_error
+          expect(-> { ab_test('link_color') }).not_to raise_error
         end
 
         it 'should return control variable' do
-          expect(ab_test('link_color', 'blue', 'red')).to eq('blue')
+          expect(ab_test('link_color')).to eq('blue')
           expect(-> { ab_finished('link_color') }).not_to raise_error
         end
       end
@@ -1206,7 +1236,7 @@ describe Split::Helper do
 
       describe 'ab_test' do
         it 'should not raise an exception' do
-          expect(-> { ab_test('link_color', 'blue', 'red') }).not_to raise_error
+          expect(-> { ab_test('link_color') }).not_to raise_error
         end
 
         it 'should call db_failover_on_db_error proc with error as parameter' do
@@ -1217,14 +1247,14 @@ describe Split::Helper do
           end
 
           expect(Split.configuration.db_failover_on_db_error).to receive(:call).and_call_original
-          ab_test('link_color', 'blue', 'red')
+          ab_test('link_color')
         end
 
         it 'should always use first alternative' do
-          expect(ab_test('link_color', 'blue', 'red')).to eq('blue')
+          expect(ab_test('link_color')).to eq('blue')
           expect(ab_test('link_color', { 'blue' => 0.01 }, 'red' => 0.2)).to eq('blue')
           expect(ab_test('link_color', { 'blue' => 0.8 }, 'red' => 20)).to eq('blue')
-          expect(ab_test('link_color', 'blue', 'red') do |alternative|
+          expect(ab_test('link_color') do |alternative|
             "shared/#{alternative}"
           end).to eq('shared/blue')
         end
@@ -1239,11 +1269,8 @@ describe Split::Helper do
           context 'and given an override parameter' do
             it 'should use given override instead of the first alternative' do
               @params = { 'ab_test' => { 'link_color' => 'red' } }
-              expect(ab_test('link_color', 'blue', 'red')).to eq('red')
-              expect(ab_test('link_color', 'blue', 'red', 'green')).to eq('red')
-              expect(ab_test('link_color', { 'blue' => 0.01 }, 'red' => 0.2)).to eq('red')
-              expect(ab_test('link_color', { 'blue' => 0.8 }, 'red' => 20)).to eq('red')
-              expect(ab_test('link_color', 'blue', 'red') do |alternative|
+              expect(ab_test('link_color')).to eq('red')
+              expect(ab_test('link_color') do |alternative|
                 "shared/#{alternative}"
               end).to eq('shared/red')
             end
@@ -1395,7 +1422,7 @@ describe Split::Helper do
 
   it 'should handle multiple experiments correctly' do
     experiment2 = Split::ExperimentCatalog.find_or_create('link_color2', 'blue', 'red')
-    alternative_name = ab_test('link_color', 'blue', 'red')
+    alternative_name = ab_test('link_color')
     alternative_name2 = ab_test('link_color2', 'blue', 'red')
     ab_finished('link_color2')
 
@@ -1406,9 +1433,10 @@ describe Split::Helper do
 
   context 'with goals' do
     before do
-      @experiment = { 'link_color' => %w(purchase refund) }
+      @experiment = 'link_color'
       @alternatives = %w(blue red)
-      @experiment_name, @goals = normalize_metric(@experiment)
+      @experiment_name = 'link_color'
+      @goals = %w(purchase refund)
       @goal1 = @goals[0]
       @goal2 = @goals[1]
     end
@@ -1428,7 +1456,7 @@ describe Split::Helper do
 
     describe 'ab_finished' do
       before do
-        @alternative_name = ab_test(@experiment, *@alternatives)
+        @alternative_name = ab_test(@experiment)
       end
 
       it 'should increment the counter for the specified-goal completed alternative' do
