@@ -512,7 +512,7 @@ module Split
       Split.redis.with do |conn|
         key = "#{self.key}:finished"
         conn.del(key)
-        goals.each do |goal|
+        (goals + ["nogoal"]).each do |goal|
           goal_key << ":#{goal}"
           conn.del(goal_key)
         end
