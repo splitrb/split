@@ -7,11 +7,9 @@ module Split
     attr_accessor :db_failover
     attr_accessor :db_failover_on_db_error
     attr_accessor :db_failover_allow_parameter_override
-    attr_accessor :allow_multiple_experiments
     attr_accessor :enabled
     attr_accessor :persistence
     attr_accessor :algorithm
-    attr_accessor :store_override
     attr_accessor :start_manually
     attr_accessor :on_trial_choose
     attr_accessor :on_trial_complete
@@ -201,10 +199,9 @@ module Split
       @on_experiment_delete = proc{|experiment|}
       @on_experiment_end = proc{|experiment|}
       @db_failover_allow_parameter_override = false
-      @allow_multiple_experiments = false
       @enabled = true
       @experiments = {}
-      @persistence = Split::Persistence::SessionAdapter
+      @persistence = Split::Persistence::RedisAdapter
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
       @pipeline_size = 5000
