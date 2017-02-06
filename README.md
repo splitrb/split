@@ -130,7 +130,7 @@ end
 
 ## Usage
 
-To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different alternatives which you wish to test on as the other arguments.
+To begin your ab test use the `ab_test` method, naming your experiment with the first arguments. **The experiment has to be predefined in the experiments configuration hash.**
 
 `ab_test` returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on. You can also call `ab_test_result(<experiment_name>)` to get chosen alternative if the user has already seen the experiment (it will return `nil` otherwise).
 
@@ -138,10 +138,28 @@ It can be used to render different templates, show different text or any other c
 
 `ab_finished` is used to make a completion of an experiment, or conversion.
 
+Example: Experiments configuration
+
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    login_button: {
+      alternatives: ['/images/button1.jpg', '/images/button2.jpg']
+    },
+    new_user_free_points: {
+      alternatives: ['100', '200', '300']
+    },
+    signup_page_redesign: {
+      alternatives: ['first_design', 'second_design']
+    }
+  }
+end
+```
+
 Example: View
 
 ```erb
-<% ab_test(:login_button, "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
+<% ab_test(:login_button) do |button_file| %>
   <%= image_tag(button_file, alt: "Login!") %>
 <% end %>
 ```
@@ -151,7 +169,7 @@ Example: Controller
 ```ruby
 def register_new_user
   # See what level of free points maximizes users' decision to buy replacement points.
-  @starter_points = ab_test(:new_user_free_points, '100', '200', '300')
+  @starter_points = ab_test(:new_user_free_points)
 end
 ```
 
@@ -169,8 +187,6 @@ Example: Conversion tracking (in a view)
 ```erb
 Thanks for signing up, dude! <% ab_finished(:signup_page_redesign) %>
 ```
-
-You can find more examples, tutorials and guides on the [wiki](https://github.com/splitrb/split/wiki).
 
 ## Statistical Validity
 
@@ -191,17 +207,23 @@ The second option uses simulations from a beta distribution to determine the pro
 
 Perhaps you only want to show an alternative to 10% of your visitors because it is very experimental or not yet fully load tested.
 
-To do this you can pass a weight with each alternative in the following ways:
+To do this you can pass a weight with each alternative in the following way:
 
 ```ruby
-ab_test(:homepage_design, {'Old' => 18}, {'New' => 2})
-
-ab_test(:homepage_design, 'Old', {'New' => 1.0/9})
-
-ab_test(:homepage_design, {'Old' => 9}, 'New')
+# Experiments config:
+Split.configure do |config|
+  config.experiments = {
+    homepage_design: {
+      alternatives: [
+        { name: 'Old', percent: '90' },
+        { name: 'New', percent: '10' }
+      ]
+    }
+  }
+end
 ```
 
-This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
+This will only show the new alternative to visitors 1 in 10 times.
 
 ### Overriding alternatives
 
@@ -705,12 +727,6 @@ Split::Helper.ab_score_alternative(:my_first_experiment, "alt_one", "score_one",
 
 You might wish to allow an experiment to have multiple, distinguishable goals.
 The API to define goals for an experiment is this:
-
-```ruby
-ab_test({link_color: ["purchase", "refund"]}, "red", "blue")
-```
-
-or you can you can define them in a configuration file:
 
 ```ruby
 Split.configure do |config|

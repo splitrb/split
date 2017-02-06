@@ -308,6 +308,13 @@ describe Split::Helper do
       ab_test('link_color')
       expect(ab_user).to eq(finished_session)
     end
+
+    context 'when called with with alternatives/goals as its argument' do
+      it 'should return control immediately' do
+        expect(ab_test('link_color', 'wew', 'lad')).to eq('wew')
+        expect(ab_test({'link_color' => 'test'}, 'top', 'kek')).to eq('top')
+      end
+    end
   end
 
   describe 'ab_test_result' do
