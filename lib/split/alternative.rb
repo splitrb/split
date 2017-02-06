@@ -156,9 +156,9 @@ module Split
       end
     end
 
-    def increment_participation
+    def increment_participation(count = 1)
       Split.redis.with do |conn|
-        conn.hincrby key, 'participant_count', 1
+        conn.hincrby key, 'participant_count', count
       end
     end
 

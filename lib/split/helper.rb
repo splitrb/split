@@ -16,54 +16,13 @@ module Split
 
           if predetermined_alternative
             ret.each {|k,v| ret[k] = predetermined_alternative}
-          else # now we are in business. Time to find the participants and
-               # assign the rest of the new users.
+          else
+            # preload participating? states for all split_ids
+            Split::Experiment.preload_participating!(experiment, split_ids)
 
-            # find all the ones that are assigned
-            #NOTE: only redis adapter now has this method written
-            mapped_alternatives = Split::Persistence.adapter.fetch_values_in_batch(split_ids, experiment.key)
-            unassigned_split_ids = []
-            mapped_alternatives.each do |split_id, value|
-              if value.nil?
-                unassigned_split_ids << split_id
-              else
-                ret[split_id] = value
-              end
-            end
-
-            # assign new users
-            newly_assigned_users_and_alternatives = {}
-            newly_assigned_users_and_alternative_names = {}
-            alternative_counts = {}
-            new_assignments = experiment.random_alternatives(unassigned_split_ids.count)
-            unassigned_split_ids.each_with_index do |split_id, index|
-              alternative = new_assignments[index]
-              alternative_counts[alternative] = 0 if alternative_counts[alternative].nil?
-              alternative_counts[alternative] += 1
-              newly_assigned_users_and_alternatives[split_id] = alternative
-              newly_assigned_users_and_alternative_names[split_id] = alternative.name
-            end
-
-            # increment participation counts
-            alternative_counts.each do |alt, count|
-              alt.participant_count += count
-            end
-
-            # this sets alternatives for each user
-            begin_experiment_in_batch(experiment, newly_assigned_users_and_alternative_names)
-
-            newly_assigned_users_and_alternatives.each do |elm|
-              # prepare 100 trials
-              split_id = elm[0]
-              altnerative = elm[1]
-              trial = Trial.new(:experiment => experiment, :user => split_id)
-              trial.alternative = altnerative
-
-              # call post choose hook
-              call_trial_choose_hook(trial)
-            end
-            # merge newly bucketed users into the return hash
-            ret.merge!(newly_assigned_users_and_alternative_names)
+            trial = Trial.new(:experiment => experiment, :users => split_ids)
+            ret = trial.choose!
+            call_trial_choose_hook(trial)
           end
         else
           control_name = control_variable(control)
@@ -99,7 +58,7 @@ module Split
 
         ret = if Split.configuration.enabled
           experiment.save
-          start_trial( Trial.new(:experiment => experiment, :user => split_id) )
+          start_trial( Trial.new(:experiment => experiment, :users => split_id) )
         else
           control_variable(control)
         end
@@ -132,13 +91,13 @@ module Split
 
       if options[:goals].any?
         options[:goals].each do |goal|
-          trial = Trial.new(:experiment => experiment, :goals => Array(goal), :value => options[:value], :user => split_id)
+          trial = Trial.new(:experiment => experiment, :goals => Array(goal), :value => options[:value], :users => split_id)
           # trial.complete!() calls alternative.increment_completion
           # So this is where counts and values are incremented.
           call_trial_complete_hook(trial) if trial.complete!
         end
       else
-        trial = Trial.new(:experiment => experiment, :goals => options[:goals], :value => options[:value], :user => split_id)
+        trial = Trial.new(:experiment => experiment, :goals => options[:goals], :value => options[:value], :users => split_id)
         call_trial_complete_hook(trial) if trial.complete!
       end
     end
@@ -155,33 +114,7 @@ module Split
         conn.hgetall(:experiment_winner)
       end || {}
 
-      experiments_metadata = []
-      goals.each do |goal|
-        experiments.each do |experiment|
-          key = "#{experiment.key}:finished:#{goal}"
-
-          experiments_metadata << {
-              :key => key,
-              :experiment => experiment,
-              :goal => goal
-          }
-        end
-      end
-
-      if experiments_metadata.present?
-        results = Split.redis.with do |conn|
-          conn.pipelined do
-            experiments_metadata.each do |metadata|
-              conn.sismember metadata[:key], split_id
-            end
-          end
-        end
-
-        results.each_with_index do |result, index|
-          key = experiments_metadata[index]
-          key[:experiment].cache_finished!(split_id, result, key[:goal])
-        end
-      end
+      Split::Experiment.preload_finished!(experiments, goals, split_id)
       extra_options = { skip_win_check: true } # we skip the winner check so the goals continue to accumulate
 
       if experiments.any?
@@ -300,14 +233,12 @@ module Split
         ret = predetermined_alternative
       else
         if experiment.participating?(split_id) # stay in the same bucket if already bucketed
-          trial.choose!
+          ret = trial.choose![split_id]
         else
-          trial.choose! # this calls trial.record! which increments participant counts
+          ret = trial.choose![split_id] # this calls trial.record! which increments participant counts
           call_trial_choose_hook(trial)
           begin_experiment(experiment)
         end
-
-        ret = trial.alternative.name
       end
 
       ret
