@@ -23,16 +23,16 @@ module Split
     def complete!
       if alternative
         if self.goals.empty?
-          if !experiment.finished?(split_id)
+          if !experiment.finished?(user)
             alternative.increment_unique_completion
-            experiment.finish!(split_id)
+            experiment.finish!(user)
           end
           alternative.increment_completion
         else
           self.goals.each {|g|
-            if !experiment.finished?(split_id, g)
+            if !experiment.finished?(user, g)
               alternative.increment_unique_completion(g, self.value)
-              experiment.finish!(split_id, g)
+              experiment.finish!(user, g)
             end
             alternative.increment_completion(g, self.value)
           }
@@ -42,18 +42,18 @@ module Split
 
     def choose!
       choose
-      if !experiment.participating?(split_id)
+      if !experiment.participating?(user)
         record!
       end
     end
 
     def record!
       alternative.increment_participation
-      experiment.participate!(split_id)
+      experiment.participate!(user)
     end
 
     def choose
-      self.alternative = experiment.next_alternative(split_id)
+      self.alternative = experiment.next_alternative(user)
     end
 
     def alternative=(alternative)
