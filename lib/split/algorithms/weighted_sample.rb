@@ -22,7 +22,7 @@ module Split
         alternatives_arr
       end
       
-      def self.choose_alternative(experiment)
+      def self.choose_alternative(experiment, split_id)
         weights = experiment.alternatives.map(&:weight)
 
         total = weights.inject(:+)
