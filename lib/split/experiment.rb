@@ -366,6 +366,8 @@ module Split
       Split.redis.with do |conn|
         conn.sadd(key, split_id)
       end
+
+      cache_finished!(split_id, true, goal)
     end
 
     def participate!(split_id)
@@ -373,6 +375,8 @@ module Split
       Split.redis.with do |conn|
         conn.sadd(key, split_id)
       end
+
+      cache_participating!(split_id, true)
     end
 
     def cache_participating!(split_id, value)
