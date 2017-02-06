@@ -328,10 +328,23 @@ module Split
     end
 
     def finished?(split_id, goal = nil)
-      key = "#{self.key}:finished"
-      key << ":#{goal}" if goal
-      Split.redis.with do |conn|
-        conn.sismember(key, split_id)
+      @finished ||= {}
+
+      goalkey = goal || "nogoal"
+
+      if !@finished[split_id].nil? && !@finished[split_id][goalkey].nil?
+        return @finished[split_id][goalkey]
+      else
+        key = "#{self.key}:finished"
+        key << ":#{goal}" if goal
+        value = Split.redis.with do |conn|
+          conn.sismember(key, split_id)
+        end
+
+        @finished[split_id] ||= {}
+        @finished[split_id][goalkey] = value
+
+        return value
       end
     end
 
