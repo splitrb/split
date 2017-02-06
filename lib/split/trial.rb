@@ -37,6 +37,9 @@ module Split
             alternative.increment_completion(g, self.value)
           }
         end
+        return true
+      else
+        return false
       end
     end
 
