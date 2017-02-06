@@ -283,10 +283,6 @@ module Split
       end
     end
 
-    def next_alternative(split_id)
-      winner || random_alternative(split_id)
-    end
-
     def random_alternative(split_id)
       if alternatives.length > 1
         algorithm.choose_alternative(self, split_id)

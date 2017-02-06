@@ -56,7 +56,7 @@ module Split
     end
 
     def choose
-      self.alternative = experiment.next_alternative(user)
+      self.alternative = experiment.random_alternative(user)
     end
 
     def alternative=(alternative)

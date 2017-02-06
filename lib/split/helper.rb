@@ -1,10 +1,6 @@
 module Split
   module Helper
     def batch_ab_test(metric_descriptor, split_ids, check_winner = true)
-      if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
-        puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
-      end
-      
       begin
         experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
         experiment_name = experiment_name_with_version.to_s.split(':')[0]
