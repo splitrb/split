@@ -14,7 +14,7 @@ module Split
           user
         end
         redis_adapter = Split::Persistence::RedisAdapter.with_config(
-          lookup_by: -> (context) { context.send(:current_user).try(:id) },
+          lookup_by: ->(context) { context.send(:current_user).try(:id) },
           expire_seconds: 2_592_000
         ).new(self)
         @ab_user = User.new(self, redis_adapter)
@@ -33,21 +33,35 @@ module Split
       end
     end
 
-    def ab_test(experiment_name, control = nil, *alternatives, user: nil)
+    def ab_test(experiment_name, control = nil, *_alternatives, user: nil)
       with_user(user) do
         begin
           experiment_name = experiment_name.keys[0] if experiment_name.is_a? Hash
           experiment = ExperimentCatalog.find_or_initialize(experiment_name)
           alternative =
-            if Split.configuration.enabled && !control && alternatives.empty?
-              experiment.save
-              trial = Trial.new(
-                user: ab_user, experiment: experiment,
-                override: override_alternative(experiment.name), exclude: exclude_visitor?,
-                disabled: split_generically_disabled?
-              )
-              alt = trial.choose!(self)
-              alt ? alt.name : nil
+            if Split.configuration.enabled
+              if Split.configuration.experiment_for(experiment_name) # in config?
+                experiment.save
+                trial = Trial.new(
+                  user: ab_user, experiment: experiment,
+                  override: override_alternative(experiment.name), exclude: exclude_visitor?,
+                  disabled: split_generically_disabled?
+                )
+                alt = trial.choose!(self)
+                alt ? alt.name : nil
+              else # not in config, return winner || control
+                if experiment.has_winner?
+                  experiment.winner.name
+                elsif control
+                  if control.is_a? Hash
+                    control.keys.first.to_s
+                  else
+                    control.to_s
+                  end
+                else
+                  raise ::Split::ExperimentNotFound, "Experiment #{experiment_name} not found in the configuration."
+                end
+              end
             else
               control_variable(experiment.control)
             end

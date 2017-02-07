@@ -311,9 +311,28 @@ describe Split::Helper do
     end
 
     context 'when called with with alternatives/goals as its argument' do
-      it 'should return control immediately' do
-        expect(ab_test('link_color', 'wew', 'lad')).to eq('blue')
-        expect(ab_test({ 'link_color' => 'test' }, 'top', 'kek')).to eq('blue')
+      context 'when the experiment is defined in configuration' do
+        it 'should ignore passed alternatives/goals and proceed as usual' do
+          alternative = ab_test({ link_color: %w(goal_one goal_two) }, { 'cyan' => 1 }, 'magenta' => 2)
+          expect(%w(blue red)).to include(alternative)
+        end
+      end
+
+      context 'when the experiment is not defined in configuration' do
+        context 'when the experiment has a winner' do
+          it 'should return the winner' do
+            ::Split.redis.hset(:experiment_winner, 'undefined_experiment', 'winning_alt')
+            alt_name = ab_test({ undefined_experiment: %w(goal1 goal2) }, { 'losing_alt' => 100 }, 'winning_alt' => 1)
+            expect(alt_name).to eq('winning_alt')
+          end
+        end
+
+        context 'when the experiment does not have a winner' do
+          it 'should return its control' do
+            alternative = ab_test({ undefined_experiment: %w(goal1 goal2) }, { 'losing_alt' => 1 }, 'winning_alt' => 100)
+            expect(alternative).to eq('losing_alt')
+          end
+        end
       end
     end
   end
@@ -326,7 +345,7 @@ describe Split::Helper do
         }
       }
     end
-    context 'with the name of an experiment do' do
+    context 'with the name of an experiment' do
       let(:experiment_name) { 'sample_experiment' }
       context 'when the user enrolls in the experiment' do
         before(:example) { @chosen_alternative = ab_test(experiment_name) }
