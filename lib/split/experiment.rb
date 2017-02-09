@@ -514,8 +514,7 @@ module Split
         key = "#{self.key}:finished"
         conn.del(key)
         (goals + ["nogoal"]).each do |goal|
-          goal_key << ":#{goal}"
-          conn.del(goal_key)
+          conn.del("#{key}:#{goal}")
         end
       end
     end
