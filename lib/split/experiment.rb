@@ -437,6 +437,7 @@ module Split
 
     def participate!(split_ids)
       split_ids = Array(split_ids)
+      return if split_ids.blank?
 
       key = "#{self.key}:participants"
       Split.redis.with do |conn|
