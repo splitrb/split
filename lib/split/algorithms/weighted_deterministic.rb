@@ -1,3 +1,4 @@
+require 'digest/murmurhash'
 module Split
   module Algorithms
     module WeightedDeterministic
