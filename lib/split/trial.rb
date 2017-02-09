@@ -12,6 +12,18 @@ module Split
       self.users = Array(attrs[:users]) if !attrs[:users].nil?
     end
 
+    def alternative
+      @alternative ||=
+      begin
+        if @users.length <= 1
+          choose
+          @alternatives.values.first
+        else
+          false
+        end
+      end
+    end
+
     def complete!
       if alternative
         if self.goals.empty?
