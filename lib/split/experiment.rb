@@ -463,7 +463,7 @@ module Split
         return @participating[split_id]
       else
         key = "#{self.key}:participants"
-        Split.redis.with do |conn|
+        value = Split.redis.with do |conn|
           conn.sismember(key, split_id)
         end
 
