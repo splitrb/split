@@ -1,3 +1,3 @@
-%w[weighted_sample whiplash].each do |f|
+%w[weighted_deterministic].each do |f|
   require "split/algorithms/#{f}"
 end

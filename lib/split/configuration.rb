@@ -202,7 +202,7 @@ module Split
       @enabled = true
       @experiments = {}
       @persistence = Split::Persistence::RedisAdapter
-      @algorithm = Split::Algorithms::WeightedSample
+      @algorithm = Split::Algorithms::WeightedDeterministic
       @include_rails_helper = true
       @pipeline_size = 5000
     end

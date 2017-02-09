@@ -43,14 +43,15 @@ module Split
       choose
       record!
 
+      @alternatives.update(@alternatives){|user, alternative| alternative.name}
       @alternatives
     end
 
     def record!
       @alternatives.group_by{|user,alternative| alternative}.each_pair do |alternative, pairs|
-        non_participating_users = pairs.select{|user,alternative| !experiment.participating?(user) }
+        non_participating_users = pairs.select{|pair| !experiment.participating?(pair[0]) }.collect{|n| n[0]}
         alternative.increment_participation(non_participating_users.length)
-        experiment.participate!(non_participating_users.keys)
+        experiment.participate!(non_participating_users)
       end
     end
 
