@@ -191,6 +191,11 @@ module Split
       (completed_count(goal).to_f)/participant_count.to_f
     end
 
+    def unique_conversion_rate(goal = nil)
+      return 0 if participant_count.zero?
+      (unique_completed_count(goal).to_f)/participant_count.to_f
+    end
+
     def experiment
       @experiment ||= Split::Experiment.find(experiment_name)
     end
@@ -263,6 +268,17 @@ module Split
 
       if self.completed_count(goal) > 0 && experiment.control.completed_count(goal) > 0
         bayesian_beta_probability(self.completed_count(goal), experiment.control.completed_count(goal))
+      else
+        "N/A"
+      end
+    end
+
+    def unique_beta_probability_better_than_control(goal = nil)
+      return "N/A" if experiment.control.name == self.name
+      return "Needs 50+ participants." if self.participant_count < 50
+
+      if self.unique_completed_count(goal) > 0 && experiment.control.unique_completed_count(goal) > 0
+        bayesian_beta_probability(self.unique_completed_count(goal), experiment.control.unique_completed_count(goal))
       else
         "N/A"
       end

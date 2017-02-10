@@ -9,6 +9,7 @@
     <tr>
       <th>Alternative Name</th>
       <th>Participants</th>
+      <th>Uniqueness</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
       <th>Confidence</th>
@@ -25,7 +26,16 @@
           <% end %>
         </td>
         <td><%= alternative.participant_count %></td>
-        <td><%= alternative.completed_count(goal) %></td>
+        <td>
+          unique
+          <br />
+          non-unique
+        </td>
+        <td>
+          <%= alternative.unique_completed_count(goal) %>
+          <br />
+          <%= alternative.completed_count(goal) %>
+        </td>
         <td>
           <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
           <% if experiment.control.conversion_rate(goal) > 0 && !alternative.control? %>
@@ -39,9 +49,24 @@
               </span>
             <% end  %>
           <% end %>
+          <br />
+          <%= number_to_percentage(alternative.unique_conversion_rate(goal)) %>%
+          <% if experiment.control.unique_conversion_rate(goal) > 0 && !alternative.control? %>
+              <% if alternative.unique_conversion_rate(goal) > experiment.control.unique_conversion_rate(goal) %>
+              <span class='better'>
+                +<%= number_to_percentage((alternative.unique_conversion_rate(goal)/experiment.control.unique_conversion_rate(goal))-1) %>%
+              </span>
+              <% elsif alternative.unique_conversion_rate(goal) < experiment.control.unique_conversion_rate(goal) %>
+              <span class='worse'>
+                <%= number_to_percentage((alternative.unique_conversion_rate(goal)/experiment.control.unique_conversion_rate(goal))-1) %>%
+              </span>
+              <% end  %>
+          <% end %>
         </td>
         <td>
-          <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
+          <!--<span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>-->
+          <!--<br />-->
+          <span title='probability: <%= round(alternative.unique_beta_probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.unique_beta_probability_better_than_control(goal)) %></span>
           <br />
           <span title='probability: <%= round(alternative.beta_probability_better_than_control(goal), 3) %>'><%= probability_confidence(alternative.beta_probability_better_than_control(goal)) %></span>
         </td>
@@ -62,6 +87,7 @@
       </tr>
       <% if alternative.completed_value(goal) != "N/A" %>
         <tr>
+          <td></td>
           <td></td>
           <td></td>
           <td><strong>Order</strong></td>
@@ -92,6 +118,7 @@
       <% end %>
       <% if alternative.combined_value(goal) != "N/A" %>
         <tr>
+          <td></td>
           <td></td>
           <td></td>
           <td><strong>Session</strong></td>
@@ -128,6 +155,7 @@
     <tr class="totals">
       <td>Totals</td>
       <td><%= total_participants %></td>
+      <td></td>
       <td><%= total_completed %></td>
       <td>N/A</td>
       <td>N/A</td>
