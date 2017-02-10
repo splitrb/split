@@ -67,12 +67,12 @@ module Split
       end
     end
 
-    private
     def choose
       @alternatives ||= {}
       users.each do |user|
         @alternatives[user] = experiment.random_alternative(user)
       end
+      @alternatives
     end
   end
 end
