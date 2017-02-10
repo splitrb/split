@@ -25,23 +25,29 @@ module Split
     end
 
     def complete!
+      Experiment.preload_participating!(experiment, users)
+
       if alternative
         if self.goals.empty?
           users.each do |user|
-            if !experiment.finished?(user)
-              alternative.increment_unique_completion
-              experiment.finish!(user)
+            if experiment.participating?(user)
+              if !experiment.finished?(user)
+                alternative.increment_unique_completion
+                experiment.finish!(user)
+              end
+              alternative.increment_completion
             end
-            alternative.increment_completion
           end
         else
           self.goals.each {|g|
             users.each do |user|
-              if !experiment.finished?(user, g)
-                alternative.increment_unique_completion(g, self.value)
-                experiment.finish!(user, g)
+              if experiment.participating?(user)
+                if !experiment.finished?(user, g)
+                  alternative.increment_unique_completion(g, self.value)
+                  experiment.finish!(user, g)
+                end
+                alternative.increment_completion(g, self.value)
               end
-              alternative.increment_completion(g, self.value)
             end
           }
         end
@@ -55,7 +61,6 @@ module Split
       choose
       record!
 
-      @alternatives.update(@alternatives){|user, alternative| alternative.name}
       @alternatives
     end
 
@@ -72,6 +77,7 @@ module Split
       users.each do |user|
         @alternatives[user] = experiment.random_alternative(user)
       end
+
       @alternatives
     end
   end

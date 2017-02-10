@@ -21,8 +21,10 @@ module Split
             Split::Experiment.preload_participating!(experiment, split_ids)
 
             trial = Trial.new(:experiment => experiment, :users => split_ids)
-            ret = trial.choose!
+            alternatives = trial.choose!
             call_trial_choose_hook(trial)
+
+            ret = alternatives.update(alternatives){|user, alternative| alternative.name}
           end
         else
           control_name = control_variable(control)
@@ -233,9 +235,9 @@ module Split
         ret = predetermined_alternative
       else
         if experiment.participating?(split_id) # stay in the same bucket if already bucketed
-          ret = trial.choose![split_id]
+          ret = trial.choose[split_id].name
         else
-          ret = trial.choose![split_id] # this calls trial.record! which increments participant counts
+          ret = trial.choose![split_id].name # this calls trial.record! which increments participant counts
           call_trial_choose_hook(trial)
           begin_experiment(experiment)
         end
