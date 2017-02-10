@@ -4,7 +4,7 @@ module Split
     attr_accessor :goals
     attr_accessor :value
     attr_accessor :users
-    
+
     def initialize(attrs = {})
       self.experiment = attrs[:experiment]  if !attrs[:experiment].nil?
       self.goals = attrs[:goals].nil? ? [] : attrs[:goals]
@@ -25,33 +25,23 @@ module Split
     end
 
     def complete!
-      Experiment.preload_participating!(experiment, users)
-
       if alternative
         if self.goals.empty?
           users.each do |user|
-            if experiment.participating?(user)
-              if !experiment.finished?(user)
-                alternative.increment_unique_completion
-                experiment.finish!(user)
-              end
-              alternative.increment_completion
-            else
-              return false
+            if !experiment.finished?(user)
+              alternative.increment_unique_completion
+              experiment.finish!(user)
             end
+            alternative.increment_completion
           end
         else
           self.goals.each {|g|
             users.each do |user|
-              if experiment.participating?(user)
-                if !experiment.finished?(user, g)
-                  alternative.increment_unique_completion(g, self.value)
-                  experiment.finish!(user, g)
-                end
-                alternative.increment_completion(g, self.value)
-              else
-                return false
+              if !experiment.finished?(user, g)
+                alternative.increment_unique_completion(g, self.value)
+                experiment.finish!(user, g)
               end
+              alternative.increment_completion(g, self.value)
             end
           }
         end
@@ -59,8 +49,6 @@ module Split
       else
         return false
       end
-
-      return false
     end
 
     def choose!

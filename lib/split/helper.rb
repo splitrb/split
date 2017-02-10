@@ -90,6 +90,7 @@ module Split
 
     def finish_experiment(experiment, options = {})
       return true if experiment.has_winner? unless options[:skip_win_check]
+      return false if !experiment.participating?(split_id)
 
       if options[:goals].any?
         options[:goals].each do |goal|
@@ -117,6 +118,7 @@ module Split
       end || {}
 
       Split::Experiment.preload_finished!(experiments, goals, split_id)
+      Split::Experiment.preload_participating!(experiments, split_id)
       extra_options = { skip_win_check: true } # we skip the winner check so the goals continue to accumulate
 
       if experiments.any?
@@ -146,7 +148,6 @@ module Split
       params["#{experiment_name}_default"] if default_present?(experiment_name)
     end
 
-    
     def begin_experiment_in_batch(experiment, users_and_alternative_names)
       # set user key fields
       Split::Persistence.adapter.set_values_in_batch(users_and_alternative_names, experiment.key)
