@@ -36,6 +36,8 @@ module Split
                 experiment.finish!(user)
               end
               alternative.increment_completion
+            else
+              return false
             end
           end
         else
@@ -47,6 +49,8 @@ module Split
                   experiment.finish!(user, g)
                 end
                 alternative.increment_completion(g, self.value)
+              else
+                return false
               end
             end
           }
@@ -55,6 +59,8 @@ module Split
       else
         return false
       end
+
+      return false
     end
 
     def choose!
