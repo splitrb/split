@@ -37,19 +37,6 @@
           <%= alternative.completed_count(goal) %>
         </td>
         <td>
-          <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
-          <% if experiment.control.conversion_rate(goal) > 0 && !alternative.control? %>
-            <% if alternative.conversion_rate(goal) > experiment.control.conversion_rate(goal) %>
-              <span class='better'>
-                +<%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
-              </span>
-            <% elsif alternative.conversion_rate(goal) < experiment.control.conversion_rate(goal) %>
-              <span class='worse'>
-                <%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
-              </span>
-            <% end  %>
-          <% end %>
-          <br />
           <%= number_to_percentage(alternative.unique_conversion_rate(goal)) %>%
           <% if experiment.control.unique_conversion_rate(goal) > 0 && !alternative.control? %>
               <% if alternative.unique_conversion_rate(goal) > experiment.control.unique_conversion_rate(goal) %>
@@ -59,6 +46,19 @@
               <% elsif alternative.unique_conversion_rate(goal) < experiment.control.unique_conversion_rate(goal) %>
               <span class='worse'>
                 <%= number_to_percentage((alternative.unique_conversion_rate(goal)/experiment.control.unique_conversion_rate(goal))-1) %>%
+              </span>
+              <% end  %>
+          <% end %>
+          <br />
+          <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
+          <% if experiment.control.conversion_rate(goal) > 0 && !alternative.control? %>
+              <% if alternative.conversion_rate(goal) > experiment.control.conversion_rate(goal) %>
+              <span class='better'>
+                +<%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
+              </span>
+              <% elsif alternative.conversion_rate(goal) < experiment.control.conversion_rate(goal) %>
+              <span class='worse'>
+                <%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
               </span>
               <% end  %>
           <% end %>
