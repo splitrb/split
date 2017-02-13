@@ -793,6 +793,12 @@ It is possible to specify static weights to favor certain alternatives.
 This algorithm will automatically weight the alternatives based on their relative performance,
 choosing the better-performing ones more often as trials are completed.
 
+`Split::Algorithms::BlockRandomization` is an algorithm that ensures equal
+participation across all alternatives. This algorithm will choose the alternative
+with the fewest participants. In the event of multiple minimum participant alternatives
+(i.e. starting a new "Block") the algorithm will choose a random alternative from
+those minimum participant alternatives.
+
 Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file.
 
 To change the algorithm globally for all experiments, use the following in your initializer:
