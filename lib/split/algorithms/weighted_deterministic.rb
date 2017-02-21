@@ -3,7 +3,7 @@ module Split
   module Algorithms
     module WeightedDeterministic
       def self.choose_alternative(experiment, split_id)
-        hash = Digest::MurmurHash1.rawdigest("#{experiment.key}:#{split_id}")
+        hash = Digest::MurmurHash3_x64_128.rawdigest("#{experiment.key}:#{split_id}")
 
         weights = experiment.alternatives.map(&:weight)
         total = weights.inject(:+) * 100
