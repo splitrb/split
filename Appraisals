@@ -4,5 +4,5 @@ end
 
 appraise "5.0" do
   gem "rails", "~> 5.0"
-  gem "sinatra", github: "sinatra/sinatra"
+  gem "sinatra", git: "https://github.com/sinatra/sinatra"
 end

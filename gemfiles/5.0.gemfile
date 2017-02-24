@@ -5,6 +5,6 @@ source "https://rubygems.org"
 gem "appraisal"
 gem "codeclimate-test-reporter"
 gem "rails", "~> 5.0"
-gem "sinatra", :github => "sinatra/sinatra"
+gem "sinatra", :git => "https://github.com/sinatra/sinatra"
 
 gemspec :path => "../"
