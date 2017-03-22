@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module Split
   class User
     extend Forwardable
