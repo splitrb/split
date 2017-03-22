@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require 'forwardable'
+
 module Split
   module Persistence
     class DualAdapter
