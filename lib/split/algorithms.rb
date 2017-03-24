@@ -1,3 +1,1 @@
-%w[weighted_deterministic].each do |f|
-  require "split/algorithms/#{f}"
-end
+Dir["split/algorithms/*.rb"].each { |file| require file }
