@@ -129,6 +129,7 @@ module Split
       if @experiments.nil?
         nil
       else
+        return @normalized_experiments if defined?(@normalized_experiments)
         experiment_config = {}
         @experiments.keys.each do |name|
           experiment_config[name.to_sym] = {}
@@ -152,7 +153,7 @@ module Split
           end
         end
 
-        experiment_config
+        @normalized_experiments = experiment_config
       end
     end
 
