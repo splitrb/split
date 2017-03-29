@@ -39,6 +39,7 @@ module Split
     end
     
     def ab_test(metric_descriptor, control=nil, *alternatives)
+      Split.configuration.reset
       if RUBY_VERSION.match(/1\.8/) && alternatives.length.zero? && ! control.nil?
         puts 'WARNING: You should always pass the control alternative through as the second argument with any other alternatives as the third because the order of the hash is not preserved in ruby 1.8'
       end
@@ -106,6 +107,7 @@ module Split
     end
 
     def finished(metric_descriptor, options = {})
+      Split.configuration.reset
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_experiment(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
