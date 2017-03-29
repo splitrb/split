@@ -485,6 +485,7 @@ module Split
       delete_finished
       Split.configuration.on_experiment_reset.call(self)
       increment_version
+      Split.configuration.reset
     end
 
     def delete
@@ -498,6 +499,7 @@ module Split
         delete_goals
         Split.configuration.on_experiment_delete.call(self)
         increment_version
+        Split.configuration.reset
       end
     end
 

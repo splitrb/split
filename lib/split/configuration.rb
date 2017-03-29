@@ -99,6 +99,11 @@ module Split
       !enabled
     end
 
+    def reset
+      remove_instance_variable(:@metrics)
+      remove_instance_variable(:@normalized_experiments)
+    end
+
     def experiment_for(name)
       if normalized_experiments
         # TODO symbols
