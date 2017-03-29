@@ -100,8 +100,8 @@ module Split
     end
 
     def reset
-      remove_instance_variable(:@metrics)
-      remove_instance_variable(:@normalized_experiments)
+      remove_instance_variable(:@metrics) if defined?(@metrics)
+      remove_instance_variable(:@normalized_experiments) if defined?(@normalized_experiments)
     end
 
     def experiment_for(name)
