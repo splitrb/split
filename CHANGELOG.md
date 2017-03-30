@@ -1,3 +1,19 @@
+## 3.0.0 (March 30th, 2017)
+
+Features:
+
+- added block randomization algorithm and specs (@hulleywood, #475)
+- Add ab_record_extra_info to allow record extra info to alternative and display on dashboard. (@tranngocsam, #460)
+
+Bugfixes:
+
+- Avoid crashing on Ruby 2.4 for numeric strings (@flori, #470)
+- Fix issue where redis isn't required (@tomciopp , #466)
+
+Misc:
+
+- Avoid variable_size_secure_compare private method (@eliotsykes, #465)
+
 ## 2.2.0 (November 11th, 2016)
 
 **Backwards incompatible!** Redis keys are renamed. Please make sure all running tests are completed before you upgrade, as they will reset.
