@@ -824,7 +824,6 @@ Ryan bates has produced an excellent 10 minute screencast about split on the Rai
 
 ## Blogposts
 
-* [A/B Testing with Split in Ruby on Rails](http://grinnick.com/posts/a-b-testing-with-split-in-ruby-on-rails)
 * [Recipe: A/B testing with KISSMetrics and the split gem](http://robots.thoughtbot.com/post/9595887299/recipe-a-b-testing-with-kissmetrics-and-the-split-gem)
 * [Rails A/B testing with Split on Heroku](http://blog.nathanhumbert.com/2012/02/rails-ab-testing-with-split-on-heroku.html)
 
