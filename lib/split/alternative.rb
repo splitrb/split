@@ -62,6 +62,20 @@ module Split
       @completed_count[goal] || 0
     end
 
+    def unique_completed_count(goal = nil)
+      unless @unique_completed_count
+        @unique_completed_count = ActiveSupport::HashWithIndifferentAccess.new
+        # add nil so we include overall completed count
+        (self.goals + [nil]).each do |goal|
+          field = set_field(goal, true)
+          @unique_completed_count[goal] = Split.redis.with do |conn|
+            conn.hget(key, field).to_i
+          end
+        end
+      end
+      @unique_completed_count[goal] || 0
+    end
+
     def completed_value(goal = nil)
       unless @completed_value
         @completed_value = ActiveSupport::HashWithIndifferentAccess.new
@@ -115,14 +129,22 @@ module Split
       participant_count - completed_count(goal)
     end
 
-    def set_field(goal)
-      field = "completed_count"
+    def set_field(goal, unique = false)
+      if unique
+        field = "unique_completed_count"
+      else
+        field = "completed_count"
+      end
       field += ":" + goal unless goal.nil?
       return field
     end
 
-    def set_value_field(goal)
-      field = ":completed_value"
+    def set_value_field(goal, unique = false)
+      if unique
+        field = ":unique_completed_value"
+      else
+        field = ":completed_value"
+      end
       field += ":" + goal unless goal.nil?
       return field
     end
@@ -134,9 +156,9 @@ module Split
       end
     end
 
-    def increment_participation
+    def increment_participation(count = 1)
       Split.redis.with do |conn|
-        conn.hincrby key, 'participant_count', 1
+        conn.hincrby key, 'participant_count', count
       end
     end
 
@@ -150,6 +172,16 @@ module Split
       end
     end
 
+    def increment_unique_completion(goal = nil, value = nil)
+      Split.redis.with do |conn|
+        field = set_field(goal, true)
+        if value
+          conn.lpush(key + set_value_field(goal, true), value)
+        end
+        conn.hincrby(key, field, 1)
+      end
+    end
+
     def control?
       experiment.control.name == self.name
     end
@@ -157,6 +189,11 @@ module Split
     def conversion_rate(goal = nil)
       return 0 if participant_count.zero?
       (completed_count(goal).to_f)/participant_count.to_f
+    end
+
+    def unique_conversion_rate(goal = nil)
+      return 0 if participant_count.zero?
+      (unique_completed_count(goal).to_f)/participant_count.to_f
     end
 
     def experiment
@@ -231,6 +268,17 @@ module Split
 
       if self.completed_count(goal) > 0 && experiment.control.completed_count(goal) > 0
         bayesian_beta_probability(self.completed_count(goal), experiment.control.completed_count(goal))
+      else
+        "N/A"
+      end
+    end
+
+    def unique_beta_probability_better_than_control(goal = nil)
+      return "N/A" if experiment.control.name == self.name
+      return "Needs 50+ participants." if self.participant_count < 50
+
+      if self.unique_completed_count(goal) > 0 && experiment.control.unique_completed_count(goal) > 0
+        bayesian_beta_probability(self.unique_completed_count(goal), experiment.control.unique_completed_count(goal))
       else
         "N/A"
       end
@@ -387,6 +435,7 @@ module Split
       Split.redis.with do |conn|
         conn.hsetnx key, 'participant_count', 0
         conn.hsetnx key, 'completed_count', 0
+        conn.hsetnx key, 'unique_completed_count', 0
       end
     end
 
@@ -398,11 +447,16 @@ module Split
 
     def reset
       Split.redis.with do |conn|
-        conn.hmset key, 'participant_count', 0, 'completed_count', 0
+        conn.hmset key, 'participant_count', 0, 'completed_count', 0, 'unique_completed_count', 0
         unless goals.empty?
           goals.each do |g|
             field = "completed_count:#{g}"
             value_field = set_value_field(g)
+            conn.hset key, field, 0
+            conn.del(key + value_field)
+
+            field = "unique_completed_count:#{g}"
+            value_field = set_value_field(g, true)
             conn.hset key, field, 0
             conn.del(key + value_field)
           end

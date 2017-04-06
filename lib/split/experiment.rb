@@ -215,6 +215,8 @@ module Split
         conn.hset(:experiment_winner, name, winner_name.to_s)
       end
       set_end_time
+      delete_participants
+      delete_finished
     end
 
     def participant_count
@@ -281,13 +283,9 @@ module Split
       end
     end
 
-    def next_alternative
-      winner || random_alternative
-    end
-
-    def random_alternative
+    def random_alternative(split_id)
       if alternatives.length > 1
-        algorithm.choose_alternative(self)
+        algorithm.choose_alternative(self, split_id)
       else
         alternatives.first
       end
@@ -325,11 +323,154 @@ module Split
       "#{name}:goals"
     end
 
-    def finished_key(goal=nil)
-      if goal
-        "#{key}:#{goal}:finished"
+    def finished?(split_id, goal = nil)
+      @finished ||= {}
+
+      goalkey = goal || "nogoal"
+
+      if !@finished[split_id].nil? && !@finished[split_id][goalkey].nil?
+        return @finished[split_id][goalkey]
       else
-        "#{key}:finished"
+        key = "#{self.key}:finished"
+        key << ":#{goal}" if goal
+        value = Split.redis.with do |conn|
+          conn.sismember(key, split_id)
+        end
+
+        @finished[split_id] ||= {}
+        @finished[split_id][goalkey] = value
+
+        return value
+      end
+    end
+
+    def cache_finished!(split_id, value, goal = nil)
+      @finished ||= {}
+
+      @finished[split_id] ||= {}
+
+      if goal
+        @finished[split_id][goal] = value
+      else
+        @finished[split_id]["nogoal"] = value
+      end
+    end
+
+    def self.preload_participating!(experiments, split_ids)
+      experiments = Array(experiments)
+      split_ids = Array(split_ids)
+
+      experiments_metadata = []
+      experiments.each do |experiment|
+        split_ids.each do |split_id|
+          key = "#{experiment.key}:participants"
+
+          experiments_metadata << {
+              :key => key,
+              :experiment => experiment,
+              :split_id => split_id
+          }
+        end
+      end
+
+      if experiments_metadata.present?
+        results = Split.redis.with do |conn|
+          conn.pipelined do
+            experiments_metadata.each do |metadata|
+              conn.sismember metadata[:key], metadata[:split_id]
+            end
+          end
+        end
+
+        results.each_with_index do |result, index|
+          metadata = experiments_metadata[index]
+          metadata[:experiment].cache_participating!(metadata[:split_id], result)
+        end
+      end
+    end
+
+    def self.preload_finished!(experiments, goals, split_ids)
+      experiments = Array(experiments)
+      split_ids = Array(split_ids)
+
+      experiments_metadata = []
+      goals.each do |goal|
+        experiments.each do |experiment|
+          split_ids.each do |split_id|
+            key = "#{experiment.key}:finished:#{goal}"
+
+            experiments_metadata << {
+                :key => key,
+                :experiment => experiment,
+                :goal => goal,
+                :split_id => split_id
+            }
+          end
+        end
+      end
+
+      if experiments_metadata.present?
+        results = Split.redis.with do |conn|
+          conn.pipelined do
+            experiments_metadata.each do |metadata|
+              conn.sismember metadata[:key], metadata[:split_id]
+            end
+          end
+        end
+
+        results.each_with_index do |result, index|
+          metadata = experiments_metadata[index]
+          metadata[:experiment].cache_finished!(metadata[:split_id], result, metadata[:goal])
+        end
+      end
+    end
+
+    def finish!(split_id, goal = nil)
+      key = "#{self.key}:finished"
+      key << ":#{goal}" if goal
+      Split.redis.with do |conn|
+        conn.sadd(key, split_id)
+      end
+
+      cache_finished!(split_id, true, goal)
+    end
+
+    def participate!(split_ids)
+      split_ids = Array(split_ids)
+      return if split_ids.blank?
+
+      key = "#{self.key}:participants"
+      Split.redis.with do |conn|
+        conn.sadd(key, split_ids)
+      end
+
+      cache_participating!(split_ids, true)
+    end
+
+    def cache_participating!(split_ids, value)
+      split_ids = Array(split_ids)
+
+      @participating ||= {}
+
+      split_ids.each do |split_id|
+        @participating[split_id] = value
+      end
+    end
+
+    def participating?(split_id)
+      @participating ||= {}
+
+      if !@participating[split_id].nil?
+        return @participating[split_id]
+      else
+        key = "#{self.key}:participants"
+        value = Split.redis.with do |conn|
+          conn.sismember(key, split_id)
+        end
+
+        @participating[split_id] = value
+
+        return value
       end
     end
 
@@ -340,8 +481,11 @@ module Split
     def reset
       alternatives.each(&:reset)
       reset_winner
+      delete_participants
+      delete_finished
       Split.configuration.on_experiment_reset.call(self)
       increment_version
+      Split.configuration.reset
     end
 
     def delete
@@ -350,9 +494,31 @@ module Split
         reset_winner
         conn.srem(:experiments, name)
         conn.del(name)
+        delete_participants
+        delete_finished
         delete_goals
         Split.configuration.on_experiment_delete.call(self)
         increment_version
+        Split.configuration.reset
+      end
+    end
+
+    def delete_participants
+      Split.redis.with do |conn|
+        goals.each do |goal|
+          conn.del("#{self.key}:participants")
+        end
+      end
+    end
+
+    def delete_finished
+      Split.redis.with do |conn|
+        key = "#{self.key}:finished"
+        conn.del(key)
+        (goals).each do |goal|
+          conn.del("#{key}:#{goal}")
+        end
+        conn.del("#{key}")
       end
     end
 

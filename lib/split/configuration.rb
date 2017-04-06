@@ -7,11 +7,9 @@ module Split
     attr_accessor :db_failover
     attr_accessor :db_failover_on_db_error
     attr_accessor :db_failover_allow_parameter_override
-    attr_accessor :allow_multiple_experiments
     attr_accessor :enabled
     attr_accessor :persistence
     attr_accessor :algorithm
-    attr_accessor :store_override
     attr_accessor :start_manually
     attr_accessor :on_trial_choose
     attr_accessor :on_trial_complete
@@ -99,6 +97,11 @@ module Split
 
     def disabled?
       !enabled
+    end
+
+    def reset
+      remove_instance_variable(:@metrics) if defined?(@metrics)
+      remove_instance_variable(:@normalized_experiments) if defined?(@normalized_experiments)
     end
 
     def experiment_for(name)
@@ -202,11 +205,10 @@ module Split
       @on_experiment_delete = proc{|experiment|}
       @on_experiment_end = proc{|experiment|}
       @db_failover_allow_parameter_override = false
-      @allow_multiple_experiments = false
       @enabled = true
       @experiments = {}
-      @persistence = Split::Persistence::SessionAdapter
-      @algorithm = Split::Algorithms::WeightedSample
+      @persistence = Split::Persistence::RedisAdapter
+      @algorithm = Split::Algorithms::WeightedDeterministic
       @include_rails_helper = true
       @pipeline_size = 5000
     end

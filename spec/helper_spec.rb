@@ -113,16 +113,6 @@ describe Split::Helper do
       ab_test('link_color', 'blue', 'red')
     end
 
-    context "when store_override is set" do
-      before { Split.configuration.store_override = true }
-
-      it "should store the forced alternative" do
-        @params = {'link_color' => 'blue'}
-        ab_user.should_receive(:[]=).with('link_color', 'blue')
-        ab_test('link_color', 'blue', 'red')
-      end
-    end
-
     context "when on_trial_choose is set" do
       before { Split.configuration.on_trial_choose = :some_method }
       it "should call the method" do

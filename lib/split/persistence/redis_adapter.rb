@@ -4,6 +4,7 @@ module Split
       DEFAULT_CONFIG = {:namespace => 'persistence'}.freeze
       
       attr_reader :redis_key
+      attr_reader :key_frag
 
       def initialize(context)
         if lookup_by = self.class.config[:lookup_by]
@@ -12,17 +13,13 @@ module Split
           else
             key_frag = context.send(lookup_by)
           end
-          @split_id = key_frag
+          @key_frag = key_frag
           @redis_key = get_redis_key(key_frag)
         else
           raise "Please configure lookup_by"
         end
       end
 
-      def split_id
-        @split_id 
-      end
-      
       ####
       # set_values_in_batch and fetch_values_in_batch are class methods
       # for setting/fetching values in hashes in batch (in single HTTP request)

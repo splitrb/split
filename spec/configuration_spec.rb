@@ -26,10 +26,6 @@ describe Split::Configuration do
     @config.disabled?.should be_true
   end
 
-  it "should not store the overridden test group per default" do
-    @config.store_override.should be_false
-  end
-
   it "should provide a default pattern for robots" do
     %w[Baidu Gigabot Googlebot libwww-perl lwp-trivial msnbot SiteUptime Slurp WordPress ZIBB ZyBorg YandexBot AdsBot-Google Wget curl bitlybot facebookexternalhit spider].each do |robot|
       @config.robot_regex.should =~ robot
@@ -50,10 +46,6 @@ describe Split::Configuration do
   it "should allow adding a bot to the bot list" do
     @config.bots["newbot"] = "An amazing test bot"
     @config.robot_regex.should =~ "newbot"
-  end
-
-  it "should use the session adapter for persistence by default" do
-    @config.persistence.should eq(Split::Persistence::SessionAdapter)
   end
 
   it "should load a metric" do

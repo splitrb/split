@@ -7,12 +7,12 @@ describe Split::Persistence do
   describe ".adapter" do
     context "when the persistence config is a symbol" do
       it "should return the appropriate adapter for the symbol" do
-        Split.configuration.stub(:persistence).and_return(:cookie)
-        subject.adapter.should eq(Split::Persistence::CookieAdapter)
+        Split.configuration.stub(:persistence).and_return(:redis)
+        subject.adapter.should eq(Split::Persistence::RedisAdapter)
       end
 
       it "should return an adapter whose class is present in Split::Persistence::ADAPTERS" do
-        Split.configuration.stub(:persistence).and_return(:cookie)
+        Split.configuration.stub(:persistence).and_return(:redis)
         Split::Persistence::ADAPTERS.values.should include(subject.adapter)
       end
 
