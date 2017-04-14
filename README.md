@@ -1,97 +1,28 @@
 # [Split](http://libraries.io/rubygems/split)
 
-Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
-
-Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and Resque in its use of Redis.
-
-Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
-
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
 [![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](http://travis-ci.org/splitrb/split)
 [![Code Climate](https://codeclimate.com/github/splitrb/split/badges/gpa.svg)](https://codeclimate.com/github/splitrb/split)
 [![Test Coverage](https://codeclimate.com/github/splitrb/split/badges/coverage.svg)](https://codeclimate.com/github/splitrb/split/coverage)
+[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
+> 📈 The Rack Based A/B testing framework http://libraries.io/rubygems/split
 
-# Backers
+Split is a rack based A/B testing framework designed to work with Rails, Sinatra or any other rack based app.
 
-Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/split#backer)]
+Split is heavily inspired by the [Abingo](https://github.com/ryanb/abingo) and [Vanity](https://github.com/assaf/vanity) Rails A/B testing plugins and [Resque](https://github.com/resque/resque) in its use of Redis.
 
-<a href="https://opencollective.com/split/backer/0/website" target="_blank"><img src="https://opencollective.com/split/backer/0/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/1/website" target="_blank"><img src="https://opencollective.com/split/backer/1/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/2/website" target="_blank"><img src="https://opencollective.com/split/backer/2/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/3/website" target="_blank"><img src="https://opencollective.com/split/backer/3/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/4/website" target="_blank"><img src="https://opencollective.com/split/backer/4/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/5/website" target="_blank"><img src="https://opencollective.com/split/backer/5/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/6/website" target="_blank"><img src="https://opencollective.com/split/backer/6/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/7/website" target="_blank"><img src="https://opencollective.com/split/backer/7/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/8/website" target="_blank"><img src="https://opencollective.com/split/backer/8/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/9/website" target="_blank"><img src="https://opencollective.com/split/backer/9/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/10/website" target="_blank"><img src="https://opencollective.com/split/backer/10/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/11/website" target="_blank"><img src="https://opencollective.com/split/backer/11/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/12/website" target="_blank"><img src="https://opencollective.com/split/backer/12/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/13/website" target="_blank"><img src="https://opencollective.com/split/backer/13/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/14/website" target="_blank"><img src="https://opencollective.com/split/backer/14/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/15/website" target="_blank"><img src="https://opencollective.com/split/backer/15/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/16/website" target="_blank"><img src="https://opencollective.com/split/backer/16/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/17/website" target="_blank"><img src="https://opencollective.com/split/backer/17/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/18/website" target="_blank"><img src="https://opencollective.com/split/backer/18/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/19/website" target="_blank"><img src="https://opencollective.com/split/backer/19/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/20/website" target="_blank"><img src="https://opencollective.com/split/backer/20/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/21/website" target="_blank"><img src="https://opencollective.com/split/backer/21/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/22/website" target="_blank"><img src="https://opencollective.com/split/backer/22/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/23/website" target="_blank"><img src="https://opencollective.com/split/backer/23/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/24/website" target="_blank"><img src="https://opencollective.com/split/backer/24/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/25/website" target="_blank"><img src="https://opencollective.com/split/backer/25/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/26/website" target="_blank"><img src="https://opencollective.com/split/backer/26/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/27/website" target="_blank"><img src="https://opencollective.com/split/backer/27/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/28/website" target="_blank"><img src="https://opencollective.com/split/backer/28/avatar.svg"></a>
-<a href="https://opencollective.com/split/backer/29/website" target="_blank"><img src="https://opencollective.com/split/backer/29/avatar.svg"></a>
+Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
 
+## Install
 
-# Sponsors
-
-Become a sponsor and get your logo on our README on Github with a link to your site. [[Become a sponsor](https://opencollective.com/split#sponsor)]
-
-<a href="https://opencollective.com/split/sponsor/0/website" target="_blank"><img src="https://opencollective.com/split/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/1/website" target="_blank"><img src="https://opencollective.com/split/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/2/website" target="_blank"><img src="https://opencollective.com/split/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/3/website" target="_blank"><img src="https://opencollective.com/split/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/4/website" target="_blank"><img src="https://opencollective.com/split/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/5/website" target="_blank"><img src="https://opencollective.com/split/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/6/website" target="_blank"><img src="https://opencollective.com/split/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/7/website" target="_blank"><img src="https://opencollective.com/split/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/8/website" target="_blank"><img src="https://opencollective.com/split/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/9/website" target="_blank"><img src="https://opencollective.com/split/sponsor/9/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/10/website" target="_blank"><img src="https://opencollective.com/split/sponsor/10/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/11/website" target="_blank"><img src="https://opencollective.com/split/sponsor/11/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/12/website" target="_blank"><img src="https://opencollective.com/split/sponsor/12/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/13/website" target="_blank"><img src="https://opencollective.com/split/sponsor/13/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/14/website" target="_blank"><img src="https://opencollective.com/split/sponsor/14/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/15/website" target="_blank"><img src="https://opencollective.com/split/sponsor/15/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/16/website" target="_blank"><img src="https://opencollective.com/split/sponsor/16/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/17/website" target="_blank"><img src="https://opencollective.com/split/sponsor/17/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/18/website" target="_blank"><img src="https://opencollective.com/split/sponsor/18/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/19/website" target="_blank"><img src="https://opencollective.com/split/sponsor/19/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/20/website" target="_blank"><img src="https://opencollective.com/split/sponsor/20/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/21/website" target="_blank"><img src="https://opencollective.com/split/sponsor/21/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/22/website" target="_blank"><img src="https://opencollective.com/split/sponsor/22/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/23/website" target="_blank"><img src="https://opencollective.com/split/sponsor/23/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/24/website" target="_blank"><img src="https://opencollective.com/split/sponsor/24/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/25/website" target="_blank"><img src="https://opencollective.com/split/sponsor/25/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/26/website" target="_blank"><img src="https://opencollective.com/split/sponsor/26/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/27/website" target="_blank"><img src="https://opencollective.com/split/sponsor/27/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/28/website" target="_blank"><img src="https://opencollective.com/split/sponsor/28/avatar.svg"></a>
-<a href="https://opencollective.com/split/sponsor/29/website" target="_blank"><img src="https://opencollective.com/split/sponsor/29/avatar.svg"></a>
-
-
-
-## Requirements
+### Requirements
 
 Split currently requires Ruby 1.9.2 or higher. If your project requires compatibility with Ruby 1.8.x and Rails 2.3, please use v0.8.0.
 
-Split uses redis as a datastore.
+Split uses Redis as a datastore.
 
-Split only supports redis 2.0 or greater.
+Split only supports Redis 2.0 or greater.
 
 If you're on OS X, Homebrew is the simplest way to install Redis:
 
@@ -100,21 +31,21 @@ brew install redis
 redis-server /usr/local/etc/redis.conf
 ```
 
-You now have a Redis daemon running on 6379.
+You now have a Redis daemon running on port `6379`.
 
-## Setup
+### Setup
 
 ```bash
 gem install split
 ```
 
-### Rails
+#### Rails
 
-Adding `gem 'split'` to your Gemfile will autoload it when rails starts up, as long as you've configured redis it will 'just work'.
+Adding `gem 'split'` to your Gemfile will autoload it when rails starts up, as long as you've configured Redis it will 'just work'.
 
-### Sinatra
+#### Sinatra
 
-To configure sinatra with Split you need to enable sessions and mix in the helper methods. Add the following lines at the top of your sinatra app:
+To configure Sinatra with Split you need to enable sessions and mix in the helper methods. Add the following lines at the top of your Sinatra app:
 
 ```ruby
 require 'split'
@@ -130,7 +61,7 @@ end
 
 ## Usage
 
-To begin your ab test use the `ab_test` method, naming your experiment with the first argument and then the different alternatives which you wish to test on as the other arguments.
+To begin your A/B test use the `ab_test` method, naming your experiment with the first argument and then the different alternatives which you wish to test on as the other arguments.
 
 `ab_test` returns one of the alternatives, if a user has already seen that test they will get the same alternative as before, which you can use to split your code on.
 
@@ -184,7 +115,6 @@ As per this [blog post](http://www.evanmiller.org/how-not-to-run-an-ab-test.html
 
 The second option uses simulations from a beta distribution to determine the probability that the given alternative is the winner compared to all other alternatives. You can view these probabilities by clicking on the drop-down menu labeled "Confidence." This option should be used when the experiment has more than just 1 control and 1 alternative. It can also be used for a simple, 2-alternative A/B test.
 
-
 ## Extras
 
 ### Weighted alternatives
@@ -222,7 +152,7 @@ It is not required to send `SPLIT_DISABLE=false` to activate Split.
 
 ### Starting experiments manually
 
-By default new AB tests will be active right after deployment. In case you would like to start new test a while after
+By default new A/B tests will be active right after deployment. In case you would like to start new test a while after
 the deploy, you can do it by setting the `start_manually` configuration option to `true`.
 
 After choosing this option tests won't be started right after deploy, but after pressing the `Start` button in Split admin dashboard.  If a test is deleted from the Split dashboard, then it can only be started after pressing the `Start` button whenever being re-initialized.
@@ -475,7 +405,7 @@ You can override the default configuration options of Split like so:
 
 ```ruby
 Split.configure do |config|
-  config.db_failover = true # handle redis errors gracefully
+  config.db_failover = true # handle Redis errors gracefully
   config.db_failover_on_db_error = -> (error) { Rails.logger.error(error.message) }
   config.allow_multiple_experiments = true
   config.enabled = true
@@ -811,12 +741,12 @@ end
 
 ## Extensions
 
-  - [Split::Export](http://github.com/splitrb/split-export) - easily export ab test data out of Split
-  - [Split::Analytics](http://github.com/splitrb/split-analytics) - push test data to google analytics
-  - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - store experiment data in mongoid (still uses redis)
-  - [Split::Cacheable](https://github.com/harrystech/split_cacheable) - automatically create cache buckets per test
-  - [Split::Counters](https://github.com/bernardkroes/split-counters) - add counters per experiment and alternative
-  - [Split::Cli](https://github.com/craigmcnamara/split-cli) - a CLI to trigger Split A/B tests
+  - [Split::Export](http://github.com/splitrb/split-export) - Easily export A/B test data out of Split.
+  - [Split::Analytics](http://github.com/splitrb/split-analytics) - Push test data to Google Analytics.
+  - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - Store experiment data in mongoid (still uses redis).
+  - [Split::Cacheable](https://github.com/harrystech/split_cacheable) - Automatically create cache buckets per test.
+  - [Split::Counters](https://github.com/bernardkroes/split-counters) - Add counters per experiment and alternative.
+  - [Split::Cli](https://github.com/craigmcnamara/split-cli) - A CLI to trigger Split A/B tests.
 
 ## Screencast
 
@@ -827,11 +757,90 @@ Ryan bates has produced an excellent 10 minute screencast about split on the Rai
 * [Recipe: A/B testing with KISSMetrics and the split gem](http://robots.thoughtbot.com/post/9595887299/recipe-a-b-testing-with-kissmetrics-and-the-split-gem)
 * [Rails A/B testing with Split on Heroku](http://blog.nathanhumbert.com/2012/02/rails-ab-testing-with-split-on-heroku.html)
 
-## Contributors
+## Backers
 
-Over 70 different people have contributed to the project, you can see them all here: https://github.com/splitrb/split/graphs/contributors
+Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/split#backer)]
 
-## Development
+<a href="https://opencollective.com/split/backer/0/website" target="_blank"><img src="https://opencollective.com/split/backer/0/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/1/website" target="_blank"><img src="https://opencollective.com/split/backer/1/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/2/website" target="_blank"><img src="https://opencollective.com/split/backer/2/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/3/website" target="_blank"><img src="https://opencollective.com/split/backer/3/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/4/website" target="_blank"><img src="https://opencollective.com/split/backer/4/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/5/website" target="_blank"><img src="https://opencollective.com/split/backer/5/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/6/website" target="_blank"><img src="https://opencollective.com/split/backer/6/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/7/website" target="_blank"><img src="https://opencollective.com/split/backer/7/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/8/website" target="_blank"><img src="https://opencollective.com/split/backer/8/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/9/website" target="_blank"><img src="https://opencollective.com/split/backer/9/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/10/website" target="_blank"><img src="https://opencollective.com/split/backer/10/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/11/website" target="_blank"><img src="https://opencollective.com/split/backer/11/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/12/website" target="_blank"><img src="https://opencollective.com/split/backer/12/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/13/website" target="_blank"><img src="https://opencollective.com/split/backer/13/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/14/website" target="_blank"><img src="https://opencollective.com/split/backer/14/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/15/website" target="_blank"><img src="https://opencollective.com/split/backer/15/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/16/website" target="_blank"><img src="https://opencollective.com/split/backer/16/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/17/website" target="_blank"><img src="https://opencollective.com/split/backer/17/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/18/website" target="_blank"><img src="https://opencollective.com/split/backer/18/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/19/website" target="_blank"><img src="https://opencollective.com/split/backer/19/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/20/website" target="_blank"><img src="https://opencollective.com/split/backer/20/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/21/website" target="_blank"><img src="https://opencollective.com/split/backer/21/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/22/website" target="_blank"><img src="https://opencollective.com/split/backer/22/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/23/website" target="_blank"><img src="https://opencollective.com/split/backer/23/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/24/website" target="_blank"><img src="https://opencollective.com/split/backer/24/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/25/website" target="_blank"><img src="https://opencollective.com/split/backer/25/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/26/website" target="_blank"><img src="https://opencollective.com/split/backer/26/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/27/website" target="_blank"><img src="https://opencollective.com/split/backer/27/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/28/website" target="_blank"><img src="https://opencollective.com/split/backer/28/avatar.svg"></a>
+<a href="https://opencollective.com/split/backer/29/website" target="_blank"><img src="https://opencollective.com/split/backer/29/avatar.svg"></a>
+
+
+## Sponsors
+
+Become a sponsor and get your logo on our README on Github with a link to your site. [[Become a sponsor](https://opencollective.com/split#sponsor)]
+
+<a href="https://opencollective.com/split/sponsor/0/website" target="_blank"><img src="https://opencollective.com/split/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/1/website" target="_blank"><img src="https://opencollective.com/split/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/2/website" target="_blank"><img src="https://opencollective.com/split/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/3/website" target="_blank"><img src="https://opencollective.com/split/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/4/website" target="_blank"><img src="https://opencollective.com/split/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/5/website" target="_blank"><img src="https://opencollective.com/split/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/6/website" target="_blank"><img src="https://opencollective.com/split/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/7/website" target="_blank"><img src="https://opencollective.com/split/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/8/website" target="_blank"><img src="https://opencollective.com/split/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/9/website" target="_blank"><img src="https://opencollective.com/split/sponsor/9/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/10/website" target="_blank"><img src="https://opencollective.com/split/sponsor/10/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/11/website" target="_blank"><img src="https://opencollective.com/split/sponsor/11/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/12/website" target="_blank"><img src="https://opencollective.com/split/sponsor/12/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/13/website" target="_blank"><img src="https://opencollective.com/split/sponsor/13/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/14/website" target="_blank"><img src="https://opencollective.com/split/sponsor/14/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/15/website" target="_blank"><img src="https://opencollective.com/split/sponsor/15/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/16/website" target="_blank"><img src="https://opencollective.com/split/sponsor/16/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/17/website" target="_blank"><img src="https://opencollective.com/split/sponsor/17/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/18/website" target="_blank"><img src="https://opencollective.com/split/sponsor/18/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/19/website" target="_blank"><img src="https://opencollective.com/split/sponsor/19/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/20/website" target="_blank"><img src="https://opencollective.com/split/sponsor/20/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/21/website" target="_blank"><img src="https://opencollective.com/split/sponsor/21/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/22/website" target="_blank"><img src="https://opencollective.com/split/sponsor/22/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/23/website" target="_blank"><img src="https://opencollective.com/split/sponsor/23/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/24/website" target="_blank"><img src="https://opencollective.com/split/sponsor/24/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/25/website" target="_blank"><img src="https://opencollective.com/split/sponsor/25/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/26/website" target="_blank"><img src="https://opencollective.com/split/sponsor/26/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/27/website" target="_blank"><img src="https://opencollective.com/split/sponsor/27/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/28/website" target="_blank"><img src="https://opencollective.com/split/sponsor/28/avatar.svg"></a>
+<a href="https://opencollective.com/split/sponsor/29/website" target="_blank"><img src="https://opencollective.com/split/sponsor/29/avatar.svg"></a>
+
+## Contribute
+
+Please do! Over 70 different people have contributed to the project, you can see them all here: https://github.com/splitrb/split/graphs/contributors.
+
+### Development
+
+The source code is hosted at [GitHub](http://github.com/splitrb/split).
+
+Report issues and feature requests on [GitHub Issues](http://github.com/splitrb/split/issues).
+
+You can find a discussion form on [Google Groups](https://groups.google.com/d/forum/split-ruby).
+
+### Tests
 
 Run the tests like this:
 
@@ -841,23 +850,21 @@ Run the tests like this:
     bundle
     rake spec
 
-Source hosted at [GitHub](http://github.com/splitrb/split).
-
-Report Issues/Feature requests on [GitHub Issues](http://github.com/splitrb/split/issues).
-
-Discussion at [Google Groups](https://groups.google.com/d/forum/split-ruby).
-
-### Note on Patches/Pull Requests
+### A Note on Patches and Pull Requests
 
  * Fork the project.
  * Make your feature addition or bug fix.
  * Add tests for it. This is important so I don't break it in a
    future version unintentionally.
  * Add documentation if necessary.
- * Commit, do not mess with rakefile, version, or history.
-   (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
+ * Commit. Do not mess with the rakefile, version, or history.
+   (If you want to have your own version, that is fine. But bump the version in a commit by itself, which I can ignore when I pull.)
  * Send a pull request. Bonus points for topic branches.
+
+### Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
 
 ## Copyright
 
-Copyright (c) 2016 Andrew Nesbitt. See [LICENSE](https://github.com/splitrb/split/blob/master/LICENSE) for details.
+[MIT License](LICENSE) © 2017 [Andrew Nesbitt](https://github.com/andrew).
