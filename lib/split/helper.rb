@@ -5,7 +5,7 @@ module Split
 
     module_function
 
-    def ab_test(metric_descriptor, control = nil, *alternatives)
+    def ab_test(metric_descriptor, control = nil, *alternatives, force_control = false)
       begin
         experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
         alternative = if Split.configuration.enabled
@@ -113,7 +113,7 @@ module Split
     end
 
     def exclude_visitor?
-      instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot?
+      instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || force_control
     end
 
     def is_robot?
