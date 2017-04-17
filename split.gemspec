@@ -12,6 +12,15 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/splitrb/split"
   s.summary     = "Rack based split testing framework"
 
+  s.metadata    = {
+   "homepage_uri" => "https://github.com/splitrb/split",
+   "changelog_uri" => "https://github.com/splitrb/split/blob/master/CHANGELOG.md",
+   "source_code_uri" => "https://github.com/splitrb/split",
+   "bug_tracker_uri" => "https://github.com/splitrb/split/issues",
+   "wiki_uri" => "https://github.com/splitrb/split/wiki",
+   "mailing_list_uri" => "https://groups.google.com/d/forum/split-ruby"
+ }
+
   s.required_ruby_version = '>= 1.9.2'
 
   s.rubyforge_project = "split"
