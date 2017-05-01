@@ -48,7 +48,9 @@ module Split
         'spider' => 'generic web spider',
         'UnwindFetchor' => 'Gnip crawler',
         'WordPress' => 'WordPress spider',
+        'YandexAccessibilityBot' => 'Yandex accessibility spider',
         'YandexBot' => 'Yandex spider',
+        'YandexMobileBot' => 'Yandex mobile spider',
         'ZIBB' => 'ZIBB spider',
 
         # HTTP libraries
@@ -73,10 +75,13 @@ module Split
         'facebookexternalhit' => 'facebook bot',
         'Feedfetcher-Google' => 'Google Feedfetcher',
         'https://developers.google.com/+/web/snippet' => 'Google+ Snippet Fetcher',
+        'LinkedInBot' => 'LinkedIn bot',
         'LongURL' => 'URL expander service',
         'NING' => 'NING - Yet Another Twitter Swarmer',
+        'Pinterest' => 'Pinterest Bot',
         'redditbot' => 'Reddit Bot',
         'ShortLinkTranslate' => 'Link shortener',
+        'Slackbot' => 'Slackbot link expander',
         'TweetmemeBot' => 'TweetMeMe Crawler',
         'Twitterbot' => 'Twitter URL expander',
         'UnwindFetch' => 'Gnip URL expander',
