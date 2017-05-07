@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 gem "appraisal"
 gem "codeclimate-test-reporter"
-gem "rails", "~> 4.2"
+gem "rails", "~> 5.1"
+gem "sinatra", git: "https://github.com/sinatra/sinatra"
 
 gemspec path: "../"
