@@ -53,7 +53,7 @@ module Split
   # create a new one.
   def redis
     return @redis if @redis
-    self.redis = 'localhost:6379'
+    self.redis = self.configuration.redis_url
     self.redis
   end
 

@@ -1,51 +1,38 @@
 module Split
   module Helper
+    module_function
 
-    def ab_test(metric_descriptor, control=nil, *alternatives)
-
-      # Check if array is passed to ab_test
-      # e.g. ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
-      if control.is_a? Array and alternatives.length.zero?
-        control, alternatives = control.first, control[1..-1]
-      end
-
+    def ab_test(metric_descriptor, control = nil, *alternatives)
       begin
-        experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
-        experiment_name = experiment_name_with_version.to_s.split(':')[0]
-        experiment = Split::Experiment.new(
-          experiment_name,
-          :alternatives => [control].compact + alternatives,
-          :goals => goals)
-        control ||= experiment.control && experiment.control.name
+        experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
 
-        ret = if Split.configuration.enabled
+        alternative = if Split.configuration.enabled
           experiment.save
-          start_trial( Trial.new(:experiment => experiment) )
+          trial = Trial.new(:user => ab_user, :experiment => experiment,
+              :override => override_alternative(experiment.name), :exclude => exclude_visitor?,
+              :disabled => split_generically_disabled?)
+          alt = trial.choose!(self)
+          alt ? alt.name : nil
         else
-          control_variable(control)
+          control_variable(experiment.control)
         end
-      rescue Errno::ECONNREFUSED, Redis::CannotConnectError => e
+      rescue Errno::ECONNREFUSED, Redis::BaseError, SocketError => e
         raise(e) unless Split.configuration.db_failover
         Split.configuration.db_failover_on_db_error.call(e)
 
         if Split.configuration.db_failover_allow_parameter_override
-          ret = override_alternative(experiment_name) if override_present?(experiment_name)
-          ret = control_variable(control) if split_generically_disabled?
+          alternative = override_alternative(experiment.name) if override_present?(experiment.name)
+          alternative = control_variable(experiment.control) if split_generically_disabled?
         end
       ensure
-        ret ||= control_variable(control)
+        alternative ||= control_variable(experiment.control)
       end
 
       if block_given?
-        if defined?(capture) # a block in a rails view
-          block = Proc.new { yield(ret) }
-          concat(capture(ret, &block))
-          false
-        else
-          yield(ret)
-        end
+        metadata = trial ? trial.metadata : {}
+        yield(alternative, metadata)
       else
-        ret
+        alternative
       end
     end
 
@@ -60,8 +47,9 @@ module Split
         return true
       else
         alternative_name = ab_user[experiment.key]
-        trial = Trial.new(:experiment => experiment, :alternative => alternative_name, :goals => options[:goals])
-        call_trial_complete_hook(trial) if trial.complete!
+        trial = Trial.new(:user => ab_user, :experiment => experiment,
+              :alternative => alternative_name)
+        trial.complete!(options[:goals], self)
 
         if should_reset
           reset!(experiment)
@@ -71,10 +59,9 @@ module Split
       end
     end
 
-
     def finished(metric_descriptor, options = {:reset => true})
       return if exclude_visitor? || Split.configuration.disabled?
-      metric_descriptor, goals = normalize_experiment(metric_descriptor)
+      metric_descriptor, goals = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
@@ -110,30 +97,7 @@ module Split
     end
 
     def exclude_visitor?
-      instance_eval(&Split.configuration.ignore_filter)
-    end
-
-    def not_allowed_to_test?(experiment_key)
-      !Split.configuration.allow_multiple_experiments && doing_other_tests?(experiment_key)
-    end
-
-    def doing_other_tests?(experiment_key)
-      keys_without_experiment(ab_user.keys, experiment_key).length > 0
-    end
-
-    def clean_old_versions(experiment)
-      old_versions(experiment).each do |old_key|
-        ab_user.delete old_key
-      end
-    end
-
-    def old_versions(experiment)
-      if experiment.version > 0
-        keys = ab_user.keys.select { |k| k.match(Regexp.new(experiment.name)) }
-        keys_without_experiment(keys, experiment.key)
-      else
-        []
-      end
+      instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot?
     end
 
     def is_robot?
@@ -152,18 +116,17 @@ module Split
     def active_experiments
       experiment_pairs = {}
       ab_user.keys.each do |key|
-        Metric.possible_experiments(key).each do |experiment|
+        key_without_version = key.split(/\:\d(?!\:)/)[0]
+        Metric.possible_experiments(key_without_version).each do |experiment|
           if !experiment.has_winner?
-            experiment_pairs[key] = ab_user[key]
+            experiment_pairs[key_without_version] = ab_user[key]
           end
         end
       end
       return experiment_pairs
     end
 
-    protected
-
-    def normalize_experiment(metric_descriptor)
+    def normalize_metric(metric_descriptor)
       if Hash === metric_descriptor
         experiment_name = metric_descriptor.keys.first
         goals = Array(metric_descriptor.values.first)
@@ -175,51 +138,7 @@ module Split
     end
 
     def control_variable(control)
-      Hash === control ? control.keys.first : control
-    end
-
-    def start_trial(trial)
-      experiment = trial.experiment
-      if override_present?(experiment.name) and experiment[override_alternative(experiment.name)]
-        ret = override_alternative(experiment.name)
-        ab_user[experiment.key] = ret if Split.configuration.store_override
-      elsif split_generically_disabled?
-        ret = experiment.control.name
-        ab_user[experiment.key] = ret if Split.configuration.store_override
-      elsif experiment.has_winner?
-        ret = experiment.winner.name
-      else
-        clean_old_versions(experiment)
-        if exclude_visitor? || not_allowed_to_test?(experiment.key) || not_started?(experiment)
-          ret = experiment.control.name
-        else
-          if ab_user[experiment.key]
-            ret = ab_user[experiment.key]
-          else
-            trial.choose!
-            call_trial_choose_hook(trial)
-            ret = begin_experiment(experiment, trial.alternative.name)
-          end
-        end
-      end
-
-      ret
-    end
-
-    def not_started?(experiment)
-      experiment.start_time.nil?
-    end
-
-    def call_trial_choose_hook(trial)
-      send(Split.configuration.on_trial_choose, trial) if Split.configuration.on_trial_choose
-    end
-
-    def call_trial_complete_hook(trial)
-      send(Split.configuration.on_trial_complete, trial) if Split.configuration.on_trial_complete
-    end
-
-    def keys_without_experiment(keys, experiment_key)
-      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+      Hash === control ? control.keys.first.to_s : control.to_s
     end
   end
 end

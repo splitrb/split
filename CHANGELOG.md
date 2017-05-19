@@ -1,3 +1,86 @@
+## 1.3.2 (January 2nd, 2016)
+
+Bugfixes:
+
+- Fix deleting experiments in from the updated dashboard (@craigmcnamara, #352)
+
+## 1.3.1 (January 1st, 2016)
+
+Bugfixes:
+
+- Fix the dashboard for experiments with ‘/‘ in the name. (@craigmcnamara, #349)
+
+## 1.3.0 (October 20th, 2015)
+
+Features:
+
+ - allow for custom redis_url different from ENV variable (@davidgrieser, #323)
+ - add ability to change the length of the persistence cookie (@peterylai, #335)
+
+Bugfixes:
+
+ - Rescue from Redis::BaseError instead of Redis::CannotConnectError (@nfm, #342)
+ - Fix active experiments when experiment is on a later version (@ndrisso, #331)
+ - Fix caching of winning alternative (@nfm, #329)
+
+Misc:
+
+ - Remove duplication from Experiment#save (@pakallis, #333)
+ - Remove unnecessary argument from Experiment#write_to_alternative (@t4deu, #332)
+
+## 1.2.1 (May 17th, 2015)
+
+Features:
+
+ - Handle redis DNS resolution failures gracefully (@fusion2004, #310)
+ - Push metadata to ab_test block (@ekorneeff, #296)
+ - Helper methods are now private when included in controllers (@ipoval, #303)
+
+Bugfixes:
+
+ - Return an empty hash as metadata when Split is disabled (@tomasdundacek, #313)
+ - Don't use capture helper from ActionView (@tomasdundacek, #312)
+
+Misc:
+
+ - Remove body "max-width" from dashboard (@xicreative, #299)
+ - fix private for class methods (@ipoval, #301)
+ - minor memoization fix in spec (@ipoval, #304)
+ - Minor documentation fixes (#295, #297, #305, #308)
+
+## 1.2.0 (January 24th, 2015)
+
+Features:
+
+  - Configure redis using environment variables if available (@saratovsource , #293)
+  - Store metadata on experiment configuration (@dekz, #291)
+
+Bugfixes:
+
+ - Revert the Trial#complete! public API to support noargs (@dekz, #292)
+
+## 1.1.0 (January 9th, 2015)
+
+Changes:
+
+  - Public class methods on `Split::Experiment` (e.g., `find_or_create`)
+    have been moved to `Split::ExperimentCatalog`.
+
+Features:
+
+  - Decouple trial from Split::Helper (@joshdover, #286)
+  - Helper method for Active Experiments (@blahblahblah-, #273)
+
+Misc:
+
+  - Use the new travis container based infrastructure for tests (@andrew, #280)
+
+## 1.0.0 (October 12th, 2014)
+
+Changes:
+
+  - Remove support for Ruby 1.8.7 and Rails 2.3 (@qpowell, #271)
+
 ## 0.8.0 (September 25th, 2014)
 
 Features:
@@ -37,7 +120,7 @@ Features:
 
   - You can now reopen experiment from the dashboard (@mikezaby, #235)
 
-Misc
+Misc:
 
   - Internal code tidy up (@IanVaughan, #238)
 
@@ -52,7 +135,7 @@ Bugfixes:
 
   - Fixed start button not being displayed in some cases (@vigosan, #219)
 
-Misc
+Misc:
 
   - Experiment#initialize refactoring (@nberger, #224)
   - Extract ExperimentStore into a seperate class (@nberger, #225)

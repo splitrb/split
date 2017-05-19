@@ -12,36 +12,39 @@ module Split
     end
 
     def self.find(name)
-      if Split.redis.exists(name)
-        obj = Experiment.new name
-        obj.load_from_redis
-      else
-        obj = nil
+      return unless Split.redis.exists(name)
+      Experiment.new(name).tap { |exp| exp.load_from_redis }
+    end
+
+    def self.find_or_initialize(metric_descriptor, control = nil, *alternatives)
+      # Check if array is passed to ab_test
+      # e.g. ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
+      if control.is_a? Array and alternatives.length.zero?
+        control, alternatives = control.first, control[1..-1]
       end
-      obj
+
+      experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
+      experiment_name = experiment_name_with_version.to_s.split(':')[0]
+      Split::Experiment.new(experiment_name,
+          :alternatives => [control].compact + alternatives, :goals => goals)
     end
 
-    def self.find_or_create(label, *alternatives)
-      experiment_name_with_version, goals = normalize_experiment(label)
-      name = experiment_name_with_version.to_s.split(':')[0]
-
-      exp = Experiment.new name, :alternatives => alternatives, :goals => goals
-      exp.save
-      exp
+    def self.find_or_create(metric_descriptor, control = nil, *alternatives)
+      experiment = find_or_initialize(metric_descriptor, control, *alternatives)
+      experiment.save
     end
 
-    private
-
-    def self.normalize_experiment(label)
-      if Hash === label
-        experiment_name = label.keys.first
-        goals = label.values.first
+    def self.normalize_experiment(metric_descriptor)
+      if Hash === metric_descriptor
+        experiment_name = metric_descriptor.keys.first
+        goals = Array(metric_descriptor.values.first)
       else
-        experiment_name = label
+        experiment_name = metric_descriptor
         goals = []
       end
       return experiment_name, goals
     end
+    private_class_method :normalize_experiment
 
   end
 end

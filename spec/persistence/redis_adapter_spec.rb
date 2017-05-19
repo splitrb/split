@@ -11,8 +11,16 @@ describe Split::Persistence::RedisAdapter do
 
     context 'default' do
       it 'should raise error with prompt to set lookup_by' do
-        expect{Split::Persistence::RedisAdapter.new(context)
-              }.to raise_error
+        expect{Split::Persistence::RedisAdapter.new(context)}.to raise_error(RuntimeError)
+      end
+    end
+
+    context 'config with key' do
+      before { Split::Persistence::RedisAdapter.reset_config! }
+      subject { Split::Persistence::RedisAdapter.new(context, 'manual') }
+
+      it 'should be "persistence:manual"' do
+        expect(subject.redis_key).to eq('persistence:manual')
       end
     end
 

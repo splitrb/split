@@ -16,7 +16,7 @@ module Split
 
     get '/' do
       # Display experiments without a winner at the top of the dashboard
-      @experiments = Split::Experiment.all_active_first
+      @experiments = Split::ExperimentCatalog.all_active_first
 
       @metrics = Split::Metric.all
 
@@ -29,33 +29,33 @@ module Split
       erb :index
     end
 
-    post '/:experiment' do
-      @experiment = Split::Experiment.find(params[:experiment])
+    post '/experiment' do
+      @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @alternative = Split::Alternative.new(params[:alternative], params[:experiment])
       @experiment.winner = @alternative.name
       redirect url('/')
     end
 
-    post '/start/:experiment' do
-      @experiment = Split::Experiment.find(params[:experiment])
+    post '/start' do
+      @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.start
       redirect url('/')
     end
 
-    post '/reset/:experiment' do
-      @experiment = Split::Experiment.find(params[:experiment])
+    post '/reset' do
+      @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.reset
       redirect url('/')
     end
 
-    post '/reopen/:experiment' do
-      @experiment = Split::Experiment.find(params[:experiment])
+    post '/reopen' do
+      @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.reset_winner
       redirect url('/')
     end
 
-    delete '/:experiment' do
-      @experiment = Split::Experiment.find(params[:experiment])
+    delete '/experiment' do
+      @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.delete
       redirect url('/')
     end

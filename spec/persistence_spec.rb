@@ -18,7 +18,7 @@ describe Split::Persistence do
 
       it "should raise if the adapter cannot be found" do
         expect(Split.configuration).to receive(:persistence).twice.and_return(:something_weird)
-        expect { subject.adapter }.to raise_error
+        expect { subject.adapter }.to raise_error(Split::InvalidPersistenceAdapterError)
       end
     end
     context "when the persistence config is a class" do

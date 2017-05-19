@@ -1,32 +1,15 @@
 language: ruby
-bundler_args: ''
 rvm:
-  - 1.9.2
-  - 1.9.3
-  - 2.0.0
-  - ruby-head
-  - jruby-19mode
-  - jruby-head
+  - 2.2.4
 
-  - rbx-19mode
-matrix:
-  allow_failures:
-    - rvm: ruby-head
-    - rvm: rbx-19mode
-    - rvm: jruby-head
-  exclude:
-    - rvm: 1.9.2
-      gemfile: gemfiles/4.0.gemfile
-    - rvm: jruby-18mode
-      gemfile: gemfiles/4.0.gemfile
-    - rvm: rbx-18mode
-      gemfile: gemfiles/4.0.gemfile
 gemfile:
-  - gemfiles/3.0.gemfile
-  - gemfiles/3.1.gemfile
-  - gemfiles/3.2.gemfile
-  - gemfiles/4.0.gemfile
+  - gemfiles/4.1.gemfile
+  - gemfiles/4.2.gemfile
+
+before_install:
+  - gem install bundler
 
 services:
    - redis-server
 cache: bundler
+sudo: false

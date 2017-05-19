@@ -12,7 +12,7 @@ describe Split::Alternative do
   }
 
   let!(:experiment) {
-    Split::Experiment.find_or_create({"basket_text" => ["purchase", "refund"]}, "Basket", "Cart")
+    Split::ExperimentCatalog.find_or_create({"basket_text" => ["purchase", "refund"]}, "Basket", "Cart")
   }
 
   let(:goal1) { "purchase" }

@@ -1,4 +1,4 @@
-# Split
+# [Split](http://libraries.io/rubygems/split)
 
 Split is a rack based ab testing framework designed to work with Rails, Sinatra or any other rack based app.
 
@@ -7,10 +7,10 @@ Split is heavily inspired by the Abingo and Vanity rails ab testing plugins and 
 Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
-[![Build Status](https://secure.travis-ci.org/andrew/split.svg?branch=master)](http://travis-ci.org/andrew/split)
-[![Dependency Status](https://gemnasium.com/andrew/split.svg)](https://gemnasium.com/andrew/split)
-[![Code Climate](https://codeclimate.com/github/andrew/split.svg)](https://codeclimate.com/github/andrew/split)
-[![Coverage Status](http://img.shields.io/coveralls/andrew/split.svg)](https://coveralls.io/r/andrew/split)
+[![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](http://travis-ci.org/splitrb/split)
+[![Dependency Status](https://gemnasium.com/splitrb/split.svg)](https://gemnasium.com/splitrb/split)
+[![Code Climate](https://codeclimate.com/github/splitrb/split.svg)](https://codeclimate.com/github/splitrb/split)
+[![Coverage Status](http://img.shields.io/coveralls/splitrb/split.svg)](https://coveralls.io/r/splitrb/split)
 
 ## Requirements
 
@@ -23,47 +23,29 @@ Split only supports redis 2.0 or greater.
 If you're on OS X, Homebrew is the simplest way to install Redis:
 
 ```bash
-$ brew install redis
-$ redis-server /usr/local/etc/redis.conf
+brew install redis
+redis-server /usr/local/etc/redis.conf
 ```
 
 You now have a Redis daemon running on 6379.
 
 ## Setup
 
-If you are using bundler add split to your Gemfile:
-
-``` ruby
-gem 'split'
-```
-
-Then run:
-
 ```bash
-$ bundle install
+gem install split
 ```
 
-Otherwise install the gem:
+### Rails
 
-```bash
-$ gem install split
-```
-
-and require it in your project:
-
-```ruby
-require 'split'
-```
-
-### Rails 3
-
-Split is autoloaded when rails starts up, as long as you've configured redis it will 'just work'.
+Adding `gem 'split'` to your Gemfile will autoloaded it when rails starts up, as long as you've configured redis it will 'just work'.
 
 ### Sinatra
 
 To configure sinatra with Split you need to enable sessions and mix in the helper methods. Add the following lines at the top of your sinatra app:
 
 ```ruby
+require 'split'
+
 class MySinatraApp < Sinatra::Base
   enable :sessions
   helpers Split::Helper
@@ -86,8 +68,8 @@ It can be used to render different templates, show different text or any other c
 Example: View
 
 ```erb
-<% ab_test("login_button", "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
-  <%= img_tag(button_file, :alt => "Login!") %>
+<% ab_test(:login_button, "/images/button1.jpg", "/images/button2.jpg") do |button_file| %>
+  <%= image_tag(button_file, alt: "Login!") %>
 <% end %>
 ```
 
@@ -96,7 +78,7 @@ Example: Controller
 ```ruby
 def register_new_user
   # See what level of free points maximizes users' decision to buy replacement points.
-  @starter_points = ab_test("new_user_free_points", '100', '200', '300')
+  @starter_points = ab_test(:new_user_free_points, '100', '200', '300')
 end
 ```
 
@@ -105,21 +87,21 @@ Example: Conversion tracking (in a controller!)
 ```ruby
 def buy_new_points
   # some business logic
-  finished("new_user_free_points")
+  finished(:new_user_free_points)
 end
 ```
 
 Example: Conversion tracking (in a view)
 
 ```erb
-Thanks for signing up, dude! <% finished("signup_page_redesign") %>
+Thanks for signing up, dude! <% finished(:signup_page_redesign) %>
 ```
 
-You can find more examples, tutorials and guides on the [wiki](https://github.com/andrew/split/wiki).
+You can find more examples, tutorials and guides on the [wiki](https://github.com/splitrb/split/wiki).
 
 ## Statistical Validity
 
-Split has two options for you to use to determine which alternative is the best. 
+Split has two options for you to use to determine which alternative is the best.
 
 The first option (default on the dashboard) uses a z test (n>30) for the difference between your control and alternative conversion rates to calculate statistical significance. This test will tell you whether an alternative is better or worse than your control, but it will not distinguish between which alternative is the best in an experiment with multiple alternatives. Split will only tell you if your experiment is 90%, 95%, or 99% significant, and this test only works if you have more than 30 participants and 5 conversions for each branch.
 
@@ -139,11 +121,11 @@ Perhaps you only want to show an alternative to 10% of your visitors because it 
 To do this you can pass a weight with each alternative in the following ways:
 
 ```ruby
-ab_test('homepage design', {'Old' => 20}, {'New' => 2})
+ab_test(:homepage_design, {'Old' => 18}, {'New' => 2})
 
-ab_test('homepage design', 'Old', {'New' => 0.1})
+ab_test(:homepage_design, 'Old', {'New' => 1.0/9})
 
-ab_test('homepage design', {'Old' => 10}, 'New')
+ab_test(:homepage_design, {'Old' => 9}, 'New')
 ```
 
 This will only show the new alternative to visitors 1 in 10 times, the default weight for an alternative is 1.
@@ -161,7 +143,7 @@ will always have red buttons. This won't be stored in your session or count towa
 
 In the event you want to disable all tests without having to know the individual experiment names, add a `SPLIT_DISABLE` query parameter.
 
-    http://myawesomesite.com?SPLIT_DISABLE=trues
+    http://myawesomesite.com?SPLIT_DISABLE=true
 
 It is not required to send `SPLIT_DISABLE=false` to activate Split.
 
@@ -179,7 +161,7 @@ When a user completes a test their session is reset so that they may start the t
 To stop this behaviour you can pass the following option to the `finished` method:
 
 ```ruby
-finished('experiment_name', :reset => false)
+finished(:experiment_name, reset: false)
 ```
 
 The user will then always see the alternative they started with.
@@ -212,6 +194,15 @@ Split.configure do |config|
 end
 ```
 
+By default, cookies will expire in 1 year. To change that, set the `persistence_cookie_length` in the configuration (unit of time in seconds).
+
+```ruby
+Split.configure do |config|
+  config.persistence = :cookie
+  config.persistence_cookie_length = 2592000 # 30 days
+end
+```
+
 __Note:__ Using cookies depends on `ActionDispatch::Cookies` or any identical API
 
 #### Redis
@@ -220,9 +211,9 @@ Using Redis will allow ab_users to persist across sessions or machines.
 
 ```ruby
 Split.configure do |config|
-  config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => proc { |context| context.current_user_id }
+  config.persistence = Split::Persistence::RedisAdapter.with_config(lookup_by: -> (context) { context.current_user_id })
   # Equivalent
-  # config.persistence = Split::Persistence::RedisAdapter.with_config(:lookup_by => :current_user_id }
+  # config.persistence = Split::Persistence::RedisAdapter.with_config(lookup_by: :current_user_id)
 end
 ```
 
@@ -233,7 +224,7 @@ Options:
 #### Custom Adapter
 
 Your custom adapter needs to implement the same API as existing adapters.
-See `Split::Persistance::CookieAdapter` or `Split::Persistence::SessionAdapter` for a starting point.
+See `Split::Persistence::CookieAdapter` or `Split::Persistence::SessionAdapter` for a starting point.
 
 ```ruby
 Split.configure do |config|
@@ -250,7 +241,7 @@ For example:
 
 ``` ruby
 Split.configure do |config|
-  config.on_trial_choose   = :log_trial_choice
+  config.on_trial_choose   = :log_trial_choose
   config.on_trial_complete = :log_trial_complete
 end
 ```
@@ -294,8 +285,8 @@ For example:
 
 ``` ruby
 Split.configure do |config|
-  config.on_experiment_reset  = proc{ |experiment| # Do something on reset }
-  config.on_experiment_delete = proc{ |experiment| # Do something else on delete }
+  config.on_experiment_reset  = -> (example) { # Do something on reset }
+  config.on_experiment_delete = -> (experiment) { # Do something else on delete }
 end
 ```
 
@@ -316,13 +307,13 @@ run Rack::URLMap.new \
 However, if you are using Rails 3: You can mount this inside your app routes by first adding this to the Gemfile:
 
 ```ruby
-gem 'split', :require => 'split/dashboard'
+gem 'split', require: 'split/dashboard'
 ```
 
 Then adding this to config/routes.rb
 
 ```ruby
-mount Split::Dashboard, :at => 'split'
+mount Split::Dashboard, at: 'split'
 ```
 
 You may want to password protect that page, you can do so with `Rack::Auth::Basic` (in your split initializer file)
@@ -335,11 +326,11 @@ end
 
 You can even use Devise or any other Warden-based authentication method to authorize users. Just replace `mount Split::Dashboard, :at => 'split'` in `config/routes.rb` with the following:
 ```ruby
-match "/split" => Split::Dashboard, :anchor => false, :via => [:get, :post], :constraints => lambda { |request|
+match "/split" => Split::Dashboard, anchor: false, via: [:get, :post, :delete], constraints: -> (request) do
   request.env['warden'].authenticated? # are we authenticated?
   request.env['warden'].authenticate! # authenticate if not already
   # or even check any other condition such as request.env['warden'].user.is_admin?
-}
+end
 ```
 
 More information on this [here](http://steve.dynedge.co.uk/2011/12/09/controlling-access-to-routes-and-rack-apps-in-rails-3-with-devise-and-warden/)
@@ -355,14 +346,17 @@ You can override the default configuration options of Split like so:
 ```ruby
 Split.configure do |config|
   config.db_failover = true # handle redis errors gracefully
-  config.db_failover_on_db_error = proc{|error| Rails.logger.error(error.message) }
+  config.db_failover_on_db_error = -> (error) { Rails.logger.error(error.message) }
   config.allow_multiple_experiments = true
   config.enabled = true
   config.persistence = Split::Persistence::SessionAdapter
   #config.start_manually = false ## new test will have to be started manually from the admin panel. default false
   config.include_rails_helper = true
+  config.redis_url = "custom.redis.url:6380"
 end
 ```
+
+Split looks for the Redis host in the environment variable ```REDIS_URL``` then defaults to ```localhost:6379``` if not specified by configure block.
 
 ### Filtering
 
@@ -379,7 +373,7 @@ Split.configure do |config|
   config.ignore_ip_addresses << '81.19.48.130' # or regex: /81\.19\.48\.[0-9]+/
 
   # or provide your own filter functionality, the default is proc{ |request| is_robot? || is_ignored_ip_address? }
-  config.ignore_filter = proc{ |request| CustomExcludeLogic.excludes?(request) }
+  config.ignore_filter = -> (request) { CustomExcludeLogic.excludes?(request) }
 end
 ```
 
@@ -392,15 +386,15 @@ algorithm and if the experiment resets once finished:
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    "my_first_experiment" => {
-      :alternatives => ["a", "b"],
-      :resettable => false
+    my_first_experiment: {
+      alternatives: ["a", "b"],
+      resettable: false
     },
-    "my_second_experiment" => {
-      :algorithm => 'Split::Algorithms::Whiplash',
-      :alternatives => [
-        { :name => "a", :percent => 67 },
-        { :name => "b", :percent => 33 }
+    :my_second_experiment => {
+      algorithm: 'Split::Algorithms::Whiplash',
+      alternatives: [
+        { name: "a", percent: 67 },
+        { name: "b", percent: 33 }
       ]
     }
   }
@@ -434,13 +428,58 @@ my_second_experiment:
 This simplifies the calls from your code:
 
 ```ruby
-ab_test("my_first_experiment")
+ab_test(:my_first_experiment)
 ```
 
 and:
 
 ```ruby
-finished("my_first_experiment")
+finished(:my_first_experiment)
+```
+
+You can also add meta data for each experiment, very useful when you need more than an alternative name to change behaviour:
+
+```ruby
+Split.configure do |config|
+  config.experiments = {
+    my_first_experiment: {
+      alternatives: ["a", "b"],
+      metadata: {
+        "a" => {"text" => "Have a fantastic day"},
+        "b" => {"text" => "Don't get hit by a bus"},
+      }
+    },
+  }
+end
+```
+
+```yaml
+my_first_experiment:
+  alternatives:
+    - a
+    - b
+  metadata:
+    a:
+      text: "Have a fantastic day"
+    b:
+      text: "Don't get hit by a bus"
+```
+
+This allows for some advanced experiment configuration using methods like:
+
+```ruby
+trial.alternative.name # => "a"
+
+trial.metadata['text'] # => "Have a fantastic day"
+```
+
+or in views:
+
+```erb
+<% ab_test("my_first_experiment") do |alternative, meta| %>
+  <%= alternative %>
+  <small><%= meta['text'] %></small>
+<% end %>
 ```
 
 #### Metrics
@@ -453,9 +492,9 @@ the `:metric` option.
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    "my_first_experiment" => {
-      :alternatives => ["a", "b"],
-      :metric => :my_metric,
+    my_first_experiment: {
+      alternatives: ["a", "b"],
+      metric: :my_metric,
     }
   }
 end
@@ -481,7 +520,7 @@ You might wish to allow an experiment to have multiple, distinguishable goals.
 The API to define goals for an experiment is this:
 
 ```ruby
-ab_test({"link_color" => ["purchase", "refund"]}, "red", "blue")
+ab_test({link_color: ["purchase", "refund"]}, "red", "blue")
 ```
 
 or you can you can define them in a configuration file:
@@ -489,9 +528,9 @@ or you can you can define them in a configuration file:
 ```ruby
 Split.configure do |config|
   config.experiments = {
-    "link_color" => {
-      :alternatives => ["red", "blue"],
-      :goals => ["purchase", "refund"]
+    link_color: {
+      alternatives: ["red", "blue"],
+      goals: ["purchase", "refund"]
     }
   }
 end
@@ -500,10 +539,10 @@ end
 To complete a goal conversion, you do it like:
 
 ```ruby
-finished("link_color" => "purchase")
+finished(link_color: "purchase")
 ```
 
-**NOTE:** This does not mean that a single experiment can have/complete progressive goals. 
+**NOTE:** This does not mean that a single experiment can have/complete progressive goals.
 
 **Good Example**: Test if listing Plan A first result in more conversions to Plan A (goal: "plana_conversion") or Plan B (goal: "planb_conversion").
 
@@ -549,11 +588,8 @@ production: redis1.example.com:6379
 And our initializer:
 
 ```ruby
-rails_root = ENV['RAILS_ROOT'] || File.dirname(__FILE__) + '/../..'
-rails_env = ENV['RAILS_ENV'] || 'development'
-
-split_config = YAML.load_file(rails_root + '/config/split.yml')
-Split.redis = split_config[rails_env]
+split_config = YAML.load_file(Rails.root.join('config', 'split.yml'))
+Split.redis = split_config[Rails.env]
 ```
 
 ## Namespaces
@@ -584,7 +620,7 @@ conduct experiments that are not tied to a web session.
 
 ```ruby
 # create a new experiment
-experiment = Split::Experiment.find_or_create('color', 'red', 'blue')
+experiment = Split::ExperimentCatalog.find_or_create('color', 'red', 'blue')
 # create a new trial
 trial = Split::Trial.new(:experiment => experiment)
 # run trial
@@ -601,11 +637,11 @@ end
 
 ## Algorithms
 
-By default, Split ships with `Split::Algorithms::WeightedSample` that randomly selects from possible alternatives for a traditional a/b test. 
+By default, Split ships with `Split::Algorithms::WeightedSample` that randomly selects from possible alternatives for a traditional a/b test.
 It is possible to specify static weights to favor certain alternatives.
 
-`Split::Algorithms::Whiplash` is an implementation of a [multi-armed bandit algorithm](http://stevehanov.ca/blog/index.php?id=132). 
-This algorithm will automatically weight the alternatives based on their relative performance, 
+`Split::Algorithms::Whiplash` is an implementation of a [multi-armed bandit algorithm](http://stevehanov.ca/blog/index.php?id=132).
+This algorithm will automatically weight the alternatives based on their relative performance,
 choosing the better-performing ones more often as trials are completed.
 
 Users may also write their own algorithms. The default algorithm may be specified globally in the configuration file, or on a per experiment basis using the experiments hash of the configuration file.
@@ -620,11 +656,12 @@ end
 
 ## Extensions
 
-  - [Split::Export](http://github.com/andrew/split-export) - easily export ab test data out of Split
-  - [Split::Analytics](http://github.com/andrew/split-analytics) - push test data to google analytics
+  - [Split::Export](http://github.com/splitrb/split-export) - easily export ab test data out of Split
+  - [Split::Analytics](http://github.com/splitrb/split-analytics) - push test data to google analytics
   - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - store experiment data in mongoid (still uses redis)
   - [Split::Cacheable](https://github.com/harrystech/split_cacheable) - automatically create cache buckets per test
   - [Split::Counters](https://github.com/bernardkroes/split-counters) - add counters per experiment and alternative
+  - [Split::Cli](https://github.com/craigmcnamara/split-cli) - a CLI to trigger Split A/B tests
 
 ## Screencast
 
@@ -638,23 +675,12 @@ Ryan bates has produced an excellent 10 minute screencast about split on the Rai
 
 ## Contributors
 
-Special thanks to the following people for submitting patches:
-
-* Lloyd Pick
-* Jeffery Chupp
-* Andrew Appleton
-* Phil Nash
-* Dave Goodchild
-* Ian Young
-* Nathan Woodhull
-* Ville Lautanala
-* Liu Jin
-* Peter Schröder
+Over 70 different people have contributed to the project, you can see them all here: https://github.com/splitrb/split/graphs/contributors
 
 ## Development
 
-Source hosted at [GitHub](http://github.com/andrew/split).
-Report Issues/Feature requests on [GitHub Issues](http://github.com/andrew/split/issues).
+Source hosted at [GitHub](http://github.com/splitrb/split).
+Report Issues/Feature requests on [GitHub Issues](http://github.com/splitrb/split/issues).
 Discussion at [Google Groups](https://groups.google.com/d/forum/split-ruby)
 
 Tests can be ran with `rake spec`
@@ -672,4 +698,4 @@ Tests can be ran with `rake spec`
 
 ## Copyright
 
-Copyright (c) 2013 Andrew Nesbitt. See [LICENSE](https://github.com/andrew/split/blob/master/LICENSE) for details.
+Copyright (c) 2016 Andrew Nesbitt. See [LICENSE](https://github.com/splitrb/split/blob/master/LICENSE) for details.

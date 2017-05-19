@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Andrew Nesbitt"]
   s.licenses    = ['MIT']
   s.email       = ["andrewnez@gmail.com"]
-  s.homepage    = "https://github.com/andrew/split"
-  s.summary     = %q{Rack based split testing framework}
+  s.homepage    = "https://github.com/splitrb/split"
+  s.summary     = "Rack based split testing framework"
 
   s.required_ruby_version = '>= 1.9.2'
 
@@ -25,9 +25,9 @@ Gem::Specification.new do |s|
   s.add_dependency 'sinatra',         '>= 1.2.6'
   s.add_dependency 'simple-random'
 
-  s.add_development_dependency 'rake'
-  s.add_development_dependency 'bundler',     '~> 1.6'
-  s.add_development_dependency 'rspec',       '~> 3.0'
-  s.add_development_dependency 'rack-test'
-  s.add_development_dependency 'coveralls'
+  s.add_development_dependency 'bundler',     '~> 1.10'
+  s.add_development_dependency 'coveralls',   '~> 0.8'
+  s.add_development_dependency 'rack-test',   '~> 0.6'
+  s.add_development_dependency 'rake',        '~> 10.4'
+  s.add_development_dependency 'rspec',       '~> 3.4'
 end

@@ -14,11 +14,11 @@ describe Split::Dashboard do
   end
 
   let(:experiment) {
-    Split::Experiment.find_or_create("link_color", "blue", "red")
+    Split::ExperimentCatalog.find_or_create("link_color", "blue", "red")
   }
 
   let(:experiment_with_goals) {
-    Split::Experiment.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
+    Split::ExperimentCatalog.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
   }
 
   let(:metric) {
@@ -44,7 +44,7 @@ describe Split::Dashboard do
         get '/'
         expect(last_response.body).to include('Start')
 
-        post "/start/#{experiment.name}"
+        post "/start?experiment=#{experiment.name}"
         get '/'
         expect(last_response.body).to include('Reset Data')
         expect(last_response.body).not_to include('Metrics:')
@@ -65,7 +65,7 @@ describe Split::Dashboard do
         get '/'
         expect(last_response.body).to include('Start')
 
-        post "/start/#{experiment.name}"
+        post "/start?experiment=#{experiment.name}"
         get '/'
         expect(last_response.body).to include('Reset Data')
       end
@@ -96,13 +96,13 @@ describe Split::Dashboard do
     before { experiment.winner = 'red' }
 
     it 'redirects' do
-      post "/reopen/#{experiment.name}"
+      post "/reopen?experiment=#{experiment.name}"
 
       expect(last_response).to be_redirect
     end
 
     it "removes winner" do
-      post "/reopen/#{experiment.name}"
+      post "/reopen?experiment=#{experiment.name}"
 
       expect(experiment).to_not have_winner
     end
@@ -112,7 +112,7 @@ describe Split::Dashboard do
       blue_link.participant_count = 7
       experiment.winner = 'blue'
 
-      post "/reopen/#{experiment.name}"
+      post "/reopen?experiment=#{experiment.name}"
 
       expect(red_link.participant_count).to eq(5)
       expect(blue_link.participant_count).to eq(7)
@@ -124,7 +124,7 @@ describe Split::Dashboard do
     blue_link.participant_count = 7
     experiment.winner = 'blue'
 
-    post "/reset/#{experiment.name}"
+    post "/reset?experiment=#{experiment.name}"
 
     expect(last_response).to be_redirect
 
@@ -137,14 +137,14 @@ describe Split::Dashboard do
   end
 
   it "should delete an experiment" do
-    delete "/#{experiment.name}"
+    delete "/experiment?experiment=#{experiment.name}"
     expect(last_response).to be_redirect
-    expect(Split::Experiment.find(experiment.name)).to be_nil
+    expect(Split::ExperimentCatalog.find(experiment.name)).to be_nil
   end
 
   it "should mark an alternative as the winner" do
     expect(experiment.winner).to be_nil
-    post "/#{experiment.name}", :alternative => 'red'
+    post "/experiment?experiment=#{experiment.name}", :alternative => 'red'
 
     expect(last_response).to be_redirect
     expect(experiment.winner.name).to eq('red')

@@ -4,9 +4,7 @@
   <% experiment_class = "experiment" %>
 <% end %>
 
-<% unless experiment.calc_time == Time.now.day %>
-  <% experiment.estimate_winning_alternative %>
-<% end %>
+<% experiment.calc_winning_alternatives %>
 
 <div class="<%= experiment_class %>">
   <div class="experiment-header">
@@ -97,7 +95,7 @@
               Loser
             <% end %>
           <% else %>
-            <form action="<%= url experiment.name %>" method='post' onclick="return confirmWinner()">
+            <form action="<%= url('experiment') + '?experiment=' + experiment.name %>" method='post' onclick="return confirmWinner()">
               <input type='hidden' name='alternative' value='<%= h alternative.name %>'>
               <input type="submit" value="Use this" class="green">
             </form>

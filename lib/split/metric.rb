@@ -17,7 +17,7 @@ module Split
         experiment_names = metric.split(',')
 
         experiments = experiment_names.collect do |experiment_name|
-          Split::Experiment.find(experiment_name)
+          Split::ExperimentCatalog.find(experiment_name)
         end
 
         Split::Metric.new(:name => name, :experiments => experiments)
@@ -67,7 +67,7 @@ module Split
       if metric
         experiments << metric.experiments
       end
-      experiment = Split::Experiment.find(metric_name)
+      experiment = Split::ExperimentCatalog.find(metric_name)
       if experiment
         experiments << experiment
       end
@@ -84,8 +84,6 @@ module Split
       end
     end
 
-    private
-
     def self.normalize_metric(label)
       if Hash === label
         metric_name = label.keys.first
@@ -96,5 +94,7 @@ module Split
       end
       return metric_name, goals
     end
+    private_class_method :normalize_metric
+
   end
 end

@@ -4,12 +4,8 @@ describe Split::EncapsulatedHelper do
   include Split::EncapsulatedHelper
 
   before do
-    @persistence_adapter = Split.configuration.persistence
-    Split.configuration.persistence = Hash
-  end
-
-  after do
-    Split.configuration.persistence = @persistence_adapter
+    allow_any_instance_of(Split::EncapsulatedHelper::ContextShim).to receive(:ab_user)
+        .and_return({})
   end
 
   def params

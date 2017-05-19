@@ -10,6 +10,7 @@ module Split
     attr_accessor :allow_multiple_experiments
     attr_accessor :enabled
     attr_accessor :persistence
+    attr_accessor :persistence_cookie_length
     attr_accessor :algorithm
     attr_accessor :store_override
     attr_accessor :start_manually
@@ -19,6 +20,7 @@ module Split
     attr_accessor :on_experiment_delete
     attr_accessor :include_rails_helper
     attr_accessor :beta_probability_simulations
+    attr_accessor :redis_url
 
     attr_reader :experiments
 
@@ -141,6 +143,10 @@ module Split
             experiment_config[experiment_name.to_sym][:goals] = goals
           end
 
+          if metadata = value_for(settings, :metadata)
+            experiment_config[experiment_name.to_sym][:metadata] = metadata
+          end
+
           if (resettable = value_for(settings, :resettable)) != nil
             experiment_config[experiment_name.to_sym][:resettable] = resettable
           end
@@ -197,9 +203,11 @@ module Split
       @enabled = true
       @experiments = {}
       @persistence = Split::Persistence::SessionAdapter
+      @persistence_cookie_length = 31536000 # One year from now
       @algorithm = Split::Algorithms::WeightedSample
       @include_rails_helper = true
       @beta_probability_simulations = 10000
+      @redis_url = ENV.fetch('REDIS_URL', 'localhost:6379')
     end
 
     private
