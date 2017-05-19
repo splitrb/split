@@ -96,6 +96,14 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
+    def ab_active_experiments()
+      ab_user.active_experiments
+    rescue => e
+      raise unless Split.configuration.db_failover
+      Split.configuration.db_failover_on_db_error.call(e)
+    end
+
+
     def override_present?(experiment_name)
       override_alternative(experiment_name)
     end
