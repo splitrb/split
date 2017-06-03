@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 require "spec_helper"
+require 'rack/test'
 
 describe Split::Persistence::CookieAdapter do
 
-  let(:context) { double(:cookies => CookiesMock.new) }
+  let(:env) { Rack::MockRequest.env_for("http://example.com:8080/") }
+  let(:request) { Rack::Request.new(env) }
+  let(:response) { Rack::MockResponse.new(200, {}, "") }
+  let(:context) { double(request: request, response: response) }
   subject { Split::Persistence::CookieAdapter.new(context) }
 
   describe "#[] and #[]=" do
@@ -30,7 +34,7 @@ describe Split::Persistence::CookieAdapter do
   end
 
   it "handles invalid JSON" do
-    context.cookies[:split] = { :value => '{"foo":2,', :expires => Time.now }
+    context.request.cookies[:split] = { :value => '{"foo":2,', :expires => Time.now }
     expect(subject["my_key"]).to be_nil
     subject["my_key"] = "my_value"
     expect(subject["my_key"]).to eq("my_value")
