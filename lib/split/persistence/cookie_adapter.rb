@@ -6,20 +6,21 @@ module Split
     class CookieAdapter
 
       def initialize(context)
-        @cookies = context.send(:cookies)
+        @request, @response = context.request, context.response
+        @cookies = @request.cookies
         @expires = Time.now + cookie_length_config
       end
 
       def [](key)
-        hash[key]
+        hash[key.to_s]
       end
 
       def []=(key, value)
-        set_cookie(hash.merge(key => value))
+        set_cookie(hash.merge!(key.to_s => value))
       end
 
       def delete(key)
-        set_cookie(hash.tap { |h| h.delete(key) })
+        set_cookie(hash.tap { |h| h.delete(key.to_s) })
       end
 
       def keys
@@ -28,22 +29,25 @@ module Split
 
       private
 
-      def set_cookie(value)
-        @cookies[:split] = {
-          :value => JSON.generate(value),
-          :expires => @expires
-        }
+      def set_cookie(value = {})
+        @response.set_cookie :split.to_s, default_options.merge(value: JSON.generate(value))
+      end
+
+      def default_options
+        { expires: @expires, path: '/' }
       end
 
       def hash
-        if @cookies[:split]
-          begin
-            JSON.parse(@cookies[:split])
-          rescue JSON::ParserError
+        @hash ||= begin
+          if cookies = @cookies[:split.to_s]
+            begin
+              JSON.parse(cookies)
+            rescue JSON::ParserError
+              {}
+            end
+          else
             {}
           end
-        else
-          {}
         end
       end
 
