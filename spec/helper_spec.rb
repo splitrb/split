@@ -35,6 +35,18 @@ describe Split::Helper do
       expect(lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }).not_to raise_error
     end
 
+    it "raises an appropriate error when processing combined expirements" do
+      Split.configuration.experiments = {
+        :combined_exp_1 => {
+          :alternatives => [  { name: "control", percent: 50 },  { name: "test-alt", percent: 50 } ],
+          :metric => :my_metric,
+          :combined_experiments => [:combined_exp_1_sub_1]
+        }
+      }
+      Split::ExperimentCatalog.find_or_create('combined_exp_1')
+      expect(lambda { ab_test('combined_exp_1')}).to raise_error(Split::InvalidExperimentsFormatError )
+    end
+
     it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
       ab_test('link_color', 'blue', 'red')
       expect(['red', 'blue']).to include(ab_user['link_color'])
@@ -250,6 +262,56 @@ describe Split::Helper do
       finished_session = ab_user.dup
       ab_test('link_color', 'blue', 'red')
       expect(ab_user).to eq(finished_session)
+    end
+  end
+
+  describe 'ab_combined_test' do
+    let!(:config_enabled) { true }
+    let!(:combined_experiments) { [:exp_1_click, :exp_1_scroll ]}
+    let!(:allow_multiple_experiments) { true }
+
+    before do
+      Split.configuration.experiments = {
+        :combined_exp_1 => {
+          :alternatives => [ {"control"=> 0.5}, {"test-alt"=> 0.5} ],
+          :metric => :my_metric,
+          :combined_experiments => combined_experiments
+        }
+      }
+      Split.configuration.enabled = config_enabled
+      Split.configuration.allow_multiple_experiments = allow_multiple_experiments
+    end
+
+    context 'without config enabled' do
+      let!(:config_enabled) { false }
+
+      it "raises an error" do
+        expect(lambda { ab_combined_test :combined_exp_1 }).to raise_error(Split::InvalidExperimentsFormatError )
+      end
+    end
+
+    context 'multiple experiments disabled' do
+      let!(:allow_multiple_experiments) { false }
+
+      it "raises an error if multiple experiments is disabled" do
+        expect(lambda { ab_combined_test :combined_exp_1 }).to raise_error(Split::InvalidExperimentsFormatError)
+      end
+    end
+
+    context 'without combined experiments' do
+      let!(:combined_experiments) { nil }
+
+      it "raises an error" do
+        expect(lambda { ab_combined_test :combined_exp_1 }).to raise_error(Split::InvalidExperimentsFormatError )
+      end
+    end
+
+    it "uses same alternatives for all sub experiments " do
+      allow(self).to receive(:get_alternative) { "test-alt" }
+      expect(self).to receive(:ab_test).with(:exp_1_click, {"control"=>0.5}, {"test-alt"=>0.5}) { "test-alt" }
+      expect(self).to receive(:ab_test).with(:exp_1_scroll, [{"test-alt" => 1}] )
+
+      ab_combined_test('combined_exp_1')
     end
   end
 
