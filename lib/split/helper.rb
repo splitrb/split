@@ -39,31 +39,6 @@ module Split
       end
     end
 
-     def ab_combined_test(metric_descriptor, control = nil, *alternatives)
-      raise(Split::InvalidExperimentsFormatError) unless metric_descriptor.class == String || metric_descriptor.class == Symbol
-      raise(Split::InvalidExperimentsFormatError) unless Split.configuration.enabled
-      raise(Split::InvalidExperimentsFormatError) unless Split.configuration.allow_multiple_experiments
-      experiment = Split::configuration.experiments[metric_descriptor.to_sym]
-      nil if experiment.nil?
-      raise(Split::InvalidExperimentsFormatError) if experiment[:combined_experiments].nil?
-
-      alternative = nil
-      experiment[:combined_experiments].each do |combined_experiment|
-        if alternative.nil?
-          if control
-            alternative = ab_test(combined_experiment, control, alternatives)
-          else
-            normalized_alternatives = Split::Configuration.new.normalize_alternatives(experiment[:alternatives])
-            alternative = ab_test(combined_experiment, normalized_alternatives[0], *normalized_alternatives[1])
-            # alternative = ab_test(combined_experiment, control, *alternatives)
-          end
-        else
-          ab_test(combined_experiment, [{alternative => 1}])
-        end
-      end
-    end
-
-
     def reset!(experiment)
       ab_user.delete(experiment.key)
     end
