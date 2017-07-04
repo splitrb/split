@@ -3,7 +3,7 @@ module Split
   module CombinedExperimentsHelper
     def ab_combined_test(metric_descriptor, control = nil, *alternatives)
       return nil unless experiment = find_combined_experiment(metric_descriptor)
-      raise(Split::InvalidExperimentsFormatError) if experiment[:combined_experiments].nil?
+      raise(Split::InvalidExperimentsFormatError, 'Unable to find experiment #{metric_descriptor} in configuration') if experiment[:combined_experiments].nil?
 
       alternative = nil
       experiment[:combined_experiments].each do |combined_experiment|
@@ -21,9 +21,9 @@ module Split
     end
 
     def find_combined_experiment(metric_descriptor)
-      raise(Split::InvalidExperimentsFormatError) unless metric_descriptor.class == String || metric_descriptor.class == Symbol
-      raise(Split::InvalidExperimentsFormatError) unless Split.configuration.enabled
-      raise(Split::InvalidExperimentsFormatError) unless Split.configuration.allow_multiple_experiments
+      raise(Split::InvalidExperimentsFormatError, 'Invalid descriptor class (String or Symbol required)') unless metric_descriptor.class == String || metric_descriptor.class == Symbol
+      raise(Split::InvalidExperimentsFormatError, 'Enable configuration') unless Split.configuration.enabled
+      raise(Split::InvalidExperimentsFormatError, 'Enable `allow_multiple_experiments`') unless Split.configuration.allow_multiple_experiments
       experiment = Split::configuration.experiments[metric_descriptor.to_sym]
     end
   end

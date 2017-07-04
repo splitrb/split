@@ -645,6 +645,13 @@ Finish each combined test as normal
    ab_finished(:button_color_on_login)
    ab_finished(:button_color_on_signup)
 ```
+
+**Additional Configuration**: 
+* Be sure to enable `allow_multiple_experiments` 
+* In Sinatra include the CombinedExperimentsHelper
+  ```
+    helpers Split::CombinedExperimentsHelper
+  ```
 ### DB failover solution
 
 Due to the fact that Redis has no automatic failover mechanism, it's
