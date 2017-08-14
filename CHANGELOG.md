@@ -1,3 +1,23 @@
+## 3.1.0 (August 14th, 2017)
+
+Features:
+
+- Support for combined experiments (@daviddening, #493)
+- Rewrite CookieAdapter to work with Rack::Request and Rack::Response directly (@andrehjr, #490)
+- Enumeration of a User's Experiments that Respects the db_failover Option(@MarkRoddy, #487)
+
+Bugfixes:
+
+- Blocked a few more common bot user agents (@kylerippey, #485)
+
+Misc:
+
+- Repository Audit by Maintainer.io (@RichardLitt, #484)
+- Update development dependencies
+- Test on ruby 2.4.1
+- Test compatibility with rails 5.1
+- Add uris to metadata section in gemspec
+
 ## 3.0.0 (March 30th, 2017)
 
 Features:
