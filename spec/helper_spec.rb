@@ -35,6 +35,18 @@ describe Split::Helper do
       expect(lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }).not_to raise_error
     end
 
+    it "raises an appropriate error when processing combined expirements" do
+      Split.configuration.experiments = {
+        :combined_exp_1 => {
+          :alternatives => [  { name: "control", percent: 50 },  { name: "test-alt", percent: 50 } ],
+          :metric => :my_metric,
+          :combined_experiments => [:combined_exp_1_sub_1]
+        }
+      }
+      Split::ExperimentCatalog.find_or_create('combined_exp_1')
+      expect(lambda { ab_test('combined_exp_1')}).to raise_error(Split::InvalidExperimentsFormatError )
+    end
+
     it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
       ab_test('link_color', 'blue', 'red')
       expect(['red', 'blue']).to include(ab_user['link_color'])

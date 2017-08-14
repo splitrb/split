@@ -1,4 +1,4 @@
-# [Split](http://libraries.io/rubygems/split)
+# [Split](http://libraries.io/rubygems/split) 
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
 [![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](http://travis-ci.org/splitrb/split)
@@ -623,6 +623,35 @@ Once you finish one of the goals, the test is considered to be completed, and fi
 
 **Bad Example**: Test both how button color affects signup *and* how it affects login, at the same time. THIS WILL NOT WORK.
 
+#### Combined Experiments
+If you want to test how how button color affects signup *and* how it affects login, at the same time. Use combined tests
+Configure like so 
+```ruby
+  Split.configuration.experiments = {
+        :button_color_experiment => {
+          :alternatives => ["blue", "green"],
+          :combined_experiments => ["button_color_on_signup", "button_color_on_login"]
+        }
+      }
+```
+
+Starting the combined test starts all combined experiments
+```ruby
+ ab_combined_test(:button_color_experiment)
+```
+Finish each combined test as normal
+
+```ruby
+   ab_finished(:button_color_on_login)
+   ab_finished(:button_color_on_signup)
+```
+
+**Additional Configuration**: 
+* Be sure to enable `allow_multiple_experiments` 
+* In Sinatra include the CombinedExperimentsHelper
+  ```
+    helpers Split::CombinedExperimentsHelper
+  ```
 ### DB failover solution
 
 Due to the fact that Redis has no automatic failover mechanism, it's
