@@ -1,3 +1,13 @@
+## 3.1.1 (August 30th, 2017)
+
+Bugfixes:
+
+- Bring back support for ruby 1.9.3 and greater (rubygems 2.0.0 or greater now required) (@patbl, #498)
+
+Misc:
+
+- Document testing with RSpec (@eliotsykes, #495)
+
 ## 3.1.0 (August 14th, 2017)
 
 Features:
