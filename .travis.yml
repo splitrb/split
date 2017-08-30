@@ -1,5 +1,8 @@
 language: ruby
 rvm:
+  - 1.9.3
+  - 2.0
+  - 2.1
   - 2.2.0
   - 2.2.2
   - 2.4.1
@@ -11,13 +14,25 @@ gemfile:
 
 matrix:
   exclude:
+  - rvm: 1.9.3
+    gemfile: gemfiles/5.0.gemfile
+  - rvm: 1.9.3
+    gemfile: gemfiles/5.1.gemfile
+  - rvm: 2.0
+    gemfile: gemfiles/5.0.gemfile
+  - rvm: 2.0
+    gemfile: gemfiles/5.1.gemfile
+  - rvm: 2.1
+    gemfile: gemfiles/5.0.gemfile
+  - rvm: 2.1
+    gemfile: gemfiles/5.1.gemfile
   - rvm: 2.2.0
     gemfile: gemfiles/5.0.gemfile
   - rvm: 2.2.0
     gemfile: gemfiles/5.1.gemfile
 
 before_install:
-  - gem install bundler
+  - gem update --system && gem install bundler
 
 script:
   - RAILS_ENV=test bundle exec rake spec && bundle exec codeclimate-test-reporter
