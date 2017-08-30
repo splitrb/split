@@ -1,10 +1,20 @@
 language: ruby
 rvm:
+  - 2.2.0
+  - 2.2.2
   - 2.4.1
 
 gemfile:
   - gemfiles/4.2.gemfile
   - gemfiles/5.0.gemfile
+  - gemfiles/5.1.gemfile
+
+matrix:
+  exclude:
+  - rvm: 2.2.0
+    gemfile: gemfiles/5.0.gemfile
+  - rvm: 2.2.0
+    gemfile: gemfiles/5.1.gemfile
 
 before_install:
   - gem install bundler
