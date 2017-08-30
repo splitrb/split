@@ -47,7 +47,7 @@ describe Split::Persistence::DualAdapter do
   context "when logged in" do
     subject {
       described_class.with_config(
-        logged_in: -> (context) { true },
+        logged_in: lambda { |context| true },
         logged_in_adapter: selected_adapter,
         logged_out_adapter: not_selected_adapter
         ).new(context)
@@ -59,7 +59,7 @@ describe Split::Persistence::DualAdapter do
   context "when not logged in" do
     subject {
       described_class.with_config(
-        logged_in: -> (context) { false },
+        logged_in: lambda { |context| false },
         logged_in_adapter: not_selected_adapter,
         logged_out_adapter: selected_adapter
         ).new(context)

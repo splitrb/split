@@ -1,4 +1,4 @@
-# [Split](http://libraries.io/rubygems/split) 
+# [Split](http://libraries.io/rubygems/split)
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
 [![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](http://travis-ci.org/splitrb/split)
@@ -18,7 +18,7 @@ Split is designed to be hacker friendly, allowing for maximum customisation and 
 
 ### Requirements
 
-Split currently requires Ruby 1.9.2 or higher. If your project requires compatibility with Ruby 1.8.x and Rails 2.3, please use v0.8.0.
+Split currently requires Ruby 1.9.3 or higher. If your project requires compatibility with Ruby 1.8.x and Rails 2.3, please use v0.8.0.
 
 Split uses Redis as a datastore.
 
@@ -655,7 +655,7 @@ Once you finish one of the goals, the test is considered to be completed, and fi
 
 #### Combined Experiments
 If you want to test how how button color affects signup *and* how it affects login, at the same time. Use combined tests
-Configure like so 
+Configure like so
 ```ruby
   Split.configuration.experiments = {
         :button_color_experiment => {
@@ -676,8 +676,8 @@ Finish each combined test as normal
    ab_finished(:button_color_on_signup)
 ```
 
-**Additional Configuration**: 
-* Be sure to enable `allow_multiple_experiments` 
+**Additional Configuration**:
+* Be sure to enable `allow_multiple_experiments`
 * In Sinatra include the CombinedExperimentsHelper
   ```
     helpers Split::CombinedExperimentsHelper
