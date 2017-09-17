@@ -262,10 +262,11 @@ module Split
     end
 
     def calc_winning_alternatives
-      # Super simple cache so that we only recalculate winning alternatives once per day
-      days_since_epoch = Time.now.utc.to_i / 86400
+      # Cache the winning alternatives so we recalculate them once per the specified interval.
+      intervals_since_epoch =
+        Time.now.utc.to_i / Split.configuration.winning_alternative_recalculation_interval
 
-      if self.calc_time != days_since_epoch
+      if self.calc_time != intervals_since_epoch
         if goals.empty?
           self.estimate_winning_alternative
         else
@@ -274,7 +275,7 @@ module Split
           end
         end
 
-        self.calc_time = days_since_epoch
+        self.calc_time = intervals_since_epoch
 
         self.save
       end
