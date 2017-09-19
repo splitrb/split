@@ -46,12 +46,12 @@ describe Split::CombinedExperimentsHelper do
       end
     end
 
-    it "uses same alternatives for all sub experiments " do
+    it "uses same alternative for all sub experiments and returns the alternative" do
       allow(self).to receive(:get_alternative) { "test-alt" }
       expect(self).to receive(:ab_test).with(:exp_1_click, {"control"=>0.5}, {"test-alt"=>0.5}) { "test-alt" }
-      expect(self).to receive(:ab_test).with(:exp_1_scroll, [{"test-alt" => 1}] )
+      expect(self).to receive(:ab_test).with(:exp_1_scroll, [{"control" => 0, "test-alt" => 1}])
 
-      ab_combined_test('combined_exp_1')
+      expect(ab_combined_test('combined_exp_1')).to eq('test-alt')
     end
   end
 end
