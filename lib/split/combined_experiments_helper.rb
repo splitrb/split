@@ -6,6 +6,7 @@ module Split
       raise(Split::InvalidExperimentsFormatError, 'Unable to find experiment #{metric_descriptor} in configuration') if experiment[:combined_experiments].nil?
 
       alternative = nil
+      weighted_alternatives = nil
       experiment[:combined_experiments].each do |combined_experiment|
         if alternative.nil?
           if control
@@ -15,9 +16,15 @@ module Split
             alternative = ab_test(combined_experiment, normalized_alternatives[0], *normalized_alternatives[1])
           end
         else
-          ab_test(combined_experiment, [{alternative => 1}])
+          weighted_alternatives ||= experiment[:alternatives].each_with_object({}) do |alt, memo|
+            alt = Alternative.new(alt, experiment[:name]).name
+            memo[alt] = (alt == alternative ? 1 : 0)
+          end
+
+          ab_test(combined_experiment, [weighted_alternatives])
         end
       end
+      alternative
     end
 
     def find_combined_experiment(metric_descriptor)
