@@ -273,6 +273,18 @@ describe Split::Alternative do
       expect(control.z_score(goal1)).to eq('N/A')
       expect(control.z_score(goal2)).to eq('N/A')
     end
+
+    it "should not blow up for Conversion Rates > 1" do
+      control = experiment.control
+      control.participant_count = 3474
+      control.set_completed_count(4244)
+
+      alternative2.participant_count = 3434
+      alternative2.set_completed_count(4358)
+
+      expect { control.z_score }.not_to raise_error
+      expect { alternative2.z_score }.not_to raise_error
+    end
   end
 
   describe "extra_info" do
