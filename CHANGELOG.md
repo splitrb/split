@@ -1,3 +1,14 @@
+## 3.2.0 (September 21st, 2017)
+
+Features:
+
+- Allow configuration of how often winning alternatives are recalculated (@patbl, #501)
+
+Bugfixes:
+
+- Avoid z_score numeric exception for conversion rates >1 (@cmantas, #503)
+- Fix combined experiments (@semanticart, #502)
+
 ## 3.1.1 (August 30th, 2017)
 
 Bugfixes:
