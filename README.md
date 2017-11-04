@@ -388,7 +388,7 @@ run Rack::URLMap.new \
   "/split" => Split::Dashboard.new
 ```
 
-However, if you are using Rails 3: You can mount this inside your app routes by first adding this to the Gemfile:
+However, if you are using Rails 3 or higher: You can mount this inside your app routes by first adding this to the Gemfile:
 
 ```ruby
 gem 'split', require: 'split/dashboard'
