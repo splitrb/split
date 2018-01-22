@@ -35,9 +35,7 @@ module Split
     end
 
     def make_list_length(list_name, new_length)
-      while list_length(list_name) > new_length
-        remove_last_item_from_list(list_name)
-      end
+      redis.ltrim(list_name, 0, new_length - 1)
     end
 
     def add_to_set(set_name, value)
