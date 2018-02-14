@@ -5,6 +5,7 @@
 [![Code Climate](https://codeclimate.com/github/splitrb/split/badges/gpa.svg)](https://codeclimate.com/github/splitrb/split)
 [![Test Coverage](https://codeclimate.com/github/splitrb/split/badges/coverage.svg)](https://codeclimate.com/github/splitrb/split/coverage)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+[![Open Source Helpers](https://www.codetriage.com/splitrb/split/badges/users.svg)](https://www.codetriage.com/splitrb/split)
 
 > 📈 The Rack Based A/B testing framework http://libraries.io/rubygems/split
 
