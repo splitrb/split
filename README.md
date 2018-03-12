@@ -935,4 +935,4 @@ Please note that this project is released with a [Contributor Code of Conduct](C
 
 ## Copyright
 
-[MIT License](LICENSE) © 2017 [Andrew Nesbitt](https://github.com/andrew).
+[MIT License](LICENSE) © 2018 [Andrew Nesbitt](https://github.com/andrew).
