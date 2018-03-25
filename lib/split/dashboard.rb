@@ -3,6 +3,7 @@ require 'sinatra/base'
 require 'split'
 require 'bigdecimal'
 require 'split/dashboard/helpers'
+require 'split/dashboard/pagination_helpers'
 
 module Split
   class Dashboard < Sinatra::Base
@@ -14,6 +15,7 @@ module Split
     set :method_override, true
 
     helpers Split::DashboardHelpers
+    helpers Split::DashboardPaginationHelpers
 
     get '/' do
       # Display experiments without a winner at the top of the dashboard

@@ -6,7 +6,7 @@
   <input type="button" id="toggle-active" value="Hide active" />
   <input type="button" id="clear-filter" value="Clear filters" />
 
-  <% @experiments.each do |experiment| %>
+  <% paginated(@experiments).each do |experiment| %>
     <% if experiment.goals.empty? %>
       <%= erb :_experiment, :locals => {:goal => nil, :experiment => experiment} %>
     <% else %>
@@ -16,6 +16,10 @@
       <% end %>
     <% end %>
   <% end %>
+
+  <div class="pagination">
+    <%= pagination(@experiments) %>
+  </div>
 <% else %>
   <p class="intro">No experiments have started yet, you need to define them in your code and introduce them to your users.</p>
   <p class="intro">Check out the <a href='https://github.com/splitrb/split#readme'>Readme</a> for more help getting started.</p>
