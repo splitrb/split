@@ -40,5 +40,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake',        '~> 12'
   s.add_development_dependency 'rspec',       '~> 3.7'
   s.add_development_dependency 'pry',         '~> 0.10'
-  s.add_development_dependency 'fakeredis',   '~> 0.6'
+  s.add_development_dependency 'fakeredis',   '~> 0.7'
 end
