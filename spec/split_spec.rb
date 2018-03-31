@@ -15,19 +15,19 @@ RSpec.describe Split do
       Split.redis = 'redis://localhost:6379'
       expect(Split.redis).to be_a(Redis)
 
-      client = Split.redis.client
-      expect(client.host).to eq("localhost")
-      expect(client.port).to eq(6379)
+      client = Split.redis.connection
+      expect(client[:host]).to eq("localhost")
+      expect(client[:port]).to eq(6379)
     end
 
     it 'accepts an options hash' do
       Split.redis = {host: 'localhost', port: 6379, db: 12}
       expect(Split.redis).to be_a(Redis)
 
-      client = Split.redis.client
-      expect(client.host).to eq("localhost")
-      expect(client.port).to eq(6379)
-      expect(client.db).to eq(12)
+      client = Split.redis.connection
+      expect(client[:host]).to eq("localhost")
+      expect(client[:port]).to eq(6379)
+      expect(client[:db]).to eq(12)
     end
 
     it 'accepts a valid Redis instance' do
