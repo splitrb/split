@@ -45,9 +45,24 @@ module Split
       end
 
       def set_cookie_via_rack(key, value)
-        header = Rack::Utils.make_delete_cookie_header(@response.set_cookie_header, key, value)
-        new_header = Rack::Utils.add_cookie_to_header(header, key, value)
-        @response.set_cookie_header = new_header
+        delete_cookie_header!(@response.header, key, value)
+        Rack::Utils.set_cookie_header!(@response.header, key, value)
+      end
+
+      # Use Rack::Utils#make_delete_cookie_header after Rack 2.0.0
+      def delete_cookie_header!(header, key, value)
+        cookie_header = header['Set-Cookie']
+        case cookie_header
+        when nil, ''
+          cookies = []
+        when String
+          cookies = cookie_header.split("\n")
+        when Array
+          cookies = cookie_header
+        end
+
+        cookies.reject! { |cookie| cookie =~ /\A#{Rack::Utils.escape(key)}=/ }
+        header['Set-Cookie'] = cookies.join("\n")
       end
 
       def hash
