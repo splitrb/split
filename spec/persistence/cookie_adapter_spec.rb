@@ -100,7 +100,7 @@ describe Split::Persistence::CookieAdapter do
       expect(subject["foo"]).to eq("FOO")
       expect(subject["bar"]).to eq("BAR")
       cookie_jar = context.request.env["action_dispatch.cookies"]
-      expect(cookie_jar.to_h["split"]).to eq("{\"foo\":\"FOO\",\"bar\":\"BAR\"}")
+      expect(cookie_jar['split']).to eq("{\"foo\":\"FOO\",\"bar\":\"BAR\"}")
     end
   end
 end
