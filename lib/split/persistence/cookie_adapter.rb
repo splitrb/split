@@ -34,7 +34,10 @@ module Split
         cookie_key = :split.to_s
         cookie_value = default_options.merge(value: JSON.generate(value))
         if action_dispatch?
-          @context.cookies[cookie_key] = cookie_value
+          # The "send" is necessary when we call ab_test from the controller
+          # and thus @context is a rails controller, because then "cookies" is
+          # a private method.
+          @context.send(:cookies)[cookie_key] = cookie_value
         else
           set_cookie_via_rack(cookie_key, cookie_value)
         end
