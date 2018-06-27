@@ -663,8 +663,8 @@ Once you finish one of the goals, the test is considered to be completed, and fi
 **Bad Example**: Test both how button color affects signup *and* how it affects login, at the same time. THIS WILL NOT WORK.
 
 #### Combined Experiments
-If you want to test how how button color affects signup *and* how it affects login, at the same time. Use combined tests
-Configure like so
+If you want to test how button color affects signup *and* how it affects login at the same time, use combined experiments.
+Configure like so:
 ```ruby
   Split.configuration.experiments = {
         :button_color_experiment => {
