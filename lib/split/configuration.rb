@@ -74,6 +74,7 @@ module Split
         'bitlybot' => 'bit.ly bot',
         'bot@linkfluence.net' => 'Linkfluence bot',
         'facebookexternalhit' => 'facebook bot',
+        'Facebot' => 'Facebook crawler',
         'Feedfetcher-Google' => 'Google Feedfetcher',
         'https://developers.google.com/+/web/snippet' => 'Google+ Snippet Fetcher',
         'LinkedInBot' => 'LinkedIn bot',
