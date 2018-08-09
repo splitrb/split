@@ -699,6 +699,14 @@ describe Split::Helper do
     end
   end
 
+  describe 'when user is previewing' do
+    before(:each) do
+      @request = OpenStruct.new(headers: { 'x-purpose' => 'preview' })
+    end
+
+    it_behaves_like "a disabled test"
+  end
+
   describe 'versioned experiments' do
     it "should use version zero if no version is present" do
       alternative_name = ab_test('link_color', 'blue', 'red')

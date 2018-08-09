@@ -476,7 +476,7 @@ Split.configure do |config|
   # IP config
   config.ignore_ip_addresses << '81.19.48.130' # or regex: /81\.19\.48\.[0-9]+/
 
-  # or provide your own filter functionality, the default is proc{ |request| is_robot? || is_ignored_ip_address? }
+  # or provide your own filter functionality, the default is proc{ |request| is_robot? || is_ignored_ip_address? || is_preview? }
   config.ignore_filter = -> (request) { CustomExcludeLogic.excludes?(request) }
 end
 ```
