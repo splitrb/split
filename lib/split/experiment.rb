@@ -444,8 +444,7 @@ module Split
     def persist_experiment_configuration
       redis_interface.add_to_set(:experiments, name)
       redis_interface.persist_list(name, @alternatives.map do |alt|
-        weight = alt.weight || 1
-        {alt.name => weight}
+        {alt.name => alt.weight || 1}
       end)
       goals_collection.save
       redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?

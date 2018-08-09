@@ -23,6 +23,7 @@ module Split
           end
         rescue
           @name = name.to_s
+          @weight = 1
         end
       end
       p_winner = 0.0

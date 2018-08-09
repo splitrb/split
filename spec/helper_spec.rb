@@ -248,7 +248,7 @@ describe Split::Helper do
           pending "this requires user store reset on first call not depending on whelther it is current trial"
           @params = { 'ab_test' => { 'test_1' => 'test-alt' } }
 
-          expect(ab_test(:test_0, {'control' => 0}, {"test-alt" => 100})).to eq 'control'
+          expect(ab_test(:test_0, {'control' => 0}, {"test-alt" => 100})).to eq 'test-alt'
           expect(ab_test(:test_1, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
         end
 
