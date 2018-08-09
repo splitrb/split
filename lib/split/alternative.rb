@@ -12,8 +12,18 @@ module Split
         @name = name.keys.first
         @weight = name.values.first
       else
-        @name = name
-        @weight = 1
+        begin
+          name = eval(name)
+          if Hash === name
+            @name = name.keys.first
+            @weight = name.values.first
+          else
+            @name = name.to_s
+            @weight = 1
+          end
+        rescue
+          @name = name.to_s
+        end
       end
       p_winner = 0.0
     end

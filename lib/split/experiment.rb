@@ -443,7 +443,10 @@ module Split
 
     def persist_experiment_configuration
       redis_interface.add_to_set(:experiments, name)
-      redis_interface.persist_list(name, @alternatives.map(&:name))
+      redis_interface.persist_list(name, @alternatives.map do |alt|
+        weight = alt.weight || 1
+        {alt.name => weight}
+      end)
       goals_collection.save
       redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
     end
@@ -455,6 +458,7 @@ module Split
       redis.del(@name)
     end
 
+    # TODO: Invalidate previous configuration if weights have changed
     def experiment_configuration_has_changed?
       existing_alternatives = load_alternatives_from_redis
       existing_goals = Split::GoalsCollection.new(@name).load_from_redis
