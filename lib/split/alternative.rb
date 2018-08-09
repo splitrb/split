@@ -30,7 +30,7 @@ module Split
     end
 
     def to_s
-      name
+      {name => weight}
     end
 
     def goals
