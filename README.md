@@ -210,6 +210,12 @@ The user will then always see the alternative they started with.
 
 Any old unfinished experiment key will be deleted from the user's data storage if the experiment had been removed or is over and a winner had been chosen. This allows a user to enroll into any new experiment in cases when the `allow_multiple_experiments` config option is set to `false`.
 
+### Reset experiments manually
+
+By default Split automatically resets the experiment whenever it detects the configuration for an experiment has changed (e.g. you call `ab_test` with different alternatives). You can prevent this by setting the option `reset_manually` to `true`.
+
+You may want to do this when you want to change something, like the variants' names, the metadata about an experiment, etc. without resetting everything.
+
 ### Multiple experiments at once
 
 By default Split will avoid users participating in multiple experiments at once. This means you are less likely to skew results by adding in more variation to your tests.
@@ -450,6 +456,7 @@ Split.configure do |config|
   config.enabled = true
   config.persistence = Split::Persistence::SessionAdapter
   #config.start_manually = false ## new test will have to be started manually from the admin panel. default false
+  #config.reset_manually = false ## if true, it never resets the experiment data, even if the configuration changes
   config.include_rails_helper = true
   config.redis = "redis://custom.redis.url:6380"
 end
