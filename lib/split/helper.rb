@@ -122,7 +122,7 @@ module Split
     end
 
     def exclude_visitor?
-      instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?
+      instance_exec(request, &Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?
     end
 
     def is_robot?
