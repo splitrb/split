@@ -1,3 +1,26 @@
+## 3.3.0 (August 13th, 2018)
+
+Features:
+
+- Added pagination for dashboard (@GeorgeGorbanev, #518)
+- Add Facebot crawler to list of bots (@pfeiffer, #530)
+- Ignore previewing requests (@pfeiffer, #531)
+- Fix binding of ignore_filter (@pfeiffer, #533)
+
+Bugfixes:
+
+- Fix cookie header duplication (@andrehjr, #522)
+
+Performance:
+
+- Improve performance of RedisInterface#make_list_length by using LTRIM command (@mlovic, #509)
+
+Misc:
+
+- Update development dependencies
+- test rails 5.2 on travis (@lostapathy, #524)
+- update ruby versions for travis (@lostapathy, #525)
+
 ## 3.2.0 (September 21st, 2017)
 
 Features:
