@@ -176,6 +176,14 @@ describe Split::Trial do
 
         expect_alternative(trial, 'basket')
       end
+
+      context "when alternative is not found" do
+        it "falls back on next_alternative" do
+          user[experiment.key] = 'notfound'
+          expect(experiment).to receive(:next_alternative).and_call_original
+          expect_alternative(trial, alternatives)
+        end
+      end
     end
 
     context "when user is a new participant" do
