@@ -159,33 +159,45 @@ In the event you want to disable all tests without having to know the individual
 
 It is not required to send `SPLIT_DISABLE=false` to activate Split.
 
+
+### Rspec Helper
 To aid testing with RSpec, write `split_helper.rb` and call `use_ab_test(alternatives_by_experiment)` in your specs as instructed below:
 
 ```ruby
-# Recommended path for this file is 'spec/support/split_helper.rb', and you will need to ensure it
-# is `require`-d by rails_helper.rb or spec_helper.rb
+# Recommended path for this file is 'spec/support/split_helper.rb'
 module SplitHelper
-
-  # Usage:
-  #
-  # Force a specific experiment alternative to always be returned:
-  #   use_ab_test(signup_form: "single_page")
-  #
-  # Force alternatives for multiple experiments:
-  #   use_ab_test(signup_form: "single_page", pricing: "show_enterprise_prices")
-  #
   def use_ab_test(alternatives_by_experiment)
     allow_any_instance_of(Split::Helper).to receive(:ab_test) do |_receiver, experiment|
-      alternative =
         alternatives_by_experiment.fetch(experiment) { |key| raise "Unknown experiment '#{key}'" }
     end
   end
 end
+```
 
+Needs to ensure it `required` by rails_helper.rb or spec_helper.rb
+```ruby
+# Make the `use_ab_test` method available to all specs:
 RSpec.configure do |config|
-  # Make the `use_ab_test` method available to all specs:
   config.include SplitHelper
 end
+```
+
+Example:
+```ruby
+it "registers using experimental signup" do
+
+  use_ab_test experiment_name: "alternative_name"
+
+  post "/signups"
+
+  ...
+end
+
+# Force a specific experiment alternative to always be returned:
+#   use_ab_test(signup_form: "single_page")
+#
+# Force alternatives for multiple experiments:
+#   use_ab_test(signup_form: "single_page", pricing: "show_enterprise_prices")
 ```
 
 
