@@ -275,5 +275,17 @@ describe Split::Trial do
         trial.choose!
       end
     end
+
+    context 'when experiment has winner' do
+      let(:trial) do
+        experiment.winner = 'cart'
+        Split::Trial.new(:user => user, :experiment => experiment)
+      end
+
+      it 'does not store' do
+        expect(user).to_not receive("[]=")
+        trial.choose!
+      end
+    end
   end
 end
