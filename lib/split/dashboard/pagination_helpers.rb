@@ -25,7 +25,7 @@ module Split
       html << current_page_tag
       html << next_page_tag if show_next_page_tag?(collection)
       html << ellipsis_tag if show_last_ellipsis_tag?(collection)
-      html << last_page_tagcollection if show_last_page_tag?(collection)
+      html << last_page_tag(collection) if show_last_page_tag?(collection)
       html.join
     end
 
