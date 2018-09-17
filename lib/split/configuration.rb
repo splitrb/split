@@ -61,12 +61,14 @@ module Split
         'ColdFusion' => 'ColdFusion http library',
         'EventMachine HttpClient' => 'Ruby http library',
         'Go http package' => 'Go http library',
+        'Go-http-client' => 'Go http library',
         'Java' => 'Generic Java http library',
         'libwww-perl' => 'Perl client-server library loved by script kids',
         'lwp-trivial' => 'Another Perl library loved by script kids',
         'Python-urllib' => 'Python http library',
         'PycURL' => 'Python http library',
         'Test Certificate Info' => 'C http library?',
+        'Typhoeus' => 'Ruby http library',
         'Wget' => 'wget unix CLI http client',
 
         # URL expanders / previewers
@@ -91,6 +93,7 @@ module Split
 
         # Uptime monitoring
         'check_http' => 'Nagios monitor',
+        'GoogleStackdriverMonitoring' => 'Google Cloud monitor',
         'NewRelicPinger' => 'NewRelic monitor',
         'Panopta' => 'Monitoring service',
         'Pingdom' => 'Pingdom monitoring',
