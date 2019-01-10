@@ -8,7 +8,7 @@ module Split
     def ab_test(metric_descriptor, control = nil, *alternatives)
       begin
         experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
-        alternative = if Split.configuration.enabled
+        alternative = if Split.configuration.enabled && !exclude_visitor?
           experiment.save
           raise(Split::InvalidExperimentsFormatError) unless (Split.configuration.experiments || {}).fetch(experiment.name.to_sym, {})[:combined_experiments].nil?
           trial = Trial.new(:user => ab_user, :experiment => experiment,
