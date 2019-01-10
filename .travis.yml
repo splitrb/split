@@ -2,11 +2,12 @@ language: ruby
 rvm:
   - 1.9.3
   - 2.0
-  - 2.1
+  - 2.1.10
   - 2.2.0
   - 2.2.2
-  - 2.4.3
-  - 2.5.1
+  - 2.4.5
+  - 2.5.3
+  - 2.6.0
 
 gemfile:
   - gemfiles/4.2.gemfile
@@ -21,30 +22,30 @@ matrix:
     gemfile: gemfiles/5.0.gemfile
   - rvm: 1.9.3
     gemfile: gemfiles/5.1.gemfile
-  - rvm: 2.0
-    gemfile: gemfiles/5.0.gemfile
-  - rvm: 2.0
-    gemfile: gemfiles/5.1.gemfile
-  - rvm: 2.1
-    gemfile: gemfiles/5.0.gemfile
-  - rvm: 2.1
-    gemfile: gemfiles/5.1.gemfile
-  - rvm: 2.2.0
-    gemfile: gemfiles/5.0.gemfile
-  - rvm: 2.2.0
-    gemfile: gemfiles/5.1.gemfile
   - rvm: 1.9.3
     gemfile: gemfiles/5.2.gemfile
   - rvm: 2.0
+    gemfile: gemfiles/5.0.gemfile
+  - rvm: 2.0
+    gemfile: gemfiles/5.1.gemfile
+  - rvm: 2.0
     gemfile: gemfiles/5.2.gemfile
-  - rvm: 2.1
+  - rvm: 2.1.10
+    gemfile: gemfiles/5.0.gemfile
+  - rvm: 2.1.10
+    gemfile: gemfiles/5.1.gemfile
+  - rvm: 2.1.10
     gemfile: gemfiles/5.2.gemfile
+  - rvm: 2.2.0
+    gemfile: gemfiles/5.0.gemfile
+  - rvm: 2.2.0
+    gemfile: gemfiles/5.1.gemfile
   - rvm: 2.2.0
     gemfile: gemfiles/5.2.gemfile
 
 
 before_install:
-  - gem update --system && gem install bundler
+  - gem install bundler --version=1.17.3
 
 script:
   - RAILS_ENV=test bundle exec rake spec && bundle exec codeclimate-test-reporter
