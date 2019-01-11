@@ -1,3 +1,11 @@
+## 3.3.1 (January 11th, 2019)
+- Filter some more bots (@janosch-x, #542)
+- Fix Dashboard Pagination Helper typo (@cattekin, #541)
+- Tweak RSpec instructions (@eliotsykes, #540)
+- Do not storage alternative in cookie if experiment has a winner (@sadhu89, #539)
+- Improve README regarding rspec usage (@vermaxik, #538)
+- fix user participating alternative not found (@NaturalHokke, #536)
+
 ## 3.3.0 (August 13th, 2018)
 
 Features:
