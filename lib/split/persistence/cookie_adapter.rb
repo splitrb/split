@@ -10,6 +10,7 @@ module Split
         @request, @response = context.request, context.response
         @cookies = @request.cookies
         @expires = Time.now + cookie_length_config
+        @domain = cookie_domain_config
       end
 
       def [](key)
@@ -44,7 +45,9 @@ module Split
       end
 
       def default_options
-        { expires: @expires, path: '/' }
+        { expires: @expires, path: '/' }.tap do |options|
+          options[:domain] = @domain unless @domain.empty?
+        end
       end
 
       def set_cookie_via_rack(key, value)
@@ -80,6 +83,10 @@ module Split
             {}
           end
         end
+      end
+
+      def cookie_domain_config
+        Split.configuration.cookie_domain
       end
 
       def cookie_length_config
