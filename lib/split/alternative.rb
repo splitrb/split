@@ -6,20 +6,25 @@ module Split
     attr_accessor :weight
     attr_accessor :recorded_info
 
-    def initialize(name, experiment_name)
+    def initialize(data, experiment_name)
       @experiment_name = experiment_name
-      if Hash === name
-        @name = name.keys.first
-        @weight = name.values.first
+      if Hash === data
+        @name = data.keys.first.to_s
+        @weight = data.values.first.to_i
+      elsif String === data and data.include?("=>")
+        data = data.gsub(/{|}|\s|"|'/, "").split("=>")
+        @name = data[0].to_s
+        @weight = data[1].to_i
       else
-        @name = name
+        @name = data.to_s
         @weight = 1
       end
+
       p_winner = 0.0
     end
 
     def to_s
-      name
+      {name => weight}
     end
 
     def goals
