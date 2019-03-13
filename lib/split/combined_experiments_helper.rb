@@ -24,7 +24,12 @@ module Split
           ab_test(combined_experiment, [weighted_alternatives])
         end
       end
-      alternative
+      
+      if block_given?
+        yield(alternative)
+      else
+        alternative
+      end
     end
 
     def find_combined_experiment(metric_descriptor)
