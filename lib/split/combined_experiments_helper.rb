@@ -3,7 +3,7 @@ module Split
   module CombinedExperimentsHelper
     def ab_combined_test(metric_descriptor, control = nil, *alternatives)
       return nil unless experiment = find_combined_experiment(metric_descriptor)
-      raise(Split::InvalidExperimentsFormatError, 'Unable to find experiment #{metric_descriptor} in configuration') if experiment[:combined_experiments].nil?
+      raise(Split::InvalidExperimentsFormatError, "Unable to find experiment #{metric_descriptor} in configuration") if experiment[:combined_experiments].nil?
 
       alternative = nil
       weighted_alternatives = nil
