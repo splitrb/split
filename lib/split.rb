@@ -67,7 +67,7 @@ module Split
 end
 
 # Check to see if being run in a Rails application.  If so, wait until before_initialize to run configuration so Gems that create ENV variables have the chance to initialize first.
-if defined?(Rails::Railtie)
+if defined?(::Rails)
   class Railtie < Rails::Railtie
     config.before_initialize { Split.configure {} }
   end
