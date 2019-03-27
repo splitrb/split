@@ -98,6 +98,7 @@ module Split
         'Panopta' => 'Monitoring service',
         'Pingdom' => 'Pingdom monitoring',
         'SiteUptime' => 'Site monitoring services',
+        'UptimeRobot' => 'Monitoring service',
 
         # ???
         'DigitalPersona Fingerprint Software' => 'HP Fingerprint scanner',
