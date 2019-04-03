@@ -6,11 +6,11 @@ module Split
     DEFAULT_PER = 10
 
     def pagination_per
-      @pagination_per ||= (params[:per] || DEFAULT_PER).to_i
+      @pagination_per ||= (@params[:per] || DEFAULT_PER).to_i
     end
 
     def page_number
-      @page_number ||= (params[:page] || 1).to_i
+      @page_number ||= (@params[:page] || 1).to_i
     end
 
     def paginated(collection)
