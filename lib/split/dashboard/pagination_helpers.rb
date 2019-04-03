@@ -6,11 +6,11 @@ module Split
   module DashboardPaginationHelpers
     def pagination_per
       default_per_page = Split.configuration.dashboard_pagination_default_per_page
-      @pagination_per ||= (params[:per] || default_per_page).to_i
+      @pagination_per ||= (params['per'] || default_per_page).to_i
     end
 
     def page_number
-      @page_number ||= (params[:page] || 1).to_i
+      @page_number ||= (params['page'] || 1).to_i
     end
 
     def paginated(collection)

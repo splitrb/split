@@ -2,7 +2,7 @@
   <div class="experiment-header">
       <div class='inline-controls'>
         <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>
-        <%= erb :_controls, :locals => {:experiment => experiment} %>
+        <%= partial :_controls, locals: {:experiment => experiment} %>
       </div>
   </div>
 </div>
