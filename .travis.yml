@@ -14,6 +14,7 @@ gemfile:
   - gemfiles/5.0.gemfile
   - gemfiles/5.1.gemfile
   - gemfiles/5.2.gemfile
+  - gemfiles/6.0.gemfile
 
 
 matrix:
@@ -24,25 +25,36 @@ matrix:
     gemfile: gemfiles/5.1.gemfile
   - rvm: 1.9.3
     gemfile: gemfiles/5.2.gemfile
+  - rvm: 1.9.3
+    gemfile: gemfiles/6.0.gemfile
   - rvm: 2.0
     gemfile: gemfiles/5.0.gemfile
   - rvm: 2.0
     gemfile: gemfiles/5.1.gemfile
   - rvm: 2.0
     gemfile: gemfiles/5.2.gemfile
+  - rvm: 2.0
+    gemfile: gemfiles/6.0.gemfile
   - rvm: 2.1.10
     gemfile: gemfiles/5.0.gemfile
   - rvm: 2.1.10
     gemfile: gemfiles/5.1.gemfile
   - rvm: 2.1.10
     gemfile: gemfiles/5.2.gemfile
+  - rvm: 2.1.10
+    gemfile: gemfiles/6.0.gemfile
   - rvm: 2.2.0
     gemfile: gemfiles/5.0.gemfile
   - rvm: 2.2.0
     gemfile: gemfiles/5.1.gemfile
   - rvm: 2.2.0
     gemfile: gemfiles/5.2.gemfile
-
+  - rvm: 2.2.0
+    gemfile: gemfiles/6.0.gemfile
+  - rvm: 2.2.2
+    gemfile: gemfiles/6.0.gemfile
+  - rvm: 2.4.5
+    gemfile: gemfiles/6.0.gemfile
 
 before_install:
   - gem install bundler --version=1.17.3
