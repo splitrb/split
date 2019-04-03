@@ -564,6 +564,11 @@ describe Split::Helper do
         expect(alternative).to eq experiment.control.name
       end
 
+      it 'should not create a experiment' do
+        ab_test('link_color', 'blue', 'red')
+        expect(Split::Experiment.new('link_color')).to be_a_new_record
+      end
+
       it "should not increment the participation count" do
 
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
