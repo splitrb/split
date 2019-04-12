@@ -1,10 +1,32 @@
+## 3.3.2 (April 12th, 2019)
+
+Features:
+- Added uptime robot to configuration.rb (@razel1982, #556)
+- Check to see if being run in Rails application and run in before_initialize (@husteadrobert, #555)
+
+Bugfixes:
+- Fix error message interpolation (@hanibash, #553)
+- Fix Bigdecimal warnings (@agraves, #551)
+- Avoid hitting up on redis for robots/excluded users. (@andrehjr, #544)
+- Checks for defined?(request) on Helper#exclude_visitor?. (@andrehjr)
+
+Misc:
+- Update travis to add Rails 6 (@edmilton, #559)
+- Fix broken specs in developement environment (@dougpetronilio, #557)
+
 ## 3.3.1 (January 11th, 2019)
+
+Features:
 - Filter some more bots (@janosch-x, #542)
+
+Bugfixes:
 - Fix Dashboard Pagination Helper typo (@cattekin, #541)
-- Tweak RSpec instructions (@eliotsykes, #540)
 - Do not storage alternative in cookie if experiment has a winner (@sadhu89, #539)
-- Improve README regarding rspec usage (@vermaxik, #538)
 - fix user participating alternative not found (@NaturalHokke, #536)
+
+Misc:
+- Tweak RSpec instructions (@eliotsykes, #540)
+- Improve README regarding rspec usage (@vermaxik, #538)
 
 ## 3.3.0 (August 13th, 2018)
 
