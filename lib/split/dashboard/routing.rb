@@ -3,7 +3,6 @@ module Split
     module Routing
 
       def self.included(mod)
-        binding.pry
         mod.extend(ClassMethods)
       end
 

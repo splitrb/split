@@ -10,15 +10,21 @@ module Split
     include Routing
     include Rendering
 
+    STATIC_RACK = Rack::File.new(
+      File.join(
+        File.dirname(File.expand_path(__FILE__)),
+        'dashboard',
+        'public'
+      )
+    )
+
     def call(env)
       @request = Rack::Request.new(env)
       if proc = self.class.route_for(@request.request_method, @request.path_info)
         @params = @request.params
         return instance_eval(&proc)
       end
-      dir = File.dirname(File.expand_path(__FILE__))
-      static_path = File.join(dir, 'dashboard', 'public')
-      return Rack::File.new(static_path).call(env)
+      return STATIC_RACK.call(env)
     end
 
     get '/' do

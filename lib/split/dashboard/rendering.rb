@@ -4,6 +4,12 @@ require 'split/dashboard/pagination_helpers'
 module Split
   class Dashboard
     module Rendering
+
+      VIEWS_PATH = File.join(
+        File.dirname(File.expand_path(__FILE__)),
+        'views'
+      )
+
       def render_erb(view)
         [200, {}, [erb(view)]]
       end
@@ -15,9 +21,8 @@ module Split
       end
 
       def partial(view, opts={})
-        dir = File.dirname(File.expand_path(__FILE__))
         filename = view.to_s + '.erb'
-        file_path = File.join(dir, 'views', filename)
+        file_path = File.join(VIEWS_PATH, filename)
         raw = File.read(file_path)
         b = binding
         (opts[:locals] || {}).each do |k,v| 
