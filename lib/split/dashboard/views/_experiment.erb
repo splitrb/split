@@ -73,7 +73,7 @@
           <% if alternative.control? %>
             <em>control</em>
           <% end %>
-          <form action="<%= url('force_alternative') + '?experiment=' + experiment.name %>" method='post'>
+          <form action="<%= url('force_alternative') + '?experiment=' + experiment.key %>" method='post'>
             <input type='hidden' name='alternative' value='<%= h alternative.name %>'>
             <input type="submit" value="Force for current user" class="green">
           </form>

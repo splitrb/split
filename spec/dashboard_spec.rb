@@ -74,17 +74,36 @@ describe Split::Dashboard do
   end
 
   describe "force alternative" do
-    let!(:user) do
-      Split::User.new(@app, { experiment.name => 'a' })
+    context "initial" do
+      let!(:user) do
+        Split::User.new(@app, { experiment.name => 'a' })
+      end
+
+      before do
+        allow(Split::User).to receive(:new).and_return(user)
+      end
+
+      it "should set current user's alternative" do
+        post "/force_alternative?experiment=#{experiment.key}", alternative: "b"
+        expect(user[experiment.key]).to eq("b")
+      end
     end
 
-    before do
-      allow(Split::User).to receive(:new).and_return(user)
-    end
+    context "increment version" do
+      before do
+        allow(Split::User).to receive(:new).and_return(user)
+        experiment.increment_version
+      end
 
-    it "should set current user's alternative" do
-      post "/force_alternative?experiment=#{experiment.name}", alternative: "b"
-      expect(user[experiment.name]).to eq("b")
+      let!(:user) do
+        Split::User.new(@app, { "#{experiment.name}:#{experiment.version}" => 'a' })
+      end
+
+      it "should set current user's alternative" do
+        puts experiment.version
+        post "/force_alternative?experiment=#{experiment.key}", alternative: "b"
+        expect(user[experiment.key]).to eq("b")
+      end
     end
   end
 
