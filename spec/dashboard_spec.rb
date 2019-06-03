@@ -75,7 +75,7 @@ describe Split::Dashboard do
 
   describe "force alternative" do
     let!(:user) do
-      Split::User.new(@app, { experiment.name => 'a' })
+      Split::User.new(@app, { experiment.name => 'red' })
     end
 
     before do
@@ -83,8 +83,10 @@ describe Split::Dashboard do
     end
 
     it "should set current user's alternative" do
-      post "/force_alternative?experiment=#{experiment.name}", alternative: "b"
-      expect(user[experiment.name]).to eq("b")
+      blue_link.participant_count = 7
+      post "/force_alternative?experiment=#{experiment.name}", alternative: "blue"
+      expect(user[experiment.name]).to eq("blue")
+      expect(blue_link.participant_count).to eq(8)
     end
   end
 
