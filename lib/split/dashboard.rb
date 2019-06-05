@@ -33,9 +33,10 @@ module Split
     end
 
     post '/force_alternative' do
-      alternative = Split::Alternative.new(params[:alternative], params[:experiment])
+      experiment = Split::ExperimentCatalog.find(params[:experiment])
+      alternative = Split::Alternative.new(params[:alternative], experiment.name)
       alternative.increment_participation
-      Split::User.new(self)[params[:experiment]] = params[:alternative]
+      Split::User.new(self)[experiment.key] = alternative.name
       redirect url('/')
     end
 
