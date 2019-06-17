@@ -183,8 +183,7 @@ describe Split::Helper do
       ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)
       experiment = Split::ExperimentCatalog.find('link_color')
       expect(experiment.alternatives.map(&:name)).to eq(['blue', 'red'])
-      # TODO: persist alternative weights
-      # expect(experiment.alternatives.collect{|a| a.weight}).to eq([0.01, 0.2])
+      expect(experiment.alternatives.collect{|a| a.weight}).to eq([0.01, 0.2])
     end
 
     it "should only let a user participate in one experiment at a time" do

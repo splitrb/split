@@ -86,7 +86,7 @@ describe Split::Experiment do
       experiment.save
       experiment.save
       expect(Split.redis.exists('basket_text')).to be true
-      expect(Split.redis.lrange('basket_text', 0, -1)).to eq(['Basket', "Cart"])
+      expect(Split.redis.lrange('basket_text', 0, -1)).to eq(['{"Basket":1}', '{"Cart":1}'])
     end
 
     describe 'new record?' do
