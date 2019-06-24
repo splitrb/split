@@ -420,14 +420,22 @@ module Split
     end
 
     def load_alternatives_from_redis
-      case redis.type(@name)
-      when 'set' # convert legacy sets to lists
-        alts = redis.smembers(@name)
-        redis.del(@name)
-        alts.reverse.each {|a| redis.lpush(@name, a) }
-        redis.lrange(@name, 0, -1)
-      else
-        redis.lrange(@name, 0, -1)
+      alternatives = case redis.type(@name)
+                     when 'set' # convert legacy sets to lists
+                       alts = redis.smembers(@name)
+                       redis.del(@name)
+                       alts.reverse.each {|a| redis.lpush(@name, a) }
+                       redis.lrange(@name, 0, -1)
+                     else
+                       redis.lrange(@name, 0, -1)
+                     end
+      alternatives.map do |alt|
+        alt = begin
+                JSON.parse(alt)
+              rescue
+                alt
+              end
+        Split::Alternative.new(alt, @name)
       end
     end
 
@@ -443,7 +451,7 @@ module Split
 
     def persist_experiment_configuration
       redis_interface.add_to_set(:experiments, name)
-      redis_interface.persist_list(name, @alternatives.map(&:name))
+      redis_interface.persist_list(name, @alternatives.map{|alt| {alt.name => alt.weight}.to_json})
       goals_collection.save
       redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
     end
@@ -459,7 +467,7 @@ module Split
       existing_alternatives = load_alternatives_from_redis
       existing_goals = Split::GoalsCollection.new(@name).load_from_redis
       existing_metadata = load_metadata_from_redis
-      existing_alternatives != @alternatives.map(&:name) ||
+      existing_alternatives.map(&:to_s) != @alternatives.map(&:to_s) ||
         existing_goals != @goals ||
         existing_metadata != @metadata
     end
