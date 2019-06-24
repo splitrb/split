@@ -463,8 +463,7 @@ module Split
       redis.del(@name)
     end
 
-    def
-      experiment_configuration_has_changed?
+    def experiment_configuration_has_changed?
       existing_alternatives = load_alternatives_from_redis
       existing_goals = Split::GoalsCollection.new(@name).load_from_redis
       existing_metadata = load_metadata_from_redis
