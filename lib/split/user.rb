@@ -8,9 +8,11 @@ module Split
 
     def initialize(context, adapter=nil)
       @user = adapter || Split::Persistence.adapter.new(context)
+      @cleaned_up = false
     end
 
     def cleanup_old_experiments!
+      return if @cleaned_up
       keys_without_finished(user.keys).each do |key|
         experiment = ExperimentCatalog.find key_without_version(key)
         if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
@@ -18,6 +20,7 @@ module Split
           user.delete Experiment.finished_key(key)
         end
       end
+      @cleaned_up = true
     end
 
     def max_experiments_reached?(experiment_key)
