@@ -81,11 +81,11 @@ module Split
 
       if new_record?
         start unless Split.configuration.start_manually
+        persist_experiment_configuration
       elsif experiment_configuration_has_changed?
         reset unless Split.configuration.reset_manually
+        persist_experiment_configuration
       end
-
-      persist_experiment_configuration if new_record? || experiment_configuration_has_changed?
 
       redis.hset(experiment_config_key, :resettable, resettable)
       redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
