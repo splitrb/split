@@ -144,11 +144,13 @@ module Split
     end
 
     def has_winner?
-      !winner.nil?
+      return @has_winner if defined? @has_winner
+      @has_winner = !winner.nil?
     end
 
     def winner=(winner_name)
       redis.hset(:experiment_winner, name, winner_name.to_s)
+      @has_winner = true
     end
 
     def participant_count
@@ -161,6 +163,7 @@ module Split
 
     def reset_winner
       redis.hdel(:experiment_winner, name)
+      @has_winner = false
     end
 
     def start

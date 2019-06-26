@@ -213,11 +213,40 @@ describe Split::Experiment do
     it "should have no winner initially" do
       expect(experiment.winner).to be_nil
     end
+  end
 
+  describe 'winner=' do
     it "should allow you to specify a winner" do
       experiment.save
       experiment.winner = 'red'
       expect(experiment.winner.name).to eq('red')
+    end
+
+    context 'when has_winner state is memoized' do
+      before { expect(experiment).to_not have_winner }
+
+      it 'should keep has_winner state consistent' do
+        experiment.winner = 'red'
+        expect(experiment).to have_winner
+      end
+    end
+  end
+
+  describe 'reset_winner' do
+    before { experiment.winner = 'green' }
+
+    it 'should reset the winner' do
+      experiment.reset_winner
+      expect(experiment.winner).to be_nil
+    end
+
+    context 'when has_winner state is memoized' do
+      before { expect(experiment).to have_winner }
+
+      it 'should keep has_winner state consistent' do
+        experiment.reset_winner
+        expect(experiment).to_not have_winner
+      end
     end
   end
 
@@ -234,6 +263,12 @@ describe Split::Experiment do
       it 'returns false' do
         expect(experiment).to_not have_winner
       end
+    end
+
+    it 'memoizes has_winner state' do
+      expect(experiment).to receive(:winner).once
+      expect(experiment).to_not have_winner
+      expect(experiment).to_not have_winner
     end
   end
 
