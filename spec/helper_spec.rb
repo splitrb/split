@@ -296,98 +296,126 @@ describe Split::Helper do
   end
 
   describe 'ab_finished' do
-    before(:each) do
-      @experiment_name = 'link_color'
-      @alternatives = ['blue', 'red']
-      @experiment = Split::ExperimentCatalog.find_or_create(@experiment_name, *@alternatives)
-      @alternative_name = ab_test(@experiment_name, *@alternatives)
-      @previous_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
-    end
-
-    it 'should increment the counter for the completed alternative' do
-      ab_finished(@experiment_name)
-      new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
-      expect(new_completion_count).to eq(@previous_completion_count + 1)
-    end
-
-    it "should set experiment's finished key if reset is false" do
-      ab_finished(@experiment_name, {:reset => false})
-      expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      expect(ab_user[@experiment.finished_key]).to eq(true)
-    end
-
-    it 'should not increment the counter if reset is false and the experiment has been already finished' do
-      2.times { ab_finished(@experiment_name, {:reset => false}) }
-      new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
-      expect(new_completion_count).to eq(@previous_completion_count + 1)
-    end
-
-    it 'should not increment the counter for an experiment that the user is not participating in' do
-      ab_test('button_size', 'small', 'big')
-
-      # So, user should be participating in the link_color experiment and
-      # receive the control for button_size. As the user is not participating in
-      # the button size experiment, finishing it should not increase the
-      # completion count for that alternative.
-      expect(lambda {
-        ab_finished('button_size')
-      }).not_to change { Split::Alternative.new('small', 'button_size').completed_count }
-    end
-
-    it 'should not increment the counter for an ended experiment' do
-      e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
-      e.winner = 'small'
-      a = ab_test('button_size', 'small', 'big')
-      expect(a).to eq('small')
-      expect(lambda {
-        ab_finished('button_size')
-      }).not_to change { Split::Alternative.new(a, 'button_size').completed_count }
-    end
-
-    it "should clear out the user's participation from their session" do
-      expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      ab_finished(@experiment_name)
-      expect(ab_user.keys).to be_empty
-    end
-
-    it "should not clear out the users session if reset is false" do
-      expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      ab_finished(@experiment_name, {:reset => false})
-      expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      expect(ab_user[@experiment.finished_key]).to eq(true)
-    end
-
-    it "should reset the users session when experiment is not versioned" do
-      expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      ab_finished(@experiment_name)
-      expect(ab_user.keys).to be_empty
-    end
-
-    it "should reset the users session when experiment is versioned" do
-      @experiment.increment_version
-      @alternative_name = ab_test(@experiment_name, *@alternatives)
-
-      expect(ab_user[@experiment.key]).to eq(@alternative_name)
-      ab_finished(@experiment_name)
-      expect(ab_user.keys).to be_empty
-    end
-
-    it "should do nothing where the experiment was not started by this user" do
-      ab_user = nil
-      expect(lambda { ab_finished('some_experiment_not_started_by_the_user') }).not_to raise_exception
-    end
-
-    context "when on_trial_complete is set" do
-      before { Split.configuration.on_trial_complete = :some_method }
-      it "should call the method" do
-        expect(self).to receive(:some_method)
-        ab_finished(@experiment_name)
+    context 'for an experiment that the user participates in' do
+      before(:each) do
+        @experiment_name = 'link_color'
+        @alternatives = ['blue', 'red']
+        @experiment = Split::ExperimentCatalog.find_or_create(@experiment_name, *@alternatives)
+        @alternative_name = ab_test(@experiment_name, *@alternatives)
+        @previous_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
       end
 
-      it "should not call the method without alternative" do
-        ab_user[@experiment.key] = nil
-        expect(self).not_to receive(:some_method)
+      it 'should increment the counter for the completed alternative' do
         ab_finished(@experiment_name)
+        new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
+        expect(new_completion_count).to eq(@previous_completion_count + 1)
+      end
+
+      it "should set experiment's finished key if reset is false" do
+        ab_finished(@experiment_name, {:reset => false})
+        expect(ab_user[@experiment.key]).to eq(@alternative_name)
+        expect(ab_user[@experiment.finished_key]).to eq(true)
+      end
+
+      it 'should not increment the counter if reset is false and the experiment has been already finished' do
+        2.times { ab_finished(@experiment_name, {:reset => false}) }
+        new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
+        expect(new_completion_count).to eq(@previous_completion_count + 1)
+      end
+
+      it 'should not increment the counter for an ended experiment' do
+        e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
+        e.winner = 'small'
+        a = ab_test('button_size', 'small', 'big')
+        expect(a).to eq('small')
+        expect(lambda {
+          ab_finished('button_size')
+        }).not_to change { Split::Alternative.new(a, 'button_size').completed_count }
+      end
+
+      it "should clear out the user's participation from their session" do
+        expect(ab_user[@experiment.key]).to eq(@alternative_name)
+        ab_finished(@experiment_name)
+        expect(ab_user.keys).to be_empty
+      end
+
+      it "should not clear out the users session if reset is false" do
+        expect(ab_user[@experiment.key]).to eq(@alternative_name)
+        ab_finished(@experiment_name, {:reset => false})
+        expect(ab_user[@experiment.key]).to eq(@alternative_name)
+        expect(ab_user[@experiment.finished_key]).to eq(true)
+      end
+
+      it "should reset the users session when experiment is not versioned" do
+        expect(ab_user[@experiment.key]).to eq(@alternative_name)
+        ab_finished(@experiment_name)
+        expect(ab_user.keys).to be_empty
+      end
+
+      it "should reset the users session when experiment is versioned" do
+        @experiment.increment_version
+        @alternative_name = ab_test(@experiment_name, *@alternatives)
+
+        expect(ab_user[@experiment.key]).to eq(@alternative_name)
+        ab_finished(@experiment_name)
+        expect(ab_user.keys).to be_empty
+      end
+
+      context "when on_trial_complete is set" do
+        before { Split.configuration.on_trial_complete = :some_method }
+        it "should call the method" do
+          expect(self).to receive(:some_method)
+          ab_finished(@experiment_name)
+        end
+
+        it "should not call the method without alternative" do
+          ab_user[@experiment.key] = nil
+          expect(self).not_to receive(:some_method)
+          ab_finished(@experiment_name)
+        end
+      end
+    end
+
+    context 'for an experiment that the user is excluded from' do
+      before do
+        alternative = ab_test('link_color', 'blue', 'red')
+        expect(Split::Alternative.new(alternative, 'link_color').participant_count).to eq(1)
+        alternative = ab_test('button_size', 'small', 'big')
+        expect(Split::Alternative.new(alternative, 'button_size').participant_count).to eq(0)
+      end
+
+      it 'should not increment the completed counter' do
+        # So, user should be participating in the link_color experiment and
+        # receive the control for button_size. As the user is not participating in
+        # the button size experiment, finishing it should not increase the
+        # completion count for that alternative.
+        expect(lambda {
+          ab_finished('button_size')
+        }).not_to change { Split::Alternative.new('small', 'button_size').completed_count }
+      end
+    end
+
+    context 'for an experiment that the user does not participate in' do
+      before do
+        Split::ExperimentCatalog.find_or_create(:not_started_experiment, 'control', 'alt')
+      end
+      it 'should not raise an exception' do
+        expect { ab_finished(:not_started_experiment) }.not_to raise_exception
+      end
+
+      it 'should not change the user state when reset is false' do
+        expect { ab_finished(:not_started_experiment, reset: false) }.not_to change { ab_user.keys}.from([])
+      end
+
+      it 'should not change the user state when reset is true' do
+        expect(self).not_to receive(:reset!)
+        ab_finished(:not_started_experiment)
+      end
+
+      it 'should not increment the completed counter' do
+        ab_finished(:not_started_experiment)
+        expect(Split::Alternative.new('control', :not_started_experiment).completed_count).to eq(0)
+        expect(Split::Alternative.new('alt', :not_started_experiment).completed_count).to eq(0)
       end
     end
   end
