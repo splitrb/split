@@ -193,19 +193,17 @@ describe Split::Dashboard do
   end
 
   it "should display the start date" do
-    experiment_start_time = Time.parse('2011-07-07')
+    experiment_start_time = Time.now
+
     expect(Time).to receive(:now).at_least(:once).and_return(experiment_start_time)
     experiment
 
     get '/'
 
-    expect(last_response.body).to include('<small>2011-07-07</small>')
+    expect(last_response.body).to include("<small>#{experiment_start_time.strftime('%Y-%m-%d')}</small>")
   end
 
   it "should handle experiments without a start date" do
-    experiment_start_time = Time.parse('2011-07-07')
-    expect(Time).to receive(:now).at_least(:once).and_return(experiment_start_time)
-
     Split.redis.hdel(:experiment_start_times, experiment.name)
 
     get '/'
