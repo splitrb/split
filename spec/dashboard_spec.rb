@@ -29,6 +29,10 @@ describe Split::Dashboard do
   let(:red_link) { link("red") }
   let(:blue_link) { link("blue") }
 
+  before(:each) do
+    Split.configuration.beta_probability_simulations = 1
+  end
+
   it "should respond to /" do
     get '/'
     expect(last_response).to be_ok
