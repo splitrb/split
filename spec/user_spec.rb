@@ -59,6 +59,17 @@ describe Split::User do
         expect(@subject.keys).to include("link_color:finished")
       end
     end
+
+    context 'when already cleaned up' do
+      before do
+        @subject.cleanup_old_experiments!
+      end
+
+      it 'does not clean up again' do
+        expect(@subject).to_not receive(:keys_without_finished)
+        @subject.cleanup_old_experiments!
+      end
+    end
   end
 
   context "instantiated with custom adapter" do

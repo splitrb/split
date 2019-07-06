@@ -142,7 +142,7 @@ describe Split::Dashboard do
     it "removes winner" do
       post "/reopen?experiment=#{experiment.name}"
 
-      expect(experiment).to_not have_winner
+      expect(Split::ExperimentCatalog.find(experiment.name)).to_not have_winner
     end
 
     it "keeps existing stats" do
