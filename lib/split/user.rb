@@ -62,7 +62,7 @@ module Split
     end
 
     def key_without_version(key)
-      key.split(/\:\d(?!\:)/)[0]
+      key.split(':').length > 2 ? key : key.split(/\:\d(?!\:)/)[0]
     end
   end
 end
