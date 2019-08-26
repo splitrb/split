@@ -41,7 +41,7 @@ module Split
 
     def active_experiments
       experiment_pairs = {}
-      user.keys.each do |key|
+      keys_without_finished(user.keys).each do |key|
         Metric.possible_experiments(key_without_version(key)).each do |experiment|
           if !experiment.has_winner?
             experiment_pairs[key_without_version(key)] = user[key]
