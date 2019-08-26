@@ -555,6 +555,17 @@ describe Split::Helper do
       expect(active_experiments.first[0]).to eq "link_color"
     end
 
+    it 'should show versioned tests properly' do
+      10.times { experiment.reset }
+
+      alternative = ab_test(experiment.name, 'blue', 'red')
+      ab_finished(experiment.name, reset: false)
+
+      expect(experiment.version).to eq(10)
+      expect(active_experiments.count).to eq 1
+      expect(active_experiments).to eq({'link_color' => alternative })
+    end
+
     it 'should show multiple tests' do
       Split.configure do |config|
         config.allow_multiple_experiments = true
