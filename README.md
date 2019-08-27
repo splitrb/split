@@ -1,13 +1,13 @@
-# [Split](http://libraries.io/rubygems/split)
+# [Split](https://libraries.io/rubygems/split)
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
-[![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](http://travis-ci.org/splitrb/split)
+[![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](https://travis-ci.org/splitrb/split)
 [![Code Climate](https://codeclimate.com/github/splitrb/split/badges/gpa.svg)](https://codeclimate.com/github/splitrb/split)
 [![Test Coverage](https://codeclimate.com/github/splitrb/split/badges/coverage.svg)](https://codeclimate.com/github/splitrb/split/coverage)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 [![Open Source Helpers](https://www.codetriage.com/splitrb/split/badges/users.svg)](https://www.codetriage.com/splitrb/split)
 
-> 📈 The Rack Based A/B testing framework http://libraries.io/rubygems/split
+> 📈 The Rack Based A/B testing framework https://libraries.io/rubygems/split
 
 Split is a rack based A/B testing framework designed to work with Rails, Sinatra or any other rack based app.
 
@@ -110,9 +110,9 @@ Split has two options for you to use to determine which alternative is the best.
 
 The first option (default on the dashboard) uses a z test (n>30) for the difference between your control and alternative conversion rates to calculate statistical significance. This test will tell you whether an alternative is better or worse than your control, but it will not distinguish between which alternative is the best in an experiment with multiple alternatives. Split will only tell you if your experiment is 90%, 95%, or 99% significant, and this test only works if you have more than 30 participants and 5 conversions for each branch.
 
-As per this [blog post](http://www.evanmiller.org/how-not-to-run-an-ab-test.html) on the pitfalls of A/B testing, it is highly recommended that you determine your requisite sample size for each branch before running the experiment. Otherwise, you'll have an increased rate of false positives (experiments which show a significant effect where really there is none).
+As per this [blog post](https://www.evanmiller.org/how-not-to-run-an-ab-test.html) on the pitfalls of A/B testing, it is highly recommended that you determine your requisite sample size for each branch before running the experiment. Otherwise, you'll have an increased rate of false positives (experiments which show a significant effect where really there is none).
 
-[Here](http://www.evanmiller.org/ab-testing/sample-size.html) is a sample size calculator for your convenience.
+[Here](https://www.evanmiller.org/ab-testing/sample-size.html) is a sample size calculator for your convenience.
 
 The second option uses simulations from a beta distribution to determine the probability that the given alternative is the winner compared to all other alternatives. You can view these probabilities by clicking on the drop-down menu labeled "Confidence." This option should be used when the experiment has more than just 1 control and 1 alternative. It can also be used for a simple, 2-alternative A/B test.
 
@@ -360,7 +360,7 @@ end
 
 If you are running `ab_test` from a view, you must define your event
 hook callback as a
-[helper_method](http://apidock.com/rails/AbstractController/Helpers/ClassMethods/helper_method)
+[helper_method](https://apidock.com/rails/AbstractController/Helpers/ClassMethods/helper_method)
 in the controller:
 
 ``` ruby
@@ -446,7 +446,7 @@ match "/split" => Split::Dashboard, anchor: false, via: [:get, :post, :delete], 
 end
 ```
 
-More information on this [here](http://steve.dynedge.co.uk/2011/12/09/controlling-access-to-routes-and-rack-apps-in-rails-3-with-devise-and-warden/)
+More information on this [here](https://steve.dynedge.co.uk/2011/12/09/controlling-access-to-routes-and-rack-apps-in-rails-3-with-devise-and-warden/)
 
 ### Screenshot
 
@@ -824,8 +824,8 @@ end
 
 ## Extensions
 
-  - [Split::Export](http://github.com/splitrb/split-export) - Easily export A/B test data out of Split.
-  - [Split::Analytics](http://github.com/splitrb/split-analytics) - Push test data to Google Analytics.
+  - [Split::Export](https://github.com/splitrb/split-export) - Easily export A/B test data out of Split.
+  - [Split::Analytics](https://github.com/splitrb/split-analytics) - Push test data to Google Analytics.
   - [Split::Mongoid](https://github.com/MongoHQ/split-mongoid) - Store experiment data in mongoid (still uses redis).
   - [Split::Cacheable](https://github.com/harrystech/split_cacheable) - Automatically create cache buckets per test.
   - [Split::Counters](https://github.com/bernardkroes/split-counters) - Add counters per experiment and alternative.
@@ -837,7 +837,7 @@ Ryan bates has produced an excellent 10 minute screencast about split on the Rai
 
 ## Blogposts
 
-* [Recipe: A/B testing with KISSMetrics and the split gem](http://robots.thoughtbot.com/post/9595887299/recipe-a-b-testing-with-kissmetrics-and-the-split-gem)
+* [Recipe: A/B testing with KISSMetrics and the split gem](https://robots.thoughtbot.com/post/9595887299/recipe-a-b-testing-with-kissmetrics-and-the-split-gem)
 * [Rails A/B testing with Split on Heroku](http://blog.nathanhumbert.com/2012/02/rails-ab-testing-with-split-on-heroku.html)
 
 ## Backers
@@ -917,9 +917,9 @@ Please do! Over 70 different people have contributed to the project, you can see
 
 ### Development
 
-The source code is hosted at [GitHub](http://github.com/splitrb/split).
+The source code is hosted at [GitHub](https://github.com/splitrb/split).
 
-Report issues and feature requests on [GitHub Issues](http://github.com/splitrb/split/issues).
+Report issues and feature requests on [GitHub Issues](https://github.com/splitrb/split/issues).
 
 You can find a discussion form on [Google Groups](https://groups.google.com/d/forum/split-ruby).
 
