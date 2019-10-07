@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
-require 'forwardable'
-
 module Split
   module Persistence
     class DualAdapter
-      extend Forwardable
-      def_delegators :@adapter, :keys, :[], :[]=, :delete
+      def self.with_config(options={})
+        self.config.merge!(options)
+        self
+      end
+
+      def self.config
+        @config ||= {}
+      end
 
       def initialize(context)
         if logged_in = self.class.config[:logged_in]
@@ -22,22 +26,28 @@ module Split
           raise "Please configure :logged_out_adapter"
         end
 
-        if logged_in.call(context)
-          @adapter = logged_in_adapter.new(context)
-        else
-          @adapter = logged_out_adapter.new(context)
-        end
+        @logged_in = logged_in.call(context)
+        @logged_in_adapter = logged_in_adapter.new(context)
+        @logged_out_adapter = logged_out_adapter.new(context)
       end
 
-      def self.with_config(options={})
-        self.config.merge!(options)
-        self
+      def keys
+        (@logged_in_adapter.keys + @logged_out_adapter.keys).uniq
       end
 
-      def self.config
-        @config ||= {}
+      def [](key)
+        @logged_in && @logged_in_adapter[key] || @logged_out_adapter[key]
       end
 
+      def []=(key, value)
+        @logged_in_adapter[key] = value if @logged_in
+        @logged_out_adapter[key] = value
+      end
+
+      def delete(key)
+        @logged_in_adapter.delete(key)
+        @logged_out_adapter.delete(key)
+      end
     end
   end
 end
