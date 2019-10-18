@@ -556,7 +556,7 @@ and:
 ab_finished(:my_first_experiment)
 ```
 
-You can also add meta data for each experiment, very useful when you need more than an alternative name to change behaviour:
+You can also add meta data for each experiment, which is very useful when you need more than an alternative name to change behaviour:
 
 ```ruby
 Split.configure do |config|
@@ -600,6 +600,8 @@ or in views:
   <small><%= meta['text'] %></small>
 <% end %>
 ```
+
+The keys used in meta data should be Strings
 
 #### Metrics
 
