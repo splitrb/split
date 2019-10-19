@@ -26,6 +26,7 @@ describe Split::Persistence::DualAdapter do
     it '#[]=' do
       expect(logged_in_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
       expect(logged_out_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
+      expect(logged_out_adapter_instance).to receive(:[]).with('my_key') { nil }
       subject['my_key'] = 'my_value'
     end
 
@@ -60,6 +61,7 @@ describe Split::Persistence::DualAdapter do
     it '#[]=' do
       expect_any_instance_of(logged_in_adapter).not_to receive(:[]=)
       expect(logged_out_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
+      expect(logged_out_adapter_instance).to receive(:[]).with('my_key') { nil }
       subject['my_key'] = 'my_value'
     end
 

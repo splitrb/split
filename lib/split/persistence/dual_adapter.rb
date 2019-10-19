@@ -41,12 +41,25 @@ module Split
 
       def []=(key, value)
         @logged_in_adapter[key] = value if @logged_in
+        old_value = @logged_out_adapter[key]
         @logged_out_adapter[key] = value
+
+        decrement_participation(key, old_value) if decrement_participation?(old_value, value)
       end
 
       def delete(key)
         @logged_in_adapter.delete(key)
         @logged_out_adapter.delete(key)
+      end
+
+      private
+
+      def decrement_participation?(old_value, value)
+        !old_value.nil? && !value.nil? && old_value != value
+      end
+
+      def decrement_participation(key, value)
+        Split.redis.hincrby("#{key}:#{value}", 'participant_count', -1)
       end
     end
   end
