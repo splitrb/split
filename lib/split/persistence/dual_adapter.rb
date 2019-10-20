@@ -26,30 +26,49 @@ module Split
           raise "Please configure :logged_out_adapter"
         end
 
+        @fallback_to_logged_out_adapter =
+          self.class.config[:fallback_to_logged_out_adapter] || false
         @logged_in = logged_in.call(context)
         @logged_in_adapter = logged_in_adapter.new(context)
         @logged_out_adapter = logged_out_adapter.new(context)
+        @active_adapter = @logged_in ? @logged_in_adapter : @logged_out_adapter
       end
 
       def keys
-        (@logged_in_adapter.keys + @logged_out_adapter.keys).uniq
+        if @fallback_to_logged_out_adapter
+          (@logged_in_adapter.keys + @logged_out_adapter.keys).uniq
+        else
+          @active_adapter.keys
+        end
       end
 
       def [](key)
-        @logged_in && @logged_in_adapter[key] || @logged_out_adapter[key]
+        if @fallback_to_logged_out_adapter
+          @logged_in && @logged_in_adapter[key] || @logged_out_adapter[key]
+        else
+          @active_adapter[key]
+        end
       end
 
       def []=(key, value)
-        @logged_in_adapter[key] = value if @logged_in
-        old_value = @logged_out_adapter[key]
-        @logged_out_adapter[key] = value
+        if @fallback_to_logged_out_adapter
+          @logged_in_adapter[key] = value if @logged_in
+          old_value = @logged_out_adapter[key]
+          @logged_out_adapter[key] = value
 
-        decrement_participation(key, old_value) if decrement_participation?(old_value, value)
+          decrement_participation(key, old_value) if decrement_participation?(old_value, value)
+        else
+          @active_adapter[key] = value
+        end
       end
 
       def delete(key)
-        @logged_in_adapter.delete(key)
-        @logged_out_adapter.delete(key)
+        if @fallback_to_logged_out_adapter
+          @logged_in_adapter.delete(key)
+          @logged_out_adapter.delete(key)
+        else
+          @active_adapter.delete(key)
+        end
       end
 
       private
