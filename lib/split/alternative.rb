@@ -15,7 +15,7 @@ module Split
         @name = name
         @weight = 1
       end
-      p_winner = 0.0
+      @p_winner = 0.0
     end
 
     def to_s
