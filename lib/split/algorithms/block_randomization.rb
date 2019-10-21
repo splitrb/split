@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Selects alternative with minimum count of participants
 # If all counts are even (i.e. all are minimum), samples from all possible alternatives
 

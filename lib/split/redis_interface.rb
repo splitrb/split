@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module Split
   # Simplifies the interface to Redis.
   class RedisInterface

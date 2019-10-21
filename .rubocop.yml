@@ -2,4 +2,6 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   Exclude:
+    - 'Appraisals'
+    - 'gemfiles/**/*'
     - 'spec/**/*.rb'
