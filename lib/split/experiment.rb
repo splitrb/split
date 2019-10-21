@@ -2,12 +2,12 @@
 module Split
   class Experiment
     attr_accessor :name
-    attr_writer :algorithm
-    attr_accessor :resettable
     attr_accessor :goals
-    attr_accessor :alternatives
     attr_accessor :alternative_probabilities
     attr_accessor :metadata
+
+    attr_reader :alternatives
+    attr_reader :resettable
 
     DEFAULT_OPTIONS = {
       :resettable => true

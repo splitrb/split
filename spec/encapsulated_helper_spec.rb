@@ -33,7 +33,7 @@ describe Split::EncapsulatedHelper do
             static <%= alt %>
           <% end %>
         ERB
-        expect(template.result(binding)).to match /foo  static \d/
+        expect(template.result(binding)).to match(/foo  static \d/)
       end
 
     end

@@ -449,9 +449,7 @@ describe Split::Experiment do
     }
 
     context "saving experiment" do
-      def same_but_different_goals
-        Split::ExperimentCatalog.find_or_create({'link_color' => ["purchase", "refund"]}, 'blue', 'red', 'green')
-      end
+      let(:same_but_different_goals) { Split::ExperimentCatalog.find_or_create({'link_color' => ["purchase", "refund"]}, 'blue', 'red', 'green') }
 
       before { experiment.save }
 
@@ -460,7 +458,7 @@ describe Split::Experiment do
       end
 
       it "should reset an experiment if it is loaded with different goals" do
-        same_experiment = same_but_different_goals
+        same_but_different_goals
         expect(Split::ExperimentCatalog.find("link_color").goals).to eq(["purchase", "refund"])
       end
 

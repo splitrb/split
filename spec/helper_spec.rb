@@ -583,7 +583,7 @@ describe Split::Helper do
       end
       e = Split::ExperimentCatalog.find_or_create('def', '4', '5', '6')
       e.winner = '4'
-      alternative = ab_test('def', '4', '5', '6')
+      ab_test('def', '4', '5', '6')
       another_alternative = ab_test('ghi', '7', '8', '9')
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq "ghi"
@@ -1059,8 +1059,8 @@ describe Split::Helper do
 
   it 'should handle multiple experiments correctly' do
     experiment2 = Split::ExperimentCatalog.find_or_create('link_color2', 'blue', 'red')
-    alternative_name = ab_test('link_color', 'blue', 'red')
-    alternative_name2 = ab_test('link_color2', 'blue', 'red')
+    ab_test('link_color', 'blue', 'red')
+    ab_test('link_color2', 'blue', 'red')
     ab_finished('link_color2')
 
     experiment2.alternatives.each do |alt|
