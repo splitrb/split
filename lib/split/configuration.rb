@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 module Split
   class Configuration
-    attr_accessor :bots
-    attr_accessor :robot_regex
     attr_accessor :ignore_ip_addresses
     attr_accessor :ignore_filter
     attr_accessor :db_failover
@@ -29,6 +27,9 @@ module Split
     attr_accessor :redis
 
     attr_reader :experiments
+
+    attr_writer :bots
+    attr_writer :robot_regex
 
     def bots
       @bots ||= {
