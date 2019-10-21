@@ -438,26 +438,6 @@ Style/ExpandPathArguments:
     - 'split.gemspec'
 
 # Offense count: 13
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: always, never
-Style/FrozenStringLiteralComment:
-  Exclude:
-    - 'Appraisals'
-    - 'Gemfile'
-    - 'Rakefile'
-    - 'gemfiles/4.2.gemfile'
-    - 'gemfiles/5.0.gemfile'
-    - 'gemfiles/5.1.gemfile'
-    - 'gemfiles/5.2.gemfile'
-    - 'gemfiles/6.0.gemfile'
-    - 'lib/split/algorithms/block_randomization.rb'
-    - 'lib/split/goals_collection.rb'
-    - 'lib/split/redis_interface.rb'
-    - 'lib/split/user.rb'
-    - 'split.gemspec'
-
-# Offense count: 13
 # Configuration parameters: MinBodyLength.
 Style/GuardClause:
   Exclude:
