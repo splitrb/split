@@ -75,7 +75,7 @@ module Split
       return field
     end
 
-    def set_completed_count (count, goal = nil)
+    def set_completed_count(count, goal = nil)
       field = set_field(goal)
       Split.redis.hset(key, field, count.to_i)
     end
