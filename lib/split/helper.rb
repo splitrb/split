@@ -80,7 +80,7 @@ module Split
 
     def ab_record_extra_info(metric_descriptor, key, value = 1)
       return if exclude_visitor? || Split.configuration.disabled?
-      metric_descriptor, goals = normalize_metric(metric_descriptor)
+      metric_descriptor, _ = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
