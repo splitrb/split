@@ -2,7 +2,7 @@
 module Split
   class Trial
     attr_accessor :experiment
-    attr_accessor :metadata
+    attr_writer :metadata
 
     def initialize(attrs = {})
       self.experiment   = attrs.delete(:experiment)
