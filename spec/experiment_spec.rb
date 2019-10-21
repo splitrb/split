@@ -449,9 +449,7 @@ describe Split::Experiment do
     }
 
     context "saving experiment" do
-      def same_but_different_goals
-        Split::ExperimentCatalog.find_or_create({'link_color' => ["purchase", "refund"]}, 'blue', 'red', 'green')
-      end
+      let(:same_but_different_goals) { Split::ExperimentCatalog.find_or_create({'link_color' => ["purchase", "refund"]}, 'blue', 'red', 'green') }
 
       before { experiment.save }
 
