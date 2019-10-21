@@ -460,7 +460,7 @@ describe Split::Experiment do
       end
 
       it "should reset an experiment if it is loaded with different goals" do
-        same_experiment = same_but_different_goals
+        same_but_different_goals
         expect(Split::ExperimentCatalog.find("link_color").goals).to eq(["purchase", "refund"])
       end
 
