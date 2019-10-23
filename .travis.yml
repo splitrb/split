@@ -3,11 +3,11 @@ rvm:
   - 1.9.3
   - 2.0
   - 2.1.10
-  - 2.2.0
   - 2.2.2
-  - 2.4.7
-  - 2.5.6
-  - 2.6.4
+  - 2.3.8
+  - 2.4.9
+  - 2.5.7
+  - 2.6.5
 
 gemfile:
   - gemfiles/4.2.gemfile
@@ -15,7 +15,6 @@ gemfile:
   - gemfiles/5.1.gemfile
   - gemfiles/5.2.gemfile
   - gemfiles/6.0.gemfile
-
 
 matrix:
   exclude:
@@ -43,17 +42,11 @@ matrix:
     gemfile: gemfiles/5.2.gemfile
   - rvm: 2.1.10
     gemfile: gemfiles/6.0.gemfile
-  - rvm: 2.2.0
-    gemfile: gemfiles/5.0.gemfile
-  - rvm: 2.2.0
-    gemfile: gemfiles/5.1.gemfile
-  - rvm: 2.2.0
-    gemfile: gemfiles/5.2.gemfile
-  - rvm: 2.2.0
-    gemfile: gemfiles/6.0.gemfile
   - rvm: 2.2.2
     gemfile: gemfiles/6.0.gemfile
-  - rvm: 2.4.7
+  - rvm: 2.3.8
+    gemfile: gemfiles/6.0.gemfile
+  - rvm: 2.4.9
     gemfile: gemfiles/6.0.gemfile
 
 before_install:
