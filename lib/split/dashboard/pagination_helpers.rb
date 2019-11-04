@@ -3,10 +3,9 @@ require 'split/dashboard/paginator'
 
 module Split
   module DashboardPaginationHelpers
-    DEFAULT_PER = 10
-
     def pagination_per
-      @pagination_per ||= (params[:per] || DEFAULT_PER).to_i
+      default_per = Split.configuration.dashboard_pagination_default_per
+      @pagination_per ||= (params[:per] || default_per).to_i
     end
 
     def page_number
