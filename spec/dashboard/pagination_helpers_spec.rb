@@ -10,7 +10,9 @@ describe Split::DashboardPaginationHelpers do
     context 'when params empty' do
       let(:params) { Hash[] }
 
-      it 'returns 10' do
+      it 'returns the default (10)' do
+        default_per_page = Split.configuration.dashboard_pagination_default_per_page
+        expect(pagination_per).to eql default_per_page
         expect(pagination_per).to eql 10
       end
     end
