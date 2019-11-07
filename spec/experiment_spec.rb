@@ -118,6 +118,23 @@ describe Split::Experiment do
       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
       expect(experiment.resettable).to be_falsey
     end
+    
+    context 'from configuration' do
+      let(:experiment_name) { :my_experiment }
+      let(:experiments) do
+        {
+          experiment_name => {
+            :alternatives => ['Control Opt', 'Alt one']
+          }
+        }
+      end
+
+      before { Split.configuration.experiments = experiments }
+      
+      it 'assigns default values to the experiment' do
+        expect(Split::Experiment.new(experiment_name).resettable).to eq(true)
+      end
+    end
   end
 
   describe 'persistent configuration' do
