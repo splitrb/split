@@ -1,3 +1,25 @@
+## 3.4.0 (November 9th, 2019)
+
+Features:
+- Improve DualAdapter (@santib, #588), adds a new configuration for the DualAdapter, making it possible to keep consistency for logged_out/logged_in users. It's a opt-in flag. No Behavior was changed on this release.
+- Make dashboard pagination default "per" param configurable (@alopatin, #597)
+
+Bugfixes:
+- Fix `force_alternative` for experiments with incremented version (@giraffate, #568)
+- Persist alternative weights (@giraffate, #570)
+- Combined experiment performance improvements (@gnanou, #575)
+- Handle correctly case when ab_finished is called before ab_test for a user (@gnanou, #577)
+- When loading active_experiments, it should not look into user's 'finished' keys (@andrehjr, #582)
+
+Misc:
+- Remove `rubyforge_project` from gemspec (@giraffate, #583)
+- Fix URLs to replace http with https (@giraffate , #584)
+- Lazily include split helpers in ActionController::Base (@hasghari, #586)
+- Fix unused variable warnings (@andrehjr, #592)
+- Fix ruby warnings (@andrehjr, #593)
+- Update rubocop.yml config (@andrehjr, #594)
+- Add frozen_string_literal to all files that were missing it (@andrehjr, #595)
+
 ## 3.3.2 (April 12th, 2019)
 
 Features:
