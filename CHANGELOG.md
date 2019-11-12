@@ -1,3 +1,8 @@
+## 3.4.1 (November 12th, 2019)
+
+Bugfixes:
+- Reference ActionController directly when including split helpers, to avoid breaking Rails API Controllers (@andrehjr, #602)
+
 ## 3.4.0 (November 9th, 2019)
 
 Features:
