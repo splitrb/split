@@ -40,11 +40,15 @@ module Split
     end
 
     def set_alternatives_and_options(options)
-      self.alternatives = options[:alternatives]
-      self.goals = options[:goals]
-      self.resettable = options[:resettable]
-      self.algorithm = options[:algorithm]
-      self.metadata = options[:metadata]
+      options_with_defaults = DEFAULT_OPTIONS.merge(
+        options.reject { |k, v| v.nil? }
+      )
+
+      self.alternatives = options_with_defaults[:alternatives]
+      self.goals = options_with_defaults[:goals]
+      self.resettable = options_with_defaults[:resettable]
+      self.algorithm = options_with_defaults[:algorithm]
+      self.metadata = options_with_defaults[:metadata]
     end
 
     def extract_alternatives_from_options(options)
