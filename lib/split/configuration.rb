@@ -84,7 +84,7 @@ module Split
         'LinkedInBot' => 'LinkedIn bot',
         'LongURL' => 'URL expander service',
         'NING' => 'NING - Yet Another Twitter Swarmer',
-        'Pinterest' => 'Pinterest Bot',
+        'Pinterestbot' => 'Pinterest Bot',
         'redditbot' => 'Reddit Bot',
         'ShortLinkTranslate' => 'Link shortener',
         'Slackbot' => 'Slackbot link expander',
