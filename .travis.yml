@@ -25,8 +25,16 @@ before_install:
   - gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true
   - gem install bundler --version=1.17.3
 
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
 script:
-  - RAILS_ENV=test bundle exec rake spec && bundle exec codeclimate-test-reporter
+  - RAILS_ENV=test bundle exec rake spec
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 cache: bundler
 sudo: false
