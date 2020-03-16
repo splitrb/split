@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 # A multi-armed bandit implementation inspired by
 # @aaronsw and victorykit/whiplash
-require 'simple-random'
 
 module Split
   module Algorithms
@@ -14,6 +13,7 @@ module Split
         private
 
         def arm_guess(participants, completions)
+          raise "This method will not work as SimpleRandom was removed due to licensing."
           a = [participants, 0].max
           b = [participants-completions, 0].max
           s = SimpleRandom.new; s.set_seed; s.beta(a+fairness_constant, b+fairness_constant)

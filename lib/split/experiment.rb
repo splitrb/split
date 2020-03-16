@@ -274,6 +274,7 @@ module Split
         Time.now.utc.to_i / Split.configuration.winning_alternative_recalculation_interval
 
       if self.calc_time != intervals_since_epoch
+        Rails.logger.info "estimate_winning_alternative is about to raise an error " + self.calc_time
         if goals.empty?
           self.estimate_winning_alternative
         else
@@ -353,6 +354,7 @@ module Split
     end
 
     def calc_simulated_conversion_rates(beta_params)
+      raise "This method will not work as SimpleRandom was removed due to licensing."
       # initialize a random variable (from which to simulate conversion rates ~beta-distributed)
       rand = SimpleRandom.new
       rand.set_seed
