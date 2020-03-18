@@ -2,13 +2,7 @@
 module Split
   module DashboardHelpers
     def h(text)
-      #split-dashboard-port
-      # This exists because Rails and Sinatra return hex and decimal respectively, which can fail tests
-      if Object.const_defined?('Rails')
-        ERB::Util.html_escape(text)
-      else
-        Rack::Utils.escape_html(text)
-      end
+      Rack::Utils.escape_html(text)
     end
 
     def url(*path_parts)
