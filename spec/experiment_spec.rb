@@ -239,8 +239,8 @@ describe Split::Experiment do
       expect(experiment.winner.name).to eq('red')
     end
 
-    it 'should call the on_winner_choose hook' do
-      expect(Split.configuration.on_winner_choose).to receive(:call)
+    it 'should call the on_experiment_winner_choose hook' do
+      expect(Split.configuration.on_experiment_winner_choose).to receive(:call)
       experiment.winner = 'green'
     end
 
