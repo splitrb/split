@@ -56,7 +56,7 @@ describe Split::Experiment do
     end
 
     it "should save the selected algorithm to redis" do
-      experiment_algorithm = Split::Algorithms::Whiplash
+      experiment_algorithm = Split::Algorithms::BlockRandomization
       experiment.algorithm = experiment_algorithm
       experiment.save
 
@@ -110,8 +110,8 @@ describe Split::Experiment do
 
   describe 'initialization' do
     it "should set the algorithm when passed as an option to the initializer" do
-       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm =>  Split::Algorithms::Whiplash)
-       expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
+       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm =>  Split::Algorithms::BlockRandomization)
+       expect(experiment.algorithm).to eq(Split::Algorithms::BlockRandomization)
     end
 
     it "should be possible to make an experiment not resettable" do
@@ -150,7 +150,7 @@ describe Split::Experiment do
     end
 
     describe '#metadata' do
-      let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash, :metadata => meta) }
+      let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::BlockRandomization, :metadata => meta) }
       context 'simple hash' do
         let(:meta) {  { 'basket' => 'a', 'cart' => 'b' } }
         it "should persist metadata in redis" do
@@ -173,16 +173,16 @@ describe Split::Experiment do
     end
 
     it "should persist algorithm in redis" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash)
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::BlockRandomization)
       experiment.save
 
       e = Split::ExperimentCatalog.find('basket_text')
       expect(e).to eq(experiment)
-      expect(e.algorithm).to eq(Split::Algorithms::Whiplash)
+      expect(e.algorithm).to eq(Split::Algorithms::BlockRandomization)
     end
 
     it "should persist a new experiment in redis, that does not exist in the configuration file" do
-      experiment = Split::Experiment.new('foobar', :alternatives => ['tra', 'la'], :algorithm => Split::Algorithms::Whiplash)
+      experiment = Split::Experiment.new('foobar', :alternatives => ['tra', 'la'], :algorithm => Split::Algorithms::BlockRandomization)
       experiment.save
 
       e = Split::ExperimentCatalog.find('foobar')
@@ -347,8 +347,8 @@ describe Split::Experiment do
     end
 
     it 'should use the user specified algorithm for this experiment if specified' do
-      experiment.algorithm = Split::Algorithms::Whiplash
-      expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
+      experiment.algorithm = Split::Algorithms::BlockRandomization
+      expect(experiment.algorithm).to eq(Split::Algorithms::BlockRandomization)
     end
   end
 
@@ -370,7 +370,7 @@ describe Split::Experiment do
 
       context 'without winner' do
         it "should use the specified algorithm" do
-          experiment.algorithm = Split::Algorithms::Whiplash
+          experiment.algorithm = Split::Algorithms::BlockRandomization
           expect(experiment.algorithm).to receive(:choose_alternative).and_return(Split::Alternative.new('green', 'link_color'))
           expect(experiment.next_alternative.name).to eq('green')
         end
@@ -492,42 +492,6 @@ describe Split::Experiment do
         experiment = Split::ExperimentCatalog.find_or_create('link_color3', 'blue', 'red', 'green')
         expect(experiment.goals).to eq([])
       end
-    end
-  end
-
-  describe "beta probability calculation" do
-    it "should return a hash with the probability of each alternative being the best" do
-      experiment = Split::ExperimentCatalog.find_or_create('mathematicians', 'bernoulli', 'poisson', 'lagrange')
-      experiment.calc_winning_alternatives
-      expect(experiment.alternative_probabilities).not_to be_nil
-    end
-
-    it "should return between 46% and 54% probability for an experiment with 2 alternatives and no data" do
-      experiment = Split::ExperimentCatalog.find_or_create('scientists', 'einstein', 'bohr')
-      experiment.calc_winning_alternatives
-      expect(experiment.alternatives[0].p_winner).to be_within(0.04).of(0.50)
-    end
-
-    it "should calculate the probability of being the winning alternative separately for each goal", :skip => true do
-      experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
-      goal1 = experiment.goals[0]
-      goal2 = experiment.goals[1]
-      experiment.alternatives.each do |alternative|
-        alternative.participant_count = 50
-        alternative.set_completed_count(10, goal1)
-        alternative.set_completed_count(15+rand(30), goal2)
-      end
-      experiment.calc_winning_alternatives
-      alt = experiment.alternatives[0]
-      p_goal1 = alt.p_winner(goal1)
-      p_goal2 = alt.p_winner(goal2)
-      expect(p_goal1).not_to be_within(0.04).of(p_goal2)
-    end
-
-    it "should return nil and not re-calculate probabilities if they have already been calculated today" do
-      experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
-      expect(experiment.calc_winning_alternatives).not_to be nil
-      expect(experiment.calc_winning_alternatives).to be nil
     end
   end
 end
