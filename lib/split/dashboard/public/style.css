@@ -326,3 +326,8 @@ a.button.green:focus, button.green:focus, input[type="submit"].green:focus {
   display: inline-block;
   padding: 5px;
 }
+
+.divider {
+  display: inline-block;
+  margin-left: 10px;
+}

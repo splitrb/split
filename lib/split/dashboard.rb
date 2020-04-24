@@ -65,6 +65,17 @@ module Split
       redirect url('/')
     end
 
+    post '/update_cohorting' do
+      @experiment = Split::ExperimentCatalog.find(params[:experiment])
+      case params[:cohorting_action].downcase
+      when "enable"
+        @experiment.enable_cohorting
+      when "disable"
+        @experiment.disable_cohorting
+      end
+      redirect url('/')
+    end
+
     delete '/experiment' do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.delete

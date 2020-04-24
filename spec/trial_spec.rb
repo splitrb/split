@@ -198,6 +198,33 @@ describe Split::Trial do
         expect(trial.alternative.name).to_not be_empty
         Split.configuration.on_trial_choose = nil
       end
+
+      it "assigns user to an alternative" do
+        trial.choose! context
+
+        expect(alternatives).to include(user[experiment.name])
+      end
+
+      context "when cohorting is disabled" do
+        before(:each) { allow(experiment).to receive(:cohorting_disabled?).and_return(true) }
+
+        it "picks the control and does not run on_trial callbacks" do
+          Split.configuration.on_trial = :on_trial_callback
+
+          expect(experiment).to_not receive(:next_alternative)
+          expect(context).not_to receive(:on_trial_callback)
+          expect_alternative(trial, 'basket')
+
+          Split.configuration.enabled = true
+          Split.configuration.on_trial = nil
+        end
+
+        it "user is not assigned an alternative" do
+          trial.choose! context
+
+          expect(user[experiment]).to eq(nil)
+        end
+      end
     end
   end
 

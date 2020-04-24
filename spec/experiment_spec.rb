@@ -223,8 +223,14 @@ describe Split::Experiment do
       experiment.delete
       expect(experiment.start_time).to be_nil
     end
-  end
 
+    it "should default cohorting back to false" do
+      experiment.disable_cohorting
+      expect(experiment.cohorting_disabled?).to eq(true)
+      experiment.delete
+      expect(experiment.cohorting_disabled?).to eq(false)
+    end
+  end
 
   describe 'winner' do
     it "should have no winner initially" do
@@ -384,6 +390,34 @@ describe Split::Experiment do
         expect(experiment.next_alternative.name).to eq('blue')
         expect(experiment.next_alternative.name).to eq('blue')
       end
+    end
+  end
+
+  describe "#cohorting_disabled?" do
+    it "returns false when nothing has been configured" do
+      expect(experiment.cohorting_disabled?).to eq false
+    end
+
+    it "returns true when enable_cohorting is performed" do
+      experiment.enable_cohorting
+      expect(experiment.cohorting_disabled?).to eq false
+    end
+
+    it "returns false when nothing has been configured" do
+      experiment.disable_cohorting
+      expect(experiment.cohorting_disabled?).to eq true
+    end
+  end
+
+  describe "#disable_cohorting" do
+    it "saves a new key in redis" do
+      expect(experiment.disable_cohorting).to eq true
+    end
+  end
+
+  describe "#enable_cohorting" do
+    it "saves a new key in redis" do
+      expect(experiment.enable_cohorting).to eq true
     end
   end
 
