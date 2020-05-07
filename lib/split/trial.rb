@@ -53,6 +53,7 @@ module Split
       # Only run the process once
       return alternative if @alternative_choosen
 
+      new_participant = @user[@experiment.key].nil?
       if override_is_alternative?
         self.alternative = @options[:override]
         if should_store_alternative? && !@user[@experiment.key]
@@ -70,19 +71,23 @@ module Split
         else
           self.alternative = @user[@experiment.key]
           if alternative.nil?
-            self.alternative = @experiment.next_alternative
+            if @experiment.cohorting_disabled?
+              self.alternative = @experiment.control
+            else
+              self.alternative = @experiment.next_alternative
 
-            # Increment the number of participants since we are actually choosing a new alternative
-            self.alternative.increment_participation
+              # Increment the number of participants since we are actually choosing a new alternative
+              self.alternative.increment_participation
 
-            run_callback context, Split.configuration.on_trial_choose
+              run_callback context, Split.configuration.on_trial_choose
+            end
           end
         end
       end
 
-      @user[@experiment.key] = alternative.name if !@experiment.has_winner? && should_store_alternative?
+      @user[@experiment.key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || (new_participant && @experiment.cohorting_disabled?)
       @alternative_choosen = true
-      run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled?
+      run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled? || (new_participant && @experiment.cohorting_disabled?) 
       alternative
     end
 
