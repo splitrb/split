@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require 'rubystats'
+
 module Split
   class Experiment
     attr_accessor :name
@@ -354,17 +357,13 @@ module Split
     end
 
     def calc_simulated_conversion_rates(beta_params)
-      # initialize a random variable (from which to simulate conversion rates ~beta-distributed)
-      rand = SimpleRandom.new
-      rand.set_seed
-
       simulated_cr_hash = {}
 
       # create a hash which has the conversion rate pulled from each alternative's beta distribution
       beta_params.each do |alternative, params|
         alpha = params[0]
         beta = params[1]
-        simulated_conversion_rate = rand.beta(alpha, beta)
+        simulated_conversion_rate = Rubystats::BetaDistribution.new(alpha, beta).rng
         simulated_cr_hash[alternative] = simulated_conversion_rate
       end
 

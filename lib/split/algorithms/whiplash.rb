@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 # A multi-armed bandit implementation inspired by
 # @aaronsw and victorykit/whiplash
-require 'simple-random'
+require 'rubystats'
 
 module Split
   module Algorithms
@@ -16,7 +16,7 @@ module Split
         def arm_guess(participants, completions)
           a = [participants, 0].max
           b = [participants-completions, 0].max
-          s = SimpleRandom.new; s.set_seed; s.beta(a+fairness_constant, b+fairness_constant)
+          Rubystats::BetaDistribution.new(a+fairness_constant, b+fairness_constant).rng
         end
 
         def best_guess(alternatives)
