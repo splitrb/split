@@ -18,21 +18,7 @@ module Split
 
       @name = name.to_s
 
-      alternatives = extract_alternatives_from_options(options)
-
-      if alternatives.empty? && (exp_config = Split.configuration.experiment_for(name))
-        options = {
-          alternatives: load_alternatives_from_configuration,
-          goals: Split::GoalsCollection.new(@name).load_from_configuration,
-          metadata: load_metadata_from_configuration,
-          resettable: exp_config[:resettable],
-          algorithm: exp_config[:algorithm]
-        }
-      else
-        options[:alternatives] = alternatives
-      end
-
-      set_alternatives_and_options(options)
+      extract_alternatives_from_options(options)
     end
 
     def self.finished_key(key)
