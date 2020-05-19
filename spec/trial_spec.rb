@@ -232,7 +232,7 @@ describe Split::Trial do
     let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
 
     before do
-      allow(Split.configuration).to receive(:experiments).and_return(experiment.key => { "window_of_time_for_conversion" => 60 })
+      allow(Split.configuration).to receive(:experiments).and_return(experiment.key => { "window_of_time_for_conversion_in_minutes" => 60 })
 
       trial.choose!
     end
