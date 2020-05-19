@@ -230,6 +230,38 @@ describe Split::Trial do
 
   describe "#complete!" do
     let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+
+    before do
+      allow(Split.configuration).to receive(:experiments).and_return(experiment.key => { "window_of_time_for_conversion" => 60 })
+
+      trial.choose!
+    end
+
+    it "removes the time_of_assignment key for that experiment" do
+      trial.complete!
+      expect(user[experiment.key + ":time_of_assignment"]).to be nil
+    end
+
+    context "and the user is not within the conversion time frame" do
+      it "does not convert" do
+        old_completed_count = trial.alternative.completed_count
+
+        allow(Time).to receive(:now).and_return(Time.now + 60*120)
+
+        trial.complete!
+        expect(trial.alternative.completed_count).to be(old_completed_count)
+      end
+    end
+
+    context "and the user is within the conversion time frame" do
+      it "does convert" do
+        old_completed_count = trial.alternative.completed_count
+
+        trial.complete!
+        expect(trial.alternative.completed_count).to be(old_completed_count+1)
+      end
+    end
+
     context 'when there are no goals' do
       it 'should complete the trial' do
         trial.choose!

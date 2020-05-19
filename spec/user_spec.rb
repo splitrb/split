@@ -60,13 +60,27 @@ describe Split::User do
       end
     end
 
+    context 'with time_of_assignment key' do
+      let(:user_keys) { { 'link_color' => 'blue', 'link_color:time_of_assignment' => true } }
+
+      it 'does not remove time_of_assignment key' do
+        allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+        allow(Split::ExperimentCatalog).to receive(:find).with('link_color:time_of_assignment').and_return(nil)
+        allow(experiment).to receive(:start_time).and_return(Date.today)
+        allow(experiment).to receive(:has_winner?).and_return(false)
+        @subject.cleanup_old_experiments!
+        expect(@subject.keys).to include("link_color")
+        expect(@subject.keys).to include("link_color:time_of_assignment")
+      end
+    end
+
     context 'when already cleaned up' do
       before do
         @subject.cleanup_old_experiments!
       end
 
       it 'does not clean up again' do
-        expect(@subject).to_not receive(:keys_without_finished)
+        expect(@subject).to_not receive(:keys_without_finished_and_time_of_assignment)
         @subject.cleanup_old_experiments!
       end
     end

@@ -14,7 +14,7 @@ module Split
 
     def cleanup_old_experiments!
       return if @cleaned_up
-      keys_without_finished(user.keys).each do |key|
+      keys_without_finished_and_time_of_assignment(user.keys).each do |key|
         experiment = ExperimentCatalog.find key_without_version(key)
         if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
           user.delete key
@@ -42,7 +42,7 @@ module Split
 
     def active_experiments
       experiment_pairs = {}
-      keys_without_finished(user.keys).each do |key|
+      keys_without_finished_and_time_of_assignment(user.keys).each do |key|
         Metric.possible_experiments(key_without_version(key)).each do |experiment|
           if !experiment.has_winner?
             experiment_pairs[key_without_version(key)] = user[key]
@@ -55,11 +55,11 @@ module Split
     private
 
     def keys_without_experiment(keys, experiment_key)
-      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) || k.match("#{experiment_key}:time_of_assignment") }
     end
 
-    def keys_without_finished(keys)
-      keys.reject { |k| k.include?(":finished") }
+    def keys_without_finished_and_time_of_assignment(keys)
+      keys.reject { |k| k.include?(":finished") || k.include?(":time_of_assignment") }
     end
 
     def key_without_version(key)
