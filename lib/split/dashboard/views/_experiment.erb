@@ -27,7 +27,7 @@
 <div class="<%= experiment_class %>" data-name="<%= experiment.name %>" data-complete="<%= experiment.has_winner? %>">
   <div class="experiment-header">
     <h2>
-      Experiment: <%= experiment.name %>
+      Experiment: <%= experiment.friendly_name %>
       <% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
       <% unless goal.nil? %><span class='goal'>Goal:<%= goal %></span><% end %>
       <% metrics = @metrics.select {|metric| metric.experiments.include? experiment} %>

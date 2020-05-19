@@ -118,13 +118,19 @@ describe Split::Experiment do
       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
       expect(experiment.resettable).to be_falsey
     end
+
+    it "sets friendly_name" do
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :friendly_name => "foo")
+      expect(experiment.friendly_name).to eq("foo")
+    end
     
     context 'from configuration' do
       let(:experiment_name) { :my_experiment }
       let(:experiments) do
         {
           experiment_name => {
-            :alternatives => ['Control Opt', 'Alt one']
+            :alternatives => ['Control Opt', 'Alt one'],
+            :friendly_name => "foo"
           }
         }
       end
@@ -133,6 +139,17 @@ describe Split::Experiment do
       
       it 'assigns default values to the experiment' do
         expect(Split::Experiment.new(experiment_name).resettable).to eq(true)
+      end
+
+      it "sets friendly_name" do
+        expect(Split::Experiment.new(experiment_name).friendly_name).to eq("foo")
+      end
+    end
+
+    context 'when no friendly name is defined' do
+      it "defaults to experiment name" do
+        experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
+        expect(experiment.friendly_name).to eql("basket_text")
       end
     end
   end
