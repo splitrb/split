@@ -99,21 +99,21 @@ module Split
     private
 
     def delete_time_of_assignment_key
-      @user.delete("#{@experiment.key}:time_of_assignment")
+      @user.delete("#{@experiment.name}:time_of_assignment")
     end
 
     def within_conversion_time_frame?
-      window_of_time_for_conversion_in_minutes = Split.configuration.experiments.dig(@experiment.key, "window_of_time_for_conversion_in_minutes")
+      window_of_time_for_conversion_in_minutes = Split.configuration.experiments.dig(@experiment.name, "window_of_time_for_conversion_in_minutes")
 
       return true if window_of_time_for_conversion_in_minutes.nil?
 
-      time_of_assignment = Time.parse(@user["#{@experiment.key}:time_of_assignment"])
+      time_of_assignment = Time.parse(@user["#{@experiment.name}:time_of_assignment"])
 
       (Time.now - time_of_assignment)/60 <= window_of_time_for_conversion_in_minutes
     end
 
     def save_time_that_user_is_assigned
-      @user["#{@experiment.key}:time_of_assignment"] = Time.now.to_s
+      @user["#{@experiment.name}:time_of_assignment"] = Time.now.to_s
     end
 
     def run_callback(context, callback_name)
