@@ -277,33 +277,63 @@ describe Split::Helper do
   end
 
   describe 'metadata' do
-    before do
-      Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => ["one", "two"],
-          :resettable => false,
-          :metadata => { 'one' => 'Meta1', 'two' => 'Meta2' }
+    context 'is defined' do
+      before do
+        Split.configuration.experiments = {
+          :my_experiment => {
+            :alternatives => ["one", "two"],
+            :resettable => false,
+            :metadata => { 'one' => 'Meta1', 'two' => 'Meta2' }
+          }
         }
-      }
-    end
-
-    it 'should be passed to helper block' do
-      @params = { 'ab_test' => { 'my_experiment' => 'one' } }
-      expect(ab_test('my_experiment')).to eq 'one'
-      expect(ab_test('my_experiment') do |alternative, meta|
-        meta
-      end).to eq('Meta1')
-    end
-
-    it 'should pass empty hash to helper block if library disabled' do
-      Split.configure do |config|
-        config.enabled = false
       end
 
-      expect(ab_test('my_experiment')).to eq 'one'
-      expect(ab_test('my_experiment') do |_, meta|
-        meta
-      end).to eq({})
+      it 'should be passed to helper block' do
+        @params = { 'ab_test' => { 'my_experiment' => 'two' } }
+        expect(ab_test('my_experiment')).to eq 'two'
+        expect(ab_test('my_experiment') do |alternative, meta|
+          meta
+        end).to eq('Meta2')
+      end
+
+      it 'should pass control metadata helper block if library disabled' do
+        Split.configure do |config|
+          config.enabled = false
+        end
+
+        expect(ab_test('my_experiment')).to eq 'one'
+        expect(ab_test('my_experiment') do |_, meta|
+          meta
+        end).to eq('Meta1')
+      end
+    end
+
+    context 'is not defined' do
+      before do
+        Split.configuration.experiments = {
+          :my_experiment => {
+            :alternatives => ["one", "two"],
+            :resettable => false,
+            :metadata => nil
+          }
+        }
+      end
+
+      it 'should be passed to helper block' do
+        expect(ab_test('my_experiment') do |alternative, meta|
+          meta
+        end).to eq({})
+      end
+
+      it 'should pass control metadata helper block if library disabled' do
+        Split.configure do |config|
+          config.enabled = false
+        end
+
+        expect(ab_test('my_experiment') do |_, meta|
+          meta
+        end).to eq({})
+      end
     end
   end
 
