@@ -404,7 +404,7 @@ module Split
 
     def load_alternatives_from_configuration
       alts = Split.configuration.experiment_for(@name)[:alternatives]
-      raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
+      raise(Split::InvalidExperimentsFormatError, "Experiment configuration is missing :alternatives array") unless alts
       if alts.is_a?(Hash)
         alts.keys
       else
