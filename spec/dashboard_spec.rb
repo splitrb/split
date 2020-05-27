@@ -161,6 +161,28 @@ describe Split::Dashboard do
     end
   end
 
+  describe "update cohorting" do
+    it "calls enable of cohorting when action is enable" do
+      post "/update_cohorting?experiment=#{experiment.name}", { "cohorting_action": "enable" }
+
+      expect(experiment.cohorting_disabled?).to eq false
+    end
+
+    it "calls disable of cohorting when action is disable" do
+      post "/update_cohorting?experiment=#{experiment.name}", { "cohorting_action": "disable" }
+      
+      expect(experiment.cohorting_disabled?).to eq true
+    end
+
+    it "calls neither enable or disable cohorting when passed invalid action" do
+      previous_value = experiment.cohorting_disabled?
+
+      post "/update_cohorting?experiment=#{experiment.name}", { "cohorting_action": "other" }
+
+      expect(experiment.cohorting_disabled?).to eq previous_value
+    end
+  end
+
   it "should reset an experiment" do
     red_link.participant_count = 5
     blue_link.participant_count = 7
