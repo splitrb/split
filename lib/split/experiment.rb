@@ -235,7 +235,7 @@ module Split
       end
       reset_winner
       redis.srem(:experiments, name)
-      redis.hdel(experiment_config_key, :cohorting)
+      remove_experiment_cohorting
       remove_experiment_configuration
       Split.configuration.on_experiment_delete.call(self)
       increment_version
@@ -389,15 +389,19 @@ module Split
     end
 
     def cohorting_disabled?
-      value = redis.hget(experiment_config_key, :cohorting)
-      value.nil? ? false : value.downcase == "true"
+      @cohorting_disabled ||= begin
+        value = redis.hget(experiment_config_key, :cohorting)
+        value.nil? ? false : value.downcase == "true"
+      end
     end
 
     def disable_cohorting
+      @cohorting_disabled = true
       redis.hset(experiment_config_key, :cohorting, true)
     end
 
     def enable_cohorting
+      @cohorting_disabled = false
       redis.hset(experiment_config_key, :cohorting, false)
     end
 
@@ -481,6 +485,11 @@ module Split
 
     def goals_collection
       Split::GoalsCollection.new(@name, @goals)
+    end
+
+    def remove_experiment_cohorting
+      @cohorting_disabled = false
+      redis.hdel(experiment_config_key, :cohorting)
     end
   end
 end
