@@ -262,6 +262,30 @@ describe Split::Helper do
       ab_test('link_color', 'blue', 'red')
       expect(ab_user).to eq(finished_session)
     end
+
+    context "with ab_test_user_qualified is set" do
+      context "ab_test_user_qualified returns true" do
+        def ab_test_user_qualified?
+          true 
+        end
+
+        it "user is qualified to participate in experiment" do
+          ab_test('link_color', 'blue', 'red')
+          expect(['red', 'blue']).to include(ab_user['link_color'])
+        end
+      end
+
+      context "ab_test_user_qualified returns false" do
+        def ab_test_user_qualified?
+          false 
+        end
+
+        it "user is not qualified to participate in experiment" do
+          ab_test('link_color', 'blue', 'red')
+          expect(ab_user['link_color']).to eq(nil)
+        end
+      end
+    end
   end
 
   describe 'metadata' do
