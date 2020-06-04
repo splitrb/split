@@ -240,10 +240,10 @@ describe Split::Trial do
     end
 
     context "when there are many goals" do
-      let(:goals) { [ "goal1", "second" ] }
+      let(:goals) { [ "goal1", "goal2" ] }
       let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goals) }
 
-      it "increments the conmpleted count corresponding to the goals" do
+      it "increments the completed count corresponding to the goals" do
         trial.choose!
         old_completed_counts = goals.map{ |goal| [goal, trial.alternative.completed_count(goal)] }.to_h 
         trial.complete!
@@ -252,9 +252,9 @@ describe Split::Trial do
     end
 
     context "when there is 1 goal of type string" do
-      let(:goal) { "first" }
+      let(:goal) { "goal" }
       let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goal) }
-      it "increments the conmpleted count corresponding to the goal" do
+      it "increments the completed count corresponding to the goal" do
         trial.choose!
         old_completed_count = trial.alternative.completed_count(goal)
         trial.complete!
