@@ -1120,15 +1120,9 @@ describe Split::Helper do
       end
 
       it "should increment the counter for the specified-goal completed alternative" do
-        expect(lambda {
-          expect(lambda {
-            ab_finished({"link_color" => ["purchase"]})
-          }).not_to change {
-            Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2)
-          }
-        }).to change {
-          Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1)
-        }.by(1)
+        expect{ ab_finished({"link_color" => ["purchase"]}) }
+          .to change{ Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2) }.by(0)
+          .and change{ Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1) }.by(1)
       end
     end
   end

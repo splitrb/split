@@ -263,36 +263,36 @@ describe Split::Trial do
     end
 
     context 'when there are no goals' do
+      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
       it 'should complete the trial' do
         trial.choose!
         old_completed_count = trial.alternative.completed_count
         trial.complete!
-        expect(trial.alternative.completed_count).to be(old_completed_count+1)
+        expect(trial.alternative.completed_count).to eq(old_completed_count + 1)
       end
     end
 
-    context 'when there are many goals' do
-      let(:goals) { ['first', 'second'] }
+    context "when there are many goals" do
+      let(:goals) { [ "goal1", "goal2" ] }
       let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goals) }
-      shared_examples_for "goal completion" do
-        it 'should not complete the trial' do
-          trial.choose!
-          old_completed_count = trial.alternative.completed_count
-          trial.complete!(goal)
-          expect(trial.alternative.completed_count).to_not be(old_completed_count+1)
-        end
-      end
 
-      describe 'Array of Goals' do
-        let(:goal) { [goals.first] }
-        it_behaves_like 'goal completion'
+      it "increments the completed count corresponding to the goals" do
+        trial.choose!
+        old_completed_counts = goals.map{ |goal| [goal, trial.alternative.completed_count(goal)] }.to_h 
+        trial.complete!
+        goals.each { | goal | expect(trial.alternative.completed_count(goal)).to eq(old_completed_counts[goal] + 1) }
       end
+    end
 
-      describe 'String of Goal' do
-        let(:goal) { goals.first }
-        it_behaves_like 'goal completion'
+    context "when there is 1 goal of type string" do
+      let(:goal) { "goal" }
+      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goal) }
+      it "increments the completed count corresponding to the goal" do
+        trial.choose!
+        old_completed_count = trial.alternative.completed_count(goal)
+        trial.complete!
+        expect(trial.alternative.completed_count(goal)).to eq(old_completed_count + 1)
       end
-
     end
   end
 

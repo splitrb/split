@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 module Split
   class Trial
+    attr_accessor :goals
     attr_accessor :experiment
     attr_writer :metadata
 
@@ -8,6 +9,7 @@ module Split
       self.experiment   = attrs.delete(:experiment)
       self.alternative  = attrs.delete(:alternative)
       self.metadata  = attrs.delete(:metadata)
+      self.goals = attrs.delete(:goals) || []
 
       @user             = attrs.delete(:user)
       @options          = attrs
@@ -33,7 +35,7 @@ module Split
       end
     end
 
-    def complete!(goals=[], context = nil)
+    def complete!(context = nil)
       if alternative
         if within_conversion_time_frame?
           if Array(goals).empty?
