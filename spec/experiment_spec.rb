@@ -37,7 +37,7 @@ describe Split::Experiment do
 
     it "should save to redis" do
       experiment.save
-      expect(Split.redis.exists('basket_text')).to be true
+      expect(Split.redis.exists?('basket_text')).to be true
     end
 
     it "should save the start time to redis" do
@@ -85,7 +85,7 @@ describe Split::Experiment do
     it "should not create duplicates when saving multiple times" do
       experiment.save
       experiment.save
-      expect(Split.redis.exists('basket_text')).to be true
+      expect(Split.redis.exists?('basket_text')).to be true
       expect(Split.redis.lrange('basket_text', 0, -1)).to eq(['{"Basket":1}', '{"Cart":1}'])
     end
 
@@ -197,7 +197,7 @@ describe Split::Experiment do
       experiment.save
 
       experiment.delete
-      expect(Split.redis.exists('link_color')).to be false
+      expect(Split.redis.exists?('link_color')).to be false
       expect(Split::ExperimentCatalog.find('link_color')).to be_nil
     end
 

@@ -48,7 +48,7 @@ describe Split::GoalsCollection do
       goals_collection.save
 
       goals_collection.delete
-      expect(Split.redis.exists(goals_key)).to be false
+      expect(Split.redis.exists?(goals_key)).to be false
     end
   end
 

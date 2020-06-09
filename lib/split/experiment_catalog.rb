@@ -13,7 +13,7 @@ module Split
     end
 
     def self.find(name)
-      return unless Split.redis.exists(name)
+      return unless Split.redis.exists?(name)
       Experiment.new(name).tap { |exp| exp.load_from_redis }
     end
 
