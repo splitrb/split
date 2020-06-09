@@ -126,7 +126,7 @@ describe Split::Alternative do
 
   it "should save to redis" do
     alternative.save
-    expect(Split.redis.exists('basket_text:Basket')).to be true
+    expect(Split.redis.exists?('basket_text:Basket')).to be true
   end
 
   it "should increment participation count" do
