@@ -414,18 +414,6 @@ describe Split::Experiment do
     end
   end
 
-  describe "#disable_cohorting" do
-    it "saves a new key in redis" do
-      expect(experiment.disable_cohorting).to eq true
-    end
-  end
-
-  describe "#enable_cohorting" do
-    it "saves a new key in redis" do
-      expect(experiment.enable_cohorting).to eq true
-    end
-  end
-
   describe 'changing an existing experiment' do
     def same_but_different_alternative
       Split::ExperimentCatalog.find_or_create('link_color', 'blue', 'yellow', 'orange')
