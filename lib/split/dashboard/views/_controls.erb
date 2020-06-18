@@ -14,7 +14,20 @@
   <form action="<%= url "/reopen?experiment=#{experiment.name}" %>" method='post' onclick="return confirmReopen()">
     <input type="submit" value="Reopen Experiment">
   </form>
+<% else %>
+  <% if experiment.cohorting_disabled? %>
+    <form action="<%= url "/update_cohorting?experiment=#{experiment.name}" %>" method='post' onclick="return confirmEnableCohorting()">
+      <input type="hidden" name="cohorting_action" value="enable">
+      <input type="submit" value="Enable Cohorting" class="green">
+    </form>
+  <% else %>
+    <form action="<%= url "/update_cohorting?experiment=#{experiment.name}" %>" method='post' onclick="return confirmDisableCohorting()">
+      <input type="hidden" name="cohorting_action" value="disable">
+      <input type="submit" value="Disable Cohorting" class="red">
+    </form>
+  <% end %>
 <% end %>
+<span class="divider">|</span>
 <% if experiment.start_time %>
   <form action="<%= url "/reset?experiment=#{experiment.name}" %>" method='post' onclick="return confirmReset()">
     <input type="submit" value="Reset Data">

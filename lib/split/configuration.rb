@@ -20,6 +20,7 @@ module Split
     attr_accessor :on_experiment_reset
     attr_accessor :on_experiment_delete
     attr_accessor :on_before_experiment_reset
+    attr_accessor :on_experiment_winner_choose
     attr_accessor :on_before_experiment_delete
     attr_accessor :include_rails_helper
     attr_accessor :beta_probability_simulations
@@ -217,6 +218,7 @@ module Split
       @on_experiment_delete = proc{|experiment|}
       @on_before_experiment_reset = proc{|experiment|}
       @on_before_experiment_delete = proc{|experiment|}
+      @on_experiment_winner_choose = proc{|experiment|}
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true

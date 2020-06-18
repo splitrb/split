@@ -22,15 +22,16 @@ Gem::Specification.new do |s|
    "mailing_list_uri" => "https://groups.google.com/d/forum/split-ruby"
  }
 
-  s.required_ruby_version = '>= 2.2.2'
+  s.required_ruby_version = '>= 2.5.0'
   s.required_rubygems_version = '>= 2.0.0'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.require_paths = ["lib"]
 
-  s.add_dependency 'redis',           '>= 2.1'
+  s.add_dependency 'redis',           '>= 4.2'
   s.add_dependency 'sinatra',         '>= 1.2.6'
+  s.add_dependency 'rubystats',       '>= 0.3.0'
 
   s.add_development_dependency 'bundler',     '>= 1.17'
   s.add_development_dependency 'simplecov',   '~> 0.15'
@@ -38,6 +39,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake',        '~> 13'
   s.add_development_dependency 'rspec',       '~> 3.7'
   s.add_development_dependency 'pry',         '~> 0.10'
-  s.add_development_dependency 'fakeredis',   '~> 0.7'
   s.add_development_dependency 'rails',       '>= 5.0'
 end

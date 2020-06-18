@@ -1,25 +1,17 @@
 language: ruby
 rvm:
-  - 2.2.2
-  - 2.3.8
-  - 2.4.9
   - 2.5.7
-  - 2.6.5
+  - 2.6.6
+  - 2.7.1
+
+services:
+  - redis-server
 
 gemfile:
   - gemfiles/5.0.gemfile
   - gemfiles/5.1.gemfile
   - gemfiles/5.2.gemfile
   - gemfiles/6.0.gemfile
-
-matrix:
-  exclude:
-  - rvm: 2.2.2
-    gemfile: gemfiles/6.0.gemfile
-  - rvm: 2.3.8
-    gemfile: gemfiles/6.0.gemfile
-  - rvm: 2.4.9
-    gemfile: gemfiles/6.0.gemfile
 
 before_install:
   - gem uninstall -v '>= 2' -i $(rvm gemdir)@global -ax bundler || true

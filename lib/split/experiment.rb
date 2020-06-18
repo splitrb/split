@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require 'rubystats'
+
 module Split
   class Experiment
     attr_accessor :name
@@ -19,22 +22,7 @@ module Split
 
       @name = name.to_s
 
-      alternatives = extract_alternatives_from_options(options)
-
-      if alternatives.empty? && (exp_config = Split.configuration.experiment_for(name))
-        options = {
-          alternatives: load_alternatives_from_configuration,
-          goals: Split::GoalsCollection.new(@name).load_from_configuration,
-          metadata: load_metadata_from_configuration,
-          resettable: exp_config[:resettable],
-          algorithm: exp_config[:algorithm],
-          friendly_name: load_friendly_name_from_configuration
-        }
-      else
-        options[:alternatives] = alternatives
-      end
-
-      set_alternatives_and_options(options)
+      extract_alternatives_from_options(options)
     end
 
     def self.finished_key(key)
@@ -109,7 +97,7 @@ module Split
     end
 
     def new_record?
-      !redis.exists(name)
+      !redis.exists?(name)
     end
 
     def ==(obj)
@@ -159,6 +147,7 @@ module Split
     def winner=(winner_name)
       redis.hset(:experiment_winner, name, winner_name.to_s)
       @has_winner = true
+      Split.configuration.on_experiment_winner_choose.call(self)
     end
 
     def participant_count
@@ -253,7 +242,7 @@ module Split
       end
       reset_winner
       redis.srem(:experiments, name)
-      redis.hdel(experiment_config_key, :cohorting)
+      remove_experiment_cohorting
       remove_experiment_configuration
       Split.configuration.on_experiment_delete.call(self)
       increment_version
@@ -278,6 +267,118 @@ module Split
       set_alternatives_and_options(options)
     end
 
+    def calc_winning_alternatives
+      # Cache the winning alternatives so we recalculate them once per the specified interval.
+      intervals_since_epoch =
+        Time.now.utc.to_i / Split.configuration.winning_alternative_recalculation_interval
+
+      if self.calc_time != intervals_since_epoch
+        if goals.empty?
+          self.estimate_winning_alternative
+        else
+          goals.each do |goal|
+            self.estimate_winning_alternative(goal)
+          end
+        end
+
+        self.calc_time = intervals_since_epoch
+
+        self.save
+      end
+    end
+
+    def estimate_winning_alternative(goal = nil)
+      # initialize a hash of beta distributions based on the alternatives' conversion rates
+      beta_params = calc_beta_params(goal)
+
+      winning_alternatives = []
+
+      Split.configuration.beta_probability_simulations.times do
+        # calculate simulated conversion rates from the beta distributions
+        simulated_cr_hash = calc_simulated_conversion_rates(beta_params)
+
+        winning_alternative = find_simulated_winner(simulated_cr_hash)
+
+        # push the winning pair to the winning_alternatives array
+        winning_alternatives.push(winning_alternative)
+      end
+
+      winning_counts = count_simulated_wins(winning_alternatives)
+
+      @alternative_probabilities = calc_alternative_probabilities(winning_counts, Split.configuration.beta_probability_simulations)
+
+      write_to_alternatives(goal)
+
+      self.save
+    end
+
+    def write_to_alternatives(goal = nil)
+      alternatives.each do |alternative|
+        alternative.set_p_winner(@alternative_probabilities[alternative], goal)
+      end
+    end
+
+    def calc_alternative_probabilities(winning_counts, number_of_simulations)
+      alternative_probabilities = {}
+      winning_counts.each do |alternative, wins|
+        alternative_probabilities[alternative] = wins / number_of_simulations.to_f
+      end
+      return alternative_probabilities
+    end
+
+    def count_simulated_wins(winning_alternatives)
+       # initialize a hash to keep track of winning alternative in simulations
+      winning_counts = {}
+      alternatives.each do |alternative|
+        winning_counts[alternative] = 0
+      end
+      # count number of times each alternative won, calculate probabilities, place in hash
+      winning_alternatives.each do |alternative|
+        winning_counts[alternative] += 1
+      end
+      return winning_counts
+    end
+
+    def find_simulated_winner(simulated_cr_hash)
+      # figure out which alternative had the highest simulated conversion rate
+      winning_pair = ["",0.0]
+      simulated_cr_hash.each do |alternative, rate|
+        if rate > winning_pair[1]
+          winning_pair = [alternative, rate]
+        end
+      end
+      winner = winning_pair[0]
+      return winner
+    end
+
+    def calc_simulated_conversion_rates(beta_params)
+      simulated_cr_hash = {}
+
+      # create a hash which has the conversion rate pulled from each alternative's beta distribution
+      beta_params.each do |alternative, params|
+        alpha = params[0]
+        beta = params[1]
+        simulated_conversion_rate = Rubystats::BetaDistribution.new(alpha, beta).rng
+        simulated_cr_hash[alternative] = simulated_conversion_rate
+      end
+
+      return simulated_cr_hash
+    end
+
+    def calc_beta_params(goal = nil)
+      beta_params = {}
+      alternatives.each do |alternative|
+        conversions = goal.nil? ? alternative.completed_count : alternative.completed_count(goal)
+        alpha = 1 + conversions
+        beta = 1 + alternative.participant_count - conversions
+
+        params = [alpha, beta]
+
+        beta_params[alternative] = params
+      end
+      return beta_params
+    end
+
     def calc_time=(time)
       redis.hset(experiment_config_key, :calc_time, time)
     end
@@ -296,15 +397,19 @@ module Split
     end
 
     def cohorting_disabled?
-      value = redis.hget(experiment_config_key, :cohorting)
-      value.nil? ? false : value.downcase == "true"
+      @cohorting_disabled ||= begin
+        value = redis.hget(experiment_config_key, :cohorting)
+        value.nil? ? false : value.downcase == "true"
+      end
     end
 
     def disable_cohorting
+      @cohorting_disabled = true
       redis.hset(experiment_config_key, :cohorting, true)
     end
 
     def enable_cohorting
+      @cohorting_disabled = false
       redis.hset(experiment_config_key, :cohorting, false)
     end
 
@@ -397,6 +502,11 @@ module Split
 
     def goals_collection
       Split::GoalsCollection.new(@name, @goals)
+    end
+
+    def remove_experiment_cohorting
+      @cohorting_disabled = false
+      redis.hdel(experiment_config_key, :cohorting)
     end
   end
 end

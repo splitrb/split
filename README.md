@@ -397,6 +397,8 @@ Split.configure do |config|
   # before experiment reset or deleted
   config.on_before_experiment_reset  = -> (example) { # Do something on reset }
   config.on_before_experiment_delete = -> (experiment) { # Do something else on delete }
+  # after experiment winner had been set
+  config.on_experiment_winner_choose = -> (experiment) { # Do something on winner choose }
 end
 ```
 

@@ -37,7 +37,7 @@ describe Split::Experiment do
 
     it "should save to redis" do
       experiment.save
-      expect(Split.redis.exists('basket_text')).to be true
+      expect(Split.redis.exists?('basket_text')).to be true
     end
 
     it "should save the start time to redis" do
@@ -85,7 +85,7 @@ describe Split::Experiment do
     it "should not create duplicates when saving multiple times" do
       experiment.save
       experiment.save
-      expect(Split.redis.exists('basket_text')).to be true
+      expect(Split.redis.exists?('basket_text')).to be true
       expect(Split.redis.lrange('basket_text', 0, -1)).to eq(['{"Basket":1}', '{"Cart":1}'])
     end
 
@@ -123,7 +123,7 @@ describe Split::Experiment do
       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :friendly_name => "foo")
       expect(experiment.friendly_name).to eq("foo")
     end
-    
+
     context 'from configuration' do
       let(:experiment_name) { :my_experiment }
       let(:experiments) do
@@ -136,7 +136,7 @@ describe Split::Experiment do
       end
 
       before { Split.configuration.experiments = experiments }
-      
+
       it 'assigns default values to the experiment' do
         expect(Split::Experiment.new(experiment_name).resettable).to eq(true)
       end
@@ -214,7 +214,7 @@ describe Split::Experiment do
       experiment.save
 
       experiment.delete
-      expect(Split.redis.exists('link_color')).to be false
+      expect(Split.redis.exists?('link_color')).to be false
       expect(Split::ExperimentCatalog.find('link_color')).to be_nil
     end
 
@@ -256,10 +256,15 @@ describe Split::Experiment do
   end
 
   describe 'winner=' do
-    it "should allow you to specify a winner" do
+    it 'should allow you to specify a winner' do
       experiment.save
       experiment.winner = 'red'
       expect(experiment.winner.name).to eq('red')
+    end
+
+    it 'should call the on_experiment_winner_choose hook' do
+      expect(Split.configuration.on_experiment_winner_choose).to receive(:call)
+      experiment.winner = 'green'
     end
 
     context 'when has_winner state is memoized' do
@@ -423,18 +428,6 @@ describe Split::Experiment do
     it "returns false when nothing has been configured" do
       experiment.disable_cohorting
       expect(experiment.cohorting_disabled?).to eq true
-    end
-  end
-
-  describe "#disable_cohorting" do
-    it "saves a new key in redis" do
-      expect(experiment.disable_cohorting).to eq true
-    end
-  end
-
-  describe "#enable_cohorting" do
-    it "saves a new key in redis" do
-      expect(experiment.enable_cohorting).to eq true
     end
   end
 
