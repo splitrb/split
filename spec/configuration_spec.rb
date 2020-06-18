@@ -240,6 +240,7 @@ describe Split::Configuration do
       it "should use the ENV variable" do
         ENV['REDIS_URL'] = "env_redis_url"
         expect(Split::Configuration.new.redis).to eq("env_redis_url")
+        ENV.delete('REDIS_URL')
       end
     end
   end
