@@ -4,6 +4,9 @@ rvm:
   - 2.6.6
   - 2.7.1
 
+services:
+  - redis-server
+
 gemfile:
   - gemfiles/5.0.gemfile
   - gemfiles/5.1.gemfile

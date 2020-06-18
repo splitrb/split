@@ -13,17 +13,15 @@ require 'yaml'
 
 Dir['./spec/support/*.rb'].each { |f| require f }
 
-require "fakeredis"
-
-G_fakeredis = Redis.new
-
 module GlobalSharedContext
   extend RSpec::SharedContext
   let(:mock_user){ Split::User.new(double(session: {})) }
+
   before(:each) do
     Split.configuration = Split::Configuration.new
-    Split.redis = G_fakeredis
-    Split.redis.flushall
+    Split.redis = Redis.new
+    Split.redis.select(10)
+    Split.redis.flushdb
     @ab_user = mock_user
     params = nil
   end
