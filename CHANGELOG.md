@@ -1,3 +1,23 @@
+## Unreleased 4.0.0
+
+Bugfixes:
+- ab_test must return metadata on error or if split is disabled/excluded user (@andrehjr, #622)
+- Fix versioned experiments when used with allow_multiple_experiments=control (@andrehjr, #613)
+- Only block Pinterest bot (@huoxito, #606)
+- Respect experiment defaults when loading experiments in initializer. (@mattwd7, #599)
+
+Features:
+- Make goals accessible via on_trial_complete callbacks (@robin-phung, #625)
+- Replace usage of SimpleRandom with RubyStats(Used for Beta Distribution RNG) (@andrehjr, #616)
+- Introduce enable/disable experiment cohorting (@robin-phung, #615)
+- Add on_experiment_winner_choose callback (@GenaMinenkov, #574)
+
+Misc:
+- Drop support for Ruby < 2.5 (@andrehjr, #627)
+- Drop support for Rails < 5 (@andrehkr, #607)
+- Bump minimum required redis to 4.2 (@andrehjr, #628)
+- Removed repeated loading from config (@robin-phung, #619)
+
 ## 3.4.1 (November 12th, 2019)
 
 Bugfixes:
