@@ -35,9 +35,9 @@ module Split
   #      `Redis::DistRedis`, or `Redis::Namespace`.
   def redis=(server)
     @redis = if server.is_a?(String)
-      Redis.new(:url => server, :thread_safe => true)
+      Redis.new(url: server)
     elsif server.is_a?(Hash)
-      Redis.new(server.merge(:thread_safe => true))
+      Redis.new(server)
     elsif server.respond_to?(:smembers)
       server
     else
