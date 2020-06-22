@@ -212,20 +212,6 @@ describe Split::Configuration do
     expect(@config.normalized_experiments).to eq({:my_experiment=>{:alternatives=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}})
   end
 
-  context 'redis_url configuration [DEPRECATED]' do
-    it 'should warn on set and assign to #redis' do
-      expect(@config).to receive(:warn).with(/\[DEPRECATED\]/) { nil }
-      @config.redis_url = 'example_url'
-      expect(@config.redis).to eq('example_url')
-    end
-
-    it 'should warn on get and return #redis' do
-      expect(@config).to receive(:warn).with(/\[DEPRECATED\]/) { nil }
-      @config.redis = 'example_url'
-      expect(@config.redis_url).to eq('example_url')
-    end
-  end
-
   context "redis configuration" do
     it "should default to local redis server" do
       expect(@config.redis).to eq("redis://localhost:6379")

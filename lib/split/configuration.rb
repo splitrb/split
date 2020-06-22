@@ -232,16 +232,6 @@ module Split
       @dashboard_pagination_default_per_page = 10
     end
 
-    def redis_url=(value)
-      warn '[DEPRECATED] `redis_url=` is deprecated in favor of `redis=`'
-      self.redis = value
-    end
-
-    def redis_url
-      warn '[DEPRECATED] `redis_url` is deprecated in favor of `redis`'
-      self.redis
-    end
-
     private
 
     def value_for(hash, key)
