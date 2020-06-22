@@ -17,6 +17,9 @@ Misc:
 - Drop support for Rails < 5 (@andrehkr, #607)
 - Bump minimum required redis to 4.2 (@andrehjr, #628)
 - Removed repeated loading from config (@robin-phung, #619)
+- Simplify RedisInterface usage when persisting Experiment alternatives (@andrehjr, #632)
+- Remove redis_url impl. Deprecated on version 2.2 (@andrehjr, #631)
+- Remove thread_safe config as redis-rb is thread_safe by default (@andrehjr, #630)
 
 ## 3.4.1 (November 12th, 2019)
 
