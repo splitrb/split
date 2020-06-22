@@ -70,20 +70,6 @@ describe Split::RedisInterface do
     end
   end
 
-  describe '#remove_last_item_from_list' do
-    subject(:remove_last_item_from_list) do
-      interface.add_to_list(list_name, 'y')
-      interface.add_to_list(list_name, 'z')
-      interface.remove_last_item_from_list(list_name)
-    end
-
-    specify do
-      remove_last_item_from_list
-      expect(Split.redis.lindex(list_name, 0)).to eq 'y'
-      expect(Split.redis.llen(list_name)).to eq 1
-    end
-  end
-
   describe '#make_list_length' do
     subject(:make_list_length) do
       interface.add_to_list(list_name, 'y')

@@ -31,10 +31,6 @@ module Split
       redis.llen(list_name)
     end
 
-    def remove_last_item_from_list(list_name)
-      redis.rpop(list_name)
-    end
-
     def make_list_length(list_name, new_length)
       redis.ltrim(list_name, 0, new_length - 1)
     end
