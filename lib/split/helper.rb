@@ -32,8 +32,8 @@ module Split
       end
 
       if block_given?
-        metadata = trial ? trial.metadata : {}
-        yield(alternative, metadata)
+        metadata = experiment.metadata[alternative] if experiment.metadata
+        yield(alternative, metadata || {})
       else
         alternative
       end

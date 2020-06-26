@@ -91,9 +91,11 @@ module Split
         end
       end
 
-      @user[@experiment.key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || (new_participant && @experiment.cohorting_disabled?)
+      new_participant_and_cohorting_disabled = new_participant && @experiment.cohorting_disabled?
+
+      @user[@experiment.key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || new_participant_and_cohorting_disabled
       @alternative_choosen = true
-      run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled? || (new_participant && @experiment.cohorting_disabled?) 
+      run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled? || new_participant_and_cohorting_disabled
       alternative
     end
 

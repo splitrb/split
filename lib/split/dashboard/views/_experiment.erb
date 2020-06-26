@@ -4,6 +4,7 @@
   <% experiment_class = "experiment" %>
 <% end %>
 
+<% experiment.calc_winning_alternatives %>
 <%
   extra_columns = []
   experiment.alternatives.each do |alternative|
@@ -53,7 +54,14 @@
       <% extra_columns.each do |column| %>
         <th><%= column %></th>
       <% end %>
-      <th>Confidence</th>
+      <th>
+        <form>
+          <select id="dropdown-<%=experiment.jstring(goal)%>" name="dropdown-<%=experiment.jstring(goal)%>">
+            <option value="confidence-<%=experiment.jstring(goal)%>">Confidence</option>
+            <option value="probability-<%=experiment.jstring(goal)%>">Probability of being Winner</option>
+          </select>
+        </form>
+      </th>
       <th>Finish</th>
     </tr>
 
@@ -87,6 +95,15 @@
             <% end  %>
           <% end %>
         </td>
+        <script type="text/javascript" id="sourcecode">
+            $(document).ready(function(){
+                $('.probability-<%=experiment.jstring(goal)%>').hide();
+                $('#dropdown-<%=experiment.jstring(goal)%>').change(function() {
+                    $('.box-<%=experiment.jstring(goal)%>').hide();
+                    $('.' + $(this).val()).show();
+                });
+            });
+        </script>
         <% extra_columns.each do |column| %>
           <td><%= alternative.extra_info && alternative.extra_info[column] %></td>
         <% end %>
@@ -94,6 +111,9 @@
           <div class="box-<%=experiment.jstring(goal)%> confidence-<%=experiment.jstring(goal)%>">
             <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
             <br>
+          </div>
+          <div class="box-<%=experiment.jstring(goal)%> probability-<%=experiment.jstring(goal)%>">
+            <span title="p_winner: <%= round(alternative.p_winner(goal), 3) %>"><%= number_to_percentage(round(alternative.p_winner(goal), 3)) %>%</span>
           </div>
         </td>
         <td>

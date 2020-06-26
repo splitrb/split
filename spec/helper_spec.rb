@@ -229,18 +229,30 @@ describe Split::Helper do
 
       context "when user already has experiment" do
         let(:mock_user){ Split::User.new(self, {'test_0' => 'test-alt'}) }
-        before{
+
+        before do
           Split.configure do |config|
             config.allow_multiple_experiments = 'control'
           end
+
           Split::ExperimentCatalog.find_or_initialize('test_0', 'control', 'test-alt').save
           Split::ExperimentCatalog.find_or_initialize('test_1', 'control', 'test-alt').save
-        }
+        end
 
         it "should restore previously selected alternative" do
           expect(ab_user.active_experiments.size).to eq 1
           expect(ab_test(:test_0, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
           expect(ab_test(:test_0, {'control' => 1}, {"test-alt" => 100})).to eq 'test-alt'
+        end
+
+        it "should select the correct alternatives after experiment resets" do
+          experiment = Split::ExperimentCatalog.find(:test_0)
+          experiment.reset
+          mock_user[experiment.key] = 'test-alt'
+
+          expect(ab_user.active_experiments.size).to eq 1
+          expect(ab_test(:test_0, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
+          expect(ab_test(:test_0, {'control' => 0}, {"test-alt" => 100})).to eq 'test-alt'
         end
 
         it "lets override existing choice" do
@@ -289,33 +301,63 @@ describe Split::Helper do
   end
 
   describe 'metadata' do
-    before do
-      Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => ["one", "two"],
-          :resettable => false,
-          :metadata => { 'one' => 'Meta1', 'two' => 'Meta2' }
+    context 'is defined' do
+      before do
+        Split.configuration.experiments = {
+          :my_experiment => {
+            :alternatives => ["one", "two"],
+            :resettable => false,
+            :metadata => { 'one' => 'Meta1', 'two' => 'Meta2' }
+          }
         }
-      }
-    end
-
-    it 'should be passed to helper block' do
-      @params = { 'ab_test' => { 'my_experiment' => 'one' } }
-      expect(ab_test('my_experiment')).to eq 'one'
-      expect(ab_test('my_experiment') do |alternative, meta|
-        meta
-      end).to eq('Meta1')
-    end
-
-    it 'should pass empty hash to helper block if library disabled' do
-      Split.configure do |config|
-        config.enabled = false
       end
 
-      expect(ab_test('my_experiment')).to eq 'one'
-      expect(ab_test('my_experiment') do |_, meta|
-        meta
-      end).to eq({})
+      it 'should be passed to helper block' do
+        @params = { 'ab_test' => { 'my_experiment' => 'two' } }
+        expect(ab_test('my_experiment')).to eq 'two'
+        expect(ab_test('my_experiment') do |alternative, meta|
+          meta
+        end).to eq('Meta2')
+      end
+
+      it 'should pass control metadata helper block if library disabled' do
+        Split.configure do |config|
+          config.enabled = false
+        end
+
+        expect(ab_test('my_experiment')).to eq 'one'
+        expect(ab_test('my_experiment') do |_, meta|
+          meta
+        end).to eq('Meta1')
+      end
+    end
+
+    context 'is not defined' do
+      before do
+        Split.configuration.experiments = {
+          :my_experiment => {
+            :alternatives => ["one", "two"],
+            :resettable => false,
+            :metadata => nil
+          }
+        }
+      end
+
+      it 'should be passed to helper block' do
+        expect(ab_test('my_experiment') do |alternative, meta|
+          meta
+        end).to eq({})
+      end
+
+      it 'should pass control metadata helper block if library disabled' do
+        Split.configure do |config|
+          config.enabled = false
+        end
+
+        expect(ab_test('my_experiment') do |_, meta|
+          meta
+        end).to eq({})
+      end
     end
   end
 
