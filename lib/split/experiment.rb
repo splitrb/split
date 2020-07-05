@@ -464,7 +464,12 @@ module Split
       redis_interface.add_to_set(:experiments, name)
       redis_interface.persist_list(name, @alternatives.map{|alt| {alt.name => alt.weight}.to_json})
       goals_collection.save
-      redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
+
+      if @metadata
+        redis.set(metadata_key, @metadata.to_json)
+      else
+        delete_metadata
+      end
     end
 
     def remove_experiment_configuration
