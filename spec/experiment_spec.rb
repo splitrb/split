@@ -151,10 +151,23 @@ describe Split::Experiment do
 
     describe '#metadata' do
       let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash, :metadata => meta) }
+      let(:meta) { { a: 'b' }}
+
+      before do
+        experiment.save
+      end
+
+      it "should delete the key when metadata is removed" do
+        experiment.metadata = nil
+        experiment.save
+
+        expect(Split.redis.exists?(experiment.metadata_key)).to be_falsey
+      end
+
       context 'simple hash' do
         let(:meta) {  { 'basket' => 'a', 'cart' => 'b' } }
+
         it "should persist metadata in redis" do
-          experiment.save
           e = Split::ExperimentCatalog.find('basket_text')
           expect(e).to eq(experiment)
           expect(e.metadata).to eq(meta)
@@ -164,7 +177,6 @@ describe Split::Experiment do
       context 'nested hash' do
         let(:meta) {  { 'basket' => { 'one' => 'two' }, 'cart' => 'b' } }
         it "should persist metadata in redis" do
-          experiment.save
           e = Split::ExperimentCatalog.find('basket_text')
           expect(e).to eq(experiment)
           expect(e.metadata).to eq(meta)
@@ -434,6 +446,21 @@ describe Split::Experiment do
       expect(same_experiment.version).to eq(1)
       same_experiment_again = same_but_different_alternative
       expect(same_experiment_again.version).to eq(1)
+    end
+
+    context "when metadata is changed" do
+      it "should increase version" do
+        experiment.save
+        experiment.metadata = { 'foo' => 'bar' }
+
+        expect { experiment.save }.to change { experiment.version }.by(1)
+      end
+
+      it "does not increase version" do
+        experiment.metadata = nil
+        experiment.save
+        expect { experiment.save }.to change { experiment.version }.by(0)
+      end
     end
 
     context 'when experiment configuration is changed' do
