@@ -263,7 +263,7 @@ Split.configure do |config|
 end
 ```
 
-By default, cookies will expire in 1 year. To change that, set the `persistence_cookie_length` in the configuration (unit of time in seconds).
+When using the cookie persistence, Split stores data into an anonymous tracking cookie named 'split', which expires in 1 year. To change that, set the `persistence_cookie_length` in the configuration (unit of time in seconds).
 
 ```ruby
 Split.configure do |config|
@@ -271,6 +271,8 @@ Split.configure do |config|
   config.persistence_cookie_length = 2592000 # 30 days
 end
 ```
+
+The data stored consists of the experiment name and the variants the user is in. Example: { "experiment_name" => "variant_a" }
 
 __Note:__ Using cookies depends on `ActionDispatch::Cookies` or any identical API
 
