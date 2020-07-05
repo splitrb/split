@@ -29,7 +29,7 @@ Layout/EndAlignment:
   AutoCorrect: true
 
 Layout/EmptyLineAfterMagicComment:
-  Enabled: false
+  Enabled: true
 
 Layout/EmptyLinesAroundAccessModifier:
   Enabled: true

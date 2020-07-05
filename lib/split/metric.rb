@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   class Metric
     attr_accessor :name

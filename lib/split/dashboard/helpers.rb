@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   module DashboardHelpers
     def h(text)

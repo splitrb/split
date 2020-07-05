@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "split/helper"
 
 # Split's helper exposes all kinds of methods we don't want to

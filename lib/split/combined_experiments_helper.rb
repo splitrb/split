@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   module CombinedExperimentsHelper
     def ab_combined_test(metric_descriptor, control = nil, *alternatives)

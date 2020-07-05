@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   module Helper
     OVERRIDE_PARAM_NAME = "ab_test"

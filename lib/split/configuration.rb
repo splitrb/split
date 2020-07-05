@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   class Configuration
     attr_accessor :ignore_ip_addresses

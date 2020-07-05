@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   class DashboardPaginator
     def initialize(collection, page_number, per)

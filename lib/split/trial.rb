@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   class Trial
     attr_accessor :goals

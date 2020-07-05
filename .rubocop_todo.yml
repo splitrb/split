@@ -18,11 +18,6 @@ Layout/ElseAlignment:
   Exclude:
     - 'lib/split/experiment.rb'
 
-# Offense count: 30
-# Cop supports --auto-correct.
-Layout/EmptyLineAfterMagicComment:
-  Enabled: false
-
 # Offense count: 14
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.
