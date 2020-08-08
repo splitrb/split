@@ -6,8 +6,16 @@ require 'split/dashboard'
 describe Split::Dashboard do
   include Rack::Test::Methods
 
+  class TestDashboard < Split::Dashboard
+    include Split::Helper
+
+    get '/my_experiment' do
+      ab_test(params[:experiment], 'blue', 'red')
+    end
+  end
+
   def app
-    @app ||= Split::Dashboard
+    @app ||= TestDashboard
   end
 
   def link(color)
@@ -90,8 +98,17 @@ describe Split::Dashboard do
       it "should set current user's alternative" do
         blue_link.participant_count = 7
         post "/force_alternative?experiment=#{experiment.name}", alternative: "blue"
-        expect(user[experiment.key]).to eq("blue")
-        expect(blue_link.participant_count).to eq(8)
+
+        get "/my_experiment?experiment=#{experiment.name}"
+        expect(last_response.body).to include("blue")
+      end
+
+      it "should not modify an existing user" do
+        blue_link.participant_count = 7
+        post "/force_alternative?experiment=#{experiment.name}", alternative: "blue"
+
+        expect(user[experiment.key]).to eq("red")
+        expect(blue_link.participant_count).to eq(7)
       end
     end
 
@@ -108,8 +125,9 @@ describe Split::Dashboard do
       it "should set current user's alternative" do
         blue_link.participant_count = 7
         post "/force_alternative?experiment=#{experiment.name}", alternative: "blue"
-        expect(user[experiment.key]).to eq("blue")
-        expect(blue_link.participant_count).to eq(8)
+
+        get "/my_experiment?experiment=#{experiment.name}"
+        expect(last_response.body).to include("blue")
       end
     end
   end
