@@ -36,8 +36,11 @@ module Split
     post '/force_alternative' do
       experiment = Split::ExperimentCatalog.find(params[:experiment])
       alternative = Split::Alternative.new(params[:alternative], experiment.name)
-      alternative.increment_participation
-      Split::User.new(self)[experiment.key] = alternative.name
+
+      cookies = JSON.parse(request.cookies['split_override']) rescue {}
+      cookies[experiment.name] = alternative.name
+      response.set_cookie('split_override', { value: cookies.to_json, path: '/' })
+
       redirect url('/')
     end
 

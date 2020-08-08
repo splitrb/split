@@ -76,6 +76,7 @@ module Split
 
       if experiments.any?
         experiments.each do |experiment|
+          next if override_present?(experiment.key)
           finish_experiment(experiment, options.merge(:goals => goals))
         end
       end
@@ -111,13 +112,25 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
-
     def override_present?(experiment_name)
-      override_alternative(experiment_name)
+      override_alternative_by_params(experiment_name) || override_alternative_by_cookies(experiment_name)
     end
 
     def override_alternative(experiment_name)
+      override_alternative_by_params(experiment_name) || override_alternative_by_cookies(experiment_name)
+    end
+
+    def override_alternative_by_params(experiment_name)
       defined?(params) && params[OVERRIDE_PARAM_NAME] && params[OVERRIDE_PARAM_NAME][experiment_name]
+    end
+
+    def override_alternative_by_cookies(experiment_name)
+      return unless defined?(request)
+
+      if request.cookies && request.cookies.key?('split_override')
+        experiments = JSON.parse(request.cookies['split_override']) rescue {}
+        experiments[experiment_name]
+      end
     end
 
     def split_generically_disabled?
