@@ -7,14 +7,14 @@ require 'split/dashboard'
 describe Split::Dashboard do
   include Rack::Test::Methods
 
-  class Split::Dashboard
+  class Split::Dashboard::Web
     get '/my_experiment' do
       [200, {}, [ ab_test(params['experiment'], 'blue', 'red') ]]
     end
   end
 
   def app
-    @app ||= Split::Dashboard
+    @app ||= Split::Dashboard.new
   end
 
   def link(color)

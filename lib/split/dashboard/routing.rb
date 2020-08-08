@@ -14,10 +14,6 @@ module Split
         mod.extend(ClassMethods)
       end
 
-      def call(env)
-        self.class.call(env)
-      end
-
       module ClassMethods
         def call(env)
           route = route_for(env["REQUEST_METHOD"], env["PATH_INFO"])
@@ -49,6 +45,7 @@ module Split
         end
 
         def route_for(method, path)
+          path = '/' if path.empty?
           key = [method, path]
           routes[key]
         end
