@@ -175,7 +175,7 @@ module Split
     end
 
     def normalize_alternatives(alternatives)
-      given_probability, num_with_probability = alternatives.inject([0,0]) do |a,v|
+      given_probability, num_with_probability = alternatives.inject([0, 0]) do |a, v|
         p, n = a
         if percent = value_for(v, :percent)
           [p + percent, n + 1]

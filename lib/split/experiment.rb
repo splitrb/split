@@ -45,7 +45,7 @@ module Split
 
       if alts.length == 1
         if alts[0].is_a? Hash
-          alts = alts[0].map{|k,v| {k => v} }
+          alts = alts[0].map{|k, v| {k => v} }
         end
       end
 
@@ -148,7 +148,7 @@ module Split
     end
 
     def participant_count
-      alternatives.inject(0){|sum,a| sum + a.participant_count}
+      alternatives.inject(0){|sum, a| sum + a.participant_count}
     end
 
     def control
@@ -333,7 +333,7 @@ module Split
 
     def find_simulated_winner(simulated_cr_hash)
       # figure out which alternative had the highest simulated conversion rate
-      winning_pair = ["",0.0]
+      winning_pair = ["", 0.0]
       simulated_cr_hash.each do |alternative, rate|
         if rate > winning_pair[1]
           winning_pair = [alternative, rate]

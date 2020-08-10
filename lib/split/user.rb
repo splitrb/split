@@ -29,7 +29,7 @@ module Split
       if Split.configuration.allow_multiple_experiments == 'control'
         experiments = active_experiments
         experiment_key_without_version = key_without_version(experiment_key)
-        count_control = experiments.count {|k,v| k == experiment_key_without_version || v == 'control'}
+        count_control = experiments.count {|k, v| k == experiment_key_without_version || v == 'control'}
         experiments.size > count_control
       else
         !Split.configuration.allow_multiple_experiments &&

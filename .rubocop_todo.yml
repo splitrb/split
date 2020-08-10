@@ -96,17 +96,6 @@ Layout/IndentationWidth:
     - 'lib/split/trial.rb'
     - 'lib/split/user.rb'
 
-# Offense count: 10
-# Cop supports --auto-correct.
-Layout/SpaceAfterComma:
-  Exclude:
-    - 'lib/split/algorithms/weighted_sample.rb'
-    - 'lib/split/configuration.rb'
-    - 'lib/split/encapsulated_helper.rb'
-    - 'lib/split/experiment.rb'
-    - 'lib/split/metric.rb'
-    - 'lib/split/user.rb'
-
 # Offense count: 4
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.
