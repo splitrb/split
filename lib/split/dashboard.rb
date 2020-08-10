@@ -1,89 +1,40 @@
 # frozen_string_literal: true
 
-require 'sinatra/base'
 require 'split'
-require 'bigdecimal'
-require 'split/dashboard/helpers'
-require 'split/dashboard/pagination_helpers'
+require 'split/dashboard/web'
 
 module Split
-  class Dashboard < Sinatra::Base
-    dir = File.dirname(File.expand_path(__FILE__))
-
-    set :views,  "#{dir}/dashboard/views"
-    set :public_folder, "#{dir}/dashboard/public"
-    set :static, true
-    set :method_override, true
-
-    helpers Split::DashboardHelpers
-    helpers Split::DashboardPaginationHelpers
-
-    get '/' do
-      # Display experiments without a winner at the top of the dashboard
-      @experiments = Split::ExperimentCatalog.all_active_first
-
-      @metrics = Split::Metric.all
-
-      # Display Rails Environment mode (or Rack version if not using Rails)
-      if Object.const_defined?('Rails')
-        @current_env = Rails.env.titlecase
-      else
-        @current_env = "Rack: #{Rack.version}"
+  class Dashboard
+    class << self
+      def middlewares
+        @middlewares ||= []
       end
-      erb :index
-    end
 
-    post '/force_alternative' do
-      experiment = Split::ExperimentCatalog.find(params[:experiment])
-      alternative = Split::Alternative.new(params[:alternative], experiment.name)
-
-      cookies = JSON.parse(request.cookies['split_override']) rescue {}
-      cookies[experiment.name] = alternative.name
-      response.set_cookie('split_override', { value: cookies.to_json, path: '/' })
-
-      redirect url('/')
-    end
-
-    post '/experiment' do
-      @experiment = Split::ExperimentCatalog.find(params[:experiment])
-      @alternative = Split::Alternative.new(params[:alternative], params[:experiment])
-      @experiment.winner = @alternative.name
-      redirect url('/')
-    end
-
-    post '/start' do
-      @experiment = Split::ExperimentCatalog.find(params[:experiment])
-      @experiment.start
-      redirect url('/')
-    end
-
-    post '/reset' do
-      @experiment = Split::ExperimentCatalog.find(params[:experiment])
-      @experiment.reset
-      redirect url('/')
-    end
-
-    post '/reopen' do
-      @experiment = Split::ExperimentCatalog.find(params[:experiment])
-      @experiment.reset_winner
-      redirect url('/')
-    end
-
-    post '/update_cohorting' do
-      @experiment = Split::ExperimentCatalog.find(params[:experiment])
-      case params[:cohorting_action].downcase
-      when "enable"
-        @experiment.enable_cohorting
-      when "disable"
-        @experiment.disable_cohorting
+      def use(*middleware_args, &block)
+        middlewares << [middleware_args, block]
       end
-      redirect url('/')
     end
 
-    delete '/experiment' do
-      @experiment = Split::ExperimentCatalog.find(params[:experiment])
-      @experiment.delete
-      redirect url('/')
+    def self.call(env)
+      @dashboard ||= new
+      @dashboard.call(env)
+    end
+
+    def call(env)
+      app.call(env)
+    end
+
+    def app
+      @app ||= begin
+        middlewares = self.class.middlewares
+
+        Rack::Builder.new do
+          use Rack::MethodOverride
+          run Split::Dashboard::Web
+
+          middlewares.each { |middleware, block| use(*middleware, &block) }
+        end
+      end
     end
   end
 end
