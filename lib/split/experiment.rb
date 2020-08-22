@@ -431,15 +431,7 @@ module Split
     end
 
     def load_alternatives_from_redis
-      alternatives = case redis.type(@name)
-                     when 'set' # convert legacy sets to lists
-                       alts = redis.smembers(@name)
-                       redis.del(@name)
-                       alts.reverse.each {|a| redis.lpush(@name, a) }
-                       redis.lrange(@name, 0, -1)
-                     else
-                       redis.lrange(@name, 0, -1)
-                     end
+      alternatives = redis.lrange(@name, 0, -1)
       alternatives.map do |alt|
         alt = begin
                 JSON.parse(alt)
