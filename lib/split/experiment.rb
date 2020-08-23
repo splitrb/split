@@ -80,8 +80,8 @@ module Split
         persist_experiment_configuration
       end
 
-      redis.hset(experiment_config_key, :resettable, resettable)
-      redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
+      redis.hset(experiment_config_key, :resettable, resettable,
+                                        :algorithm, algorithm.to_s)
       self
     end
 
