@@ -11,7 +11,7 @@ module Split
     end
 
     def path_prefix
-      request.script_name
+      request.env['SCRIPT_NAME']
     end
 
     def number_to_percentage(number, precision = 2)
