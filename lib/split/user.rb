@@ -8,7 +8,7 @@ module Split
     def_delegators :@user, :keys, :[], :[]=, :delete
     attr_reader :user
 
-    def initialize(context, adapter=nil)
+    def initialize(context, adapter = nil)
       @user = adapter || Split::Persistence.adapter.new(context)
       @cleaned_up = false
     end
@@ -52,6 +52,16 @@ module Split
         end
       end
       experiment_pairs
+    end
+
+    def self.find(user_id, adapter)
+      adapter = adapter.is_a?(Symbol) ? Split::Persistence::ADAPTERS[adapter] : adapter
+
+      if adapter.respond_to?(:find)
+        User.new(nil, adapter.find(user_id))
+      else
+        nil
+      end
     end
 
     private

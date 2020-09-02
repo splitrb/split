@@ -40,6 +40,10 @@ module Split
         Split.redis.hkeys(redis_key)
       end
 
+      def self.find(user_id)
+        new(nil, user_id)
+      end
+
       def self.with_config(options={})
         self.config.merge!(options)
         self
