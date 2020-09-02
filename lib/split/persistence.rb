@@ -8,8 +8,10 @@ module Split
     require 'split/persistence/session_adapter'
 
     ADAPTERS = {
-      :cookie => Split::Persistence::CookieAdapter,
-      :session => Split::Persistence::SessionAdapter
+      cookie: Split::Persistence::CookieAdapter,
+      session: Split::Persistence::SessionAdapter,
+      redis: Split::Persistence::RedisAdapter,
+      dual_adapter: Split::Persistence::DualAdapter
     }.freeze
 
     def self.adapter

@@ -60,6 +60,15 @@ describe Split::Persistence::RedisAdapter do
     end
   end
 
+  describe '#find' do
+    before { Split::Persistence::RedisAdapter.with_config(:lookup_by => proc{'frag'}, :namespace => 'a_namespace') }
+
+    it "should create and user from a given key" do
+      adapter = Split::Persistence::RedisAdapter.find(2)
+      expect(adapter.redis_key).to eq("a_namespace:2")
+    end
+  end
+
   context 'functional tests' do
     before { Split::Persistence::RedisAdapter.with_config(:lookup_by => 'lookup') }
 
