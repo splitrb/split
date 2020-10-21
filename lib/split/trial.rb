@@ -15,7 +15,7 @@ module Split
       @user             = attrs.delete(:user)
       @options          = attrs
 
-      @alternative_choosen = false
+      @alternative_chosen = false
     end
 
     def metadata
@@ -54,7 +54,7 @@ module Split
     def choose!(context = nil)
       @user.cleanup_old_experiments!
       # Only run the process once
-      return alternative if @alternative_choosen
+      return alternative if @alternative_chosen
 
       new_participant = @user[@experiment.key].nil?
       if override_is_alternative?
@@ -91,7 +91,7 @@ module Split
       new_participant_and_cohorting_disabled = new_participant && @experiment.cohorting_disabled?
 
       @user[@experiment.key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || new_participant_and_cohorting_disabled
-      @alternative_choosen = true
+      @alternative_chosen = true
       run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled? || new_participant_and_cohorting_disabled
       alternative
     end
