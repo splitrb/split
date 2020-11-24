@@ -128,11 +128,13 @@ module Split
     end
 
     def winner
-      experiment_winner = redis.hget(:experiment_winner, name)
-      if experiment_winner
-        Split::Alternative.new(experiment_winner, name)
-      else
-        nil
+      Split.cache(:experiment_winner, name) do
+        experiment_winner = redis.hget(:experiment_winner, name)
+        if experiment_winner
+          Split::Alternative.new(experiment_winner, name)
+        else
+          nil
+        end
       end
     end
 
@@ -165,13 +167,15 @@ module Split
     end
 
     def start_time
-      t = redis.hget(:experiment_start_times, @name)
-      if t
-        # Check if stored time is an integer
-        if t =~ /^[-+]?[0-9]+$/
-          Time.at(t.to_i)
-        else
-          Time.parse(t)
+      Split.cache(:experiment_start_times, @name) do
+        t = redis.hget(:experiment_start_times, @name)
+        if t
+          # Check if stored time is an integer
+          if t =~ /^[-+]?[0-9]+$/
+            Time.at(t.to_i)
+          else
+            Time.parse(t)
+          end
         end
       end
     end
