@@ -29,6 +29,7 @@ module Split
     attr_accessor :redis
     attr_accessor :dashboard_pagination_default_per_page
     attr_accessor :cache
+    attr_accessor :disable_metrics
 
     attr_reader :experiments
 

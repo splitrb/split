@@ -38,6 +38,8 @@ module Split
     end
 
     def self.find(name)
+      return if Split.configuration.disable_metrics
+
       name = name.intern if name.is_a?(String)
       metric = load_from_configuration(name)
       metric = load_from_redis(name) if metric.nil?
