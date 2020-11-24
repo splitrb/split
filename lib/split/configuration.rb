@@ -28,6 +28,7 @@ module Split
     attr_accessor :winning_alternative_recalculation_interval
     attr_accessor :redis
     attr_accessor :dashboard_pagination_default_per_page
+    attr_accessor :cache_catalog
 
     attr_reader :experiments
 

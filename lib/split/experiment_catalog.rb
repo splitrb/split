@@ -15,7 +15,7 @@ module Split
 
     def self.find(name)
       @cache ||= {}
-      return @cache[name] if @cache[name]
+      return @cache[name] if @cache[name] && Split.configuration.cache_catalog
 
       return unless Split.redis.exists?(name)
       @cache[name] = Experiment.new(name).tap { |exp| exp.load_from_redis }

@@ -221,7 +221,6 @@ describe Split::Dashboard do
   it "should delete an experiment" do
     delete "/experiment?experiment=#{experiment.name}"
     expect(last_response).to be_redirect
-    Split::ExperimentCatalog.clear_cache
     expect(Split::ExperimentCatalog.find(experiment.name)).to be_nil
   end
 
