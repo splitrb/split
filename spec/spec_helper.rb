@@ -22,6 +22,7 @@ module GlobalSharedContext
     Split.redis = Redis.new
     Split.redis.select(10)
     Split.redis.flushdb
+    Split::ExperimentCatalog.clear_cache
     @ab_user = mock_user
     params = nil
   end

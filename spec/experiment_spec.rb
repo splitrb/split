@@ -530,6 +530,7 @@ describe Split::Experiment do
 
       it "should reset an experiment if it is loaded with different goals" do
         same_but_different_goals
+        Split::ExperimentCatalog.clear_cache
         expect(Split::ExperimentCatalog.find("link_color").goals).to eq(["purchase", "refund"])
       end
 
