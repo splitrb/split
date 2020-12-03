@@ -49,9 +49,5 @@ module Split
       return experiment_name, goals
     end
     private_class_method :normalize_experiment
-
-    def self.clear_cache
-      @cache = {}
-    end
   end
 end
