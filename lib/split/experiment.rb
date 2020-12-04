@@ -476,9 +476,10 @@ module Split
     end
 
     def experiment_configuration_has_changed?
-      existing_alternatives = load_alternatives_from_redis
-      existing_goals = Split::GoalsCollection.new(@name).load_from_redis
-      existing_metadata = load_metadata_from_redis
+      existing_experiment = ExperimentCatalog.find(@name)
+      existing_alternatives = existing_experiment.alternatives
+      existing_goals = existing_experiment.goals
+      existing_metadata = existing_experiment.metadata
       existing_alternatives.map(&:to_s) != @alternatives.map(&:to_s) ||
         existing_goals != @goals ||
         existing_metadata != @metadata
