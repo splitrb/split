@@ -756,7 +756,7 @@ split_config = YAML.load_file(Rails.root.join('config', 'split.yml'))
 Split.redis = split_config[Rails.env]
 ```
 
-### Redis Caching
+### Redis Caching (v4.0+)
 
 In some high-volume usage scenarios, Redis load can be incurred by repeated 
 fetches for fairly static data.  Enabling caching will reduce this load, but 
