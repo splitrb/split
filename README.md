@@ -756,6 +756,21 @@ split_config = YAML.load_file(Rails.root.join('config', 'split.yml'))
 Split.redis = split_config[Rails.env]
 ```
 
+### Redis Caching
+
+In some high-volume usage scenarios, Redis load can be incurred by repeated 
+fetches for fairly static data.  Enabling caching will reduce this load, but 
+require a restart for changes to experiment definitions to take effect.
+
+ ```ruby
+Split.configuration.cache = true
+````
+
+This currently caches:
+  - `Split::ExperimentCatalog.find`
+  - `Split::Experiment.start_time`
+  - `Split::Experiment.winner`
+
 ## Namespaces
 
 If you're running multiple, separate instances of Split you may want

@@ -6,6 +6,7 @@ require 'split/algorithms/block_randomization'
 require 'split/algorithms/weighted_sample'
 require 'split/algorithms/whiplash'
 require 'split/alternative'
+require 'split/cache'
 require 'split/configuration'
 require 'split/encapsulated_helper'
 require 'split/exceptions'
@@ -64,6 +65,10 @@ module Split
   def configure
     self.configuration ||= Configuration.new
     yield(configuration)
+  end
+
+  def cache(namespace, key, &block)
+    Split::Cache.fetch(namespace, key, &block)
   end
 end
 
