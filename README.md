@@ -759,8 +759,7 @@ Split.redis = split_config[Rails.env]
 ### Redis Caching
 
 In some high-volume usage scenarios, Redis load can be incurred by repeated 
-fetches for fairly static data.  Enabling caching will reduce this load, but 
-require a restart for changes to experiment definitions to take effect.
+fetches for fairly static data.  Enabling caching will reduce this load.
 
  ```ruby
 Split.configuration.cache = true
