@@ -45,6 +45,5 @@ module Split
       return experiment_name, goals
     end
     private_class_method :normalize_experiment
-
   end
 end
