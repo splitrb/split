@@ -18,5 +18,11 @@ module Split
 
       @cache[namespace][key] = yield
     end
+
+    def self.clear_key(key)
+      @cache&.keys&.each do |namespace|
+        @cache[namespace]&.delete(key)
+      end
+    end
   end
 end

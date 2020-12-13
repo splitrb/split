@@ -21,6 +21,20 @@ describe Split::Cache do
     end
   end
 
+  describe 'clear_key' do
+    before { Split.configuration.cache = true }
+
+    it 'clears the cache' do
+      expect(Time).to receive(:now).and_return(now).exactly(3).times
+      Split::Cache.fetch(namespace, :key1) { Time.now }
+      Split::Cache.fetch(namespace, :key2) { Time.now }
+      Split::Cache.clear_key(:key1)
+
+      Split::Cache.fetch(namespace, :key1) { Time.now }
+      Split::Cache.fetch(namespace, :key2) { Time.now }
+    end
+  end
+
   describe 'fetch' do
 
     subject { Split::Cache.fetch(namespace, key) { Time.now } }
