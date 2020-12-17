@@ -5,12 +5,15 @@ Bugfixes:
 - Fix versioned experiments when used with allow_multiple_experiments=control (@andrehjr, #613)
 - Only block Pinterest bot (@huoxito, #606)
 - Respect experiment defaults when loading experiments in initializer. (@mattwd7, #599)
+- Removes metadata key when it updated to nil (@andrehjr, #633)
 
 Features:
 - Make goals accessible via on_trial_complete callbacks (@robin-phung, #625)
 - Replace usage of SimpleRandom with RubyStats(Used for Beta Distribution RNG) (@andrehjr, #616)
 - Introduce enable/disable experiment cohorting (@robin-phung, #615)
 - Add on_experiment_winner_choose callback (@GenaMinenkov, #574)
+- Add Split::Cache to reduce load on Redis (@rdh, #648)
+- Caching based optimization in the experiment#save path (@amangup, #652)
 
 Misc:
 - Drop support for Ruby < 2.5 (@andrehjr, #627)
@@ -20,6 +23,10 @@ Misc:
 - Simplify RedisInterface usage when persisting Experiment alternatives (@andrehjr, #632)
 - Remove redis_url impl. Deprecated on version 2.2 (@andrehjr, #631)
 - Remove thread_safe config as redis-rb is thread_safe by default (@andrehjr, #630)
+- Fix typo of in `Split::Trial` class variable (TomasBarry, #644)
+- Single HSET to update values, instead of multiple ones (@andrehjr, #640)
+- Remove 'set' parsing for alternatives. Sets were used as storage and deprecated on 0.x (@andrehjr, #639)
+- Adding documentation related to what is stored on cookies. (@andrehjr, #634)
 
 ## 3.4.1 (November 12th, 2019)
 
