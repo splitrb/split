@@ -1,4 +1,4 @@
-## Unreleased 4.0.0
+## 4.0.0.pre
 
 Bugfixes:
 - ab_test must return metadata on error or if split is disabled/excluded user (@andrehjr, #622)
