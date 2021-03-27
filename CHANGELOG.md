@@ -6,6 +6,7 @@ Bugfixes:
 - Only block Pinterest bot (@huoxito, #606)
 - Respect experiment defaults when loading experiments in initializer. (@mattwd7, #599)
 - Removes metadata key when it updated to nil (@andrehjr, #633)
+- Force experiment does not count for metrics (@andrehjr, #637)
 
 Features:
 - Make goals accessible via on_trial_complete callbacks (@robin-phung, #625)
