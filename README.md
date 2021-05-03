@@ -648,7 +648,7 @@ The API to define goals for an experiment is this:
 ab_test({link_color: ["purchase", "refund"]}, "red", "blue")
 ```
 
-or you can you can define them in a configuration file:
+or you can define them in a configuration file:
 
 ```ruby
 Split.configure do |config|
@@ -786,7 +786,7 @@ library. To configure Split to use `Redis::Namespace`, do the following:
   ```
 
 2. Configure `Split.redis` to use a `Redis::Namespace` instance (possible in an
-   intializer):
+   initializer):
 
   ```ruby
   redis = Redis.new(url: ENV['REDIS_URL']) # or whatever config you want
