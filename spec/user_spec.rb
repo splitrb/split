@@ -17,11 +17,25 @@ describe Split::User do
   end
 
   context '#cleanup_old_versions!' do
-    let(:user_keys) { { 'link_color:1' => 'blue' } }
+    let(:experiment_version) { "#{experiment.name}:1" }
+    let(:second_experiment_version) { "#{experiment.name}_another:1" }
+    let(:third_experiment_version) { "variation_of_#{experiment.name}:1" }
+    let(:user_keys) do
+      {
+        experiment_version => 'blue',
+        second_experiment_version => 'red',
+        third_experiment_version => 'yellow'
+      }
+    end
+
+    before(:each) { @subject.cleanup_old_versions!(experiment) }
 
     it 'removes key if old experiment is found' do
-      @subject.cleanup_old_versions!(experiment)
-      expect(@subject.keys).to be_empty
+      expect(@subject.keys).not_to include(experiment_version)
+    end
+
+    it 'does not remove other keys' do
+      expect(@subject.keys).to include(second_experiment_version, third_experiment_version)
     end
   end 
 
