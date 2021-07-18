@@ -214,7 +214,10 @@ describe Split::Configuration do
 
   context "redis configuration" do
     it "should default to local redis server" do
-      expect(@config.redis).to eq("redis://localhost:6379")
+      old_redis_url = ENV['REDIS_URL']
+      ENV.delete('REDIS_URL')
+      expect(Split::Configuration.new.redis).to eq("redis://localhost:6379")
+      ENV['REDIS_URL'] = old_redis_url
     end
 
     it "should allow for redis url to be configured" do
@@ -224,9 +227,10 @@ describe Split::Configuration do
 
     context "provided REDIS_URL environment variable" do
       it "should use the ENV variable" do
+        old_redis_url = ENV['REDIS_URL']
         ENV['REDIS_URL'] = "env_redis_url"
         expect(Split::Configuration.new.redis).to eq("env_redis_url")
-        ENV.delete('REDIS_URL')
+        ENV['REDIS_URL'] = old_redis_url
       end
     end
   end
