@@ -1,7 +1,7 @@
 # [Split](https://libraries.io/rubygems/split)
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
-[![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](https://travis-ci.org/splitrb/split)
+![Build status](https://github.com/splitrb/split/actions/workflows/ci.yml/badge.svg?branch=main)
 [![Code Climate](https://codeclimate.com/github/splitrb/split/badges/gpa.svg)](https://codeclimate.com/github/splitrb/split)
 [![Test Coverage](https://codeclimate.com/github/splitrb/split/badges/coverage.svg)](https://codeclimate.com/github/splitrb/split/coverage)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
