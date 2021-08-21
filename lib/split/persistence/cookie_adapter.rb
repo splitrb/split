@@ -45,7 +45,7 @@ module Split
       end
 
       def default_options
-        { expires: @expires, path: '/' }
+        { expires: @expires, path: '/', domain: cookie_domain_config }.compact
       end
 
       def set_cookie_via_rack(key, value)
@@ -85,6 +85,10 @@ module Split
 
       def cookie_length_config
         Split.configuration.persistence_cookie_length
+      end
+
+      def cookie_domain_config
+        Split.configuration.persistence_cookie_domain
       end
 
       def action_dispatch?

@@ -246,4 +246,15 @@ describe Split::Configuration do
     end
   end
 
+  context "persistence cookie domain" do
+    it "should default to nil" do
+      expect(@config.persistence_cookie_domain).to eq(nil)
+    end
+
+    it "should allow the persistence cookie domain to be configured" do
+      @config.persistence_cookie_domain = '.acme.com'
+      expect(@config.persistence_cookie_domain).to eq('.acme.com')
+    end
+  end
+
 end
