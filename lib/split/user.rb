@@ -38,7 +38,7 @@ module Split
     end
 
     def cleanup_old_versions!(experiment)
-      keys = user.keys.select { |k| k.match(Regexp.new(experiment.name)) }
+      keys = user.keys.select { |k| key_without_version(k) == experiment.name }
       keys_without_experiment(keys, experiment.key).each { |key| user.delete(key) }
     end
 

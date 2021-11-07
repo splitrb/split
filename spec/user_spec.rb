@@ -17,11 +17,21 @@ describe Split::User do
   end
 
   context '#cleanup_old_versions!' do
-    let(:user_keys) { { 'link_color:1' => 'blue' } }
+    let(:user_keys) do
+      {
+        'link_color'   => 'red',
+        'link_color:1' => 'blue',
+        'link_color:2' => 'white',
+        'link_color_top' => 'red'
+      }
+    end
 
     it 'removes key if old experiment is found' do
+      experiment.increment_version
+      experiment.increment_version
+
       @subject.cleanup_old_versions!(experiment)
-      expect(@subject.keys).to be_empty
+      expect(@subject.keys).to match_array(['link_color_top', 'link_color:2'])
     end
   end 
 
