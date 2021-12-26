@@ -28,6 +28,16 @@ jobs:
           - gemfile: 6.0.gemfile
             ruby: '3.0'
 
+          - gemfile: 6.1.gemfile
+            ruby: '3.0'
+
+          - gemfile: 7.0.gemfile
+            ruby: '3.0'
+
+          - gemfile: 7.0.gemfile
+            ruby: '3.1'
+
+
     runs-on: ubuntu-latest
 
     services:
