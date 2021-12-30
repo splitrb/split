@@ -1,4 +1,4 @@
-## 4.0.0 (December 30th, 2021)
+## 4.0.1 (December 30th, 2021)
 
 Bugfixes:
 - ab_test must return metadata on error or if split is disabled/excluded user (@andrehjr, #622)
