@@ -1,4 +1,4 @@
-## 4.0.0.pre2
+## 4.0.0 (December 30th, 2021)
 
 Bugfixes:
 - ab_test must return metadata on error or if split is disabled/excluded user (@andrehjr, #622)
@@ -7,7 +7,7 @@ Bugfixes:
 - Respect experiment defaults when loading experiments in initializer. (@mattwd7, #599)
 - Removes metadata key when it updated to nil (@andrehjr, #633)
 - Force experiment does not count for metrics (@andrehjr, #637)
-- Fix cleanup_old_versions! misbehaviour (@serggi, #661)
+- Fix cleanup_old_versions! misbehaviour (@serggl, #661)
 
 Features:
 - Make goals accessible via on_trial_complete callbacks (@robin-phung, #625)
@@ -32,6 +32,7 @@ Misc:
 - Remove 'set' parsing for alternatives. Sets were used as storage and deprecated on 0.x (@andrehjr, #639)
 - Adding documentation related to what is stored on cookies. (@andrehjr, #634)
 - Keep railtie defined under the Split gem namespace (@avit, #666)
+- Update RSpec helper to support block syntax (@clowder, #665)
 
 ## 3.4.1 (November 12th, 2019)
 

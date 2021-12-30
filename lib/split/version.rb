@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Split
-  VERSION = "4.0.0.pre2"
+  VERSION = "4.0.0"
 end
