@@ -26,52 +26,44 @@ describe Split::User do
   end 
 
   context '#cleanup_old_experiments!' do
-    it 'removes key if experiment is not found' do
+    let(:user_keys) { { 'link_color' => 'blue', 'link_color:finished' => true, 'link_color:time_of_assignment' => Time.now.to_s } }
+
+    it 'removes keys if experiment is not found' do
       @subject.cleanup_old_experiments!
+      
       expect(@subject.keys).to be_empty
     end
 
-    it 'removes key if experiment has a winner' do
+    it 'removes keys if experiment has a winner' do
       allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
-      allow(experiment).to receive(:start_time).and_return(Date.today)
       allow(experiment).to receive(:has_winner?).and_return(true)
+      allow(experiment).to receive(:start_time).and_return(Date.today)
+      
       @subject.cleanup_old_experiments!
+      
       expect(@subject.keys).to be_empty
     end
 
-    it 'removes key if experiment has not started yet' do
+    it 'removes keys if experiment has not started yet' do
       allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
       allow(experiment).to receive(:has_winner?).and_return(false)
+      allow(experiment).to receive(:start_time).and_return(nil)
+      
       @subject.cleanup_old_experiments!
+      
       expect(@subject.keys).to be_empty
     end
 
-    context 'with finished key' do
-      let(:user_keys) { { 'link_color' => 'blue', 'link_color:finished' => true } }
-
-      it 'does not remove finished key for experiment without a winner' do
-        allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
-        allow(Split::ExperimentCatalog).to receive(:find).with('link_color:finished').and_return(nil)
-        allow(experiment).to receive(:start_time).and_return(Date.today)
-        allow(experiment).to receive(:has_winner?).and_return(false)
-        @subject.cleanup_old_experiments!
-        expect(@subject.keys).to include("link_color")
-        expect(@subject.keys).to include("link_color:finished")
-      end
-    end
-
-    context 'with time_of_assignment key' do
-      let(:user_keys) { { 'link_color' => 'blue', 'link_color:time_of_assignment' => true } }
-
-      it 'does not remove time_of_assignment key' do
-        allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
-        allow(Split::ExperimentCatalog).to receive(:find).with('link_color:time_of_assignment').and_return(nil)
-        allow(experiment).to receive(:start_time).and_return(Date.today)
-        allow(experiment).to receive(:has_winner?).and_return(false)
-        @subject.cleanup_old_experiments!
-        expect(@subject.keys).to include("link_color")
-        expect(@subject.keys).to include("link_color:time_of_assignment")
-      end
+    it 'keeps keys if the experiment has no winner and has started' do
+      allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+      allow(experiment).to receive(:has_winner?).and_return(false)
+      allow(experiment).to receive(:start_time).and_return(Date.today)
+      
+      @subject.cleanup_old_experiments!
+      
+      expect(@subject.keys).to include("link_color")
+      expect(@subject.keys).to include("link_color:finished")
+      expect(@subject.keys).to include("link_color:time_of_assignment")
     end
 
     context 'when already cleaned up' do

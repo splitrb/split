@@ -19,6 +19,7 @@ module Split
         if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
           user.delete key
           user.delete Experiment.finished_key(key)
+          user.delete "#{key}:time_of_assignment"
         end
       end
       @cleaned_up = true
