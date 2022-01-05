@@ -6,31 +6,36 @@ module Split
 
     module_function
 
-    def ab_test(metric_descriptor, control = nil, *alternatives)
-      begin
-        experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
-        alternative = if Split.configuration.enabled && !exclude_visitor?
+    def ab_test(metric_descriptor, control = nil, *alternatives, &block)
+      experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
+
+      if !Split.configuration.enabled || exclude_visitor? || split_generically_disabled?
+        render_alternative(experiment, &block)
+      else
+        begin
           experiment.save
           raise(Split::InvalidExperimentsFormatError) unless (Split.configuration.experiments || {}).fetch(experiment.name.to_sym, {})[:combined_experiments].nil?
-          trial = Trial.new(:user => ab_user, :experiment => experiment,
-              :override => override_alternative(experiment.name), :exclude => exclude_visitor?,
-              :disabled => split_generically_disabled?)
-          alt = trial.choose!(self)
-          alt ? alt.name : nil
-        else
-          control_variable(experiment.control)
-        end
-      rescue Errno::ECONNREFUSED, Redis::BaseError, SocketError => e
-        raise(e) unless Split.configuration.db_failover
-        Split.configuration.db_failover_on_db_error.call(e)
 
-        if Split.configuration.db_failover_allow_parameter_override
-          alternative = override_alternative(experiment.name) if override_present?(experiment.name)
-          alternative = control_variable(experiment.control) if split_generically_disabled?
+          trial = Trial.new(user: ab_user,
+                            experiment: experiment,
+                            override: override_alternative(experiment.name),
+                            exclude: exclude_visitor?,
+                            disabled: split_generically_disabled?)
+
+          alternative = trial.choose!(self)
+          render_alternative experiment, alternative.name, &block
+        rescue Errno::ECONNREFUSED, Redis::BaseError, SocketError => e
+          raise(e) unless Split.configuration.db_failover
+          Split.configuration.db_failover_on_db_error.call(e)
+
+          alternative = alternative_from_db_error(experiment)
+          render_alternative(experiment, alternative, &block)
         end
-      ensure
-        alternative ||= control_variable(experiment.control)
       end
+    end
+
+    def render_alternative(experiment, alternative = nil)
+      alternative ||= control_variable(experiment.control)
 
       if block_given?
         metadata = experiment.metadata[alternative] if experiment.metadata
@@ -38,6 +43,14 @@ module Split
       else
         alternative
       end
+    end
+
+    def alternative_from_db_error(experiment)
+      if Split.configuration.db_failover_allow_parameter_override
+        alternative = override_alternative(experiment.name) if override_present?(experiment.name)
+        alternative = control_variable(experiment.control) if split_generically_disabled?
+      end
+      alternative
     end
 
     def reset!(experiment)
