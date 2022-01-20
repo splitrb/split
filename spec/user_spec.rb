@@ -78,6 +78,50 @@ describe Split::User do
     end
   end
 
+  context "#alternative_key_for_experiment" do
+    context "if there is only 1 version of the experiment" do
+      it "returns the current experiment key" do
+        expect(@subject.alternative_key_for_experiment(experiment)).to eq("link_color")
+      end
+    end
+
+    context "if there are multiple versions of the experiment" do
+      before { 2.times { experiment.increment_version } }
+
+      context "user has a key from a first version of the experiment" do
+        let(:user_keys) { { "link_color" => "blue" } }
+
+        it "returns the current experiment key" do
+          expect(@subject.alternative_key_for_experiment(experiment)).to eq("link_color")
+        end
+      end
+
+      context "user has a key from a previous version of the experiment" do
+        let(:user_keys) { { "link_color:1" => "blue" } }
+
+        it "returns the current experiment key" do
+          expect(@subject.alternative_key_for_experiment(experiment)).to eq("link_color:1")
+        end
+      end
+
+      context "user has the same key as the current version of the experiment" do 
+        let(:user_keys) { { "link_color:2" => "blue" } }
+
+        it "returns the current experiment key" do
+          expect(@subject.alternative_key_for_experiment(experiment)).to eq("link_color:2")
+        end
+      end
+
+      context "user does not have any key for the experiment" do 
+        let(:user_keys) { { } }
+
+        it "returns the current experiment key" do
+          expect(@subject.alternative_key_for_experiment(experiment)).to eq("link_color:2")
+        end
+      end
+    end
+  end
+
   context "instantiated with custom adapter" do
     let(:custom_adapter) { double(:persistence_adapter) }
 

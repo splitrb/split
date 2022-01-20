@@ -47,10 +47,19 @@ module Split
       return false if active_experiments[experiment.name].nil?
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
-      if ab_user[experiment.finished_key] && !should_reset
+
+      if experiment.retain_user_alternatives_after_reset 
+        user_experiment_key = ab_user.alternative_key_for_experiment(experiment)
+        user_experiment_finished_key =  Experiment.finished_key(user_experiment_key)
+      else
+        user_experiment_key = experiment.key
+        user_experiment_finished_key = experiment.finished_key
+      end
+
+      if ab_user[user_experiment_finished_key] && !should_reset
         return true
       else
-        alternative_name = ab_user[experiment.key]
+        alternative_name = ab_user[user_experiment_key]
         trial = Trial.new(
           :user => ab_user, 
           :experiment => experiment,
@@ -63,7 +72,7 @@ module Split
         if should_reset
           reset!(experiment)
         else
-          ab_user[experiment.finished_key] = true
+          ab_user[user_experiment_finished_key] = true
         end
       end
     end

@@ -163,7 +163,8 @@ module Split
           metadata: value_for(settings, :metadata),
           algorithm: value_for(settings, :algorithm),
           resettable: value_for(settings, :resettable),
-          friendly_name: value_for(settings, :friendly_name)
+          friendly_name: value_for(settings, :friendly_name),
+          retain_user_alternatives_after_reset:  value_for(settings, :retain_user_alternatives_after_reset)
         }
 
         experiment_data.each do |name, value|

@@ -37,7 +37,8 @@ module Split
 
     def complete!(context = nil)
       if alternative
-        if within_conversion_time_frame?
+        # if the current key matches the user experiment key then the user is on the current version of the experiment
+        if within_conversion_time_frame? && @experiment.key == user_experiment_key
           if Array(goals).empty?
             alternative.increment_completion
           else
@@ -58,10 +59,11 @@ module Split
       # Only run the process once
       return alternative if @alternative_choosen
 
-      new_participant = @user[@experiment.key].nil?
+      user_experiment_key = @experiment.retain_user_alternatives_after_reset ? @user.alternative_key_for_experiment(@experiment) : @experiment.key
+      new_participant = @user[user_experiment_key].nil?
       if override_is_alternative?
         self.alternative = @options[:override]
-        if should_store_alternative? && !@user[@experiment.key]
+        if should_store_alternative? && !@user[user_experiment_key]
           self.alternative.increment_participation
         end
       elsif @options[:disabled] || Split.configuration.disabled?
@@ -69,12 +71,12 @@ module Split
       elsif @experiment.has_winner?
         self.alternative = @experiment.winner
       else
-        cleanup_old_versions
+        cleanup_old_versions unless experiment.retain_user_alternatives_after_reset
 
         if exclude_user?
           self.alternative = @experiment.control
         else
-          self.alternative = @user[@experiment.key]
+          self.alternative = @user[user_experiment_key]
           if alternative.nil?
             if @experiment.cohorting_disabled?
               self.alternative = @experiment.control
@@ -93,7 +95,7 @@ module Split
 
       new_participant_and_cohorting_disabled = new_participant && @experiment.cohorting_disabled?
 
-      @user[@experiment.key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || new_participant_and_cohorting_disabled
+      @user[user_experiment_key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || new_participant_and_cohorting_disabled
       @alternative_choosen = true
       run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled? || new_participant_and_cohorting_disabled
       alternative
@@ -108,7 +110,7 @@ module Split
 
           return true if window_of_time_for_conversion_in_minutes.nil?
 
-          time_of_assignment = Time.parse(@user["#{@experiment.key}:time_of_assignment"])
+          time_of_assignment = Time.parse(@user["#{user_experiment_key}:time_of_assignment"])
           (Time.now - time_of_assignment)/60 <= window_of_time_for_conversion_in_minutes
         end
       end
@@ -116,12 +118,16 @@ module Split
 
     private
 
+    def user_experiment_key
+      @user_experiment_key ||= @user.alternative_key_for_experiment(@experiment)
+    end
+
     def delete_time_of_assignment_key
-      @user.delete("#{@experiment.key}:time_of_assignment")
+      @user.delete("#{user_experiment_key}:time_of_assignment")
     end
 
     def save_time_that_user_is_assigned
-      @user["#{@experiment.key}:time_of_assignment"] = Time.now.to_s
+      @user["#{user_experiment_key}:time_of_assignment"] = Time.now.to_s
     end
 
     def run_callback(context, callback_name)

@@ -54,6 +54,32 @@ module Split
       experiment_pairs
     end
 
+    def alternative_key_for_experiment(experiment)
+      if experiment.version > 0
+        keys = user.keys
+
+        #default to current experiment key when one isn't found
+        user_experiment_key = experiment.key
+
+        #first version is not colon delimited 
+        if keys.include?(experiment.name)
+          user_experiment_key = experiment.name
+        else
+          experiment.version.times do |version_number|
+            key = "#{experiment.name}:#{version_number+1}"
+            if keys.include?(key)
+              user_experiment_key = key
+              break
+            end
+          end
+        end
+
+        user_experiment_key
+      else
+        experiment.key
+      end
+    end
+
     private
 
     def keys_without_experiment(keys, experiment_key)

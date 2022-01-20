@@ -12,9 +12,11 @@ module Split
 
     attr_reader :alternatives
     attr_reader :resettable
+    attr_reader :retain_user_alternatives_after_reset
 
     DEFAULT_OPTIONS = {
-      :resettable => true
+      :resettable => true,
+      :retain_user_alternatives_after_reset => false,
     }
 
     def initialize(name, options = {})
@@ -40,6 +42,7 @@ module Split
       self.algorithm = options_with_defaults[:algorithm]
       self.metadata = options_with_defaults[:metadata]
       self.friendly_name = options_with_defaults[:friendly_name] || @name
+      self.retain_user_alternatives_after_reset = options_with_defaults[:retain_user_alternatives_after_reset]
     end
 
     def extract_alternatives_from_options(options)
@@ -60,6 +63,7 @@ module Split
           options[:resettable] = exp_config[:resettable]
           options[:algorithm] = exp_config[:algorithm]
           options[:friendly_name] = exp_config[:friendly_name]
+          options[:retain_user_alternatives_after_reset] = exp_config[:retain_user_alternatives_after_reset]
         end
       end
 
@@ -83,6 +87,7 @@ module Split
         persist_experiment_configuration
       end
 
+      redis.hset(experiment_config_key, :retain_user_alternatives_after_reset, retain_user_alternatives_after_reset)
       redis.hset(experiment_config_key, :resettable, resettable)
       redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
       self
@@ -118,6 +123,10 @@ module Split
 
     def resettable=(resettable)
       @resettable = resettable.is_a?(String) ? resettable == 'true' : resettable
+    end
+
+    def retain_user_alternatives_after_reset=(value)
+      @retain_user_alternatives_after_reset = value.is_a?(String) ? value == 'true' : value
     end
 
     def alternatives=(alts)
@@ -256,6 +265,7 @@ module Split
       exp_config = redis.hgetall(experiment_config_key)
 
       options = {
+        retain_user_alternatives_after_reset: exp_config['retain_user_alternatives_after_reset'],
         resettable: exp_config['resettable'],
         algorithm: exp_config['algorithm'],
         friendly_name: load_friendly_name_from_redis,

@@ -82,12 +82,13 @@ describe Split::Configuration do
                 - Alt One
                 - Alt Two
               resettable: false
+              retain_user_alternatives_after_reset: true
             eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
         it 'should normalize experiments' do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
+          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:retain_user_alternatives_after_reset=>true,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
         end
       end
 
@@ -133,6 +134,7 @@ describe Split::Configuration do
                 - name: Alt Two
                   percent: 23
               resettable: false
+              retain_user_alternatives_after_reset: true
               metric: my_metric
             another_experiment:
               alternatives:
@@ -143,7 +145,7 @@ describe Split::Configuration do
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>[{"Control Opt"=>0.67},
+          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:retain_user_alternatives_after_reset=>true,:alternatives=>[{"Control Opt"=>0.67},
             [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, :another_experiment=>{:alternatives=>["a", ["b"]]}})
         end
 
