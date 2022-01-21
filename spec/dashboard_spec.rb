@@ -183,6 +183,37 @@ describe Split::Dashboard do
     end
   end
 
+  describe "initialize experiment" do
+    before do 
+      Split.configuration.experiments = {
+        :my_experiment => {
+          :alternatives => [ "control", "alternative" ],
+        }
+      }
+    end
+
+    it "initializes the experiment when the experiment is given" do
+      expect(Split::ExperimentCatalog.find("my_experiment")).to be nil
+
+      post "/initialize_experiment", { experiment: "my_experiment"}
+
+      experiment = Split::ExperimentCatalog.find("my_experiment")
+      expect(experiment).to be_a(Split::Experiment)
+    end
+
+    it "does not attempt to intialize the experiment when empty experiment is given" do
+      post "/initialize_experiment", { experiment: ""}
+
+      expect(Split::ExperimentCatalog).to_not receive(:find_or_create)
+    end
+
+    it "does not attempt to intialize the experiment when no experiment is given" do
+      post "/initialize_experiment"
+
+      expect(Split::ExperimentCatalog).to_not receive(:find_or_create)
+    end
+  end
+
   it "should reset an experiment" do
     red_link.participant_count = 5
     blue_link.participant_count = 7

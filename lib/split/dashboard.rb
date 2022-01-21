@@ -20,6 +20,7 @@ module Split
     get '/' do
       # Display experiments without a winner at the top of the dashboard
       @experiments = Split::ExperimentCatalog.all_active_first
+      @unintialized_experiments = Split.configuration.experiments.keys - @experiments.map(&:name)
 
       @metrics = Split::Metric.all
 
@@ -30,6 +31,11 @@ module Split
         @current_env = "Rack: #{Rack.version}"
       end
       erb :index
+    end
+
+    post '/initialize_experiment' do
+      Split::ExperimentCatalog.find_or_create(params[:experiment]) unless params[:experiment].nil? || params[:experiment].empty?
+      redirect url('/')
     end
 
     post '/force_alternative' do

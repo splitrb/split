@@ -258,7 +258,7 @@ body {
   color: #408C48;
 }
 
-a.button, button, input[type="submit"] {
+.experiment a.button, .experiment button, .experiment input[type="submit"] {
   padding: 4px 10px;
   overflow: hidden;
   background: #d8dae0;
@@ -312,8 +312,12 @@ a.button.green:focus, button.green:focus, input[type="submit"].green:focus {
   background:#768E7A;
 }
 
-#filter, #clear-filter {
+.dashboard-controls input, .dashboard-controls select {
   padding: 10px;
+}
+
+.dashboard-controls-bottom {
+  margin-top: 10px;
 }
 
 
