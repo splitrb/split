@@ -202,15 +202,15 @@ describe Split::Dashboard do
     end
 
     it "does not attempt to intialize the experiment when empty experiment is given" do
-      post "/initialize_experiment", { experiment: ""}
-
       expect(Split::ExperimentCatalog).to_not receive(:find_or_create)
+
+      post "/initialize_experiment", { experiment: ""}
     end
 
     it "does not attempt to intialize the experiment when no experiment is given" do
-      post "/initialize_experiment"
-
       expect(Split::ExperimentCatalog).to_not receive(:find_or_create)
+
+      post "/initialize_experiment"
     end
   end
 
