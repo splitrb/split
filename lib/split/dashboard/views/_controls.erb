@@ -17,7 +17,7 @@
 <% end %>
 <span class="divider">|</span>
 <% if experiment.start_time %>
-  <form action="<%= url "/reset?experiment=#{experiment.name}" %>" method='post' onclick="return confirmReset()">
+  <form action="<%= url "/reset?experiment=#{experiment.name}" %>" method='post' onclick="return confirmReset(<%= experiment.retain_user_alternatives_after_reset %>)">
     <input type="submit" value="Reset Data">
   </form>
 <% else%>
