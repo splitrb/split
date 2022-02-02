@@ -110,8 +110,11 @@ module Split
 
           return true if window_of_time_for_conversion_in_minutes.nil?
 
-          time_of_assignment = Time.parse(@user["#{user_experiment_key}:time_of_assignment"])
-          (Time.now - time_of_assignment)/60 <= window_of_time_for_conversion_in_minutes
+          time_of_assignment = @user["#{user_experiment_key}:time_of_assignment"]
+          
+          return false if time_of_assignment.nil? || time_of_assignment.empty?
+
+          (Time.now - Time.parse(time_of_assignment))/60 <= window_of_time_for_conversion_in_minutes
         end
       end
     end

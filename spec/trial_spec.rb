@@ -426,6 +426,59 @@ describe Split::Trial do
     end
   end
 
+  describe "#within_conversion_time_frame?" do
+    let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+
+    it "memoizes the result" do
+      allow(Split.configuration).to receive(:experiments).and_return(experiment.name => { "window_of_time_for_conversion_in_minutes" => 60 })
+      trial.choose!
+
+      expect(Time).to receive(:parse).once.and_call_original
+
+      trial.within_conversion_time_frame?
+      trial.within_conversion_time_frame?
+    end
+
+    context "when window of time for conversion in minutes is configured" do
+      before do
+        allow(Split.configuration).to receive(:experiments).and_return(experiment.name => { "window_of_time_for_conversion_in_minutes" => 60 })
+        trial.choose!
+      end
+
+      it "returns false when user time of assignment is nil" do
+        user["#{experiment.key}:time_of_assignment"] = nil
+
+        expect(trial.within_conversion_time_frame?).to be_falsey
+      end
+
+      it "returns false when user time of assignment is empty" do
+        user["#{experiment.key}:time_of_assignment"] = ""
+
+        expect(trial.within_conversion_time_frame?).to be_falsey
+      end
+
+      it "returns false when user is not within the conversion time frame" do
+        allow(Time).to receive(:now).and_return(Time.now + 60*120)
+
+        expect(trial.within_conversion_time_frame?).to be_falsey
+      end
+
+      it "returns true when user is within the conversion time frame" do
+        expect(trial.within_conversion_time_frame?).to be_truthy
+      end
+    end
+
+    context "when window of time for conversion in minutes is not configured" do
+      before do
+        trial.choose!
+      end
+
+      it "returns true" do
+        expect(trial.within_conversion_time_frame?).to be_truthy
+      end
+    end
+  end
+
   describe "alternative recording" do
     before(:each) { Split.configuration.store_override = false }
 
