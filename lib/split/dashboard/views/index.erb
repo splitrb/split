@@ -1,10 +1,12 @@
 <% if @experiments.any? %>
   <p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
 
-  <input type="text" placeholder="Begin typing to filter" id="filter" />
-  <input type="button" id="toggle-completed" value="Hide completed" />
-  <input type="button" id="toggle-active" value="Hide active" />
-  <input type="button" id="clear-filter" value="Clear filters" />
+  <div class="dashboard-controls">
+    <input type="text" placeholder="Begin typing to filter" id="filter" />
+    <input type="button" id="toggle-completed" value="Hide completed" />
+    <input type="button" id="toggle-active" value="Hide active" />
+    <input type="button" id="clear-filter" value="Clear filters" />
+  </div>
 
   <% paginated(@experiments).each do |experiment| %>
     <% if experiment.goals.empty? %>
@@ -24,3 +26,16 @@
   <p class="intro">No experiments have started yet, you need to define them in your code and introduce them to your users.</p>
   <p class="intro">Check out the <a href='https://github.com/splitrb/split#readme'>Readme</a> for more help getting started.</p>
 <% end %>
+
+<div class="dashboard-controls dashboard-controls-bottom">
+  <form action="<%= url "/initialize_experiment" %>" method='post'>
+    <label>Add unregistered experiment: </label>
+    <select name="experiment" id="experiment-select">
+      <option selected disabled>experiment</option>
+      <% @unintialized_experiments.sort.each do |experiment_name| %>
+          <option value="<%= experiment_name %>"><%= experiment_name %></option>
+      <% end %>
+    </select>
+    <input type="submit" id="register-experiment-btn" value="register experiment"/>
+  </form>
+<div>
