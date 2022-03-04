@@ -5,7 +5,6 @@ require "json"
 module Split
   module Persistence
     class CookieAdapter
-
       def initialize(context)
         @context = context
         @request, @response = context.request, context.response

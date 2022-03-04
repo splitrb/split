@@ -2,7 +2,6 @@
 
 module Split
   class Zscore
-
     include Math
 
     def self.calculate(p1, n1, p2, n2)

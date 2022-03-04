@@ -56,7 +56,6 @@ module Split
       def self.reset_config!
         @config = DEFAULT_CONFIG.dup
       end
-
     end
   end
 end
