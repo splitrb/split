@@ -326,7 +326,7 @@ module Split
       winning_counts.each do |alternative, wins|
         alternative_probabilities[alternative] = wins / number_of_simulations.to_f
       end
-      return alternative_probabilities
+      alternative_probabilities
     end
 
     def count_simulated_wins(winning_alternatives)
@@ -339,7 +339,7 @@ module Split
       winning_alternatives.each do |alternative|
         winning_counts[alternative] += 1
       end
-      return winning_counts
+      winning_counts
     end
 
     def find_simulated_winner(simulated_cr_hash)
@@ -351,7 +351,7 @@ module Split
         end
       end
       winner = winning_pair[0]
-      return winner
+      winner
     end
 
     def calc_simulated_conversion_rates(beta_params)
@@ -365,7 +365,7 @@ module Split
         simulated_cr_hash[alternative] = simulated_conversion_rate
       end
 
-      return simulated_cr_hash
+      simulated_cr_hash
     end
 
     def calc_beta_params(goal = nil)
@@ -379,7 +379,7 @@ module Split
 
         beta_params[alternative] = params
       end
-      return beta_params
+      beta_params
     end
 
     def calc_time=(time)

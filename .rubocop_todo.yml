@@ -6,16 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 9
-# Cop supports --auto-correct.
-# Configuration parameters: AllowMultipleReturnValues.
-Style/RedundantReturn:
-  Exclude:
-    - 'lib/split/alternative.rb'
-    - 'lib/split/experiment.rb'
-    - 'lib/split/helper.rb'
-    - 'lib/split/zscore.rb'
-
 # Offense count: 258
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, ConsistentQuotesInMultiline.

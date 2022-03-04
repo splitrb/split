@@ -67,13 +67,13 @@ module Split
     def set_field(goal)
       field = "completed_count"
       field += ":" + goal unless goal.nil?
-      return field
+      field
     end
 
     def set_prob_field(goal)
       field = "p_winner"
       field += ":" + goal unless goal.nil?
-      return field
+      field
     end
 
     def set_completed_count(count, goal = nil)

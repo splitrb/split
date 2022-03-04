@@ -49,7 +49,7 @@ module Split
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
       if ab_user[experiment.finished_key] && !should_reset
-        return true
+        true
       else
         alternative_name = ab_user[experiment.key]
         trial = Trial.new(
