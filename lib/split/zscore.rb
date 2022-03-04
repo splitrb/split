@@ -50,7 +50,7 @@ module Split
       # Calculate z-score
       z_score = (p_1 - p_2)/(se)
 
-      return z_score
+      z_score
     end
   end
 end

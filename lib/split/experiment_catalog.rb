@@ -20,7 +20,7 @@ module Split
     def self.find_or_initialize(metric_descriptor, control = nil, *alternatives)
       # Check if array is passed to ab_test
       # e.g. ab_test('name', ['Alt 1', 'Alt 2', 'Alt 3'])
-      if control.is_a? Array and alternatives.length.zero?
+      if control.is_a?(Array) && alternatives.length.zero?
         control, alternatives = control.first, control[1..-1]
       end
 

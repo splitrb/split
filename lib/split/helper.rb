@@ -49,7 +49,7 @@ module Split
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
       if ab_user[experiment.finished_key] && !should_reset
-        return true
+        true
       else
         alternative_name = ab_user[experiment.key]
         trial = Trial.new(
@@ -105,7 +105,7 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
-    def ab_active_experiments()
+    def ab_active_experiments
       ab_user.active_experiments
     rescue => e
       raise unless Split.configuration.db_failover
