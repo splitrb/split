@@ -14,10 +14,10 @@ module Split
     def load_from_configuration
       goals = Split.configuration.experiment_for(@experiment_name)[:goals]
 
-      if goals.nil?
-        goals = []
-      else
+      if goals
         goals.flatten
+      else
+        []
       end
     end
 
