@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'rubystats'
-
 module Split
   class Experiment
     attr_accessor :name
@@ -363,7 +361,7 @@ module Split
       beta_params.each do |alternative, params|
         alpha = params[0]
         beta = params[1]
-        simulated_conversion_rate = Rubystats::BetaDistribution.new(alpha, beta).rng
+        simulated_conversion_rate = Split::Algorithms.beta_distribution_rng(alpha, beta)
         simulated_cr_hash[alternative] = simulated_conversion_rate
       end
 
