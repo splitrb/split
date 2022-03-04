@@ -4,7 +4,6 @@ AllCops:
   TargetRubyVersion: 2.5
   DisabledByDefault: true
   Exclude:
-    - 'Appraisals'
     - 'gemfiles/**/*'
     - 'spec/**/*.rb'
 
