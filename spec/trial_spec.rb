@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'split/trial'
 
@@ -245,7 +246,7 @@ describe Split::Trial do
 
       it "increments the completed count corresponding to the goals" do
         trial.choose!
-        old_completed_counts = goals.map{ |goal| [goal, trial.alternative.completed_count(goal)] }.to_h 
+        old_completed_counts = goals.map { |goal| [goal, trial.alternative.completed_count(goal)] }.to_h
         trial.complete!
         goals.each { | goal | expect(trial.alternative.completed_count(goal)).to eq(old_completed_counts[goal] + 1) }
       end

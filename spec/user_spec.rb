@@ -37,7 +37,7 @@ describe Split::User do
     it 'does not remove other keys' do
       expect(@subject.keys).to include(second_experiment_version, third_experiment_version)
     end
-  end 
+  end
 
   context '#cleanup_old_experiments!' do
     it 'removes key if experiment is not found' do
@@ -100,7 +100,6 @@ describe Split::User do
       ab_user = Split::User.find(112233, :dual_adapter)
       expect(ab_user).to be_nil
     end
-
   end
 
   context "instantiated with custom adapter" do
@@ -114,5 +113,4 @@ describe Split::User do
       expect(@subject.user).to eq(custom_adapter)
     end
   end
-
 end

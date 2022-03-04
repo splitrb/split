@@ -12,7 +12,6 @@ module Split
         end
 
         private
-
         def arm_guess(participants, completions)
           a = [participants, 0].max
           b = [participants-completions, 0].max

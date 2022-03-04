@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Split::Configuration do
-
   before(:each) { @config = Split::Configuration.new }
 
   it "should provide a default value for ignore_ip_addresses" do
@@ -58,7 +58,7 @@ describe Split::Configuration do
   end
 
   it "should load a metric" do
-    @config.experiments = { my_experiment: {alternatives: ["control_opt", "other_opt"], metric: :my_metric } }
+    @config.experiments = { my_experiment: { alternatives: ["control_opt", "other_opt"], metric: :my_metric } }
 
     expect(@config.metrics).not_to be_nil
     expect(@config.metrics.keys).to eq([:my_metric])
@@ -80,7 +80,7 @@ describe Split::Configuration do
                 - Alt One
                 - Alt Two
               resettable: false
-            eos
+          eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
@@ -108,7 +108,7 @@ describe Split::Configuration do
                 Alt Two:
                   text: 'Alternative Two'
               resettable: false
-            eos
+          eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
@@ -136,25 +136,23 @@ describe Split::Configuration do
               alternatives:
                 - a
                 - b
-            eos
+          eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, alternatives: [{"Control Opt"=>0.67},
-            [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, another_experiment: { alternatives: ["a", ["b"]]}})
+          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, alternatives: [{ "Control Opt"=>0.67 },
+            [{ "Alt One"=>0.1 }, { "Alt Two"=>0.23 }]] }, another_experiment: { alternatives: ["a", ["b"]] } })
         end
 
         it "should recognize metrics" do
           expect(@config.metrics).not_to be_nil
           expect(@config.metrics.keys).to eq([:my_metric])
         end
-
       end
     end
 
     context "as symbols" do
-
       context "with valid YAML" do
         before do
           experiments_yaml = <<-eos
@@ -164,17 +162,16 @@ describe Split::Configuration do
                 - Alt One
                 - Alt Two
               :resettable: false
-            eos
+          eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({my_experiment: { resettable: false, alternatives: ["Control Opt", ["Alt One", "Alt Two"]]}})
+          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, alternatives: ["Control Opt", ["Alt One", "Alt Two"]] } })
         end
       end
 
       context "with invalid YAML" do
-
         let(:yaml) { YAML.load(input) }
 
         context "with an empty string" do
@@ -207,7 +204,7 @@ describe Split::Configuration do
       }
     }
 
-    expect(@config.normalized_experiments).to eq({ my_experiment: { alternatives: [{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}})
+    expect(@config.normalized_experiments).to eq({ my_experiment: { alternatives: [{ "control_opt"=>0.67 }, [{ "second_opt"=>0.1 }, { "third_opt"=>0.23 }]] } })
   end
 
   context "redis configuration" do
@@ -254,5 +251,4 @@ describe Split::Configuration do
       expect(@config.persistence_cookie_domain).to eq('.acme.com')
     end
   end
-
 end

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Split::Cache do
-
   let(:namespace) { :test_namespace }
   let(:key) { :test_key }
   let(:now) { 1606189017 }
@@ -10,7 +10,6 @@ describe Split::Cache do
   before { allow(Time).to receive(:now).and_return(now) }
 
   describe 'clear' do
-
     before { Split.configuration.cache = true }
 
     it 'clears the cache' do
@@ -36,11 +35,9 @@ describe Split::Cache do
   end
 
   describe 'fetch' do
-
     subject { Split::Cache.fetch(namespace, key) { Time.now } }
 
     context 'when cache disabled' do
-
       before { Split.configuration.cache = false }
 
       it 'returns the yield' do
@@ -55,7 +52,6 @@ describe Split::Cache do
     end
 
     context 'when cache enabled' do
-
       before { Split.configuration.cache = true }
 
       it 'returns the yield' do

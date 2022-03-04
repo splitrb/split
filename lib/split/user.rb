@@ -65,7 +65,6 @@ module Split
     end
 
     private
-
     def keys_without_experiment(keys, experiment_key)
       keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
     end

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Split do
-
   around(:each) do |ex|
     old_env, old_redis = [ENV.delete('REDIS_URL'), Split.redis]
     ex.run
@@ -21,7 +21,7 @@ RSpec.describe Split do
     end
 
     it 'accepts an options hash' do
-      Split.redis = {host: 'localhost', port: 6379, db: 12}
+      Split.redis = { host: 'localhost', port: 6379, db: 12 }
       expect(Split.redis).to be_a(Redis)
 
       client = Split.redis.connection

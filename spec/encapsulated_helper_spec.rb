@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Split::EncapsulatedHelper do
@@ -16,16 +17,15 @@ describe Split::EncapsulatedHelper do
     end
 
     it "should not raise an error when params raises an error" do
-      expect{ params }.to raise_error(NoMethodError)
+      expect { params }.to raise_error(NoMethodError)
       expect { ab_test('link_color', 'blue', 'red') }.not_to raise_error
     end
 
     it "calls the block with selected alternative" do
-      expect{|block| ab_test('link_color', 'red', 'red', &block) }.to yield_with_args('red', {})
+      expect { |block| ab_test('link_color', 'red', 'red', &block) }.to yield_with_args('red', {})
     end
 
     context "inside a view" do
-
       it "works inside ERB" do
         require 'erb'
         template = ERB.new(<<-ERB.split(/\s+/s).map(&:strip).join(' '), nil, "%")
@@ -35,18 +35,17 @@ describe Split::EncapsulatedHelper do
         ERB
         expect(template.result(binding)).to match(/foo  static \d/)
       end
-
     end
   end
 
   describe "context" do
     it 'is passed in shim' do
-      ctx = Class.new{
+      ctx = Class.new {
         include Split::EncapsulatedHelper
         public :session
       }.new
-      expect(ctx).to receive(:session){{}}
-      expect{ ctx.ab_test('link_color', 'blue', 'red') }.not_to raise_error
+      expect(ctx).to receive(:session) { {} }
+      expect { ctx.ab_test('link_color', 'blue', 'red') }.not_to raise_error
     end
   end
 end

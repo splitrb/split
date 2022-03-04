@@ -237,7 +237,6 @@ module Split
     end
 
     private
-
     def value_for(hash, key)
       if hash.kind_of?(Hash)
         hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]

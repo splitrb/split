@@ -97,7 +97,6 @@ module Split
     end
 
     private
-
     def run_callback(context, callback_name)
       context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
     end

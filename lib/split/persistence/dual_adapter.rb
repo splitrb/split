@@ -72,7 +72,6 @@ module Split
       end
 
       private
-
       def decrement_participation?(old_value, value)
         !old_value.nil? && !value.nil? && old_value != value
       end

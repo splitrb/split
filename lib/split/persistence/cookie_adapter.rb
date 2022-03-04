@@ -30,7 +30,6 @@ module Split
       end
 
       private
-
       def set_cookie(value = {})
         cookie_key = :split.to_s
         cookie_value = default_options.merge(value: JSON.generate(value))

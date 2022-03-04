@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'split/metric'
 
@@ -27,5 +28,4 @@ describe Split::Metric do
       expect(Split::Metric.possible_experiments('purchase')).to include(experiment1, experiment2)
     end
   end
-
 end

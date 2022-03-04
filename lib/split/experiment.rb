@@ -417,7 +417,6 @@ module Split
     end
 
     protected
-
     def experiment_config_key
       "experiment_configurations/#{@name}"
     end
@@ -454,7 +453,6 @@ module Split
     end
 
     private
-
     def redis
       Split.redis
     end

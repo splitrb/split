@@ -18,26 +18,6 @@ Layout/ElseAlignment:
   Exclude:
     - 'lib/split/experiment.rb'
 
-# Offense count: 14
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: around, only_before
-Layout/EmptyLinesAroundAccessModifier:
-  Exclude:
-    - 'lib/split/algorithms/block_randomization.rb'
-    - 'lib/split/algorithms/whiplash.rb'
-    - 'lib/split/alternative.rb'
-    - 'lib/split/configuration.rb'
-    - 'lib/split/dashboard/pagination_helpers.rb'
-    - 'lib/split/encapsulated_helper.rb'
-    - 'lib/split/experiment.rb'
-    - 'lib/split/goals_collection.rb'
-    - 'lib/split/persistence/cookie_adapter.rb'
-    - 'lib/split/persistence/dual_adapter.rb'
-    - 'lib/split/redis_interface.rb'
-    - 'lib/split/trial.rb'
-    - 'lib/split/user.rb'
-
 # Offense count: 8
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.

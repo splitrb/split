@@ -30,7 +30,6 @@ module Split
     end
 
     private
-
     def show_first_page_tag?
       page_number > 2
     end

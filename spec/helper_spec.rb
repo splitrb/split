@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 # TODO change some of these tests to use Rack::Test
@@ -28,11 +29,11 @@ describe Split::Helper do
     end
 
     it "should not raise error when passed an array for goals" do
-      expect { ab_test({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }.not_to raise_error
+      expect { ab_test({ 'link_color' => ["purchase", "refund"] }, 'blue', 'red') }.not_to raise_error
     end
 
     it "should not raise error when passed just one goal" do
-      expect { ab_test({'link_color' => "purchase"}, 'blue', 'red') }.not_to raise_error
+      expect { ab_test({ 'link_color' => "purchase" }, 'blue', 'red') }.not_to raise_error
     end
 
     it "raises an appropriate error when processing combined expirements" do
@@ -44,7 +45,7 @@ describe Split::Helper do
         }
       }
       Split::ExperimentCatalog.find_or_create('combined_exp_1')
-      expect { ab_test('combined_exp_1') }.to raise_error(Split::InvalidExperimentsFormatError )
+      expect { ab_test('combined_exp_1') }.to raise_error(Split::InvalidExperimentsFormatError)
     end
 
     it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
@@ -108,7 +109,7 @@ describe Split::Helper do
       alternative = ab_test('link_color', 'blue', 'red')
       expect(alternative).to eq('blue')
 
-      alternative = ab_test('link_color', {'blue' => 1}, 'red' => 5)
+      alternative = ab_test('link_color', { 'blue' => 1 }, 'red' => 5)
       expect(alternative).to eq('blue')
 
       @params = { 'ab_test' => { 'link_color' => 'red' } }
@@ -116,7 +117,7 @@ describe Split::Helper do
       alternative = ab_test('link_color', 'blue', 'red')
       expect(alternative).to eq('red')
 
-      alternative = ab_test('link_color', {'blue' => 5}, 'red' => 1)
+      alternative = ab_test('link_color', { 'blue' => 5 }, 'red' => 1)
       expect(alternative).to eq('red')
     end
 
@@ -133,19 +134,19 @@ describe Split::Helper do
     end
 
     it "SPLIT_DISABLE query parameter should also force the alternative (uses control)" do
-      @params = {'SPLIT_DISABLE' => 'true'}
+      @params = { 'SPLIT_DISABLE' => 'true' }
       alternative = ab_test('link_color', 'blue', 'red')
       expect(alternative).to eq('blue')
-      alternative = ab_test('link_color', {'blue' => 1}, 'red' => 5)
+      alternative = ab_test('link_color', { 'blue' => 1 }, 'red' => 5)
       expect(alternative).to eq('blue')
       alternative = ab_test('link_color', 'red', 'blue')
       expect(alternative).to eq('red')
-      alternative = ab_test('link_color', {'red' => 5}, 'blue' => 1)
+      alternative = ab_test('link_color', { 'red' => 5 }, 'blue' => 1)
       expect(alternative).to eq('red')
     end
 
     it "should not store the split when Split generically disabled" do
-      @params = {'SPLIT_DISABLE' => 'true'}
+      @params = { 'SPLIT_DISABLE' => 'true' }
       expect(ab_user).not_to receive(:[]=)
       ab_test('link_color', 'blue', 'red')
     end
@@ -175,15 +176,15 @@ describe Split::Helper do
     end
 
     it "should allow the share of visitors see an alternative to be specified" do
-      ab_test('link_color', {'blue' => 0.8}, {'red' => 20})
+      ab_test('link_color', { 'blue' => 0.8 }, { 'red' => 20 })
       expect(['red', 'blue']).to include(ab_user['link_color'])
     end
 
     it "should allow alternative weighting interface as a single hash" do
-      ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)
+      ab_test('link_color', { 'blue' => 0.01 }, 'red' => 0.2)
       experiment = Split::ExperimentCatalog.find('link_color')
       expect(experiment.alternatives.map(&:name)).to eq(['blue', 'red'])
-      expect(experiment.alternatives.collect{|a| a.weight}).to match_array([0.01, 0.2])
+      expect(experiment.alternatives.collect { |a| a.weight }).to match_array([0.01, 0.2])
     end
 
     it "should only let a user participate in one experiment at a time" do
@@ -214,7 +215,7 @@ describe Split::Helper do
           config.allow_multiple_experiments = 'control'
         end
         groups = 100.times.map do |n|
-          ab_test("test#{n}".to_sym, {'control' => (100 - n)}, {"test#{n}-alt" => n})
+          ab_test("test#{n}".to_sym, { 'control' => (100 - n) }, { "test#{n}-alt" => n })
         end
 
         experiments = ab_user.active_experiments
@@ -228,7 +229,7 @@ describe Split::Helper do
       end
 
       context "when user already has experiment" do
-        let(:mock_user){ Split::User.new(self, {'test_0' => 'test-alt'}) }
+        let(:mock_user) { Split::User.new(self, { 'test_0' => 'test-alt' }) }
 
         before do
           Split.configure do |config|
@@ -241,8 +242,8 @@ describe Split::Helper do
 
         it "should restore previously selected alternative" do
           expect(ab_user.active_experiments.size).to eq 1
-          expect(ab_test(:test_0, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
-          expect(ab_test(:test_0, {'control' => 1}, {"test-alt" => 100})).to eq 'test-alt'
+          expect(ab_test(:test_0, { 'control' => 100 }, { "test-alt" => 1 })).to eq 'test-alt'
+          expect(ab_test(:test_0, { 'control' => 1 }, { "test-alt" => 100 })).to eq 'test-alt'
         end
 
         it "should select the correct alternatives after experiment resets" do
@@ -251,20 +252,18 @@ describe Split::Helper do
           mock_user[experiment.key] = 'test-alt'
 
           expect(ab_user.active_experiments.size).to eq 1
-          expect(ab_test(:test_0, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
-          expect(ab_test(:test_0, {'control' => 0}, {"test-alt" => 100})).to eq 'test-alt'
+          expect(ab_test(:test_0, { 'control' => 100 }, { "test-alt" => 1 })).to eq 'test-alt'
+          expect(ab_test(:test_0, { 'control' => 0 }, { "test-alt" => 100 })).to eq 'test-alt'
         end
 
         it "lets override existing choice" do
           pending "this requires user store reset on first call not depending on whelther it is current trial"
           @params = { 'ab_test' => { 'test_1' => 'test-alt' } }
 
-          expect(ab_test(:test_0, {'control' => 0}, {"test-alt" => 100})).to eq 'control'
-          expect(ab_test(:test_1, {'control' => 100}, {"test-alt" => 1})).to eq 'test-alt'
+          expect(ab_test(:test_0, { 'control' => 0 }, { "test-alt" => 100 })).to eq 'control'
+          expect(ab_test(:test_1, { 'control' => 100 }, { "test-alt" => 1 })).to eq 'test-alt'
         end
-
       end
-
     end
 
     it "should not over-write a finished key when an experiment is on a later version" do
@@ -354,13 +353,13 @@ describe Split::Helper do
       end
 
       it "should set experiment's finished key if reset is false" do
-        ab_finished(@experiment_name, {reset: false})
+        ab_finished(@experiment_name, { reset: false })
         expect(ab_user[@experiment.key]).to eq(@alternative_name)
         expect(ab_user[@experiment.finished_key]).to eq(true)
       end
 
       it 'should not increment the counter if reset is false and the experiment has been already finished' do
-        2.times { ab_finished(@experiment_name, {reset: false}) }
+        2.times { ab_finished(@experiment_name, { reset: false }) }
         new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
         expect(new_completion_count).to eq(@previous_completion_count + 1)
       end
@@ -383,7 +382,7 @@ describe Split::Helper do
 
       it "should not clear out the users session if reset is false" do
         expect(ab_user[@experiment.key]).to eq(@alternative_name)
-        ab_finished(@experiment_name, {reset: false})
+        ab_finished(@experiment_name, { reset: false })
         expect(ab_user[@experiment.key]).to eq(@alternative_name)
         expect(ab_user[@experiment.finished_key]).to eq(true)
       end
@@ -446,7 +445,7 @@ describe Split::Helper do
       end
 
       it 'should not change the user state when reset is false' do
-        expect { ab_finished(:not_started_experiment, reset: false) }.not_to change { ab_user.keys}.from([])
+        expect { ab_finished(:not_started_experiment, reset: false) }.not_to change { ab_user.keys }.from([])
       end
 
       it 'should not change the user state when reset is true' do
@@ -483,7 +482,7 @@ describe Split::Helper do
     before { Split.configuration.experiments = {} }
     before { expect(Split::Alternative).to receive(:new).at_least(1).times.and_call_original }
 
-    def should_finish_experiment(experiment_name, should_finish=true)
+    def should_finish_experiment(experiment_name, should_finish = true)
       alts = Split.configuration.experiments[experiment_name][:alternatives]
       experiment = Split::ExperimentCatalog.find_or_create(experiment_name, *alts)
       alt_name = ab_user[experiment.key] = alts.first
@@ -583,7 +582,7 @@ describe Split::Helper do
 
     it 'should show a finished test' do
       alternative = ab_test('def', '4', '5', '6')
-      ab_finished('def', {reset: false})
+      ab_finished('def', { reset: false })
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq "def"
       expect(active_experiments.first[1]).to eq alternative
@@ -605,7 +604,7 @@ describe Split::Helper do
 
       expect(experiment.version).to eq(10)
       expect(active_experiments.count).to eq 1
-      expect(active_experiments).to eq({'link_color' => alternative })
+      expect(active_experiments).to eq({ 'link_color' => alternative })
     end
 
     it 'should show multiple tests' do
@@ -650,7 +649,6 @@ describe Split::Helper do
       end
 
       it "should not increment the participation count" do
-
         previous_red_count = Split::Alternative.new('red', 'link_color').participant_count
         previous_blue_count = Split::Alternative.new('blue', 'link_color').participant_count
 
@@ -680,10 +678,9 @@ describe Split::Helper do
 
   describe 'when providing custom ignore logic' do
     context "using a proc to configure custom logic" do
-
       before(:each) do
         Split.configure do |c|
-          c.ignore_filter = proc{|request| true } # ignore everything
+          c.ignore_filter = proc { |request| true } # ignore everything
         end
       end
 
@@ -777,7 +774,7 @@ describe Split::Helper do
 
       it "works as usual" do
         alternative_name = ab_test('link_color', 'red', 'blue')
-        expect{
+        expect {
           ab_finished('link_color')
         }.to change(Split::Alternative.new(alternative_name, 'link_color'), :completed_count).by(1)
       end
@@ -928,8 +925,8 @@ describe Split::Helper do
 
         it 'should always use first alternative' do
           expect(ab_test('link_color', 'blue', 'red')).to eq('blue')
-          expect(ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)).to eq('blue')
-          expect(ab_test('link_color', {'blue' => 0.8}, {'red' => 20})).to eq('blue')
+          expect(ab_test('link_color', { 'blue' => 0.01 }, 'red' => 0.2)).to eq('blue')
+          expect(ab_test('link_color', { 'blue' => 0.8 }, { 'red' => 20 })).to eq('blue')
           expect(ab_test('link_color', 'blue', 'red') do |alternative|
             "shared/#{alternative}"
           end).to eq('shared/blue')
@@ -947,8 +944,8 @@ describe Split::Helper do
               @params = { 'ab_test' => { 'link_color' => 'red' } }
               expect(ab_test('link_color', 'blue', 'red')).to eq('red')
               expect(ab_test('link_color', 'blue', 'red', 'green')).to eq('red')
-              expect(ab_test('link_color', {'blue' => 0.01}, 'red' => 0.2)).to eq('red')
-              expect(ab_test('link_color', {'blue' => 0.8}, {'red' => 20})).to eq('red')
+              expect(ab_test('link_color', { 'blue' => 0.01 }, 'red' => 0.2)).to eq('red')
+              expect(ab_test('link_color', { 'blue' => 0.8 }, { 'red' => 20 })).to eq('red')
               expect(ab_test('link_color', 'blue', 'red') do |alternative|
                 "shared/#{alternative}"
               end).to eq('shared/red')
@@ -989,7 +986,7 @@ describe Split::Helper do
   end
 
   context "with preloaded config" do
-    before { Split.configuration.experiments = {}}
+    before { Split.configuration.experiments = {} }
 
     it "pulls options from config file" do
       Split.configuration.experiments[:my_experiment] = {
@@ -1050,7 +1047,7 @@ describe Split::Helper do
       }
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
-      expect(experiment.alternatives.collect{|a| [a.name, a.weight]}).to eq([['control_opt', 0.67], ['second_opt', 0.1], ['third_opt', 0.23]])
+      expect(experiment.alternatives.collect { |a| [a.name, a.weight] }).to eq([['control_opt', 0.67], ['second_opt', 0.1], ['third_opt', 0.23]])
     end
 
     it "accepts probability on some alternatives" do
@@ -1064,9 +1061,9 @@ describe Split::Helper do
       }
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
-      names_and_weights = experiment.alternatives.collect{|a| [a.name, a.weight]}
+      names_and_weights = experiment.alternatives.collect { |a| [a.name, a.weight] }
       expect(names_and_weights).to eq([['control_opt', 0.34], ['second_opt', 0.215], ['third_opt', 0.23], ['fourth_opt', 0.215]])
-      expect(names_and_weights.inject(0){|sum, nw| sum + nw[1]}).to eq(1.0)
+      expect(names_and_weights.inject(0) { |sum, nw| sum + nw[1] }).to eq(1.0)
     end
 
     it "allows name param without probability" do
@@ -1079,9 +1076,9 @@ describe Split::Helper do
       }
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
-      names_and_weights = experiment.alternatives.collect{|a| [a.name, a.weight]}
+      names_and_weights = experiment.alternatives.collect { |a| [a.name, a.weight] }
       expect(names_and_weights).to eq([['control_opt', 0.18], ['second_opt', 0.18], ['third_opt', 0.64]])
-      expect(names_and_weights.inject(0){|sum, nw| sum + nw[1]}).to eq(1.0)
+      expect(names_and_weights.inject(0) { |sum, nw| sum + nw[1] }).to eq(1.0)
     end
 
     it "fails gracefully if config is missing experiment" do
@@ -1112,7 +1109,7 @@ describe Split::Helper do
 
   context "with goals" do
     before do
-      @experiment = {'link_color' => ["purchase", "refund"]}
+      @experiment = { 'link_color' => ["purchase", "refund"] }
       @alternatives = ['blue', 'red']
       @experiment_name, @goals = normalize_metric(@experiment)
       @goal1 = @goals[0]
@@ -1138,9 +1135,9 @@ describe Split::Helper do
       end
 
       it "should increment the counter for the specified-goal completed alternative" do
-        expect{ ab_finished({"link_color" => ["purchase"]}) }
-          .to change{ Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2) }.by(0)
-          .and change{ Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1) }.by(1)
+        expect { ab_finished({ "link_color" => ["purchase"] }) }
+          .to change { Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal2) }.by(0)
+          .and change { Split::Alternative.new(@alternative_name, @experiment_name).completed_count(@goal1) }.by(1)
       end
     end
   end
