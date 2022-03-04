@@ -847,7 +847,7 @@ describe Split::Helper do
     it "should only count completion of users on the current version" do
       alternative_name = ab_test('link_color', 'blue', 'red')
       expect(ab_user['link_color']).to eq(alternative_name)
-      alternative = Split::Alternative.new(alternative_name, 'link_color')
+      Split::Alternative.new(alternative_name, 'link_color')
 
       experiment.reset
       expect(experiment.version).to eq(1)

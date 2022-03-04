@@ -25,7 +25,7 @@ module GlobalSharedContext
     Split.redis.flushdb
     Split::Cache.clear
     @ab_user = mock_user
-    params = nil
+    @params = nil
   end
 end
 
