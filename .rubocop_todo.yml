@@ -8,14 +8,6 @@
 
 # Offense count: 1
 # Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: always, conditionals
-Style/AndOr:
-  Exclude:
-    - 'lib/split/experiment_catalog.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 Style/ColonMethodCall:
   Exclude:
     - 'lib/split/combined_experiments_helper.rb'
