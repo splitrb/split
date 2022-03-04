@@ -15,7 +15,6 @@ require "split/helper"
 #
 module Split
   module EncapsulatedHelper
-
     class ContextShim
       include Split::Helper
       public :ab_test, :ab_finished
