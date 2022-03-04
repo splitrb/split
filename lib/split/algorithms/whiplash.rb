@@ -2,7 +2,6 @@
 
 # A multi-armed bandit implementation inspired by
 # @aaronsw and victorykit/whiplash
-require 'rubystats'
 
 module Split
   module Algorithms
@@ -17,7 +16,7 @@ module Split
         def arm_guess(participants, completions)
           a = [participants, 0].max
           b = [participants-completions, 0].max
-          Rubystats::BetaDistribution.new(a+fairness_constant, b+fairness_constant).rng
+          Split::Algorithms.beta_distribution_rng(a + fairness_constant, b + fairness_constant)
         end
 
         def best_guess(alternatives)
