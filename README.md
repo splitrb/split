@@ -19,11 +19,13 @@ Split is designed to be hacker friendly, allowing for maximum customisation and 
 
 ### Requirements
 
-Split currently requires Ruby 1.9.3 or higher. If your project requires compatibility with Ruby 1.8.x and Rails 2.3, please use v0.8.0.
+Split v4.0+ is currently tested with Ruby >= 2.5 and Rails >= 5.0.
+
+If your project requires compatibility with Ruby 2.4.x or older Rails versions. You can try v3.0 or v0.8.0(for Ruby 1.9.3)
 
 Split uses Redis as a datastore.
 
-Split only supports Redis 2.0 or greater.
+Split only supports Redis 4.0 or greater.
 
 If you're on OS X, Homebrew is the simplest way to install Redis:
 
