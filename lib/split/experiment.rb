@@ -393,7 +393,7 @@ module Split
     def jstring(goal = nil)
       js_id = if goal.nil?
                 name
-              else
+      else
                 name + "-" + goal
               end
       js_id.gsub('/', '--')
