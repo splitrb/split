@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Split::ExperimentCatalog do
@@ -22,12 +23,12 @@ describe Split::ExperimentCatalog do
     end
 
     it "should not raise error when passed an array for goals" do
-      expect { subject.find_or_create({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }
+      expect { subject.find_or_create({ 'link_color' => ["purchase", "refund"] }, 'blue', 'red') }
           .not_to raise_error
     end
 
     it "should not raise error when passed just one goal" do
-      expect { subject.find_or_create({'link_color' => "purchase"}, 'blue', 'red') }
+      expect { subject.find_or_create({ 'link_color' => "purchase" }, 'blue', 'red') }
           .not_to raise_error
     end
 

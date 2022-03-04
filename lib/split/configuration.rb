@@ -157,8 +157,8 @@ module Split
 
       @experiments.each do |experiment_name, settings|
         alternatives = if (alts = value_for(settings, :alternatives))
-                         normalize_alternatives(alts)
-                       end
+          normalize_alternatives(alts)
+        end
 
         experiment_data = {
           alternatives: alternatives,
@@ -213,14 +213,14 @@ module Split
 
     def initialize
       @ignore_ip_addresses = []
-      @ignore_filter = proc{ |request| is_robot? || is_ignored_ip_address? }
+      @ignore_filter = proc { |request| is_robot? || is_ignored_ip_address? }
       @db_failover = false
-      @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
-      @on_experiment_reset = proc{|experiment|}
-      @on_experiment_delete = proc{|experiment|}
-      @on_before_experiment_reset = proc{|experiment|}
-      @on_before_experiment_delete = proc{|experiment|}
-      @on_experiment_winner_choose = proc{|experiment|}
+      @db_failover_on_db_error = proc { |error| } # e.g. use Rails logger here
+      @on_experiment_reset = proc { |experiment| }
+      @on_experiment_delete = proc { |experiment| }
+      @on_before_experiment_reset = proc { |experiment| }
+      @on_before_experiment_delete = proc { |experiment| }
+      @on_experiment_winner_choose = proc { |experiment| }
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true
@@ -237,15 +237,14 @@ module Split
     end
 
     private
-
-    def value_for(hash, key)
-      if hash.kind_of?(Hash)
-        hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
+      def value_for(hash, key)
+        if hash.kind_of?(Hash)
+          hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
+        end
       end
-    end
 
-    def escaped_bots
-      bots.map { |key, _| Regexp.escape(key) }
-    end
+      def escaped_bots
+        bots.map { |key, _| Regexp.escape(key) }
+      end
   end
 end

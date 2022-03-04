@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'rack/test'
 require 'split/dashboard'
@@ -27,7 +28,7 @@ describe Split::Dashboard do
   }
 
   let(:experiment_with_goals) {
-    Split::ExperimentCatalog.find_or_create({"link_color" => ["goal_1", "goal_2"]}, "blue", "red")
+    Split::ExperimentCatalog.find_or_create({ "link_color" => ["goal_1", "goal_2"] }, "blue", "red")
   }
 
   let(:metric) {

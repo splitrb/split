@@ -3,7 +3,7 @@
 module Split
   module Persistence
     class RedisAdapter
-      DEFAULT_CONFIG = {namespace: 'persistence'}.freeze
+      DEFAULT_CONFIG = { namespace: 'persistence' }.freeze
 
       attr_reader :redis_key
 
@@ -44,7 +44,7 @@ module Split
         new(nil, user_id)
       end
 
-      def self.with_config(options={})
+      def self.with_config(options = {})
         self.config.merge!(options)
         self
       end
@@ -56,7 +56,6 @@ module Split
       def self.reset_config!
         @config = DEFAULT_CONFIG.dup
       end
-
     end
   end
 end

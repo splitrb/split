@@ -1,9 +1,9 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'split/alternative'
 
 describe Split::Alternative do
-
   let(:alternative) {
     Split::Alternative.new('Basket', 'basket_text')
   }
@@ -13,7 +13,7 @@ describe Split::Alternative do
   }
 
   let!(:experiment) {
-    Split::ExperimentCatalog.find_or_create({"basket_text" => ["purchase", "refund"]}, "Basket", "Cart")
+    Split::ExperimentCatalog.find_or_create({ "basket_text" => ["purchase", "refund"] }, "Basket", "Cart")
   }
 
   let(:goal1) { "purchase" }
@@ -29,7 +29,7 @@ describe Split::Alternative do
 
   describe 'weights' do
     it "should set the weights" do
-      experiment = Split::Experiment.new('basket_text', alternatives: [{'Basket' => 0.6}, {"Cart" => 0.4}])
+      experiment = Split::Experiment.new('basket_text', alternatives: [{ 'Basket' => 0.6 }, { "Cart" => 0.4 }])
       first = experiment.alternatives[0]
       expect(first.name).to eq('Basket')
       expect(first.weight).to eq(0.6)
@@ -226,7 +226,6 @@ describe Split::Alternative do
   end
 
   describe 'z score' do
-
     it "should return an error string when the control has 0 people" do
       expect(alternative2.z_score).to eq("Needs 30+ participants.")
       expect(alternative2.z_score(goal1)).to eq("Needs 30+ participants.")
@@ -289,7 +288,7 @@ describe Split::Alternative do
 
   describe "extra_info" do
     it "reads saved value of recorded_info in redis" do
-      saved_recorded_info = {"key_1" => 1, "key_2" => "2"}
+      saved_recorded_info = { "key_1" => 1, "key_2" => "2" }
       Split.redis.hset "#{alternative.experiment_name}:#{alternative.name}", 'recorded_info', saved_recorded_info.to_json
       extra_info = alternative.extra_info
 

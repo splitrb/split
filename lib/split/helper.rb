@@ -44,7 +44,7 @@ module Split
       ab_user.delete(experiment.key)
     end
 
-    def finish_experiment(experiment, options = {reset: true})
+    def finish_experiment(experiment, options = { reset: true })
       return false if active_experiments[experiment.name].nil?
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
@@ -53,12 +53,12 @@ module Split
       else
         alternative_name = ab_user[experiment.key]
         trial = Trial.new(
-          user: ab_user, 
+          user: ab_user,
           experiment: experiment,
           alternative: alternative_name,
           goals: options[:goals],
-        )      
-        
+        )
+
         trial.complete!(self)
 
         if should_reset
@@ -69,7 +69,7 @@ module Split
       end
     end
 
-    def ab_finished(metric_descriptor, options = {reset: true})
+    def ab_finished(metric_descriptor, options = { reset: true })
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
@@ -95,7 +95,7 @@ module Split
           alternative_name = ab_user[experiment.key]
 
           if alternative_name
-            alternative = experiment.alternatives.find{|alt| alt.name == alternative_name}
+            alternative = experiment.alternatives.find { |alt| alt.name == alternative_name }
             alternative.record_extra_info(key, value) if alternative
           end
         end

@@ -15,7 +15,6 @@ require "split/helper"
 #
 module Split
   module EncapsulatedHelper
-
     class ContextShim
       include Split::Helper
       public :ab_test, :ab_finished
@@ -34,10 +33,9 @@ module Split
     end
 
     private
-
-    # instantiate and memoize a context shim in case of multiple ab_test* calls
-    def split_context_shim
-      @split_context_shim ||= ContextShim.new(self)
-    end
+      # instantiate and memoize a context shim in case of multiple ab_test* calls
+      def split_context_shim
+        @split_context_shim ||= ContextShim.new(self)
+      end
   end
 end

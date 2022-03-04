@@ -180,13 +180,12 @@ module Split
     end
 
     private
+      def hash_with_correct_values?(name)
+        Hash === name && String === name.keys.first && Float(name.values.first) rescue false
+      end
 
-    def hash_with_correct_values?(name)
-      Hash === name && String === name.keys.first && Float(name.values.first) rescue false
-    end
-
-    def key
-      "#{experiment_name}:#{name}"
-    end
+      def key
+        "#{experiment_name}:#{name}"
+      end
   end
 end

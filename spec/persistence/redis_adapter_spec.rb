@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 require "spec_helper"
 
 describe Split::Persistence::RedisAdapter do
-
   let(:context) { double(lookup: 'blah') }
 
   subject { Split::Persistence::RedisAdapter.new(context) }
@@ -12,7 +12,7 @@ describe Split::Persistence::RedisAdapter do
 
     context 'default' do
       it 'should raise error with prompt to set lookup_by' do
-        expect{Split::Persistence::RedisAdapter.new(context)}.to raise_error(RuntimeError)
+        expect { Split::Persistence::RedisAdapter.new(context) }.to raise_error(RuntimeError)
       end
     end
 
@@ -26,7 +26,7 @@ describe Split::Persistence::RedisAdapter do
     end
 
     context 'config with lookup_by = proc { "block" }' do
-      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc{'block'}) }
+      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc { 'block' }) }
 
       it 'should be "persistence:block"' do
         expect(subject.redis_key).to eq('persistence:block')
@@ -34,7 +34,7 @@ describe Split::Persistence::RedisAdapter do
     end
 
     context 'config with lookup_by = proc { |context| context.test }' do
-      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc{'block'}) }
+      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc { 'block' }) }
       let(:context) { double(test: 'block') }
 
       it 'should be "persistence:block"' do
@@ -52,7 +52,7 @@ describe Split::Persistence::RedisAdapter do
     end
 
     context 'config with namespace and lookup_by' do
-      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc{'frag'}, namespace: 'namer') }
+      before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc { 'frag' }, namespace: 'namer') }
 
       it 'should be "namer"' do
         expect(subject.redis_key).to eq('namer:frag')
@@ -61,7 +61,7 @@ describe Split::Persistence::RedisAdapter do
   end
 
   describe '#find' do
-    before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc{'frag'}, namespace: 'a_namespace') }
+    before { Split::Persistence::RedisAdapter.with_config(lookup_by: proc { 'frag' }, namespace: 'a_namespace') }
 
     it "should create and user from a given key" do
       adapter = Split::Persistence::RedisAdapter.find(2)
@@ -94,6 +94,5 @@ describe Split::Persistence::RedisAdapter do
         expect(subject.keys).to match(["my_key", "my_second_key"])
       end
     end
-
   end
 end

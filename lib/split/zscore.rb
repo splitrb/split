@@ -2,7 +2,6 @@
 
 module Split
   class Zscore
-
     include Math
 
     def self.calculate(p1, n1, p2, n2)
@@ -52,7 +51,6 @@ module Split
       z_score = (p_1 - p_2)/(se)
 
       return z_score
-
     end
   end
 end

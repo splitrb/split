@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 require "spec_helper"
 
 describe Split::Persistence::SessionAdapter do
-
   let(:context) { double(session: {}) }
   subject { Split::Persistence::SessionAdapter.new(context) }
 
@@ -28,5 +28,4 @@ describe Split::Persistence::SessionAdapter do
       expect(subject.keys).to match(["my_key", "my_second_key"])
     end
   end
-
 end

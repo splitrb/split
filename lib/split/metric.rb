@@ -97,6 +97,5 @@ module Split
       return metric_name, goals
     end
     private_class_method :normalize_metric
-
   end
 end

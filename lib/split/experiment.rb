@@ -50,7 +50,7 @@ module Split
 
       if alts.length == 1
         if alts[0].is_a? Hash
-          alts = alts[0].map{|k, v| {k => v} }
+          alts = alts[0].map { |k, v| { k => v } }
         end
       end
 
@@ -94,7 +94,7 @@ module Split
       if @alternatives.empty? && Split.configuration.experiment_for(@name).nil?
         raise ExperimentNotFound.new("Experiment #{@name} not found")
       end
-      @alternatives.each {|a| a.validate! }
+      @alternatives.each { |a| a.validate! }
       goals_collection.validate!
     end
 
@@ -107,7 +107,7 @@ module Split
     end
 
     def [](name)
-      alternatives.find{|a| a.name == name}
+      alternatives.find { |a| a.name == name }
     end
 
     def algorithm
@@ -155,7 +155,7 @@ module Split
     end
 
     def participant_count
-      alternatives.inject(0){|sum, a| sum + a.participant_count}
+      alternatives.inject(0) { |sum, a| sum + a.participant_count }
     end
 
     def control
@@ -330,7 +330,7 @@ module Split
     end
 
     def count_simulated_wins(winning_alternatives)
-       # initialize a hash to keep track of winning alternative in simulations
+      # initialize a hash to keep track of winning alternative in simulations
       winning_counts = {}
       alternatives.each do |alternative|
         winning_counts[alternative] = 0
@@ -392,10 +392,10 @@ module Split
 
     def jstring(goal = nil)
       js_id = if goal.nil?
-                name
-              else
-                name + "-" + goal
-              end
+        name
+      else
+        name + "-" + goal
+      end
       js_id.gsub('/', '--')
     end
 
@@ -417,86 +417,84 @@ module Split
     end
 
     protected
-
-    def experiment_config_key
-      "experiment_configurations/#{@name}"
-    end
-
-    def load_metadata_from_configuration
-      Split.configuration.experiment_for(@name)[:metadata]
-    end
-
-    def load_metadata_from_redis
-      meta = redis.get(metadata_key)
-      JSON.parse(meta) unless meta.nil?
-    end
-
-    def load_alternatives_from_configuration
-      alts = Split.configuration.experiment_for(@name)[:alternatives]
-      raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
-      if alts.is_a?(Hash)
-        alts.keys
-      else
-        alts.flatten
+      def experiment_config_key
+        "experiment_configurations/#{@name}"
       end
-    end
 
-    def load_alternatives_from_redis
-      alternatives = redis.lrange(@name, 0, -1)
-      alternatives.map do |alt|
-        alt = begin
-                JSON.parse(alt)
-              rescue
-                alt
-              end
-        Split::Alternative.new(alt, @name)
+      def load_metadata_from_configuration
+        Split.configuration.experiment_for(@name)[:metadata]
       end
-    end
+
+      def load_metadata_from_redis
+        meta = redis.get(metadata_key)
+        JSON.parse(meta) unless meta.nil?
+      end
+
+      def load_alternatives_from_configuration
+        alts = Split.configuration.experiment_for(@name)[:alternatives]
+        raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
+        if alts.is_a?(Hash)
+          alts.keys
+        else
+          alts.flatten
+        end
+      end
+
+      def load_alternatives_from_redis
+        alternatives = redis.lrange(@name, 0, -1)
+        alternatives.map do |alt|
+          alt = begin
+                  JSON.parse(alt)
+                rescue
+                  alt
+                end
+          Split::Alternative.new(alt, @name)
+        end
+      end
 
     private
-
-    def redis
-      Split.redis
-    end
-
-    def redis_interface
-      RedisInterface.new
-    end
-
-    def persist_experiment_configuration
-      redis_interface.add_to_set(:experiments, name)
-      redis_interface.persist_list(name, @alternatives.map{|alt| {alt.name => alt.weight}.to_json})
-      goals_collection.save
-
-      if @metadata
-        redis.set(metadata_key, @metadata.to_json)
-      else
-        delete_metadata
+      def redis
+        Split.redis
       end
-    end
 
-    def remove_experiment_configuration
-      @alternatives.each(&:delete)
-      goals_collection.delete
-      delete_metadata
-      redis.del(@name)
-    end
+      def redis_interface
+        RedisInterface.new
+      end
 
-    def experiment_configuration_has_changed?
-      existing_experiment = Experiment.find(@name)
+      def persist_experiment_configuration
+        redis_interface.add_to_set(:experiments, name)
+        redis_interface.persist_list(name, @alternatives.map { |alt| { alt.name => alt.weight }.to_json })
+        goals_collection.save
 
-      existing_experiment.alternatives.map(&:to_s) != @alternatives.map(&:to_s) ||
-        existing_experiment.goals != @goals ||
-        existing_experiment.metadata != @metadata
-    end
+        if @metadata
+          redis.set(metadata_key, @metadata.to_json)
+        else
+          delete_metadata
+        end
+      end
 
-    def goals_collection
-      Split::GoalsCollection.new(@name, @goals)
-    end
+      def remove_experiment_configuration
+        @alternatives.each(&:delete)
+        goals_collection.delete
+        delete_metadata
+        redis.del(@name)
+      end
 
-    def remove_experiment_cohorting
-      @cohorting_disabled = false
-      redis.hdel(experiment_config_key, :cohorting)
-    end
+      def experiment_configuration_has_changed?
+        existing_experiment = Experiment.find(@name)
+
+        existing_experiment.alternatives.map(&:to_s) != @alternatives.map(&:to_s) ||
+          existing_experiment.goals != @goals ||
+          existing_experiment.metadata != @metadata
+      end
+
+      def goals_collection
+        Split::GoalsCollection.new(@name, @goals)
+      end
+
+      def remove_experiment_cohorting
+        @cohorting_disabled = false
+        redis.hdel(experiment_config_key, :cohorting)
+      end
   end
 end

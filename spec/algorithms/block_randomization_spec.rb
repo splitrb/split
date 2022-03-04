@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require "spec_helper"
 
 describe Split::Algorithms::BlockRandomization do
-
   let(:experiment) { Split::Experiment.new 'experiment' }
   let(:alternative_A) { Split::Alternative.new 'A', 'experiment' }
   let(:alternative_B) { Split::Alternative.new 'B', 'experiment' }

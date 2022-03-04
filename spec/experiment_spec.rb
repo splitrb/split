@@ -1,9 +1,10 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 require 'time'
 
 describe Split::Experiment do
-  def new_experiment(goals=[])
+  def new_experiment(goals = [])
     Split::Experiment.new('link_color', alternatives: ['blue', 'red', 'green'], goals: goals)
   end
 
@@ -28,7 +29,7 @@ describe Split::Experiment do
     end
 
     it "should have alternatives with correct names" do
-      expect(experiment.alternatives.collect{|a| a.name}).to eq(['Basket', 'Cart'])
+      expect(experiment.alternatives.collect { |a| a.name }).to eq(['Basket', 'Cart'])
     end
 
     it "should be resettable by default" do
@@ -110,8 +111,8 @@ describe Split::Experiment do
 
   describe 'initialization' do
     it "should set the algorithm when passed as an option to the initializer" do
-       experiment = Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], algorithm: Split::Algorithms::Whiplash)
-       expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
+      experiment = Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], algorithm: Split::Algorithms::Whiplash)
+      expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
     end
 
     it "should be possible to make an experiment not resettable" do
@@ -138,7 +139,6 @@ describe Split::Experiment do
   end
 
   describe 'persistent configuration' do
-
     it "should persist resettable in redis" do
       experiment = Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], resettable: false)
       experiment.save
@@ -146,12 +146,11 @@ describe Split::Experiment do
       e = Split::ExperimentCatalog.find('basket_text')
       expect(e).to eq(experiment)
       expect(e.resettable).to be_falsey
-
     end
 
     describe '#metadata' do
       let(:experiment) { Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], algorithm: Split::Algorithms::Whiplash, metadata: meta) }
-      let(:meta) { { a: 'b' }}
+      let(:meta) { { a: 'b' } }
 
       before do
         experiment.save
@@ -199,7 +198,7 @@ describe Split::Experiment do
 
       e = Split::ExperimentCatalog.find('foobar')
       expect(e).to eq(experiment)
-      expect(e.alternatives.collect{|a| a.name}).to eq(['tra', 'la'])
+      expect(e.alternatives.collect { |a| a.name }).to eq(['tra', 'la'])
     end
   end
 
@@ -501,7 +500,7 @@ describe Split::Experiment do
 
   describe 'specifying weights' do
     let(:experiment_with_weight) {
-      Split::ExperimentCatalog.find_or_create('link_color', {'blue' => 1}, {'red' => 2 })
+      Split::ExperimentCatalog.find_or_create('link_color', { 'blue' => 1 }, { 'red' => 2 })
     }
 
     it "should work for a new experiment" do
@@ -520,7 +519,7 @@ describe Split::Experiment do
     }
 
     context "saving experiment" do
-      let(:same_but_different_goals) { Split::ExperimentCatalog.find_or_create({'link_color' => ["purchase", "refund"]}, 'blue', 'red', 'green') }
+      let(:same_but_different_goals) { Split::ExperimentCatalog.find_or_create({ 'link_color' => ["purchase", "refund"] }, 'blue', 'red', 'green') }
 
       before { experiment.save }
 
@@ -532,7 +531,6 @@ describe Split::Experiment do
         same_but_different_goals
         expect(Split::ExperimentCatalog.find("link_color").goals).to eq(["purchase", "refund"])
       end
-
     end
 
     it "should have goals" do
@@ -541,7 +539,7 @@ describe Split::Experiment do
 
     context "find or create experiment" do
       it "should have correct goals"  do
-        experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
+        experiment = Split::ExperimentCatalog.find_or_create({ 'link_color3' => ["purchase", "refund"] }, 'blue', 'red', 'green')
         expect(experiment.goals).to eq(["purchase", "refund"])
         experiment = Split::ExperimentCatalog.find_or_create('link_color3', 'blue', 'red', 'green')
         expect(experiment.goals).to eq([])
@@ -563,7 +561,7 @@ describe Split::Experiment do
     end
 
     it "should calculate the probability of being the winning alternative separately for each goal", skip: true do
-      experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
+      experiment = Split::ExperimentCatalog.find_or_create({ 'link_color3' => ["purchase", "refund"] }, 'blue', 'red', 'green')
       goal1 = experiment.goals[0]
       goal2 = experiment.goals[1]
       experiment.alternatives.each do |alternative|
@@ -579,7 +577,7 @@ describe Split::Experiment do
     end
 
     it "should return nil and not re-calculate probabilities if they have already been calculated today" do
-      experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
+      experiment = Split::ExperimentCatalog.find_or_create({ 'link_color3' => ["purchase", "refund"] }, 'blue', 'red', 'green')
       expect(experiment.calc_winning_alternatives).not_to be nil
       expect(experiment.calc_winning_alternatives).to be nil
     end

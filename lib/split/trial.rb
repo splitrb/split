@@ -24,15 +24,15 @@ module Split
 
     def alternative
       @alternative ||=  if @experiment.has_winner?
-                          @experiment.winner
-                        end
+        @experiment.winner
+      end
     end
 
     def alternative=(alternative)
       @alternative = if alternative.kind_of?(Split::Alternative)
         alternative
       else
-        @experiment.alternatives.find{|a| a.name == alternative }
+        @experiment.alternatives.find { |a| a.name == alternative }
       end
     end
 
@@ -41,7 +41,7 @@ module Split
         if Array(goals).empty?
           alternative.increment_completion
         else
-          Array(goals).each {|g| alternative.increment_completion(g) }
+          Array(goals).each { |g| alternative.increment_completion(g) }
         end
 
         run_callback context, Split.configuration.on_trial_complete
@@ -97,31 +97,30 @@ module Split
     end
 
     private
-
-    def run_callback(context, callback_name)
-      context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
-    end
-
-    def override_is_alternative?
-      @experiment.alternatives.map(&:name).include?(@options[:override])
-    end
-
-    def should_store_alternative?
-      if @options[:override] || @options[:disabled]
-        Split.configuration.store_override
-      else
-        !exclude_user?
+      def run_callback(context, callback_name)
+        context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
       end
-    end
 
-    def cleanup_old_versions
-      if @experiment.version > 0
-        @user.cleanup_old_versions!(@experiment)
+      def override_is_alternative?
+        @experiment.alternatives.map(&:name).include?(@options[:override])
       end
-    end
 
-    def exclude_user?
-      @options[:exclude] || @experiment.start_time.nil? || @user.max_experiments_reached?(@experiment.key)
-    end
+      def should_store_alternative?
+        if @options[:override] || @options[:disabled]
+          Split.configuration.store_override
+        else
+          !exclude_user?
+        end
+      end
+
+      def cleanup_old_versions
+        if @experiment.version > 0
+          @user.cleanup_old_versions!(@experiment)
+        end
+      end
+
+      def exclude_user?
+        @options[:exclude] || @experiment.start_time.nil? || @user.max_experiments_reached?(@experiment.key)
+      end
   end
 end

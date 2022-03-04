@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 ENV['RACK_ENV'] = "test"
 
 require 'rubygems'
@@ -15,7 +16,7 @@ Dir['./spec/support/*.rb'].each { |f| require f }
 
 module GlobalSharedContext
   extend RSpec::SharedContext
-  let(:mock_user){ Split::User.new(double(session: {})) }
+  let(:mock_user) { Split::User.new(double(session: {})) }
 
   before(:each) do
     Split.configuration = Split::Configuration.new
@@ -24,7 +25,7 @@ module GlobalSharedContext
     Split.redis.flushdb
     Split::Cache.clear
     @ab_user = mock_user
-    params = nil
+    @params = nil
   end
 end
 

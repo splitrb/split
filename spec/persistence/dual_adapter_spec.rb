@@ -162,10 +162,10 @@ describe Split::Persistence::DualAdapter do
 
   describe 'when errors in config' do
     before { described_class.config.clear }
-    let(:some_proc) { ->{} }
+    let(:some_proc) { -> { } }
 
     it 'when no logged in adapter' do
-      expect{
+      expect {
         described_class.with_config(
           logged_in: some_proc,
           logged_out_adapter: logged_out_adapter
@@ -174,7 +174,7 @@ describe Split::Persistence::DualAdapter do
     end
 
     it 'when no logged out adapter' do
-      expect{
+      expect {
         described_class.with_config(
           logged_in: some_proc,
           logged_in_adapter: logged_in_adapter
@@ -183,7 +183,7 @@ describe Split::Persistence::DualAdapter do
     end
 
     it 'when no logged in detector' do
-      expect{
+      expect {
         described_class.with_config(
           logged_in_adapter: logged_in_adapter,
           logged_out_adapter: logged_out_adapter

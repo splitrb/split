@@ -5,7 +5,6 @@ AllCops:
   DisabledByDefault: true
   Exclude:
     - 'gemfiles/**/*'
-    - 'spec/**/*.rb'
 
 Style/AndOr:
   Enabled: true

@@ -5,12 +5,12 @@ module Split
     # Return all experiments
     def self.all
       # Call compact to prevent nil experiments from being returned -- seems to happen during gem upgrades
-      Split.redis.smembers(:experiments).map {|e| find(e)}.compact
+      Split.redis.smembers(:experiments).map { |e| find(e) }.compact
     end
 
     # Return experiments without a winner (considered "active") first
     def self.all_active_first
-      all.partition{|e| not e.winner}.map{|es| es.sort_by(&:name)}.flatten
+      all.partition { |e| not e.winner }.map { |es| es.sort_by(&:name) }.flatten
     end
 
     def self.find(name)
