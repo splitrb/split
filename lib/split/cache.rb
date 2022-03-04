@@ -2,7 +2,6 @@
 
 module Split
   class Cache
-
     def self.clear
       @cache = nil
     end
