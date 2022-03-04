@@ -32,7 +32,7 @@ module Split
       @alternative = if alternative.kind_of?(Split::Alternative)
         alternative
       else
-        @experiment.alternatives.find{|a| a.name == alternative }
+        @experiment.alternatives.find {|a| a.name == alternative }
       end
     end
 

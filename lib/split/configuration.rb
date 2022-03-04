@@ -213,14 +213,14 @@ module Split
 
     def initialize
       @ignore_ip_addresses = []
-      @ignore_filter = proc{ |request| is_robot? || is_ignored_ip_address? }
+      @ignore_filter = proc { |request| is_robot? || is_ignored_ip_address? }
       @db_failover = false
-      @db_failover_on_db_error = proc{|error|} # e.g. use Rails logger here
-      @on_experiment_reset = proc{|experiment|}
-      @on_experiment_delete = proc{|experiment|}
-      @on_before_experiment_reset = proc{|experiment|}
-      @on_before_experiment_delete = proc{|experiment|}
-      @on_experiment_winner_choose = proc{|experiment|}
+      @db_failover_on_db_error = proc {|error|} # e.g. use Rails logger here
+      @on_experiment_reset = proc {|experiment|}
+      @on_experiment_delete = proc {|experiment|}
+      @on_before_experiment_reset = proc {|experiment|}
+      @on_before_experiment_delete = proc {|experiment|}
+      @on_experiment_winner_choose = proc {|experiment|}
       @db_failover_allow_parameter_override = false
       @allow_multiple_experiments = false
       @enabled = true

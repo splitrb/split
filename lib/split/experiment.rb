@@ -50,7 +50,7 @@ module Split
 
       if alts.length == 1
         if alts[0].is_a? Hash
-          alts = alts[0].map{|k, v| {k => v} }
+          alts = alts[0].map {|k, v| {k => v} }
         end
       end
 
@@ -107,7 +107,7 @@ module Split
     end
 
     def [](name)
-      alternatives.find{|a| a.name == name}
+      alternatives.find {|a| a.name == name}
     end
 
     def algorithm
@@ -155,7 +155,7 @@ module Split
     end
 
     def participant_count
-      alternatives.inject(0){|sum, a| sum + a.participant_count}
+      alternatives.inject(0) {|sum, a| sum + a.participant_count}
     end
 
     def control
@@ -463,7 +463,7 @@ module Split
 
     def persist_experiment_configuration
       redis_interface.add_to_set(:experiments, name)
-      redis_interface.persist_list(name, @alternatives.map{|alt| {alt.name => alt.weight}.to_json})
+      redis_interface.persist_list(name, @alternatives.map {|alt| {alt.name => alt.weight}.to_json})
       goals_collection.save
 
       if @metadata
