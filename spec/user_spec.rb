@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'split/experiment_catalog'
 require 'split/experiment'
