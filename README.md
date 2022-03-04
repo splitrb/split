@@ -19,7 +19,7 @@ Split is designed to be hacker friendly, allowing for maximum customisation and 
 
 ### Requirements
 
-Split v4.0+ is currently tested with Ruby >= 2.5 and Rails >= 5.0.
+Split v4.0+ is currently tested with Ruby >= 2.5 and Rails >= 5.2.
 
 If your project requires compatibility with Ruby 2.4.x or older Rails versions. You can try v3.0 or v0.8.0(for Ruby 1.9.3)
 
