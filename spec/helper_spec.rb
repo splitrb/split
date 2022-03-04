@@ -12,27 +12,27 @@ describe Split::Helper do
 
   describe "ab_test" do
     it "should not raise an error when passed strings for alternatives" do
-      expect(lambda { ab_test('xyz', '1', '2', '3') }).not_to raise_error
+      expect { ab_test('xyz', '1', '2', '3') }.not_to raise_error
     end
 
     it "should not raise an error when passed an array for alternatives" do
-      expect(lambda { ab_test('xyz', ['1', '2', '3']) }).not_to raise_error
+      expect { ab_test('xyz', ['1', '2', '3']) }.not_to raise_error
     end
 
     it "should raise the appropriate error when passed integers for alternatives" do
-      expect(lambda { ab_test('xyz', 1, 2, 3) }).to raise_error(ArgumentError)
+      expect { ab_test('xyz', 1, 2, 3) }.to raise_error(ArgumentError)
     end
 
     it "should raise the appropriate error when passed symbols for alternatives" do
-      expect(lambda { ab_test('xyz', :a, :b, :c) }).to raise_error(ArgumentError)
+      expect { ab_test('xyz', :a, :b, :c) }.to raise_error(ArgumentError)
     end
 
     it "should not raise error when passed an array for goals" do
-      expect(lambda { ab_test({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }).not_to raise_error
+      expect { ab_test({'link_color' => ["purchase", "refund"]}, 'blue', 'red') }.not_to raise_error
     end
 
     it "should not raise error when passed just one goal" do
-      expect(lambda { ab_test({'link_color' => "purchase"}, 'blue', 'red') }).not_to raise_error
+      expect { ab_test({'link_color' => "purchase"}, 'blue', 'red') }.not_to raise_error
     end
 
     it "raises an appropriate error when processing combined expirements" do
@@ -44,7 +44,7 @@ describe Split::Helper do
         }
       }
       Split::ExperimentCatalog.find_or_create('combined_exp_1')
-      expect(lambda { ab_test('combined_exp_1')}).to raise_error(Split::InvalidExperimentsFormatError )
+      expect { ab_test('combined_exp_1') }.to raise_error(Split::InvalidExperimentsFormatError )
     end
 
     it "should assign a random alternative to a new user when there are an equal number of alternatives assigned" do
@@ -67,28 +67,28 @@ describe Split::Helper do
     it 'should not increment the counter for an experiment that the user is not participating in' do
       ab_test('link_color', 'blue', 'red')
       e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
-      expect(lambda {
+      expect {
         # User shouldn't participate in this second experiment
         ab_test('button_size', 'small', 'big')
-      }).not_to change { e.participant_count }
+      }.not_to change { e.participant_count }
     end
 
     it 'should not increment the counter for an ended experiment' do
       e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
       e.winner = 'small'
-      expect(lambda {
+      expect {
         a = ab_test('button_size', 'small', 'big')
         expect(a).to eq('small')
-      }).not_to change { e.participant_count }
+      }.not_to change { e.participant_count }
     end
 
     it 'should not increment the counter for an not started experiment' do
       expect(Split.configuration).to receive(:start_manually).and_return(true)
       e = Split::ExperimentCatalog.find_or_create('button_size', 'small', 'big')
-      expect(lambda {
+      expect {
         a = ab_test('button_size', 'small', 'big')
         expect(a).to eq('small')
-      }).not_to change { e.participant_count }
+      }.not_to change { e.participant_count }
     end
 
     it "should return the given alternative for an existing user" do
@@ -370,9 +370,9 @@ describe Split::Helper do
         e.winner = 'small'
         a = ab_test('button_size', 'small', 'big')
         expect(a).to eq('small')
-        expect(lambda {
+        expect {
           ab_finished('button_size')
-        }).not_to change { Split::Alternative.new(a, 'button_size').completed_count }
+        }.not_to change { Split::Alternative.new(a, 'button_size').completed_count }
       end
 
       it "should clear out the user's participation from their session" do
@@ -431,9 +431,9 @@ describe Split::Helper do
         # receive the control for button_size. As the user is not participating in
         # the button size experiment, finishing it should not increase the
         # completion count for that alternative.
-        expect(lambda {
+        expect {
           ab_finished('button_size')
-        }).not_to change { Split::Alternative.new('small', 'button_size').completed_count }
+        }.not_to change { Split::Alternative.new('small', 'button_size').completed_count }
       end
     end
 
@@ -875,13 +875,13 @@ describe Split::Helper do
 
       describe 'ab_test' do
         it 'should raise an exception' do
-          expect(lambda { ab_test('link_color', 'blue', 'red') }).to raise_error(Errno::ECONNREFUSED)
+          expect { ab_test('link_color', 'blue', 'red') }.to raise_error(Errno::ECONNREFUSED)
         end
       end
 
       describe 'finished' do
         it 'should raise an exception' do
-          expect(lambda { ab_finished('link_color') }).to raise_error(Errno::ECONNREFUSED)
+          expect { ab_finished('link_color') }.to raise_error(Errno::ECONNREFUSED)
         end
       end
 
@@ -893,12 +893,12 @@ describe Split::Helper do
         end
 
         it "should not attempt to connect to redis" do
-          expect(lambda { ab_test('link_color', 'blue', 'red') }).not_to raise_error
+          expect { ab_test('link_color', 'blue', 'red') }.not_to raise_error
         end
 
         it "should return control variable" do
           expect(ab_test('link_color', 'blue', 'red')).to eq('blue')
-          expect(lambda { ab_finished('link_color') }).not_to raise_error
+          expect { ab_finished('link_color') }.not_to raise_error
         end
       end
     end
@@ -912,7 +912,7 @@ describe Split::Helper do
 
       describe 'ab_test' do
         it 'should not raise an exception' do
-          expect(lambda { ab_test('link_color', 'blue', 'red') }).not_to raise_error
+          expect { ab_test('link_color', 'blue', 'red') }.not_to raise_error
         end
 
         it 'should call db_failover_on_db_error proc with error as parameter' do
@@ -971,7 +971,7 @@ describe Split::Helper do
 
       describe 'finished' do
         it 'should not raise an exception' do
-          expect(lambda { ab_finished('link_color') }).not_to raise_error
+          expect { ab_finished('link_color') }.not_to raise_error
         end
 
         it 'should call db_failover_on_db_error proc with error as parameter' do
@@ -1086,16 +1086,16 @@ describe Split::Helper do
 
     it "fails gracefully if config is missing experiment" do
       Split.configuration.experiments = { :other_experiment => { :foo => "Bar" } }
-      expect(lambda { ab_test :my_experiment }).to raise_error(Split::ExperimentNotFound)
+      expect { ab_test :my_experiment }.to raise_error(Split::ExperimentNotFound)
     end
 
     it "fails gracefully if config is missing" do
-      expect(lambda { Split.configuration.experiments = nil }).to raise_error(Split::InvalidExperimentsFormatError)
+      expect { Split.configuration.experiments = nil }.to raise_error(Split::InvalidExperimentsFormatError)
     end
 
     it "fails gracefully if config is missing alternatives" do
       Split.configuration.experiments[:my_experiment] = { :foo => "Bar" }
-      expect(lambda { ab_test :my_experiment }).to raise_error(NoMethodError)
+      expect { ab_test :my_experiment }.to raise_error(NoMethodError)
     end
   end
 
