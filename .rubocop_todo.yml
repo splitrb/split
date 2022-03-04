@@ -25,13 +25,6 @@ Layout/IndentationWidth:
     - 'lib/split/trial.rb'
     - 'lib/split/user.rb'
 
-# Offense count: 3
-# Cop supports --auto-correct.
-# Configuration parameters: AllowInHeredoc.
-Layout/TrailingWhitespace:
-  Exclude:
-    - 'lib/split/helper.rb'
-
 # Offense count: 1
 Lint/UselessAssignment:
   Exclude:
