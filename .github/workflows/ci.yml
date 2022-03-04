@@ -69,3 +69,6 @@ jobs:
         run: bundle exec rspec
         env:
           REDIS_URL: redis:6379
+
+      - name: Rubocop
+        run: bundle exec rubocop
