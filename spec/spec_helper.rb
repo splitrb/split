@@ -31,6 +31,7 @@ end
 RSpec.configure do |config|
   config.order = 'random'
   config.include GlobalSharedContext
+  config.raise_errors_for_deprecations!
 end
 
 def session

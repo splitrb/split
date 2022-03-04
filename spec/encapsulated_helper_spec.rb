@@ -17,7 +17,7 @@ describe Split::EncapsulatedHelper do
 
     it "should not raise an error when params raises an error" do
       expect{ params }.to raise_error(NoMethodError)
-      expect(lambda { ab_test('link_color', 'blue', 'red') }).not_to raise_error
+      expect { ab_test('link_color', 'blue', 'red') }.not_to raise_error
     end
 
     it "calls the block with selected alternative" do

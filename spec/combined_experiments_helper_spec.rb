@@ -26,7 +26,7 @@ describe Split::CombinedExperimentsHelper do
       let!(:config_enabled) { false }
 
       it "raises an error" do
-        expect(lambda { ab_combined_test :combined_exp_1 }).to raise_error(Split::InvalidExperimentsFormatError )
+        expect { ab_combined_test :combined_exp_1 }.to raise_error(Split::InvalidExperimentsFormatError )
       end
     end
 
@@ -34,7 +34,7 @@ describe Split::CombinedExperimentsHelper do
       let!(:allow_multiple_experiments) { false }
 
       it "raises an error if multiple experiments is disabled" do
-        expect(lambda { ab_combined_test :combined_exp_1 }).to raise_error(Split::InvalidExperimentsFormatError)
+        expect { ab_combined_test :combined_exp_1 }.to raise_error(Split::InvalidExperimentsFormatError)
       end
     end
 
@@ -42,7 +42,7 @@ describe Split::CombinedExperimentsHelper do
       let!(:combined_experiments) { nil }
 
       it "raises an error" do
-        expect(lambda { ab_combined_test :combined_exp_1 }).to raise_error(Split::InvalidExperimentsFormatError )
+        expect { ab_combined_test :combined_exp_1 }.to raise_error(Split::InvalidExperimentsFormatError )
       end
     end
 
