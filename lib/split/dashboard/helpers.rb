@@ -40,7 +40,6 @@ module Split
       else
         'Insufficient confidence'
       end
-
     end
   end
 end

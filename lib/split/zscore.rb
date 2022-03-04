@@ -51,7 +51,6 @@ module Split
       z_score = (p_1 - p_2)/(se)
 
       return z_score
-
     end
   end
 end
