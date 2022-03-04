@@ -3,7 +3,7 @@
 module Split
   module Persistence
     class RedisAdapter
-      DEFAULT_CONFIG = {:namespace => 'persistence'}.freeze
+      DEFAULT_CONFIG = {namespace: 'persistence'}.freeze
 
       attr_reader :redis_key
 

@@ -14,8 +14,8 @@ describe Split::Persistence::CookieAdapter do
 
       it "handles invalid JSON" do
         context.request.cookies[:split] = {
-          :value => '{"foo":2,',
-          :expires => Time.now
+          value: '{"foo":2,',
+          expires: Time.now
         }
         expect(subject["my_key"]).to be_nil
         subject["my_key"] = "my_value"

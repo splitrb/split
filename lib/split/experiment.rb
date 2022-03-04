@@ -11,7 +11,7 @@ module Split
     attr_reader :resettable
 
     DEFAULT_OPTIONS = {
-      :resettable => true
+      resettable: true
     }
 
     def self.find(name)

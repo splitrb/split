@@ -5,7 +5,7 @@ require 'split/user'
 
 describe Split::User do
   let(:user_keys) { { 'link_color' => 'blue' } }
-  let(:context) { double(:session => { split:  user_keys }) }
+  let(:context) { double(session: { split:  user_keys }) }
   let(:experiment) { Split::Experiment.new('link_color') }
 
   before(:each) do

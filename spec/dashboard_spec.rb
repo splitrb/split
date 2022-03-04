@@ -226,7 +226,7 @@ describe Split::Dashboard do
 
   it "should mark an alternative as the winner" do
     expect(experiment.winner).to be_nil
-    post "/experiment?experiment=#{experiment.name}", :alternative => 'red'
+    post "/experiment?experiment=#{experiment.name}", alternative: 'red'
 
     expect(last_response).to be_redirect
     expect(experiment.winner.name).to eq('red')

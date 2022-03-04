@@ -12,9 +12,9 @@ module Split
         alternative = if Split.configuration.enabled && !exclude_visitor?
           experiment.save
           raise(Split::InvalidExperimentsFormatError) unless (Split.configuration.experiments || {}).fetch(experiment.name.to_sym, {})[:combined_experiments].nil?
-          trial = Trial.new(:user => ab_user, :experiment => experiment,
-              :override => override_alternative(experiment.name), :exclude => exclude_visitor?,
-              :disabled => split_generically_disabled?)
+          trial = Trial.new(user: ab_user, experiment: experiment,
+              override: override_alternative(experiment.name), exclude: exclude_visitor?,
+              disabled: split_generically_disabled?)
           alt = trial.choose!(self)
           alt ? alt.name : nil
         else
@@ -44,7 +44,7 @@ module Split
       ab_user.delete(experiment.key)
     end
 
-    def finish_experiment(experiment, options = {:reset => true})
+    def finish_experiment(experiment, options = {reset: true})
       return false if active_experiments[experiment.name].nil?
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
@@ -53,10 +53,10 @@ module Split
       else
         alternative_name = ab_user[experiment.key]
         trial = Trial.new(
-          :user => ab_user, 
-          :experiment => experiment,
-          :alternative => alternative_name,
-          :goals => options[:goals],
+          user: ab_user, 
+          experiment: experiment,
+          alternative: alternative_name,
+          goals: options[:goals],
         )      
         
         trial.complete!(self)
@@ -69,7 +69,7 @@ module Split
       end
     end
 
-    def ab_finished(metric_descriptor, options = {:reset => true})
+    def ab_finished(metric_descriptor, options = {reset: true})
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
@@ -77,7 +77,7 @@ module Split
       if experiments.any?
         experiments.each do |experiment|
           next if override_present?(experiment.key)
-          finish_experiment(experiment, options.merge(:goals => goals))
+          finish_experiment(experiment, options.merge(goals: goals))
         end
       end
     rescue => e

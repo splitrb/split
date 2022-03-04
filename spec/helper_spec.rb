@@ -37,10 +37,10 @@ describe Split::Helper do
 
     it "raises an appropriate error when processing combined expirements" do
       Split.configuration.experiments = {
-        :combined_exp_1 => {
-          :alternatives => [  { name: "control", percent: 50 },  { name: "test-alt", percent: 50 } ],
-          :metric => :my_metric,
-          :combined_experiments => [:combined_exp_1_sub_1]
+        combined_exp_1: {
+          alternatives: [  { name: "control", percent: 50 },  { name: "test-alt", percent: 50 } ],
+          metric: :my_metric,
+          combined_experiments: [:combined_exp_1_sub_1]
         }
       }
       Split::ExperimentCatalog.find_or_create('combined_exp_1')
@@ -280,10 +280,10 @@ describe Split::Helper do
     context 'is defined' do
       before do
         Split.configuration.experiments = {
-          :my_experiment => {
-            :alternatives => ["one", "two"],
-            :resettable => false,
-            :metadata => { 'one' => 'Meta1', 'two' => 'Meta2' }
+          my_experiment: {
+            alternatives: ["one", "two"],
+            resettable: false,
+            metadata: { 'one' => 'Meta1', 'two' => 'Meta2' }
           }
         }
       end
@@ -311,10 +311,10 @@ describe Split::Helper do
     context 'is not defined' do
       before do
         Split.configuration.experiments = {
-          :my_experiment => {
-            :alternatives => ["one", "two"],
-            :resettable => false,
-            :metadata => nil
+          my_experiment: {
+            alternatives: ["one", "two"],
+            resettable: false,
+            metadata: nil
           }
         }
       end
@@ -354,13 +354,13 @@ describe Split::Helper do
       end
 
       it "should set experiment's finished key if reset is false" do
-        ab_finished(@experiment_name, {:reset => false})
+        ab_finished(@experiment_name, {reset: false})
         expect(ab_user[@experiment.key]).to eq(@alternative_name)
         expect(ab_user[@experiment.finished_key]).to eq(true)
       end
 
       it 'should not increment the counter if reset is false and the experiment has been already finished' do
-        2.times { ab_finished(@experiment_name, {:reset => false}) }
+        2.times { ab_finished(@experiment_name, {reset: false}) }
         new_completion_count = Split::Alternative.new(@alternative_name, @experiment_name).completed_count
         expect(new_completion_count).to eq(@previous_completion_count + 1)
       end
@@ -383,7 +383,7 @@ describe Split::Helper do
 
       it "should not clear out the users session if reset is false" do
         expect(ab_user[@experiment.key]).to eq(@alternative_name)
-        ab_finished(@experiment_name, {:reset => false})
+        ab_finished(@experiment_name, {reset: false})
         expect(ab_user[@experiment.key]).to eq(@alternative_name)
         expect(ab_user[@experiment.finished_key]).to eq(true)
       end
@@ -465,9 +465,9 @@ describe Split::Helper do
   context "finished with config" do
     it "passes reset option" do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => ["one", "two"],
-          :resettable => false,
+        my_experiment: {
+          alternatives: ["one", "two"],
+          resettable: false,
         }
       }
       alternative = ab_test(:my_experiment)
@@ -499,8 +499,8 @@ describe Split::Helper do
 
     it "completes the test" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [ "control_opt", "other_opt" ],
-        :metric => :my_metric
+        alternatives: [ "control_opt", "other_opt" ],
+        metric: :my_metric
       }
       should_finish_experiment :my_experiment
       ab_finished :my_metric
@@ -508,17 +508,17 @@ describe Split::Helper do
 
     it "completes all relevant tests" do
       Split.configuration.experiments = {
-        :exp_1 => {
-          :alternatives => [ "1-1", "1-2" ],
-          :metric => :my_metric
+        exp_1: {
+          alternatives: [ "1-1", "1-2" ],
+          metric: :my_metric
         },
-        :exp_2 => {
-          :alternatives => [ "2-1", "2-2" ],
-          :metric => :another_metric
+        exp_2: {
+          alternatives: [ "2-1", "2-2" ],
+          metric: :another_metric
         },
-        :exp_3 => {
-          :alternatives => [ "3-1", "3-2" ],
-          :metric => :my_metric
+        exp_3: {
+          alternatives: [ "3-1", "3-2" ],
+          metric: :my_metric
         },
       }
       should_finish_experiment :exp_1
@@ -529,10 +529,10 @@ describe Split::Helper do
 
     it "passes reset option" do
       Split.configuration.experiments = {
-        :my_exp => {
-          :alternatives => ["one", "two"],
-          :metric => :my_metric,
-          :resettable => false,
+        my_exp: {
+          alternatives: ["one", "two"],
+          metric: :my_metric,
+          resettable: false,
         }
       }
       alternative_name = ab_test(:my_exp)
@@ -545,15 +545,15 @@ describe Split::Helper do
 
     it "passes through options" do
       Split.configuration.experiments = {
-        :my_exp => {
-          :alternatives => ["one", "two"],
-          :metric => :my_metric,
+        my_exp: {
+          alternatives: ["one", "two"],
+          metric: :my_metric,
         }
       }
       alternative_name = ab_test(:my_exp)
       exp = Split::ExperimentCatalog.find :my_exp
 
-      ab_finished :my_metric, :reset => false
+      ab_finished :my_metric, reset: false
       expect(ab_user[exp.key]).to eq(alternative_name)
       expect(ab_user[exp.finished_key]).to be_truthy
     end
@@ -583,7 +583,7 @@ describe Split::Helper do
 
     it 'should show a finished test' do
       alternative = ab_test('def', '4', '5', '6')
-      ab_finished('def', {:reset => false})
+      ab_finished('def', {reset: false})
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq "def"
       expect(active_experiments.first[1]).to eq alternative
@@ -635,7 +635,7 @@ describe Split::Helper do
 
   describe 'when user is a robot' do
     before(:each) do
-      @request = OpenStruct.new(:user_agent => 'Googlebot/2.1 (+http://www.google.com/bot.html)')
+      @request = OpenStruct.new(user_agent: 'Googlebot/2.1 (+http://www.google.com/bot.html)')
     end
 
     describe 'ab_test' do
@@ -735,7 +735,7 @@ describe Split::Helper do
   describe 'when ip address is ignored' do
     context "individually" do
       before(:each) do
-        @request = OpenStruct.new(:ip => '81.19.48.130')
+        @request = OpenStruct.new(ip: '81.19.48.130')
         Split.configure do |c|
           c.ignore_ip_addresses << '81.19.48.130'
         end
@@ -746,7 +746,7 @@ describe Split::Helper do
 
     context "for a range" do
       before(:each) do
-        @request = OpenStruct.new(:ip => '81.19.48.129')
+        @request = OpenStruct.new(ip: '81.19.48.129')
         Split.configure do |c|
           c.ignore_ip_addresses << /81\.19\.48\.[0-9]+/
         end
@@ -757,7 +757,7 @@ describe Split::Helper do
 
     context "using both a range and a specific value" do
       before(:each) do
-        @request = OpenStruct.new(:ip => '81.19.48.128')
+        @request = OpenStruct.new(ip: '81.19.48.128')
         Split.configure do |c|
           c.ignore_ip_addresses << '81.19.48.130'
           c.ignore_ip_addresses << /81\.19\.48\.[0-9]+/
@@ -769,7 +769,7 @@ describe Split::Helper do
 
     context "when ignored other address" do
       before do
-        @request = OpenStruct.new(:ip => '1.1.1.1')
+        @request = OpenStruct.new(ip: '1.1.1.1')
         Split.configure do |c|
           c.ignore_ip_addresses << '81.19.48.130'
         end
@@ -959,7 +959,7 @@ describe Split::Helper do
         context 'and preloaded config given' do
           before do
             Split.configuration.experiments[:link_color] = {
-              :alternatives => [ "blue", "red" ],
+              alternatives: [ "blue", "red" ],
             }
           end
 
@@ -993,8 +993,8 @@ describe Split::Helper do
 
     it "pulls options from config file" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [ "control_opt", "other_opt" ],
-        :goals => ["goal1", "goal2"]
+        alternatives: [ "control_opt", "other_opt" ],
+        goals: ["goal1", "goal2"]
       }
       ab_test :my_experiment
       expect(Split::Experiment.new(:my_experiment).alternatives.map(&:name)).to eq([ "control_opt", "other_opt" ])
@@ -1003,8 +1003,8 @@ describe Split::Helper do
 
     it "can be called multiple times" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [ "control_opt", "other_opt" ],
-        :goals => ["goal1", "goal2"]
+        alternatives: [ "control_opt", "other_opt" ],
+        goals: ["goal1", "goal2"]
       }
       5.times { ab_test :my_experiment }
       experiment = Split::Experiment.new(:my_experiment)
@@ -1015,8 +1015,8 @@ describe Split::Helper do
 
     it "accepts multiple goals" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [ "control_opt", "other_opt" ],
-        :goals => [ "goal1", "goal2", "goal3" ]
+        alternatives: [ "control_opt", "other_opt" ],
+        goals: [ "goal1", "goal2", "goal3" ]
       }
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
@@ -1025,7 +1025,7 @@ describe Split::Helper do
 
     it "allow specifying goals to be optional" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [ "control_opt", "other_opt" ]
+        alternatives: [ "control_opt", "other_opt" ]
       }
       experiment = Split::Experiment.new(:my_experiment)
       expect(experiment.goals).to eq([])
@@ -1033,7 +1033,7 @@ describe Split::Helper do
 
     it "accepts multiple alternatives" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [ "control_opt", "second_opt", "third_opt" ],
+        alternatives: [ "control_opt", "second_opt", "third_opt" ],
       }
       ab_test :my_experiment
       experiment = Split::Experiment.new(:my_experiment)
@@ -1042,10 +1042,10 @@ describe Split::Helper do
 
     it "accepts probability on alternatives" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [
-          { :name => "control_opt", :percent => 67 },
-          { :name => "second_opt", :percent => 10 },
-          { :name => "third_opt", :percent => 23 },
+        alternatives: [
+          { name: "control_opt", percent: 67 },
+          { name: "second_opt", percent: 10 },
+          { name: "third_opt", percent: 23 },
         ],
       }
       ab_test :my_experiment
@@ -1055,10 +1055,10 @@ describe Split::Helper do
 
     it "accepts probability on some alternatives" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [
-          { :name => "control_opt", :percent => 34 },
+        alternatives: [
+          { name: "control_opt", percent: 34 },
           "second_opt",
-          { :name => "third_opt", :percent => 23 },
+          { name: "third_opt", percent: 23 },
           "fourth_opt",
         ],
       }
@@ -1071,10 +1071,10 @@ describe Split::Helper do
 
     it "allows name param without probability" do
       Split.configuration.experiments[:my_experiment] = {
-        :alternatives => [
-          { :name => "control_opt" },
+        alternatives: [
+          { name: "control_opt" },
           "second_opt",
-          { :name => "third_opt", :percent => 64 },
+          { name: "third_opt", percent: 64 },
         ],
       }
       ab_test :my_experiment
@@ -1085,7 +1085,7 @@ describe Split::Helper do
     end
 
     it "fails gracefully if config is missing experiment" do
-      Split.configuration.experiments = { :other_experiment => { :foo => "Bar" } }
+      Split.configuration.experiments = { other_experiment: { foo: "Bar" } }
       expect { ab_test :my_experiment }.to raise_error(Split::ExperimentNotFound)
     end
 
@@ -1094,7 +1094,7 @@ describe Split::Helper do
     end
 
     it "fails gracefully if config is missing alternatives" do
-      Split.configuration.experiments[:my_experiment] = { :foo => "Bar" }
+      Split.configuration.experiments[:my_experiment] = { foo: "Bar" }
       expect { ab_test :my_experiment }.to raise_error(NoMethodError)
     end
   end

@@ -4,7 +4,7 @@ require 'time'
 
 describe Split::Experiment do
   def new_experiment(goals=[])
-    Split::Experiment.new('link_color', :alternatives => ['blue', 'red', 'green'], :goals => goals)
+    Split::Experiment.new('link_color', alternatives: ['blue', 'red', 'green'], goals: goals)
   end
 
   def alternative(color)
@@ -17,7 +17,7 @@ describe Split::Experiment do
   let(:green) { alternative("green") }
 
   context "with an experiment" do
-    let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"]) }
+    let(:experiment) { Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"]) }
 
     it "should have a name" do
       expect(experiment.name).to eq('basket_text')
@@ -110,12 +110,12 @@ describe Split::Experiment do
 
   describe 'initialization' do
     it "should set the algorithm when passed as an option to the initializer" do
-       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm =>  Split::Algorithms::Whiplash)
+       experiment = Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], algorithm: Split::Algorithms::Whiplash)
        expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
     end
 
     it "should be possible to make an experiment not resettable" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
+      experiment = Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], resettable: false)
       expect(experiment.resettable).to be_falsey
     end
 
@@ -124,7 +124,7 @@ describe Split::Experiment do
       let(:experiments) do
         {
           experiment_name => {
-            :alternatives => ['Control Opt', 'Alt one']
+            alternatives: ['Control Opt', 'Alt one']
           }
         }
       end
@@ -140,7 +140,7 @@ describe Split::Experiment do
   describe 'persistent configuration' do
 
     it "should persist resettable in redis" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
+      experiment = Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], resettable: false)
       experiment.save
 
       e = Split::ExperimentCatalog.find('basket_text')
@@ -150,7 +150,7 @@ describe Split::Experiment do
     end
 
     describe '#metadata' do
-      let(:experiment) { Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash, :metadata => meta) }
+      let(:experiment) { Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], algorithm: Split::Algorithms::Whiplash, metadata: meta) }
       let(:meta) { { a: 'b' }}
 
       before do
@@ -185,7 +185,7 @@ describe Split::Experiment do
     end
 
     it "should persist algorithm in redis" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :algorithm => Split::Algorithms::Whiplash)
+      experiment = Split::Experiment.new('basket_text', alternatives: ['Basket', "Cart"], algorithm: Split::Algorithms::Whiplash)
       experiment.save
 
       e = Split::ExperimentCatalog.find('basket_text')
@@ -194,7 +194,7 @@ describe Split::Experiment do
     end
 
     it "should persist a new experiment in redis, that does not exist in the configuration file" do
-      experiment = Split::Experiment.new('foobar', :alternatives => ['tra', 'la'], :algorithm => Split::Algorithms::Whiplash)
+      experiment = Split::Experiment.new('foobar', alternatives: ['tra', 'la'], algorithm: Split::Algorithms::Whiplash)
       experiment.save
 
       e = Split::ExperimentCatalog.find('foobar')
@@ -205,7 +205,7 @@ describe Split::Experiment do
 
   describe 'deleting' do
     it 'should delete itself' do
-      experiment = Split::Experiment.new('basket_text', :alternatives => [ 'Basket', "Cart"])
+      experiment = Split::Experiment.new('basket_text', alternatives: [ 'Basket', "Cart"])
       experiment.save
 
       experiment.delete
@@ -562,7 +562,7 @@ describe Split::Experiment do
       expect(experiment.alternatives[0].p_winner).to be_within(0.04).of(0.50)
     end
 
-    it "should calculate the probability of being the winning alternative separately for each goal", :skip => true do
+    it "should calculate the probability of being the winning alternative separately for each goal", skip: true do
       experiment = Split::ExperimentCatalog.find_or_create({'link_color3' => ["purchase", "refund"]}, 'blue', 'red', 'green')
       goal1 = experiment.goals[0]
       goal2 = experiment.goals[1]

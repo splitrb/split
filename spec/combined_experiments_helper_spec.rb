@@ -12,10 +12,10 @@ describe Split::CombinedExperimentsHelper do
 
     before do
       Split.configuration.experiments = {
-        :combined_exp_1 => {
-          :alternatives => [ {"control"=> 0.5}, {"test-alt"=> 0.5} ],
-          :metric => :my_metric,
-          :combined_experiments => combined_experiments
+        combined_exp_1: {
+          alternatives: [ {"control"=> 0.5}, {"test-alt"=> 0.5} ],
+          metric: :my_metric,
+          combined_experiments: combined_experiments
         }
       }
       Split.configuration.enabled = config_enabled

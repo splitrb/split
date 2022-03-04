@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe Split::Persistence::SessionAdapter do
 
-  let(:context) { double(:session => {}) }
+  let(:context) { double(session: {}) }
   subject { Split::Persistence::SessionAdapter.new(context) }
 
   describe "#[] and #[]=" do
