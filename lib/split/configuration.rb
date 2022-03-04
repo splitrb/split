@@ -114,7 +114,7 @@ module Split
       }
     end
 
-    def experiments= experiments
+    def experiments=(experiments)
       raise InvalidExperimentsFormatError.new('Experiments must be a Hash') unless experiments.respond_to?(:keys)
       @experiments = experiments
     end
