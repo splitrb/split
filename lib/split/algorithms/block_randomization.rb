@@ -12,11 +12,11 @@ module Split
         end
 
         private
-        def minimum_participant_alternatives(alternatives)
-          alternatives_by_count = alternatives.group_by(&:participant_count)
-          min_group = alternatives_by_count.min_by { |k, v| k }
-          min_group.last
-        end
+          def minimum_participant_alternatives(alternatives)
+            alternatives_by_count = alternatives.group_by(&:participant_count)
+            min_group = alternatives_by_count.min_by { |k, v| k }
+            min_group.last
+          end
       end
     end
   end

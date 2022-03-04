@@ -37,8 +37,8 @@ module Split
     end
 
     private
-    def goals_key
-      "#{@experiment_name}:goals"
-    end
+      def goals_key
+        "#{@experiment_name}:goals"
+      end
   end
 end

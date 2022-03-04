@@ -33,9 +33,9 @@ module Split
     end
 
     private
-    # instantiate and memoize a context shim in case of multiple ab_test* calls
-    def split_context_shim
-      @split_context_shim ||= ContextShim.new(self)
-    end
+      # instantiate and memoize a context shim in case of multiple ab_test* calls
+      def split_context_shim
+        @split_context_shim ||= ContextShim.new(self)
+      end
   end
 end

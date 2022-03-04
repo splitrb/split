@@ -24,7 +24,7 @@ module Split
 
     def alternative
       @alternative ||=  if @experiment.has_winner?
-                          @experiment.winner
+        @experiment.winner
       end
     end
 
@@ -97,30 +97,30 @@ module Split
     end
 
     private
-    def run_callback(context, callback_name)
-      context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
-    end
-
-    def override_is_alternative?
-      @experiment.alternatives.map(&:name).include?(@options[:override])
-    end
-
-    def should_store_alternative?
-      if @options[:override] || @options[:disabled]
-        Split.configuration.store_override
-      else
-        !exclude_user?
+      def run_callback(context, callback_name)
+        context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
       end
-    end
 
-    def cleanup_old_versions
-      if @experiment.version > 0
-        @user.cleanup_old_versions!(@experiment)
+      def override_is_alternative?
+        @experiment.alternatives.map(&:name).include?(@options[:override])
       end
-    end
 
-    def exclude_user?
-      @options[:exclude] || @experiment.start_time.nil? || @user.max_experiments_reached?(@experiment.key)
-    end
+      def should_store_alternative?
+        if @options[:override] || @options[:disabled]
+          Split.configuration.store_override
+        else
+          !exclude_user?
+        end
+      end
+
+      def cleanup_old_versions
+        if @experiment.version > 0
+          @user.cleanup_old_versions!(@experiment)
+        end
+      end
+
+      def exclude_user?
+        @options[:exclude] || @experiment.start_time.nil? || @user.max_experiments_reached?(@experiment.key)
+      end
   end
 end

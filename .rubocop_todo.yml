@@ -6,25 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 17
-# Cop supports --auto-correct.
-# Configuration parameters: Width, IgnoredPatterns.
-Layout/IndentationWidth:
-  Exclude:
-    - 'lib/split/algorithms/block_randomization.rb'
-    - 'lib/split/algorithms/whiplash.rb'
-    - 'lib/split/alternative.rb'
-    - 'lib/split/configuration.rb'
-    - 'lib/split/dashboard/pagination_helpers.rb'
-    - 'lib/split/encapsulated_helper.rb'
-    - 'lib/split/experiment.rb'
-    - 'lib/split/goals_collection.rb'
-    - 'lib/split/persistence/cookie_adapter.rb'
-    - 'lib/split/persistence/dual_adapter.rb'
-    - 'lib/split/redis_interface.rb'
-    - 'lib/split/trial.rb'
-    - 'lib/split/user.rb'
-
 # Offense count: 1
 Lint/UselessAssignment:
   Exclude:

@@ -157,7 +157,7 @@ module Split
 
       @experiments.each do |experiment_name, settings|
         alternatives = if (alts = value_for(settings, :alternatives))
-                         normalize_alternatives(alts)
+          normalize_alternatives(alts)
         end
 
         experiment_data = {
@@ -237,14 +237,14 @@ module Split
     end
 
     private
-    def value_for(hash, key)
-      if hash.kind_of?(Hash)
-        hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
+      def value_for(hash, key)
+        if hash.kind_of?(Hash)
+          hash.has_key?(key.to_s) ? hash[key.to_s] : hash[key.to_sym]
+        end
       end
-    end
 
-    def escaped_bots
-      bots.map { |key, _| Regexp.escape(key) }
-    end
+      def escaped_bots
+        bots.map { |key, _| Regexp.escape(key) }
+      end
   end
 end

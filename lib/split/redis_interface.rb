@@ -24,6 +24,6 @@ module Split
     end
 
     private
-    attr_accessor :redis
+      attr_accessor :redis
   end
 end

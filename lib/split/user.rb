@@ -65,16 +65,16 @@ module Split
     end
 
     private
-    def keys_without_experiment(keys, experiment_key)
-      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
-    end
+      def keys_without_experiment(keys, experiment_key)
+        keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+      end
 
-    def keys_without_finished(keys)
-      keys.reject { |k| k.include?(":finished") }
-    end
+      def keys_without_finished(keys)
+        keys.reject { |k| k.include?(":finished") }
+      end
 
-    def key_without_version(key)
-      key.split(/\:\d(?!\:)/)[0]
-    end
+      def key_without_version(key)
+        key.split(/\:\d(?!\:)/)[0]
+      end
   end
 end
