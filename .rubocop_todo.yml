@@ -8,12 +8,6 @@
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Style/ColonMethodCall:
-  Exclude:
-    - 'lib/split/combined_experiments_helper.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 Style/DefWithParentheses:
   Exclude:
     - 'lib/split/helper.rb'
