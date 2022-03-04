@@ -3,7 +3,7 @@
 module Split
   module Persistence
     class DualAdapter
-      def self.with_config(options={})
+      def self.with_config(options = {})
         self.config.merge!(options)
         self
       end

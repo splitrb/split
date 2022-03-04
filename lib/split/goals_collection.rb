@@ -2,7 +2,7 @@
 
 module Split
   class GoalsCollection
-    def initialize(experiment_name, goals=nil)
+    def initialize(experiment_name, goals = nil)
       @experiment_name = experiment_name
       @goals = goals
     end

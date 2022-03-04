@@ -44,7 +44,7 @@ module Split
         new(nil, user_id)
       end
 
-      def self.with_config(options={})
+      def self.with_config(options = {})
         self.config.merge!(options)
         self
       end
