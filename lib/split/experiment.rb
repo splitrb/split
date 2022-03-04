@@ -330,7 +330,7 @@ module Split
     end
 
     def count_simulated_wins(winning_alternatives)
-       # initialize a hash to keep track of winning alternative in simulations
+      # initialize a hash to keep track of winning alternative in simulations
       winning_counts = {}
       alternatives.each do |alternative|
         winning_counts[alternative] = 0
