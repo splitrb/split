@@ -95,7 +95,7 @@ module Split
           alternative_name = ab_user[experiment.key]
 
           if alternative_name
-            alternative = experiment.alternatives.find {|alt| alt.name == alternative_name}
+            alternative = experiment.alternatives.find { |alt| alt.name == alternative_name }
             alternative.record_extra_info(key, value) if alternative
           end
         end

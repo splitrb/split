@@ -25,21 +25,6 @@ Layout/IndentationWidth:
     - 'lib/split/trial.rb'
     - 'lib/split/user.rb'
 
-# Offense count: 35
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, EnforcedStyleForEmptyBraces, SpaceBeforeBlockParameters.
-# SupportedStyles: space, no_space
-# SupportedStylesForEmptyBraces: space, no_space
-Layout/SpaceInsideBlockBraces:
-  Exclude:
-    - 'lib/split.rb'
-    - 'lib/split/configuration.rb'
-    - 'lib/split/experiment.rb'
-    - 'lib/split/experiment_catalog.rb'
-    - 'lib/split/helper.rb'
-    - 'lib/split/trial.rb'
-    - 'lib/split/user.rb'
-
 # Offense count: 10
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle, EnforcedStyleForEmptyBraces.

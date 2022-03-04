@@ -32,7 +32,7 @@ module Split
       @alternative = if alternative.kind_of?(Split::Alternative)
         alternative
       else
-        @experiment.alternatives.find {|a| a.name == alternative }
+        @experiment.alternatives.find { |a| a.name == alternative }
       end
     end
 
@@ -41,7 +41,7 @@ module Split
         if Array(goals).empty?
           alternative.increment_completion
         else
-          Array(goals).each {|g| alternative.increment_completion(g) }
+          Array(goals).each { |g| alternative.increment_completion(g) }
         end
 
         run_callback context, Split.configuration.on_trial_complete
