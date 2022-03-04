@@ -105,7 +105,7 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
-    def ab_active_experiments()
+    def ab_active_experiments
       ab_user.active_experiments
     rescue => e
       raise unless Split.configuration.db_failover

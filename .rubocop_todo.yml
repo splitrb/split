@@ -8,12 +8,6 @@
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Style/DefWithParentheses:
-  Exclude:
-    - 'lib/split/helper.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.
 # SupportedStyles: require_parentheses, require_no_parentheses, require_no_parentheses_except_multiline
 Style/MethodDefParentheses:
