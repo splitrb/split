@@ -22,7 +22,7 @@ module Split
           Split::ExperimentCatalog.find(experiment_name)
         end
 
-        Split::Metric.new(:name => name, :experiments => experiments)
+        Split::Metric.new(name: name, experiments: experiments)
       else
         nil
       end
@@ -31,7 +31,7 @@ module Split
     def self.load_from_configuration(name)
       metrics = Split.configuration.metrics
       if metrics && metrics[name]
-        Split::Metric.new(:experiments => metrics[name], :name => name)
+        Split::Metric.new(experiments: metrics[name], name: name)
       else
         nil
       end

@@ -29,7 +29,7 @@ describe Split::Alternative do
 
   describe 'weights' do
     it "should set the weights" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => [{'Basket' => 0.6}, {"Cart" => 0.4}])
+      experiment = Split::Experiment.new('basket_text', alternatives: [{'Basket' => 0.6}, {"Cart" => 0.4}])
       first = experiment.alternatives[0]
       expect(first.name).to eq('Basket')
       expect(first.weight).to eq(0.6)
@@ -41,11 +41,11 @@ describe Split::Alternative do
 
     it "accepts probability on alternatives" do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt", :percent => 67 },
-            { :name => "second_opt", :percent => 10 },
-            { :name => "third_opt", :percent => 23 },
+        my_experiment: {
+          alternatives: [
+            { name: "control_opt", percent: 67 },
+            { name: "second_opt", percent: 10 },
+            { name: "third_opt", percent: 23 },
           ]
         }
       }
@@ -61,11 +61,11 @@ describe Split::Alternative do
 
     it "accepts probability on some alternatives" do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt", :percent => 34 },
+        my_experiment: {
+          alternatives: [
+            { name: "control_opt", percent: 34 },
             "second_opt",
-            { :name => "third_opt", :percent => 23 },
+            { name: "third_opt", percent: 23 },
             "fourth_opt",
           ],
         }
@@ -87,11 +87,11 @@ describe Split::Alternative do
     #
     it "allows name param without probability" do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt" },
+        my_experiment: {
+          alternatives: [
+            { name: "control_opt" },
             "second_opt",
-            { :name => "third_opt", :percent => 64 },
+            { name: "third_opt", percent: 64 },
           ],
         }
       }

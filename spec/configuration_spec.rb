@@ -58,17 +58,15 @@ describe Split::Configuration do
   end
 
   it "should load a metric" do
-    @config.experiments = {:my_experiment=>
-        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
+    @config.experiments = { my_experiment: {alternatives: ["control_opt", "other_opt"], metric: :my_metric } }
 
     expect(@config.metrics).not_to be_nil
     expect(@config.metrics.keys).to eq([:my_metric])
   end
 
   it "should allow loading of experiment using experment_for" do
-    @config.experiments = {:my_experiment=>
-        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
-    expect(@config.experiment_for(:my_experiment)).to eq({:alternatives=>["control_opt", ["other_opt"]]})
+    @config.experiments = { my_experiment: { alternatives: ["control_opt", "other_opt"], metric: :my_metric } }
+    expect(@config.experiment_for(:my_experiment)).to eq({ alternatives: ["control_opt", ["other_opt"]] })
   end
 
   context "when experiments are defined via YAML" do
@@ -87,7 +85,7 @@ describe Split::Configuration do
         end
 
         it 'should normalize experiments' do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
+          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, alternatives: ["Control Opt", ["Alt One", "Alt Two"]] } })
         end
       end
 
@@ -143,8 +141,8 @@ describe Split::Configuration do
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>[{"Control Opt"=>0.67},
-            [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, :another_experiment=>{:alternatives=>["a", ["b"]]}})
+          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, alternatives: [{"Control Opt"=>0.67},
+            [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, another_experiment: { alternatives: ["a", ["b"]]}})
         end
 
         it "should recognize metrics" do
@@ -171,7 +169,7 @@ describe Split::Configuration do
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
+          expect(@config.normalized_experiments).to eq({my_experiment: { resettable: false, alternatives: ["Control Opt", ["Alt One", "Alt Two"]]}})
         end
       end
 
@@ -200,16 +198,16 @@ describe Split::Configuration do
 
   it "should normalize experiments" do
     @config.experiments = {
-      :my_experiment => {
-        :alternatives => [
-          { :name => "control_opt", :percent => 67 },
-          { :name => "second_opt", :percent => 10 },
-          { :name => "third_opt", :percent => 23 },
+      my_experiment: {
+        alternatives: [
+          { name: "control_opt", percent: 67 },
+          { name: "second_opt", percent: 10 },
+          { name: "third_opt", percent: 23 },
         ],
       }
     }
 
-    expect(@config.normalized_experiments).to eq({:my_experiment=>{:alternatives=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}})
+    expect(@config.normalized_experiments).to eq({ my_experiment: { alternatives: [{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}})
   end
 
   context "redis configuration" do

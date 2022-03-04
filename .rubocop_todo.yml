@@ -186,20 +186,6 @@ Style/DefWithParentheses:
   Exclude:
     - 'lib/split/helper.rb'
 
-# Offense count: 23
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, UseHashRocketsWithSymbolValues, PreferHashRocketsForNonAlnumEndingSymbols.
-# SupportedStyles: ruby19, hash_rockets, no_mixed_keys, ruby19_no_mixed_keys
-Style/HashSyntax:
-  Exclude:
-    - 'Rakefile'
-    - 'lib/split/experiment.rb'
-    - 'lib/split/experiment_catalog.rb'
-    - 'lib/split/helper.rb'
-    - 'lib/split/metric.rb'
-    - 'lib/split/persistence.rb'
-    - 'lib/split/persistence/redis_adapter.rb'
-
 # Offense count: 1
 # Cop supports --auto-correct.
 # Configuration parameters: EnforcedStyle.

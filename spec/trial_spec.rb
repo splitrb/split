@@ -6,31 +6,31 @@ describe Split::Trial do
   let(:user) { mock_user }
   let(:alternatives) { ['basket', 'cart'] }
   let(:experiment) do
-    Split::Experiment.new('basket_text', :alternatives => alternatives).save
+    Split::Experiment.new('basket_text', alternatives: alternatives).save
   end
 
   it "should be initializeable" do
     experiment  = double('experiment')
-    alternative = double('alternative', :kind_of? => Split::Alternative)
-    trial = Split::Trial.new(:experiment => experiment, :alternative => alternative)
+    alternative = double('alternative', kind_of?: Split::Alternative)
+    trial = Split::Trial.new(experiment: experiment, alternative: alternative)
     expect(trial.experiment).to eq(experiment)
     expect(trial.alternative).to eq(alternative)
   end
 
   describe "alternative" do
     it "should use the alternative if specified" do
-      alternative = double('alternative', :kind_of? => Split::Alternative)
-      trial = Split::Trial.new(:experiment => double('experiment'),
-          :alternative => alternative, :user => user)
+      alternative = double('alternative', kind_of?: Split::Alternative)
+      trial = Split::Trial.new(experiment: double('experiment'),
+          alternative: alternative, user: user)
       expect(trial).not_to receive(:choose)
       expect(trial.alternative).to eq(alternative)
     end
 
     it "should load the alternative when the alternative name is set" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => ['basket', 'cart'])
+      experiment = Split::Experiment.new('basket_text', alternatives: ['basket', 'cart'])
       experiment.save
 
-      trial = Split::Trial.new(:experiment => experiment, :alternative => 'basket')
+      trial = Split::Trial.new(experiment: experiment, alternative: 'basket')
       expect(trial.alternative.name).to eq('basket')
     end
   end
@@ -38,17 +38,17 @@ describe Split::Trial do
   describe "metadata" do
     let(:metadata) { Hash[alternatives.map { |k| [k, "Metadata for #{k}"] }] }
     let(:experiment) do
-      Split::Experiment.new('basket_text', :alternatives => alternatives, :metadata => metadata).save
+      Split::Experiment.new('basket_text', alternatives: alternatives, metadata: metadata).save
     end
 
     it 'has metadata on each trial' do
-      trial = Split::Trial.new(:experiment => experiment, :user => user, :metadata => metadata['cart'],
-                               :override => 'cart')
+      trial = Split::Trial.new(experiment: experiment, user: user, metadata: metadata['cart'],
+                               override: 'cart')
       expect(trial.metadata).to eq(metadata['cart'])
     end
 
     it 'has metadata on each trial from the experiment' do
-      trial = Split::Trial.new(:experiment => experiment, :user => user)
+      trial = Split::Trial.new(experiment: experiment, user: user)
       trial.choose!
       expect(trial.metadata).to eq(metadata[trial.alternative.name])
       expect(trial.metadata).to match(/#{trial.alternative.name}/)
@@ -58,7 +58,7 @@ describe Split::Trial do
   describe "#choose!" do
     let(:context) { double(on_trial_callback: 'test callback') }
     let(:trial) do
-      Split::Trial.new(:user => user, :experiment => experiment)
+      Split::Trial.new(user: user, experiment: experiment)
     end
 
     shared_examples_for 'a trial with callbacks' do
@@ -90,7 +90,7 @@ describe Split::Trial do
     context "when override is present" do
       let(:override) { 'cart' }
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment, :override => override)
+        Split::Trial.new(user: user, experiment: experiment, override: override)
       end
 
       it_behaves_like 'a trial with callbacks'
@@ -111,7 +111,7 @@ describe Split::Trial do
 
     context "when disabled option is true" do
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
+        Split::Trial.new(user: user, experiment: experiment, disabled: true)
       end
 
       it "picks the control", :aggregate_failures do
@@ -141,7 +141,7 @@ describe Split::Trial do
 
     context "when experiment has winner" do
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment)
+        Split::Trial.new(user: user, experiment: experiment)
       end
 
       it_behaves_like 'a trial with callbacks'
@@ -156,7 +156,7 @@ describe Split::Trial do
 
     context "when exclude is true" do
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment, :exclude => true)
+        Split::Trial.new(user: user, experiment: experiment, exclude: true)
       end
 
       it_behaves_like 'a trial with callbacks'
@@ -230,7 +230,7 @@ describe Split::Trial do
 
   describe "#complete!" do
     context 'when there are no goals' do
-      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+      let(:trial) { Split::Trial.new(user: user, experiment: experiment) }
       it 'should complete the trial' do
         trial.choose!
         old_completed_count = trial.alternative.completed_count
@@ -241,7 +241,7 @@ describe Split::Trial do
 
     context "when there are many goals" do
       let(:goals) { [ "goal1", "goal2" ] }
-      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goals) }
+      let(:trial) { Split::Trial.new(user: user, experiment: experiment, goals: goals) }
 
       it "increments the completed count corresponding to the goals" do
         trial.choose!
@@ -253,7 +253,7 @@ describe Split::Trial do
 
     context "when there is 1 goal of type string" do
       let(:goal) { "goal" }
-      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goal) }
+      let(:trial) { Split::Trial.new(user: user, experiment: experiment, goals: goal) }
       it "increments the completed count corresponding to the goal" do
         trial.choose!
         old_completed_count = trial.alternative.completed_count(goal)
@@ -268,7 +268,7 @@ describe Split::Trial do
 
     context "when override is present" do
       it "stores when store_override is true" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
+        trial = Split::Trial.new(user: user, experiment: experiment, override: 'basket')
 
         Split.configuration.store_override = true
         expect(user).to receive("[]=")
@@ -277,7 +277,7 @@ describe Split::Trial do
       end
 
       it "does not store when store_override is false" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
+        trial = Split::Trial.new(user: user, experiment: experiment, override: 'basket')
 
         expect(user).to_not receive("[]=")
         trial.choose!
@@ -286,7 +286,7 @@ describe Split::Trial do
 
     context "when disabled is present" do
       it "stores when store_override is true" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
+        trial = Split::Trial.new(user: user, experiment: experiment, disabled: true)
 
         Split.configuration.store_override = true
         expect(user).to receive("[]=")
@@ -294,7 +294,7 @@ describe Split::Trial do
       end
 
       it "does not store when store_override is false" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
+        trial = Split::Trial.new(user: user, experiment: experiment, disabled: true)
 
         expect(user).to_not receive("[]=")
         trial.choose!
@@ -303,7 +303,7 @@ describe Split::Trial do
 
     context "when exclude is present" do
       it "does not store" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :exclude => true)
+        trial = Split::Trial.new(user: user, experiment: experiment, exclude: true)
 
         expect(user).to_not receive("[]=")
         trial.choose!
@@ -313,7 +313,7 @@ describe Split::Trial do
     context 'when experiment has winner' do
       let(:trial) do
         experiment.winner = 'cart'
-        Split::Trial.new(:user => user, :experiment => experiment)
+        Split::Trial.new(user: user, experiment: experiment)
       end
 
       it 'does not store' do
