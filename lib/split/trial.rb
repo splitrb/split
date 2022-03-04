@@ -25,7 +25,7 @@ module Split
     def alternative
       @alternative ||=  if @experiment.has_winner?
                           @experiment.winner
-                        end
+      end
     end
 
     def alternative=(alternative)

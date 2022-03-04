@@ -68,16 +68,14 @@ module Split
       end
 
       def hash
-        @hash ||= begin
-          if cookies = @cookies[:split.to_s]
+        @hash ||= if cookies = @cookies[:split.to_s]
             begin
               JSON.parse(cookies)
             rescue JSON::ParserError
               {}
             end
-          else
+        else
             {}
-          end
         end
       end
 

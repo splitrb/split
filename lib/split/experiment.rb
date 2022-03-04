@@ -395,7 +395,7 @@ module Split
                 name
       else
                 name + "-" + goal
-              end
+      end
       js_id.gsub('/', '--')
     end
 

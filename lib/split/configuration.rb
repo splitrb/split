@@ -158,7 +158,7 @@ module Split
       @experiments.each do |experiment_name, settings|
         alternatives = if (alts = value_for(settings, :alternatives))
                          normalize_alternatives(alts)
-                       end
+        end
 
         experiment_data = {
           alternatives: alternatives,
