@@ -1,8 +1,7 @@
-inherit_from: .rubocop_todo.yml
-
 AllCops:
   TargetRubyVersion: 2.5
   DisabledByDefault: true
+  SuggestExtensions: false
   Exclude:
     - 'gemfiles/**/*'
 
@@ -112,7 +111,7 @@ Layout/SpaceInsideParens:
   Enabled: true
 
 Style/StringLiterals:
-  Enabled: false
+  Enabled: true
   EnforcedStyle: double_quotes
 
 Layout/IndentationStyle:

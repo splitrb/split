@@ -38,11 +38,11 @@ module Split
     end
 
     def participant_count
-      Split.redis.hget(key, 'participant_count').to_i
+      Split.redis.hget(key, "participant_count").to_i
     end
 
     def participant_count=(count)
-      Split.redis.hset(key, 'participant_count', count.to_i)
+      Split.redis.hset(key, "participant_count", count.to_i)
     end
 
     def completed_count(goal = nil)
@@ -82,7 +82,7 @@ module Split
     end
 
     def increment_participation
-      Split.redis.hincrby key, 'participant_count', 1
+      Split.redis.hincrby key, "participant_count", 1
     end
 
     def increment_completion(goal = nil)
@@ -112,7 +112,7 @@ module Split
       control = experiment.control
       alternative = self
 
-      return 'N/A' if control.name == alternative.name
+      return "N/A" if control.name == alternative.name
 
       p_a = alternative.conversion_rate(goal)
       p_c = control.conversion_rate(goal)
@@ -121,13 +121,13 @@ module Split
       n_c = control.participant_count
 
       # can't calculate zscore for P(x) > 1
-      return 'N/A' if p_a > 1 || p_c > 1
+      return "N/A" if p_a > 1 || p_c > 1
 
       Split::Zscore.calculate(p_a, n_a, p_c, n_c)
     end
 
     def extra_info
-      data = Split.redis.hget(key, 'recorded_info')
+      data = Split.redis.hget(key, "recorded_info")
       if data && data.length > 1
         begin
           JSON.parse(data)
@@ -149,24 +149,24 @@ module Split
         @recorded_info[k] = value
       end
 
-      Split.redis.hset key, 'recorded_info', (@recorded_info || {}).to_json
+      Split.redis.hset key, "recorded_info", (@recorded_info || {}).to_json
     end
 
     def save
-      Split.redis.hsetnx key, 'participant_count', 0
-      Split.redis.hsetnx key, 'completed_count', 0
-      Split.redis.hsetnx key, 'p_winner', p_winner
-      Split.redis.hsetnx key, 'recorded_info', (@recorded_info || {}).to_json
+      Split.redis.hsetnx key, "participant_count", 0
+      Split.redis.hsetnx key, "completed_count", 0
+      Split.redis.hsetnx key, "p_winner", p_winner
+      Split.redis.hsetnx key, "recorded_info", (@recorded_info || {}).to_json
     end
 
     def validate!
       unless String === @name || hash_with_correct_values?(@name)
-        raise ArgumentError, 'Alternative must be a string'
+        raise ArgumentError, "Alternative must be a string"
       end
     end
 
     def reset
-      Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0, 'recorded_info', nil
+      Split.redis.hmset key, "participant_count", 0, "completed_count", 0, "recorded_info", nil
       unless goals.empty?
         goals.each do |g|
           field = "completed_count:#{g}"

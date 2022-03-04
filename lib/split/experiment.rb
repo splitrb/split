@@ -119,7 +119,7 @@ module Split
     end
 
     def resettable=(resettable)
-      @resettable = resettable.is_a?(String) ? resettable == 'true' : resettable
+      @resettable = resettable.is_a?(String) ? resettable == "true" : resettable
     end
 
     def alternatives=(alts)
@@ -260,8 +260,8 @@ module Split
       exp_config = redis.hgetall(experiment_config_key)
 
       options = {
-        resettable: exp_config['resettable'],
-        algorithm: exp_config['algorithm'],
+        resettable: exp_config["resettable"],
+        algorithm: exp_config["algorithm"],
         alternatives: load_alternatives_from_redis,
         goals: Split::GoalsCollection.new(@name).load_from_redis,
         metadata: load_metadata_from_redis
@@ -396,7 +396,7 @@ module Split
       else
         name + "-" + goal
       end
-      js_id.gsub('/', '--')
+      js_id.gsub("/", "--")
     end
 
     def cohorting_disabled?

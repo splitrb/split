@@ -43,7 +43,7 @@ module Split
         end
 
         def default_options
-          { expires: @expires, path: '/', domain: cookie_domain_config }.compact
+          { expires: @expires, path: "/", domain: cookie_domain_config }.compact
         end
 
         def set_cookie_via_rack(key, value)
@@ -53,9 +53,9 @@ module Split
 
         # Use Rack::Utils#make_delete_cookie_header after Rack 2.0.0
         def delete_cookie_header!(header, key, value)
-          cookie_header = header['Set-Cookie']
+          cookie_header = header["Set-Cookie"]
           case cookie_header
-          when nil, ''
+          when nil, ""
             cookies = []
           when String
             cookies = cookie_header.split("\n")
@@ -64,7 +64,7 @@ module Split
           end
 
           cookies.reject! { |cookie| cookie =~ /\A#{Rack::Utils.escape(key)}=/ }
-          header['Set-Cookie'] = cookies.join("\n")
+          header["Set-Cookie"] = cookies.join("\n")
         end
 
         def hash

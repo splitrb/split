@@ -25,7 +25,7 @@ module Split
       end
 
       experiment_name_with_version, goals = normalize_experiment(metric_descriptor)
-      experiment_name = experiment_name_with_version.to_s.split(':')[0]
+      experiment_name = experiment_name_with_version.to_s.split(":")[0]
       Split::Experiment.new(experiment_name,
           alternatives: [control].compact + alternatives, goals: goals)
     end

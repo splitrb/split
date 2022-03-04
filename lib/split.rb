@@ -1,30 +1,30 @@
 # frozen_string_literal: true
 
-require 'redis'
+require "redis"
 
-require 'split/algorithms'
-require 'split/algorithms/block_randomization'
-require 'split/algorithms/weighted_sample'
-require 'split/algorithms/whiplash'
-require 'split/alternative'
-require 'split/cache'
-require 'split/configuration'
-require 'split/encapsulated_helper'
-require 'split/exceptions'
-require 'split/experiment'
-require 'split/experiment_catalog'
-require 'split/extensions/string'
-require 'split/goals_collection'
-require 'split/helper'
-require 'split/combined_experiments_helper'
-require 'split/metric'
-require 'split/persistence'
-require 'split/redis_interface'
-require 'split/trial'
-require 'split/user'
-require 'split/version'
-require 'split/zscore'
-require 'split/engine' if defined?(Rails)
+require "split/algorithms"
+require "split/algorithms/block_randomization"
+require "split/algorithms/weighted_sample"
+require "split/algorithms/whiplash"
+require "split/alternative"
+require "split/cache"
+require "split/configuration"
+require "split/encapsulated_helper"
+require "split/exceptions"
+require "split/experiment"
+require "split/experiment_catalog"
+require "split/extensions/string"
+require "split/goals_collection"
+require "split/helper"
+require "split/combined_experiments_helper"
+require "split/metric"
+require "split/persistence"
+require "split/redis_interface"
+require "split/trial"
+require "split/user"
+require "split/version"
+require "split/zscore"
+require "split/engine" if defined?(Rails)
 
 module Split
   extend self

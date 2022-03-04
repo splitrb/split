@@ -4,6 +4,6 @@ source "https://rubygems.org"
 
 gemspec
 
-gem 'rubocop', require: false
+gem "rubocop", require: false
 gem "matrix"
 gem "codeclimate-test-reporter"

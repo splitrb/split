@@ -16,7 +16,7 @@ module Split
     def self.load_from_redis(name)
       metric = Split.redis.hget(:metrics, name)
       if metric
-        experiment_names = metric.split(',')
+        experiment_names = metric.split(",")
 
         experiments = experiment_names.collect do |experiment_name|
           Split::ExperimentCatalog.find(experiment_name)
@@ -77,7 +77,7 @@ module Split
     end
 
     def save
-      Split.redis.hset(:metrics, name, experiments.map(&:name).join(','))
+      Split.redis.hset(:metrics, name, experiments.map(&:name).join(","))
     end
 
     def complete!

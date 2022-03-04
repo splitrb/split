@@ -29,9 +29,9 @@ module Split
     end
 
     def find_combined_experiment(metric_descriptor)
-      raise(Split::InvalidExperimentsFormatError, 'Invalid descriptor class (String or Symbol required)') unless metric_descriptor.class == String || metric_descriptor.class == Symbol
-      raise(Split::InvalidExperimentsFormatError, 'Enable configuration') unless Split.configuration.enabled
-      raise(Split::InvalidExperimentsFormatError, 'Enable `allow_multiple_experiments`') unless Split.configuration.allow_multiple_experiments
+      raise(Split::InvalidExperimentsFormatError, "Invalid descriptor class (String or Symbol required)") unless metric_descriptor.class == String || metric_descriptor.class == Symbol
+      raise(Split::InvalidExperimentsFormatError, "Enable configuration") unless Split.configuration.enabled
+      raise(Split::InvalidExperimentsFormatError, "Enable `allow_multiple_experiments`") unless Split.configuration.allow_multiple_experiments
       Split.configuration.experiments[metric_descriptor.to_sym]
     end
   end
