@@ -25,14 +25,6 @@ Layout/IndentationWidth:
     - 'lib/split/trial.rb'
     - 'lib/split/user.rb'
 
-# Offense count: 1
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: final_newline, final_blank_line
-Layout/TrailingEmptyLines:
-  Exclude:
-    - 'Rakefile'
-
 # Offense count: 3
 # Cop supports --auto-correct.
 # Configuration parameters: AllowInHeredoc.
