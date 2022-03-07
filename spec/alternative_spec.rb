@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require 'split/alternative'
+require "spec_helper"
+require "split/alternative"
 
 describe Split::Alternative do
   let(:alternative) {
-    Split::Alternative.new('Basket', 'basket_text')
+    Split::Alternative.new("Basket", "basket_text")
   }
 
   let(:alternative2) {
-    Split::Alternative.new('Cart', 'basket_text')
+    Split::Alternative.new("Cart", "basket_text")
   }
 
   let!(:experiment) {
@@ -24,18 +24,18 @@ describe Split::Alternative do
   end
 
   it "should have and only return the name" do
-    expect(alternative.name).to eq('Basket')
+    expect(alternative.name).to eq("Basket")
   end
 
-  describe 'weights' do
+  describe "weights" do
     it "should set the weights" do
-      experiment = Split::Experiment.new('basket_text', alternatives: [{ 'Basket' => 0.6 }, { "Cart" => 0.4 }])
+      experiment = Split::Experiment.new("basket_text", alternatives: [{ "Basket" => 0.6 }, { "Cart" => 0.4 }])
       first = experiment.alternatives[0]
-      expect(first.name).to eq('Basket')
+      expect(first.name).to eq("Basket")
       expect(first.weight).to eq(0.6)
 
       second = experiment.alternatives[1]
-      expect(second.name).to eq('Cart')
+      expect(second.name).to eq("Cart")
       expect(second.weight).to eq(0.4)
     end
 
@@ -51,11 +51,11 @@ describe Split::Alternative do
       }
       experiment = Split::Experiment.new(:my_experiment)
       first = experiment.alternatives[0]
-      expect(first.name).to eq('control_opt')
+      expect(first.name).to eq("control_opt")
       expect(first.weight).to eq(0.67)
 
       second = experiment.alternatives[1]
-      expect(second.name).to eq('second_opt')
+      expect(second.name).to eq("second_opt")
       expect(second.weight).to eq(0.1)
     end
 
@@ -126,7 +126,7 @@ describe Split::Alternative do
 
   it "should save to redis" do
     alternative.save
-    expect(Split.redis.exists?('basket_text:Basket')).to be true
+    expect(Split.redis.exists?("basket_text:Basket")).to be true
   end
 
   it "should increment participation count" do
@@ -166,7 +166,7 @@ describe Split::Alternative do
     expect(alternative2.control?).to be_falsey
   end
 
-  describe 'unfinished_count' do
+  describe "unfinished_count" do
     it "should be difference between participant and completed counts" do
       alternative.increment_participation
       expect(alternative.unfinished_count).to eq(alternative.participant_count)
@@ -182,7 +182,7 @@ describe Split::Alternative do
     end
   end
 
-  describe 'conversion rate' do
+  describe "conversion rate" do
     it "should be 0 if there are no conversions" do
       expect(alternative.completed_count).to eq(0)
       expect(alternative.conversion_rate).to eq(0)
@@ -225,7 +225,7 @@ describe Split::Alternative do
     end
   end
 
-  describe 'z score' do
+  describe "z score" do
     it "should return an error string when the control has 0 people" do
       expect(alternative2.z_score).to eq("Needs 30+ participants.")
       expect(alternative2.z_score(goal1)).to eq("Needs 30+ participants.")
@@ -268,9 +268,9 @@ describe Split::Alternative do
 
     it "should be N/A for the control" do
       control = experiment.control
-      expect(control.z_score).to eq('N/A')
-      expect(control.z_score(goal1)).to eq('N/A')
-      expect(control.z_score(goal2)).to eq('N/A')
+      expect(control.z_score).to eq("N/A")
+      expect(control.z_score(goal1)).to eq("N/A")
+      expect(control.z_score(goal2)).to eq("N/A")
     end
 
     it "should not blow up for Conversion Rates > 1" do
@@ -289,7 +289,7 @@ describe Split::Alternative do
   describe "extra_info" do
     it "reads saved value of recorded_info in redis" do
       saved_recorded_info = { "key_1" => 1, "key_2" => "2" }
-      Split.redis.hset "#{alternative.experiment_name}:#{alternative.name}", 'recorded_info', saved_recorded_info.to_json
+      Split.redis.hset "#{alternative.experiment_name}:#{alternative.name}", "recorded_info", saved_recorded_info.to_json
       extra_info = alternative.extra_info
 
       expect(extra_info).to eql(saved_recorded_info)

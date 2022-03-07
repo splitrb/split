@@ -77,7 +77,7 @@ module Split
         end
 
         def decrement_participation(key, value)
-          Split.redis.hincrby("#{key}:#{value}", 'participant_count', -1)
+          Split.redis.hincrby("#{key}:#{value}", "participant_count", -1)
         end
     end
   end

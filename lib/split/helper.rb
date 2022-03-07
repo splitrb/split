@@ -127,14 +127,14 @@ module Split
     def override_alternative_by_cookies(experiment_name)
       return unless defined?(request)
 
-      if request.cookies && request.cookies.key?('split_override')
-        experiments = JSON.parse(request.cookies['split_override']) rescue {}
+      if request.cookies && request.cookies.key?("split_override")
+        experiments = JSON.parse(request.cookies["split_override"]) rescue {}
         experiments[experiment_name]
       end
     end
 
     def split_generically_disabled?
-      defined?(params) && params['SPLIT_DISABLE']
+      defined?(params) && params["SPLIT_DISABLE"]
     end
 
     def ab_user
@@ -150,7 +150,7 @@ module Split
     end
 
     def is_preview?
-      defined?(request) && defined?(request.headers) && request.headers['x-purpose'] == 'preview'
+      defined?(request) && defined?(request.headers) && request.headers["x-purpose"] == "preview"
     end
 
     def is_ignored_ip_address?

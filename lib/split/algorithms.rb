@@ -9,7 +9,7 @@ rescue LoadError => error
   end
 end
 
-require 'rubystats'
+require "rubystats"
 
 module Split
   module Algorithms

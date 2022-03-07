@@ -28,7 +28,7 @@ module Split
 
     def validate!
       unless @goals.nil? || @goals.kind_of?(Array)
-        raise ArgumentError, 'Goals must be an array'
+        raise ArgumentError, "Goals must be an array"
       end
     end
 

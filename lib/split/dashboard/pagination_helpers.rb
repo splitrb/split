@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'split/dashboard/paginator'
+require "split/dashboard/paginator"
 
 module Split
   module DashboardPaginationHelpers
@@ -43,7 +43,7 @@ module Split
       end
 
       def ellipsis_tag
-        '<span>...</span>'
+        "<span>...</span>"
       end
 
       def show_prev_page_tag?
