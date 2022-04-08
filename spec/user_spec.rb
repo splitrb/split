@@ -16,12 +16,113 @@ describe Split::User do
     expect(@subject['link_color']).to eq(@subject.user['link_color'])
   end
 
-  context '#cleanup_old_versions!' do
-    let(:user_keys) { { 'link_color:1' => 'blue' } }
+  describe '#cleanup_old_versions!' do
+    context 'current version does not have number' do
+      describe 'cleans the experiments with versions' do
+        let(:user_keys) { { 'link_color:1' => 'blue', 'link_color:1:finished' => 'true' } }
 
-    it 'removes key if old experiment is found' do
-      @subject.cleanup_old_versions!(experiment)
-      expect(@subject.keys).to be_empty
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys).to be_empty
+        end
+      end
+
+      describe 'does not clean its own experiment' do
+        let(:user_keys) { { 'link_color' => 'blue', 'link_color:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
+
+      describe 'does not clean other experiment' do
+        let(:user_keys) { { 'link' => 'a:b', 'link:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
+
+      describe 'does not clean other experiment with version' do
+        let(:user_keys) { { 'link:1' => 'a:b', 'link:1:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
+
+      describe 'does not clean other experiment having the experiment as substring' do
+        let(:user_keys) { { 'link_color2' => 'blue', 'link_color2:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
+
+      describe 'does not clean other experiment having the experiment as substring' do
+        let(:user_keys) { { 'link_color2:1' => 'blue', 'link_color2:1:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
+    end
+
+    context 'current version has number' do
+      before do
+        experiment.reset
+        experiment.reset
+      end
+
+      describe 'cleans the experiments without version' do
+        let(:user_keys) { { 'link_color' => 'blue', 'link_color:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys).to be_empty
+        end
+      end
+
+      describe 'cleans the experiments with previous version' do
+        let(:user_keys) { { 'link_color:1' => 'blue', 'link_color:1:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys).to be_empty
+        end
+      end
+
+      describe 'does not clean its own experiment' do
+        let(:user_keys) { { 'link_color:2' => 'blue', 'link_color:2:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
+
+      describe 'does not clean other experiment having the experiment as substring' do
+        let(:user_keys) { { 'link_color2' => 'blue', 'link_color2:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
+
+      describe 'does not clean other experiment having the experiment as substring' do
+        let(:user_keys) { { 'link_color2:2' => 'blue', 'link_color2:2:finished' => 'true' } }
+
+        it 'removes key if old experiment is found' do
+          @subject.cleanup_old_versions!(experiment)
+          expect(@subject.keys.size).to be(2)
+        end
+      end
     end
   end 
 
@@ -72,7 +173,7 @@ describe Split::User do
       end
 
       it 'does not clean up again' do
-        expect(@subject).to_not receive(:keys_without_finished_and_time_of_assignment)
+        expect(@subject).to_not receive(:experiment_keys)
         @subject.cleanup_old_experiments!
       end
     end
