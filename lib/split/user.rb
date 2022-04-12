@@ -84,7 +84,7 @@ module Split
 
     def keys_without_experiment(keys, experiment_key)
       if experiment_key.include?(':')
-        sub_keys = keys.reject { |k| k.match(Regexp.new("^#{experiment_key}$")) }
+        sub_keys = keys.reject { |k| k == experiment_key }
         sub_keys.reject do |k|
           if k.match(Regexp.new("^#{experiment_key}:"))
             sub_str = k.partition(':').last
