@@ -18,55 +18,55 @@ describe Split::User do
 
   describe '#cleanup_old_versions!' do
     context 'current version does not have number' do
-      describe 'cleans the experiments with versions' do
+      describe 'when the user is in the experiment with old version number' do
         let(:user_keys) { { 'link_color:1' => 'blue', 'link_color:1:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'removes all the old version keys' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys).to be_empty
         end
       end
 
-      describe 'does not clean its own experiment' do
+      describe 'when the user is in the experiment with current version' do
         let(:user_keys) { { 'link_color' => 'blue', 'link_color:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
       end
 
-      describe 'does not clean other experiment' do
+      describe 'when the user is in another experiment without version number' do
         let(:user_keys) { { 'link' => 'a:b', 'link:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
       end
 
-      describe 'does not clean other experiment with version' do
+      describe 'when the user is in another experiment with version number' do
         let(:user_keys) { { 'link:1' => 'a:b', 'link:1:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
       end
 
-      describe 'does not clean other experiment having the experiment as substring' do
+      describe 'when the user is in another experiment having the current experiment name as substring' do
         let(:user_keys) { { 'link_color2' => 'blue', 'link_color2:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
       end
 
-      describe 'does not clean other experiment having the experiment as substring' do
+      describe 'when the user is another experiment with version, having the current experiment name as substring ' do
         let(:user_keys) { { 'link_color2:1' => 'blue', 'link_color2:1:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
@@ -79,46 +79,46 @@ describe Split::User do
         experiment.reset
       end
 
-      describe 'cleans the experiments without version' do
+      describe 'when the user is in the experiment without version number' do
         let(:user_keys) { { 'link_color' => 'blue', 'link_color:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'removes all the old version keys' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys).to be_empty
         end
       end
 
-      describe 'cleans the experiments with previous version' do
+      describe 'when the user is in the experiment with an old version number' do
         let(:user_keys) { { 'link_color:1' => 'blue', 'link_color:1:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'removes all the old version keys' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys).to be_empty
         end
       end
 
-      describe 'does not clean its own experiment' do
+      describe 'when the user is in the experiment with current version number' do
         let(:user_keys) { { 'link_color:2' => 'blue', 'link_color:2:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
       end
 
-      describe 'does not clean other experiment having the experiment as substring' do
+      describe 'when the user is in another experiment, having the current experiment name as substring' do
         let(:user_keys) { { 'link_color2' => 'blue', 'link_color2:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
       end
 
-      describe 'does not clean other experiment having the experiment as substring' do
+      describe 'when the user is in another experiment with version, having the current experiment name as substring' do
         let(:user_keys) { { 'link_color2:2' => 'blue', 'link_color2:2:finished' => 'true' } }
 
-        it 'removes key if old experiment is found' do
+        it 'all the keys are reserved' do
           @subject.cleanup_old_versions!(experiment)
           expect(@subject.keys.size).to be(2)
         end
@@ -127,11 +127,15 @@ describe Split::User do
   end 
 
   context '#cleanup_old_experiments!' do
-    let(:user_keys) { { 'link_color' => 'blue', 'link_color:finished' => true, 'link_color:time_of_assignment' => Time.now.to_s } }
+    let(:user_keys) { {
+      'link_color' => 'blue',
+      'link_color:finished' => true,
+      'link_color:time_of_assignment' => Time.now.to_s,
+    } }
 
     it 'removes keys if experiment is not found' do
       @subject.cleanup_old_experiments!
-      
+
       expect(@subject.keys).to be_empty
     end
 
@@ -167,6 +171,26 @@ describe Split::User do
       expect(@subject.keys).to include("link_color:time_of_assignment")
     end
 
+    describe "when the user is in the experiment with version number" do
+      let(:user_keys) { {
+        'link_color:1' => 'blue',
+        'link_color:1:finished' => true,
+        'link_color:1:time_of_assignment' => Time.now.to_s,
+      } }
+
+      it 'keeps keys if the experiment has no winner and has started' do
+        allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+        allow(experiment).to receive(:has_winner?).and_return(false)
+        allow(experiment).to receive(:start_time).and_return(Date.today)
+
+        @subject.cleanup_old_experiments!
+
+        expect(@subject.keys).to include("link_color:1")
+        expect(@subject.keys).to include("link_color:1:finished")
+        expect(@subject.keys).to include("link_color:1:time_of_assignment")
+      end
+    end
+
     context 'when already cleaned up' do
       before do
         @subject.cleanup_old_experiments!
@@ -175,6 +199,77 @@ describe Split::User do
       it 'does not clean up again' do
         expect(@subject).to_not receive(:experiment_keys)
         @subject.cleanup_old_experiments!
+      end
+    end
+  end
+
+  context "#active_experiments" do
+    context "when the experiment has no version number" do
+      let(:user_keys) { {
+        'link_color' => 'blue',
+        'link_color:finished' => true,
+        'link_color:time_of_assignment' => Time.now.to_s,
+        'link_color:eligibility' => "ELIGIBLE",
+      } }
+
+      context "when the experiment no longer exists" do
+        it "doesn't include the experiment" do
+          expect(@subject.active_experiments).to be_empty
+        end
+      end
+
+      context "when the experiment exists" do
+        before do
+          allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+        end
+
+        it "only includes the experiment when there is no winner" do
+          allow(experiment).to receive(:has_winner?).and_return(false)
+
+          expect(@subject.active_experiments).to eq({'link_color' => 'blue'})
+        end
+
+        it "doesn't include the experiment when there is a winner" do
+          allow(experiment).to receive(:has_winner?).and_return(true)
+
+          expect(@subject.active_experiments).to be_empty
+        end
+      end
+    end
+
+    context "when the experiment has a version number" do
+      let(:user_keys) { {
+        'link_color:1' => 'blue',
+        'link_color:1:finished' => true,
+        'link_color:1:time_of_assignment' => Time.now.to_s,
+        'link_color:1:eligibility' => "ELIGIBLE",
+      } }
+      before do
+        experiment.reset
+      end
+
+      context "when the experiment no longer exists" do
+        it "doesn't include the experiment" do
+          expect(@subject.active_experiments).to be_empty
+        end
+      end
+
+      context "when the experiment exists" do
+        before do
+          allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+        end
+
+        it "only includes the experiment when there is no winner" do
+          allow(experiment).to receive(:has_winner?).and_return(false)
+
+          expect(@subject.active_experiments).to eq({'link_color' => 'blue'})
+        end
+
+        it "doesn't include the experiment when there is a winner" do
+          allow(experiment).to receive(:has_winner?).and_return(true)
+
+          expect(@subject.active_experiments).to be_empty
+        end
       end
     end
   end
