@@ -94,10 +94,10 @@ module Split
           end
         end
       else
-       keys.select do |k|
+        keys.select do |k|
           k.match(Regexp.new("^#{experiment_key}:\\d+:")) ||
             k.match(Regexp.new("^#{experiment_key}:\\d+$")) ||
-            k.match(Regexp.new("^#{experiment_key}[^:]+"))
+            k.partition(':').first != experiment_key
         end
       end
     end
