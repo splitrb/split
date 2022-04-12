@@ -127,11 +127,13 @@ describe Split::User do
   end 
 
   context '#cleanup_old_experiments!' do
-    let(:user_keys) { {
-      'link_color' => 'blue',
-      'link_color:finished' => true,
-      'link_color:time_of_assignment' => Time.now.to_s,
-    } }
+    let(:user_keys) do
+      {
+        'link_color' => 'blue',
+        'link_color:finished' => true,
+        'link_color:time_of_assignment' => Time.now.to_s,
+      }
+    end
 
     it 'removes keys if experiment is not found' do
       @subject.cleanup_old_experiments!
@@ -172,13 +174,15 @@ describe Split::User do
     end
 
     describe "when the user is in the experiment with version number" do
-      let(:user_keys) { {
-        'link_color:1' => 'blue',
-        'link_color:1:finished' => true,
-        'link_color:1:time_of_assignment' => Time.now.to_s,
-      } }
+      let(:user_keys) do
+        {
+          'link_color:1' => 'blue',
+          'link_color:1:finished' => true,
+          'link_color:1:time_of_assignment' => Time.now.to_s,
+        }
+      end
 
-      it 'keeps keys if the experiment has no winner and has started' do
+      it 'keeps keys when the experiment has no winner and has started' do
         allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
         allow(experiment).to receive(:has_winner?).and_return(false)
         allow(experiment).to receive(:start_time).and_return(Date.today)
@@ -210,8 +214,7 @@ describe Split::User do
       end
 
       context "when user is not in any experiment" do
-        let(:user_keys) { {
-        } }
+        let(:user_keys) { { } }
 
         it "max not reached when checking against same experiment" do
           expect(@subject.max_experiments_reached?("link_color")).to be_falsey
@@ -219,12 +222,14 @@ describe Split::User do
       end
 
       context "when user is already in an experiment" do
-        let(:user_keys) { {
-          'link_color' => 'blue',
-          'link_color:finished' => true,
-          'link_color:time_of_assignment' => Time.now.to_s,
-          'link_color:eligibility' => "ELIGIBLE",
-        } }
+        let(:user_keys) do
+          {
+            'link_color' => 'blue',
+            'link_color:finished' => true,
+            'link_color:time_of_assignment' => Time.now.to_s,
+            'link_color:eligibility' => "ELIGIBLE",
+          }
+        end
 
         it "max reached when checking against another experiment" do
           expect(@subject.max_experiments_reached?("link")).to be_truthy
@@ -244,12 +249,14 @@ describe Split::User do
       end
 
       context "when user is already in an experiment with version number" do
-        let(:user_keys) { {
-          'link_color:1' => 'blue',
-          'link_color:1:finished' => true,
-          'link_color:1:time_of_assignment' => Time.now.to_s,
-          'link_color:1:eligibility' => "ELIGIBLE",
-        } }
+        let(:user_keys) do
+          {
+            'link_color:1' => 'blue',
+            'link_color:1:finished' => true,
+            'link_color:1:time_of_assignment' => Time.now.to_s,
+            'link_color:1:eligibility' => "ELIGIBLE",
+          }
+        end
 
         it "max reached when checking against another experiment" do
           expect(@subject.max_experiments_reached?("link")).to be_truthy
@@ -267,7 +274,7 @@ describe Split::User do
           expect(@subject.max_experiments_reached?("link_color_v2:2")).to be_truthy
         end
 
-        it "max not reached when checking against same experiment but without version" do
+        it "max reached when checking against same experiment but without version" do
           expect(@subject.max_experiments_reached?("link_color")).to be_truthy
         end
 
@@ -275,7 +282,7 @@ describe Split::User do
           expect(@subject.max_experiments_reached?("link_color:1")).to be_falsey
         end
 
-        it "max not reached when checking against same experiment but another version" do
+        it "max reached when checking against same experiment but another version" do
           expect(@subject.max_experiments_reached?("link_color:2")).to be_truthy
         end
       end
@@ -292,8 +299,7 @@ describe Split::User do
       end
 
       context "user is not in any experiments" do
-        let(:user_keys) { {
-        } }
+        let(:user_keys) { { } }
 
         it "max not reached for experiment1" do
           expect(@subject.max_experiments_reached?("link_color")).to be_falsey
@@ -305,12 +311,14 @@ describe Split::User do
       end
 
       context "user is in control with experiment2" do
-        let(:user_keys) { {
-          'link_shape' => 'control',
-          'link_shape:finished' => true,
-          'link_shape:time_of_assignment' => Time.now.to_s,
-          'link_shape:eligibility' => "ELIGIBLE",
-        } }
+        let(:user_keys) do
+          {
+            'link_shape' => 'control',
+            'link_shape:finished' => true,
+            'link_shape:time_of_assignment' => Time.now.to_s,
+            'link_shape:eligibility' => "ELIGIBLE",
+          }
+        end
 
         it "max not reached for experiment1" do
           expect(@subject.max_experiments_reached?("link_color")).to be_falsey
@@ -322,16 +330,18 @@ describe Split::User do
       end
 
       context "user is in alternative with experiment1, control with experiment2" do
-        let(:user_keys) { {
-          'link_color' => 'blue',
-          'link_color:finished' => true,
-          'link_color:time_of_assignment' => Time.now.to_s,
-          'link_color:eligibility' => "ELIGIBLE",
-          'link_shape' => 'control',
-          'link_shape:finished' => true,
-          'link_shape:time_of_assignment' => Time.now.to_s,
-          'link_shape:eligibility' => "ELIGIBLE",
-        } }
+        let(:user_keys) do
+          {
+            'link_color' => 'blue',
+            'link_color:finished' => true,
+            'link_color:time_of_assignment' => Time.now.to_s,
+            'link_color:eligibility' => "ELIGIBLE",
+            'link_shape' => 'control',
+            'link_shape:finished' => true,
+            'link_shape:time_of_assignment' => Time.now.to_s,
+            'link_shape:eligibility' => "ELIGIBLE",
+          }
+        end
 
         it "max not reached for experiment1" do
           expect(@subject.max_experiments_reached?("link_color:1")).to be_falsey
@@ -352,7 +362,6 @@ describe Split::User do
       let(:experiment2) { Split::Experiment.new('link_shape') }
 
       before do
-        Split.configuration.allow_multiple_experiments = true
         Split.configuration.allow_multiple_experiments = "control"
         Split::ExperimentCatalog.find_or_create("link_color", alternatives)
         Split::ExperimentCatalog.find_or_create("link_shape", alternatives)
@@ -362,11 +371,11 @@ describe Split::User do
         expect(@subject.max_experiments_reached?("link_color:1")).to be_falsey
       end
 
-      it "max not reached for experiment2" do
+      it "max reached for experiment2" do
         expect(@subject.max_experiments_reached?("link_shape:1")).to be_truthy
       end
 
-      it "max not reached for other experiments" do
+      it "max reached for other experiments" do
         expect(@subject.max_experiments_reached?("link_font")).to be_truthy
       end
     end
@@ -374,12 +383,14 @@ describe Split::User do
 
   context "#active_experiments" do
     context "when the experiment has no version number" do
-      let(:user_keys) { {
-        'link_color' => 'blue',
-        'link_color:finished' => true,
-        'link_color:time_of_assignment' => Time.now.to_s,
-        'link_color:eligibility' => "ELIGIBLE",
-      } }
+      let(:user_keys) do
+        {
+          'link_color' => 'blue',
+          'link_color:finished' => true,
+          'link_color:time_of_assignment' => Time.now.to_s,
+          'link_color:eligibility' => "ELIGIBLE",
+        }
+      end
 
       context "when the experiment no longer exists" do
         it "doesn't include the experiment" do
@@ -407,12 +418,14 @@ describe Split::User do
     end
 
     context "when the experiment has a version number" do
-      let(:user_keys) { {
-        'link_color:1' => 'blue',
-        'link_color:1:finished' => true,
-        'link_color:1:time_of_assignment' => Time.now.to_s,
-        'link_color:1:eligibility' => "ELIGIBLE",
-      } }
+      let(:user_keys) do
+        {
+          'link_color:1' => 'blue',
+          'link_color:1:finished' => true,
+          'link_color:1:time_of_assignment' => Time.now.to_s,
+          'link_color:1:eligibility' => "ELIGIBLE",
+        }
+      end
       before do
         experiment.reset
       end
