@@ -238,14 +238,6 @@ describe Split::User do
         it "max reached when checking against another experiment contain current experiment as substring" do
           expect(@subject.max_experiments_reached?("link_color_v2")).to be_truthy
         end
-
-        it "max not reached when checking against same experiment" do
-          expect(@subject.max_experiments_reached?("link_color")).to be_falsey
-        end
-
-        it "max reached when checking against same experiment but different version" do
-          expect(@subject.max_experiments_reached?("link_color:1")).to be_truthy
-        end
       end
 
       context "when user is already in an experiment with version number" do
@@ -273,18 +265,6 @@ describe Split::User do
         it "max reached when checking against another experiment contain current experiment as substring, but same version" do
           expect(@subject.max_experiments_reached?("link_color_v2:2")).to be_truthy
         end
-
-        it "max reached when checking against same experiment but without version" do
-          expect(@subject.max_experiments_reached?("link_color")).to be_truthy
-        end
-
-        it "max not reached when checking against same experiment" do
-          expect(@subject.max_experiments_reached?("link_color:1")).to be_falsey
-        end
-
-        it "max reached when checking against same experiment but another version" do
-          expect(@subject.max_experiments_reached?("link_color:2")).to be_truthy
-        end
       end
     end
 
@@ -301,12 +281,12 @@ describe Split::User do
       context "user is not in any experiments" do
         let(:user_keys) { { } }
 
-        it "max not reached for experiment1" do
+        it "max not reached for experiment" do
           expect(@subject.max_experiments_reached?("link_color")).to be_falsey
         end
 
-        it "max not reached for experiment2 with a different version" do
-          expect(@subject.max_experiments_reached?("link_shape:2")).to be_falsey
+        it "max not reached for experiment with a version" do
+          expect(@subject.max_experiments_reached?("link_color:2")).to be_falsey
         end
       end
 
@@ -320,12 +300,8 @@ describe Split::User do
           }
         end
 
-        it "max not reached for experiment1" do
+        it "max not reached for a different experiment" do
           expect(@subject.max_experiments_reached?("link_color")).to be_falsey
-        end
-
-        it "max not reached for experiment2 with a different version" do
-          expect(@subject.max_experiments_reached?("link_shape:2")).to be_falsey
         end
       end
 
@@ -343,14 +319,6 @@ describe Split::User do
           }
         end
 
-        it "max not reached for experiment1" do
-          expect(@subject.max_experiments_reached?("link_color:1")).to be_falsey
-        end
-
-        it "max reached for experiment2" do
-          expect(@subject.max_experiments_reached?("link_shape:1")).to be_truthy
-        end
-
         it "max reached for other experiments" do
           expect(@subject.max_experiments_reached?("link_font")).to be_truthy
         end
@@ -360,23 +328,27 @@ describe Split::User do
     context "when multiple experiments are allowed" do
       let(:alternatives) { [ "control", "blue" ] }
       let(:experiment2) { Split::Experiment.new('link_shape') }
+      let(:user_keys) do
+        {
+          'link_color' => 'blue',
+          'link_color:finished' => true,
+          'link_color:time_of_assignment' => Time.now.to_s,
+          'link_color:eligibility' => "ELIGIBLE",
+          'link_shape' => 'blue',
+          'link_shape:finished' => true,
+          'link_shape:time_of_assignment' => Time.now.to_s,
+          'link_shape:eligibility' => "ELIGIBLE",
+        }
+      end
 
       before do
-        Split.configuration.allow_multiple_experiments = "control"
+        Split.configuration.allow_multiple_experiments = "true"
         Split::ExperimentCatalog.find_or_create("link_color", alternatives)
         Split::ExperimentCatalog.find_or_create("link_shape", alternatives)
       end
 
-      it "max not reached for experiment1" do
-        expect(@subject.max_experiments_reached?("link_color:1")).to be_falsey
-      end
-
-      it "max reached for experiment2" do
-        expect(@subject.max_experiments_reached?("link_shape:1")).to be_truthy
-      end
-
-      it "max reached for other experiments" do
-        expect(@subject.max_experiments_reached?("link_font")).to be_truthy
+      it "max not reached for other experiments" do
+        expect(@subject.max_experiments_reached?("link_font")).to be_falsey
       end
     end
   end
