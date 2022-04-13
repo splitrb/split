@@ -86,12 +86,9 @@ module Split
       if experiment_key.include?(':')
         sub_keys = keys.reject { |k| k == experiment_key }
         sub_keys.reject do |k|
-          if k.match(Regexp.new("^#{experiment_key}:"))
-            sub_str = k.partition(':').last
-            sub_str.scan(Regexp.new("\\D")).any?
-          else
-            false
-          end
+          sub_str = k.partition(':').last
+
+          k.match(Regexp.new("^#{experiment_key}:")) && sub_str.scan(Regexp.new("\\D")).any?
         end
       else
         keys.select do |k|
