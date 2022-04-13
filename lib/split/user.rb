@@ -14,7 +14,7 @@ module Split
 
     def cleanup_old_experiments!
       return if @cleaned_up
-      keys_without_finished_and_time_of_assignment(user.keys).each do |key|
+      experiment_keys(user.keys).each do |key|
         experiment = ExperimentCatalog.find key_without_version(key)
         if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
           user.delete key
@@ -38,13 +38,13 @@ module Split
     end
 
     def cleanup_old_versions!(experiment)
-      keys = user.keys.select { |k| k.match(Regexp.new(experiment.name)) }
+      keys = user.keys.select { |k| k.match(Regexp.new("^#{experiment.name}(:|$)")) }
       keys_without_experiment(keys, experiment.key).each { |key| user.delete(key) }
     end
 
     def active_experiments
       experiment_pairs = {}
-      keys_without_finished_and_time_of_assignment(user.keys).each do |key|
+      experiment_keys(user.keys).each do |key|
         Metric.possible_experiments(key_without_version(key)).each do |experiment|
           if !experiment.has_winner?
             experiment_pairs[key_without_version(key)] = user[key]
@@ -83,11 +83,26 @@ module Split
     private
 
     def keys_without_experiment(keys, experiment_key)
-      keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) || k.match("#{experiment_key}:time_of_assignment") }
+      if experiment_key.include?(':')
+        sub_keys = keys.reject { |k| k == experiment_key }
+        sub_keys.reject do |k|
+          sub_str = k.partition(':').last
+
+          k.match(Regexp.new("^#{experiment_key}:")) && sub_str.scan(Regexp.new("\\D")).any?
+        end
+      else
+        keys.select do |k|
+          k.match(Regexp.new("^#{experiment_key}:\\d+(:|$)")) ||
+            k.partition(':').first != experiment_key
+        end
+      end
     end
 
-    def keys_without_finished_and_time_of_assignment(keys)
-      keys.reject { |k| k.include?(":finished") || k.include?(":time_of_assignment") }
+    def experiment_keys(keys)
+      keys.reject do |k|
+        sub_str = k.partition(':').last
+        sub_str.scan(Regexp.new("\\D")).any?
+      end
     end
 
     def key_without_version(key)
