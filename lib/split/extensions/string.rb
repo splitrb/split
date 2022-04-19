@@ -1,9 +1,10 @@
 # frozen_string_literal: true
+
 class String
   # Constatntize is often provided by ActiveSupport, but ActiveSupport is not a dependency of Split.
   unless method_defined?(:constantize)
     def constantize
-      names = self.split('::')
+      names = self.split("::")
       names.shift if names.empty? || names.first.empty?
 
       constant = Object

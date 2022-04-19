@@ -1,54 +1,55 @@
 # frozen_string_literal: true
-require 'spec_helper'
-require 'split/trial'
+
+require "spec_helper"
+require "split/trial"
 
 describe Split::Trial do
   let(:user) { mock_user }
-  let(:alternatives) { ['basket', 'cart'] }
+  let(:alternatives) { ["basket", "cart"] }
   let(:experiment) do
-    Split::Experiment.new('basket_text', :alternatives => alternatives).save
+    Split::Experiment.new("basket_text", alternatives: alternatives).save
   end
 
   it "should be initializeable" do
-    experiment  = double('experiment')
-    alternative = double('alternative', :kind_of? => Split::Alternative)
-    trial = Split::Trial.new(:experiment => experiment, :alternative => alternative)
+    experiment  = double("experiment")
+    alternative = double("alternative", kind_of?: Split::Alternative)
+    trial = Split::Trial.new(experiment: experiment, alternative: alternative)
     expect(trial.experiment).to eq(experiment)
     expect(trial.alternative).to eq(alternative)
   end
 
   describe "alternative" do
     it "should use the alternative if specified" do
-      alternative = double('alternative', :kind_of? => Split::Alternative)
-      trial = Split::Trial.new(:experiment => double('experiment'),
-          :alternative => alternative, :user => user)
+      alternative = double("alternative", kind_of?: Split::Alternative)
+      trial = Split::Trial.new(experiment: double("experiment"),
+          alternative: alternative, user: user)
       expect(trial).not_to receive(:choose)
       expect(trial.alternative).to eq(alternative)
     end
 
     it "should load the alternative when the alternative name is set" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => ['basket', 'cart'])
+      experiment = Split::Experiment.new("basket_text", alternatives: ["basket", "cart"])
       experiment.save
 
-      trial = Split::Trial.new(:experiment => experiment, :alternative => 'basket')
-      expect(trial.alternative.name).to eq('basket')
+      trial = Split::Trial.new(experiment: experiment, alternative: "basket")
+      expect(trial.alternative.name).to eq("basket")
     end
   end
 
   describe "metadata" do
     let(:metadata) { Hash[alternatives.map { |k| [k, "Metadata for #{k}"] }] }
     let(:experiment) do
-      Split::Experiment.new('basket_text', :alternatives => alternatives, :metadata => metadata).save
+      Split::Experiment.new("basket_text", alternatives: alternatives, metadata: metadata).save
     end
 
-    it 'has metadata on each trial' do
-      trial = Split::Trial.new(:experiment => experiment, :user => user, :metadata => metadata['cart'],
-                               :override => 'cart')
-      expect(trial.metadata).to eq(metadata['cart'])
+    it "has metadata on each trial" do
+      trial = Split::Trial.new(experiment: experiment, user: user, metadata: metadata["cart"],
+                               override: "cart")
+      expect(trial.metadata).to eq(metadata["cart"])
     end
 
-    it 'has metadata on each trial from the experiment' do
-      trial = Split::Trial.new(:experiment => experiment, :user => user)
+    it "has metadata on each trial from the experiment" do
+      trial = Split::Trial.new(experiment: experiment, user: user)
       trial.choose!
       expect(trial.metadata).to eq(metadata[trial.alternative.name])
       expect(trial.metadata).to match(/#{trial.alternative.name}/)
@@ -56,24 +57,24 @@ describe Split::Trial do
   end
 
   describe "#choose!" do
-    let(:context) { double(on_trial_callback: 'test callback') }
+    let(:context) { double(on_trial_callback: "test callback") }
     let(:trial) do
-      Split::Trial.new(:user => user, :experiment => experiment)
+      Split::Trial.new(user: user, experiment: experiment)
     end
 
-    shared_examples_for 'a trial with callbacks' do
-      it 'does not run if on_trial callback is not respondable' do
+    shared_examples_for "a trial with callbacks" do
+      it "does not run if on_trial callback is not respondable" do
         Split.configuration.on_trial = :foo
         allow(context).to receive(:respond_to?).with(:foo, true).and_return false
         expect(context).to_not receive(:foo)
         trial.choose! context
       end
-      it 'runs on_trial callback' do
+      it "runs on_trial callback" do
         Split.configuration.on_trial = :on_trial_callback
         expect(context).to receive(:on_trial_callback)
         trial.choose! context
       end
-      it 'does not run nil on_trial callback' do
+      it "does not run nil on_trial callback" do
         Split.configuration.on_trial = nil
         expect(context).not_to receive(:on_trial_callback)
         trial.choose! context
@@ -88,12 +89,12 @@ describe Split::Trial do
     end
 
     context "when override is present" do
-      let(:override) { 'cart' }
+      let(:override) { "cart" }
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment, :override => override)
+        Split::Trial.new(user: user, experiment: experiment, override: override)
       end
 
-      it_behaves_like 'a trial with callbacks'
+      it_behaves_like "a trial with callbacks"
 
       it "picks the override" do
         expect(experiment).to_not receive(:next_alternative)
@@ -102,7 +103,7 @@ describe Split::Trial do
 
       context "when alternative doesn't exist" do
         let(:override) { nil }
-        it 'falls back on next_alternative' do
+        it "falls back on next_alternative" do
           expect(experiment).to receive(:next_alternative).and_call_original
           expect_alternative(trial, alternatives)
         end
@@ -111,7 +112,7 @@ describe Split::Trial do
 
     context "when disabled option is true" do
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
+        Split::Trial.new(user: user, experiment: experiment, disabled: true)
       end
 
       it "picks the control", :aggregate_failures do
@@ -120,7 +121,7 @@ describe Split::Trial do
 
         expect(context).not_to receive(:on_trial_callback)
 
-        expect_alternative(trial, 'basket')
+        expect_alternative(trial, "basket")
         Split.configuration.on_trial = nil
       end
     end
@@ -132,7 +133,7 @@ describe Split::Trial do
 
         expect(experiment).to_not receive(:next_alternative)
         expect(context).not_to receive(:on_trial_callback)
-        expect_alternative(trial, 'basket')
+        expect_alternative(trial, "basket")
 
         Split.configuration.enabled = true
         Split.configuration.on_trial = nil
@@ -141,45 +142,45 @@ describe Split::Trial do
 
     context "when experiment has winner" do
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment)
+        Split::Trial.new(user: user, experiment: experiment)
       end
 
-      it_behaves_like 'a trial with callbacks'
+      it_behaves_like "a trial with callbacks"
 
       it "picks the winner" do
-        experiment.winner = 'cart'
+        experiment.winner = "cart"
         expect(experiment).to_not receive(:next_alternative)
 
-        expect_alternative(trial, 'cart')
+        expect_alternative(trial, "cart")
       end
     end
 
     context "when exclude is true" do
       let(:trial) do
-        Split::Trial.new(:user => user, :experiment => experiment, :exclude => true)
+        Split::Trial.new(user: user, experiment: experiment, exclude: true)
       end
 
-      it_behaves_like 'a trial with callbacks'
+      it_behaves_like "a trial with callbacks"
 
       it "picks the control" do
         expect(experiment).to_not receive(:next_alternative)
-        expect_alternative(trial, 'basket')
+        expect_alternative(trial, "basket")
       end
     end
 
     context "when user is already participating" do
-      it_behaves_like 'a trial with callbacks'
+      it_behaves_like "a trial with callbacks"
 
       it "picks the same alternative" do
-        user[experiment.key] = 'basket'
+        user[experiment.key] = "basket"
         expect(experiment).to_not receive(:next_alternative)
 
-        expect_alternative(trial, 'basket')
+        expect_alternative(trial, "basket")
       end
 
       context "when alternative is not found" do
         it "falls back on next_alternative" do
-          user[experiment.key] = 'notfound'
+          user[experiment.key] = "notfound"
           expect(experiment).to receive(:next_alternative).and_call_original
           expect_alternative(trial, alternatives)
         end
@@ -327,7 +328,7 @@ describe Split::Trial do
 
           expect(experiment).to_not receive(:next_alternative)
           expect(context).not_to receive(:on_trial_callback)
-          expect_alternative(trial, 'basket')
+          expect_alternative(trial, "basket")
 
           Split.configuration.enabled = true
           Split.configuration.on_trial = nil
@@ -343,7 +344,7 @@ describe Split::Trial do
   end
 
   describe "#complete!" do
-    let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+    let(:trial) { Split::Trial.new(user: user, experiment: experiment) }
 
     before do
       allow(Split.configuration).to receive(:experiments).and_return(experiment.name => { "window_of_time_for_conversion_in_minutes" => 60 })
@@ -392,9 +393,9 @@ describe Split::Trial do
       expect(trial.alternative.completed_count).to be(old_completed_count+1)
     end
 
-    context 'when there are no goals' do
-      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
-      it 'should complete the trial' do
+    context "when there are no goals" do
+      let(:trial) { Split::Trial.new(user: user, experiment: experiment) }
+      it "should complete the trial" do
         trial.choose!
         old_completed_count = trial.alternative.completed_count
         trial.complete!
@@ -404,11 +405,11 @@ describe Split::Trial do
 
     context "when there are many goals" do
       let(:goals) { [ "goal1", "goal2" ] }
-      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goals) }
+      let(:trial) { Split::Trial.new(user: user, experiment: experiment, goals: goals) }
 
       it "increments the completed count corresponding to the goals" do
         trial.choose!
-        old_completed_counts = goals.map{ |goal| [goal, trial.alternative.completed_count(goal)] }.to_h 
+        old_completed_counts = goals.map { |goal| [goal, trial.alternative.completed_count(goal)] }.to_h
         trial.complete!
         goals.each { | goal | expect(trial.alternative.completed_count(goal)).to eq(old_completed_counts[goal] + 1) }
       end
@@ -416,7 +417,7 @@ describe Split::Trial do
 
     context "when there is 1 goal of type string" do
       let(:goal) { "goal" }
-      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goal) }
+      let(:trial) { Split::Trial.new(user: user, experiment: experiment, goals: goal) }
       it "increments the completed count corresponding to the goal" do
         trial.choose!
         old_completed_count = trial.alternative.completed_count(goal)
@@ -427,7 +428,7 @@ describe Split::Trial do
   end
 
   describe "#within_conversion_time_frame?" do
-    let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+    let(:trial) { Split::Trial.new(user: user, experiment: experiment) }
 
     it "memoizes the result" do
       allow(Split.configuration).to receive(:experiments).and_return(experiment.name => { "window_of_time_for_conversion_in_minutes" => 60 })
@@ -484,7 +485,7 @@ describe Split::Trial do
 
     context "when override is present" do
       it "stores when store_override is true" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
+        trial = Split::Trial.new(user: user, experiment: experiment, override: "basket")
 
         Split.configuration.store_override = true
         expect(user).to receive("[]=")
@@ -493,7 +494,7 @@ describe Split::Trial do
       end
 
       it "does not store when store_override is false" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :override => 'basket')
+        trial = Split::Trial.new(user: user, experiment: experiment, override: "basket")
 
         expect(user).to_not receive("[]=")
         trial.choose!
@@ -502,7 +503,7 @@ describe Split::Trial do
 
     context "when disabled is present" do
       it "stores when store_override is true" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
+        trial = Split::Trial.new(user: user, experiment: experiment, disabled: true)
 
         Split.configuration.store_override = true
         expect(user).to receive("[]=")
@@ -510,7 +511,7 @@ describe Split::Trial do
       end
 
       it "does not store when store_override is false" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :disabled => true)
+        trial = Split::Trial.new(user: user, experiment: experiment, disabled: true)
 
         expect(user).to_not receive("[]=")
         trial.choose!
@@ -519,20 +520,20 @@ describe Split::Trial do
 
     context "when exclude is present" do
       it "does not store" do
-        trial = Split::Trial.new(:user => user, :experiment => experiment, :exclude => true)
+        trial = Split::Trial.new(user: user, experiment: experiment, exclude: true)
 
         expect(user).to_not receive("[]=")
         trial.choose!
       end
     end
 
-    context 'when experiment has winner' do
+    context "when experiment has winner" do
       let(:trial) do
-        experiment.winner = 'cart'
-        Split::Trial.new(:user => user, :experiment => experiment)
+        experiment.winner = "cart"
+        Split::Trial.new(user: user, experiment: experiment)
       end
 
-      it 'does not store' do
+      it "does not store" do
         expect(user).to_not receive("[]=")
         trial.choose!
       end

@@ -1,19 +1,19 @@
 # frozen_string_literal: true
-require 'spec_helper'
-require 'split/alternative'
+
+require "spec_helper"
+require "split/alternative"
 
 describe Split::Alternative do
-
   let(:alternative) {
-    Split::Alternative.new('Basket', 'basket_text')
+    Split::Alternative.new("Basket", "basket_text")
   }
 
   let(:alternative2) {
-    Split::Alternative.new('Cart', 'basket_text')
+    Split::Alternative.new("Cart", "basket_text")
   }
 
   let!(:experiment) {
-    Split::ExperimentCatalog.find_or_create({"basket_text" => ["purchase", "refund"]}, "Basket", "Cart")
+    Split::ExperimentCatalog.find_or_create({ "basket_text" => ["purchase", "refund"] }, "Basket", "Cart")
   }
 
   let(:goal1) { "purchase" }
@@ -24,48 +24,48 @@ describe Split::Alternative do
   end
 
   it "should have and only return the name" do
-    expect(alternative.name).to eq('Basket')
+    expect(alternative.name).to eq("Basket")
   end
 
-  describe 'weights' do
+  describe "weights" do
     it "should set the weights" do
-      experiment = Split::Experiment.new('basket_text', :alternatives => [{'Basket' => 0.6}, {"Cart" => 0.4}])
+      experiment = Split::Experiment.new("basket_text", alternatives: [{ "Basket" => 0.6 }, { "Cart" => 0.4 }])
       first = experiment.alternatives[0]
-      expect(first.name).to eq('Basket')
+      expect(first.name).to eq("Basket")
       expect(first.weight).to eq(0.6)
 
       second = experiment.alternatives[1]
-      expect(second.name).to eq('Cart')
+      expect(second.name).to eq("Cart")
       expect(second.weight).to eq(0.4)
     end
 
     it "accepts probability on alternatives" do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt", :percent => 67 },
-            { :name => "second_opt", :percent => 10 },
-            { :name => "third_opt", :percent => 23 },
+        my_experiment: {
+          alternatives: [
+            { name: "control_opt", percent: 67 },
+            { name: "second_opt", percent: 10 },
+            { name: "third_opt", percent: 23 },
           ]
         }
       }
       experiment = Split::Experiment.new(:my_experiment)
       first = experiment.alternatives[0]
-      expect(first.name).to eq('control_opt')
+      expect(first.name).to eq("control_opt")
       expect(first.weight).to eq(0.67)
 
       second = experiment.alternatives[1]
-      expect(second.name).to eq('second_opt')
+      expect(second.name).to eq("second_opt")
       expect(second.weight).to eq(0.1)
     end
 
     it "accepts probability on some alternatives" do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt", :percent => 34 },
+        my_experiment: {
+          alternatives: [
+            { name: "control_opt", percent: 34 },
             "second_opt",
-            { :name => "third_opt", :percent => 23 },
+            { name: "third_opt", percent: 23 },
             "fourth_opt",
           ],
         }
@@ -87,11 +87,11 @@ describe Split::Alternative do
     #
     it "allows name param without probability" do
       Split.configuration.experiments = {
-        :my_experiment => {
-          :alternatives => [
-            { :name => "control_opt" },
+        my_experiment: {
+          alternatives: [
+            { name: "control_opt" },
             "second_opt",
-            { :name => "third_opt", :percent => 64 },
+            { name: "third_opt", percent: 64 },
           ],
         }
       }
@@ -126,7 +126,7 @@ describe Split::Alternative do
 
   it "should save to redis" do
     alternative.save
-    expect(Split.redis.exists('basket_text:Basket')).to be true
+    expect(Split.redis.exists?("basket_text:Basket")).to be true
   end
 
   it "should increment participation count" do
@@ -166,7 +166,7 @@ describe Split::Alternative do
     expect(alternative2.control?).to be_falsey
   end
 
-  describe 'unfinished_count' do
+  describe "unfinished_count" do
     it "should be difference between participant and completed counts" do
       alternative.increment_participation
       expect(alternative.unfinished_count).to eq(alternative.participant_count)
@@ -182,7 +182,7 @@ describe Split::Alternative do
     end
   end
 
-  describe 'conversion rate' do
+  describe "conversion rate" do
     it "should be 0 if there are no conversions" do
       expect(alternative.completed_count).to eq(0)
       expect(alternative.conversion_rate).to eq(0)
@@ -201,8 +201,31 @@ describe Split::Alternative do
     end
   end
 
-  describe 'z score' do
+  describe "probability winner" do
+    before do
+      experiment.calc_winning_alternatives
+    end
 
+    it "should have a probability of being the winning alternative (p_winner)" do
+      expect(alternative.p_winner).not_to be_nil
+    end
+
+    it "should have a probability of being the winner for each goal" do
+      expect(alternative.p_winner(goal1)).not_to be_nil
+    end
+
+    it "should be possible to set the p_winner" do
+      alternative.set_p_winner(0.5)
+      expect(alternative.p_winner).to eq(0.5)
+    end
+
+    it "should be possible to set the p_winner for each goal" do
+      alternative.set_p_winner(0.5, goal1)
+      expect(alternative.p_winner(goal1)).to eq(0.5)
+    end
+  end
+
+  describe "z score" do
     it "should return an error string when the control has 0 people" do
       expect(alternative2.z_score).to eq("Needs 30+ participants.")
       expect(alternative2.z_score(goal1)).to eq("Needs 30+ participants.")
@@ -245,9 +268,9 @@ describe Split::Alternative do
 
     it "should be N/A for the control" do
       control = experiment.control
-      expect(control.z_score).to eq('N/A')
-      expect(control.z_score(goal1)).to eq('N/A')
-      expect(control.z_score(goal2)).to eq('N/A')
+      expect(control.z_score).to eq("N/A")
+      expect(control.z_score(goal1)).to eq("N/A")
+      expect(control.z_score(goal2)).to eq("N/A")
     end
 
     it "should not blow up for Conversion Rates > 1" do
@@ -265,8 +288,8 @@ describe Split::Alternative do
 
   describe "extra_info" do
     it "reads saved value of recorded_info in redis" do
-      saved_recorded_info = {"key_1" => 1, "key_2" => "2"}
-      Split.redis.hset "#{alternative.experiment_name}:#{alternative.name}", 'recorded_info', saved_recorded_info.to_json
+      saved_recorded_info = { "key_1" => 1, "key_2" => "2" }
+      Split.redis.hset "#{alternative.experiment_name}:#{alternative.name}", "recorded_info", saved_recorded_info.to_json
       extra_info = alternative.extra_info
 
       expect(extra_info).to eql(saved_recorded_info)

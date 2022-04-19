@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 require "spec_helper"
 
 describe Split::Persistence do
-
   subject { Split::Persistence }
 
   describe ".adapter" do
@@ -30,5 +30,4 @@ describe Split::Persistence do
       end
     end
   end
-
 end

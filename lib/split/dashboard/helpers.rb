@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   module DashboardHelpers
     def h(text)
@@ -6,11 +7,11 @@ module Split
     end
 
     def url(*path_parts)
-      [ path_prefix, path_parts ].join("/").squeeze('/')
+      [ path_prefix, path_parts ].join("/").squeeze("/")
     end
 
     def path_prefix
-      request.env['SCRIPT_NAME']
+      request.env["SCRIPT_NAME"]
     end
 
     def number_to_percentage(number, precision = 2)
@@ -31,15 +32,14 @@ module Split
       z = round(z_score.to_s.to_f, 3).abs
 
       if z >= 2.58
-        '99% confidence'
+        "99% confidence"
       elsif z >= 1.96
-        '95% confidence'
+        "95% confidence"
       elsif z >= 1.65
-        '90% confidence'
+        "90% confidence"
       else
-        'Insufficient confidence'
+        "Insufficient confidence"
       end
-
     end
   end
 end

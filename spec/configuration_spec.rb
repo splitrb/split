@@ -1,8 +1,8 @@
 # frozen_string_literal: true
-require 'spec_helper'
+
+require "spec_helper"
 
 describe Split::Configuration do
-
   before(:each) { @config = Split::Configuration.new }
 
   it "should provide a default value for ignore_ip_addresses" do
@@ -58,17 +58,15 @@ describe Split::Configuration do
   end
 
   it "should load a metric" do
-    @config.experiments = {:my_experiment=>
-        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
+    @config.experiments = { my_experiment: { alternatives: ["control_opt", "other_opt"], metric: :my_metric } }
 
     expect(@config.metrics).not_to be_nil
     expect(@config.metrics.keys).to eq([:my_metric])
   end
 
   it "should allow loading of experiment using experment_for" do
-    @config.experiments = {:my_experiment=>
-        {:alternatives=>["control_opt", "other_opt"], :metric=>:my_metric}}
-    expect(@config.experiment_for(:my_experiment)).to eq({:alternatives=>["control_opt", ["other_opt"]]})
+    @config.experiments = { my_experiment: { alternatives: ["control_opt", "other_opt"], metric: :my_metric } }
+    expect(@config.experiment_for(:my_experiment)).to eq({ alternatives: ["control_opt", ["other_opt"]] })
   end
 
   context "when experiments are defined via YAML" do
@@ -88,7 +86,7 @@ describe Split::Configuration do
         end
 
         it 'should normalize experiments' do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:retain_user_alternatives_after_reset=>true,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
+          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, retain_user_alternatives_after_reset: true, alternatives: ["Control Opt", ["Alt One", "Alt Two"]] } })
         end
       end
 
@@ -111,14 +109,14 @@ describe Split::Configuration do
                 Alt Two:
                   text: 'Alternative Two'
               resettable: false
-            eos
+          eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
-        it 'should have metadata on the experiment' do
+        it "should have metadata on the experiment" do
           meta = @config.normalized_experiments[:my_experiment][:metadata]
           expect(meta).to_not be nil
-          expect(meta['Control Opt']['text']).to eq('Control Option')
+          expect(meta["Control Opt"]["text"]).to eq("Control Option")
         end
       end
 
@@ -140,25 +138,23 @@ describe Split::Configuration do
               alternatives:
                 - a
                 - b
-            eos
+          eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:retain_user_alternatives_after_reset=>true,:alternatives=>[{"Control Opt"=>0.67},
-            [{"Alt One"=>0.1}, {"Alt Two"=>0.23}]]}, :another_experiment=>{:alternatives=>["a", ["b"]]}})
+          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, retain_user_alternatives_after_reset: true, alternatives: [{ "Control Opt"=>0.67 },
+            [{ "Alt One"=>0.1 }, { "Alt Two"=>0.23 }]] }, another_experiment: { alternatives: ["a", ["b"]] } })
         end
 
         it "should recognize metrics" do
           expect(@config.metrics).not_to be_nil
           expect(@config.metrics.keys).to eq([:my_metric])
         end
-
       end
     end
 
     context "as symbols" do
-
       context "with valid YAML" do
         before do
           experiments_yaml = <<-eos
@@ -168,21 +164,20 @@ describe Split::Configuration do
                 - Alt One
                 - Alt Two
               :resettable: false
-            eos
+          eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({:my_experiment=>{:resettable=>false,:alternatives=>["Control Opt", ["Alt One", "Alt Two"]]}})
+          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, alternatives: ["Control Opt", ["Alt One", "Alt Two"]] } })
         end
       end
 
       context "with invalid YAML" do
-
         let(:yaml) { YAML.load(input) }
 
         context "with an empty string" do
-          let(:input) { '' }
+          let(:input) { "" }
 
           it "should raise an error" do
             expect { @config.experiments = yaml }.to raise_error(Split::InvalidExperimentsFormatError)
@@ -190,7 +185,7 @@ describe Split::Configuration do
         end
 
         context "with just the YAML header" do
-          let(:input) { '---' }
+          let(:input) { "---" }
 
           it "should raise an error" do
             expect { @config.experiments = yaml }.to raise_error(Split::InvalidExperimentsFormatError)
@@ -202,35 +197,24 @@ describe Split::Configuration do
 
   it "should normalize experiments" do
     @config.experiments = {
-      :my_experiment => {
-        :alternatives => [
-          { :name => "control_opt", :percent => 67 },
-          { :name => "second_opt", :percent => 10 },
-          { :name => "third_opt", :percent => 23 },
+      my_experiment: {
+        alternatives: [
+          { name: "control_opt", percent: 67 },
+          { name: "second_opt", percent: 10 },
+          { name: "third_opt", percent: 23 },
         ],
       }
     }
 
-    expect(@config.normalized_experiments).to eq({:my_experiment=>{:alternatives=>[{"control_opt"=>0.67}, [{"second_opt"=>0.1}, {"third_opt"=>0.23}]]}})
-  end
-
-  context 'redis_url configuration [DEPRECATED]' do
-    it 'should warn on set and assign to #redis' do
-      expect(@config).to receive(:warn).with(/\[DEPRECATED\]/) { nil }
-      @config.redis_url = 'example_url'
-      expect(@config.redis).to eq('example_url')
-    end
-
-    it 'should warn on get and return #redis' do
-      expect(@config).to receive(:warn).with(/\[DEPRECATED\]/) { nil }
-      @config.redis = 'example_url'
-      expect(@config.redis_url).to eq('example_url')
-    end
+    expect(@config.normalized_experiments).to eq({ my_experiment: { alternatives: [{ "control_opt"=>0.67 }, [{ "second_opt"=>0.1 }, { "third_opt"=>0.23 }]] } })
   end
 
   context "redis configuration" do
     it "should default to local redis server" do
-      expect(@config.redis).to eq("redis://localhost:6379")
+      old_redis_url = ENV["REDIS_URL"]
+      ENV.delete("REDIS_URL")
+      expect(Split::Configuration.new.redis).to eq("redis://localhost:6379")
+      ENV["REDIS_URL"] = old_redis_url
     end
 
     it "should allow for redis url to be configured" do
@@ -240,8 +224,10 @@ describe Split::Configuration do
 
     context "provided REDIS_URL environment variable" do
       it "should use the ENV variable" do
-        ENV['REDIS_URL'] = "env_redis_url"
+        old_redis_url = ENV["REDIS_URL"]
+        ENV["REDIS_URL"] = "env_redis_url"
         expect(Split::Configuration.new.redis).to eq("env_redis_url")
+        ENV["REDIS_URL"] = old_redis_url
       end
     end
   end
@@ -257,4 +243,14 @@ describe Split::Configuration do
     end
   end
 
+  context "persistence cookie domain" do
+    it "should default to nil" do
+      expect(@config.persistence_cookie_domain).to eq(nil)
+    end
+
+    it "should allow the persistence cookie domain to be configured" do
+      @config.persistence_cookie_domain = ".acme.com"
+      expect(@config.persistence_cookie_domain).to eq(".acme.com")
+    end
+  end
 end

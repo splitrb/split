@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   class Trial
     attr_accessor :goals
@@ -14,7 +15,7 @@ module Split
       @user             = attrs.delete(:user)
       @options          = attrs
 
-      @alternative_choosen = false
+      @alternative_chosen = false
     end
 
     def metadata
@@ -23,15 +24,15 @@ module Split
 
     def alternative
       @alternative ||=  if @experiment.has_winner?
-                          @experiment.winner
-                        end
+        @experiment.winner
+      end
     end
 
     def alternative=(alternative)
       @alternative = if alternative.kind_of?(Split::Alternative)
         alternative
       else
-        @experiment.alternatives.find{|a| a.name == alternative }
+        @experiment.alternatives.find { |a| a.name == alternative }
       end
     end
 
@@ -42,7 +43,7 @@ module Split
           if Array(goals).empty?
             alternative.increment_completion
           else
-            Array(goals).each {|g| alternative.increment_completion(g) }
+            Array(goals).each { |g| alternative.increment_completion(g) }
           end
         end
 
@@ -57,7 +58,7 @@ module Split
     def choose!(context = nil)
       @user.cleanup_old_experiments!
       # Only run the process once
-      return alternative if @alternative_choosen
+      return alternative if @alternative_chosen
 
       user_experiment_key = @experiment.retain_user_alternatives_after_reset ? @user.alternative_key_for_experiment(@experiment) : @experiment.key
       new_participant = @user[user_experiment_key].nil?
@@ -120,43 +121,42 @@ module Split
     end
 
     private
-
-    def user_experiment_key
-      @user_experiment_key ||= @user.alternative_key_for_experiment(@experiment)
-    end
-
-    def delete_time_of_assignment_key
-      @user.delete("#{user_experiment_key}:time_of_assignment")
-    end
-
-    def save_time_that_user_is_assigned
-      @user["#{user_experiment_key}:time_of_assignment"] = Time.now.to_s
-    end
-
-    def run_callback(context, callback_name)
-      context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
-    end
-
-    def override_is_alternative?
-      @experiment.alternatives.map(&:name).include?(@options[:override])
-    end
-
-    def should_store_alternative?
-      if @options[:override] || @options[:disabled]
-        Split.configuration.store_override
-      else
-        !exclude_user?
+      def user_experiment_key
+        @user_experiment_key ||= @user.alternative_key_for_experiment(@experiment)
       end
-    end
 
-    def cleanup_old_versions
-      if @experiment.version > 0
-        @user.cleanup_old_versions!(@experiment)
+      def delete_time_of_assignment_key
+        @user.delete("#{user_experiment_key}:time_of_assignment")
       end
-    end
 
-    def exclude_user?
-      @options[:exclude] || @experiment.start_time.nil? || @user.max_experiments_reached?(@experiment.key)
-    end
+      def save_time_that_user_is_assigned
+        @user["#{user_experiment_key}:time_of_assignment"] = Time.now.to_s
+      end
+
+      def run_callback(context, callback_name)
+        context.send(callback_name, self) if callback_name && context.respond_to?(callback_name, true)
+      end
+
+      def override_is_alternative?
+        @experiment.alternatives.map(&:name).include?(@options[:override])
+      end
+
+      def should_store_alternative?
+        if @options[:override] || @options[:disabled]
+          Split.configuration.store_override
+        else
+          !exclude_user?
+        end
+      end
+
+      def cleanup_old_versions
+        if @experiment.version > 0
+          @user.cleanup_old_versions!(@experiment)
+        end
+      end
+
+      def exclude_user?
+        @options[:exclude] || @experiment.start_time.nil? || @user.max_experiments_reached?(@experiment.key)
+      end
   end
 end

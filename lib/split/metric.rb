@@ -1,11 +1,12 @@
 # frozen_string_literal: true
+
 module Split
   class Metric
     attr_accessor :name
     attr_accessor :experiments
 
     def initialize(attrs = {})
-      attrs.each do |key,value|
+      attrs.each do |key, value|
         if self.respond_to?("#{key}=")
           self.send("#{key}=", value)
         end
@@ -15,13 +16,13 @@ module Split
     def self.load_from_redis(name)
       metric = Split.redis.hget(:metrics, name)
       if metric
-        experiment_names = metric.split(',')
+        experiment_names = metric.split(",")
 
         experiments = experiment_names.collect do |experiment_name|
           Split::ExperimentCatalog.find(experiment_name)
         end
 
-        Split::Metric.new(:name => name, :experiments => experiments)
+        Split::Metric.new(name: name, experiments: experiments)
       else
         nil
       end
@@ -30,7 +31,7 @@ module Split
     def self.load_from_configuration(name)
       metrics = Split.configuration.metrics
       if metrics && metrics[name]
-        Split::Metric.new(:experiments => metrics[name], :name => name)
+        Split::Metric.new(experiments: metrics[name], name: name)
       else
         nil
       end
@@ -76,7 +77,7 @@ module Split
     end
 
     def save
-      Split.redis.hset(:metrics, name, experiments.map(&:name).join(','))
+      Split.redis.hset(:metrics, name, experiments.map(&:name).join(","))
     end
 
     def complete!
@@ -96,6 +97,5 @@ module Split
       return metric_name, goals
     end
     private_class_method :normalize_metric
-
   end
 end

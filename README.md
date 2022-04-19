@@ -1,7 +1,7 @@
 # [Split](https://libraries.io/rubygems/split)
 
 [![Gem Version](https://badge.fury.io/rb/split.svg)](http://badge.fury.io/rb/split)
-[![Build Status](https://secure.travis-ci.org/splitrb/split.svg?branch=master)](https://travis-ci.org/splitrb/split)
+![Build status](https://github.com/splitrb/split/actions/workflows/ci.yml/badge.svg?branch=main)
 [![Code Climate](https://codeclimate.com/github/splitrb/split/badges/gpa.svg)](https://codeclimate.com/github/splitrb/split)
 [![Test Coverage](https://codeclimate.com/github/splitrb/split/badges/coverage.svg)](https://codeclimate.com/github/splitrb/split/coverage)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
@@ -30,11 +30,13 @@ Ideally the master Split repository will replace SimpleRandom with a suitably-li
 
 ### Requirements
 
-Split currently requires Ruby 1.9.3 or higher. If your project requires compatibility with Ruby 1.8.x and Rails 2.3, please use v0.8.0.
+Split v4.0+ is currently tested with Ruby >= 2.5 and Rails >= 5.2.
+
+If your project requires compatibility with Ruby 2.4.x or older Rails versions. You can try v3.0 or v0.8.0(for Ruby 1.9.3)
 
 Split uses Redis as a datastore.
 
-Split only supports Redis 2.0 or greater.
+Split only supports Redis 4.0 or greater.
 
 If you're on OS X, Homebrew is the simplest way to install Redis:
 
@@ -186,8 +188,10 @@ module SplitHelper
   #   use_ab_test(signup_form: "single_page", pricing: "show_enterprise_prices")
   #
   def use_ab_test(alternatives_by_experiment)
-    allow_any_instance_of(Split::Helper).to receive(:ab_test) do |_receiver, experiment|
-      alternatives_by_experiment.fetch(experiment) { |key| raise "Unknown experiment '#{key}'" }
+    allow_any_instance_of(Split::Helper).to receive(:ab_test) do |_receiver, experiment, &block|
+      variant = alternatives_by_experiment.fetch(experiment) { |key| raise "Unknown experiment '#{key}'" }
+      block.call(variant) unless block.nil?
+      variant
     end
   end
 end
@@ -274,7 +278,7 @@ Split.configure do |config|
 end
 ```
 
-By default, cookies will expire in 1 year. To change that, set the `persistence_cookie_length` in the configuration (unit of time in seconds).
+When using the cookie persistence, Split stores data into an anonymous tracking cookie named 'split', which expires in 1 year. To change that, set the `persistence_cookie_length` in the configuration (unit of time in seconds).
 
 ```ruby
 Split.configure do |config|
@@ -282,6 +286,8 @@ Split.configure do |config|
   config.persistence_cookie_length = 2592000 # 30 days
 end
 ```
+
+The data stored consists of the experiment name and the variants the user is in. Example: { "experiment_name" => "variant_a" }
 
 __Note:__ Using cookies depends on `ActionDispatch::Cookies` or any identical API
 
@@ -657,7 +663,7 @@ The API to define goals for an experiment is this:
 ab_test({link_color: ["purchase", "refund"]}, "red", "blue")
 ```
 
-or you can you can define them in a configuration file:
+or you can define them in a configuration file:
 
 ```ruby
 Split.configure do |config|
@@ -765,6 +771,20 @@ split_config = YAML.load_file(Rails.root.join('config', 'split.yml'))
 Split.redis = split_config[Rails.env]
 ```
 
+### Redis Caching (v4.0+)
+
+In some high-volume usage scenarios, Redis load can be incurred by repeated 
+fetches for fairly static data.  Enabling caching will reduce this load.
+
+ ```ruby
+Split.configuration.cache = true
+````
+
+This currently caches:
+  - `Split::ExperimentCatalog.find`
+  - `Split::Experiment.start_time`
+  - `Split::Experiment.winner`
+
 ## Namespaces
 
 If you're running multiple, separate instances of Split you may want
@@ -781,7 +801,7 @@ library. To configure Split to use `Redis::Namespace`, do the following:
   ```
 
 2. Configure `Split.redis` to use a `Redis::Namespace` instance (possible in an
-   intializer):
+   initializer):
 
   ```ruby
   redis = Redis.new(url: ENV['REDIS_URL']) # or whatever config you want

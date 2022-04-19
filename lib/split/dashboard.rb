@@ -1,9 +1,10 @@
 # frozen_string_literal: true
-require 'sinatra/base'
-require 'split'
-require 'bigdecimal'
-require 'split/dashboard/helpers'
-require 'split/dashboard/pagination_helpers'
+
+require "sinatra/base"
+require "split"
+require "bigdecimal"
+require "split/dashboard/helpers"
+require "split/dashboard/pagination_helpers"
 
 module Split
   class Dashboard < Sinatra::Base
@@ -17,7 +18,7 @@ module Split
     helpers Split::DashboardHelpers
     helpers Split::DashboardPaginationHelpers
 
-    get '/' do
+    get "/" do
       # Display experiments without a winner at the top of the dashboard
       @experiments = Split::ExperimentCatalog.all_active_first
       @unintialized_experiments = Split.configuration.experiments.keys - @experiments.map(&:name)
@@ -25,7 +26,7 @@ module Split
       @metrics = Split::Metric.all
 
       # Display Rails Environment mode (or Rack version if not using Rails)
-      if Object.const_defined?('Rails')
+      if Object.const_defined?("Rails")
         @current_env = Rails.env.titlecase
       else
         @current_env = "Rack: #{Rack.version}"
@@ -33,45 +34,48 @@ module Split
       erb :index
     end
 
-    post '/initialize_experiment' do
+    post "/initialize_experiment" do
       Split::ExperimentCatalog.find_or_create(params[:experiment]) unless params[:experiment].nil? || params[:experiment].empty?
-      redirect url('/')
+      redirect url("/")
     end
 
-    post '/force_alternative' do
+    post "/force_alternative" do
       experiment = Split::ExperimentCatalog.find(params[:experiment])
       alternative = Split::Alternative.new(params[:alternative], experiment.name)
-      alternative.increment_participation
-      Split::User.new(self)[experiment.key] = alternative.name
-      redirect url('/')
+
+      cookies = JSON.parse(request.cookies["split_override"]) rescue {}
+      cookies[experiment.name] = alternative.name
+      response.set_cookie("split_override", { value: cookies.to_json, path: "/" })
+
+      redirect url("/")
     end
 
-    post '/experiment' do
+    post "/experiment" do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @alternative = Split::Alternative.new(params[:alternative], params[:experiment])
       @experiment.winner = @alternative.name
-      redirect url('/')
+      redirect url("/")
     end
 
-    post '/start' do
+    post "/start" do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.start
-      redirect url('/')
+      redirect url("/")
     end
 
-    post '/reset' do
+    post "/reset" do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.reset
-      redirect url('/')
+      redirect url("/")
     end
 
-    post '/reopen' do
+    post "/reopen" do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.reset_winner
-      redirect url('/')
+      redirect url("/")
     end
 
-    post '/update_cohorting' do
+    post "/update_cohorting" do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       case params[:cohorting_action].downcase
       when "enable"
@@ -79,13 +83,13 @@ module Split
       when "disable"
         @experiment.disable_cohorting
       end
-      redirect url('/')
+      redirect url("/")
     end
 
-    delete '/experiment' do
+    delete "/experiment" do
       @experiment = Split::ExperimentCatalog.find(params[:experiment])
       @experiment.delete
-      redirect url('/')
+      redirect url("/")
     end
   end
 end

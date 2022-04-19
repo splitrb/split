@@ -3,7 +3,7 @@
 module Split
   module Persistence
     class DualAdapter
-      def self.with_config(options={})
+      def self.with_config(options = {})
         self.config.merge!(options)
         self
       end
@@ -72,14 +72,13 @@ module Split
       end
 
       private
+        def decrement_participation?(old_value, value)
+          !old_value.nil? && !value.nil? && old_value != value
+        end
 
-      def decrement_participation?(old_value, value)
-        !old_value.nil? && !value.nil? && old_value != value
-      end
-
-      def decrement_participation(key, value)
-        Split.redis.hincrby("#{key}:#{value}", 'participant_count', -1)
-      end
+        def decrement_participation(key, value)
+          Split.redis.hincrby("#{key}:#{value}", "participant_count", -1)
+        end
     end
   end
 end

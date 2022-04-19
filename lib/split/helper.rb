@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   module Helper
     OVERRIDE_PARAM_NAME = "ab_test"
@@ -11,9 +12,9 @@ module Split
         alternative = if Split.configuration.enabled && !exclude_visitor?
           experiment.save
           raise(Split::InvalidExperimentsFormatError) unless (Split.configuration.experiments || {}).fetch(experiment.name.to_sym, {})[:combined_experiments].nil?
-          trial = Trial.new(:user => ab_user, :experiment => experiment,
-              :override => override_alternative(experiment.name), :exclude => !is_qualified?,
-              :disabled => split_generically_disabled?)
+          trial = Trial.new(user: ab_user, experiment: experiment,
+              override: override_alternative(experiment.name), exclude: exclude_visitor? && !is_qualified?,
+              disabled: split_generically_disabled?)
           alt = trial.choose!(self)
           alt ? alt.name : nil
         else
@@ -43,7 +44,7 @@ module Split
       ab_user.delete(experiment.key)
     end
 
-    def finish_experiment(experiment, options = {:reset => true})
+    def finish_experiment(experiment, options = { reset: true })
       return false if active_experiments[experiment.name].nil?
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
@@ -57,14 +58,14 @@ module Split
       end
 
       if ab_user[user_experiment_finished_key] && !should_reset
-        return true
+        true
       else
         alternative_name = ab_user[user_experiment_key]
         trial = Trial.new(
-          :user => ab_user, 
-          :experiment => experiment,
-          :alternative => alternative_name,
-          :goals => options[:goals],
+          user: ab_user,
+          experiment: experiment,
+          alternative: alternative_name,
+          goals: options[:goals],
         )      
         
         trial.complete!(self)
@@ -77,14 +78,15 @@ module Split
       end
     end
 
-    def ab_finished(metric_descriptor, options = {:reset => true})
+    def ab_finished(metric_descriptor, options = { reset: true })
       return if exclude_visitor? || Split.configuration.disabled?
       metric_descriptor, goals = normalize_metric(metric_descriptor)
       experiments = Metric.possible_experiments(metric_descriptor)
 
       if experiments.any?
         experiments.each do |experiment|
-          finish_experiment(experiment, options.merge(:goals => goals))
+          next if override_present?(experiment.key)
+          finish_experiment(experiment, options.merge(goals: goals))
         end
       end
     rescue => e
@@ -102,7 +104,7 @@ module Split
           alternative_name = ab_user[experiment.key]
 
           if alternative_name
-            alternative = experiment.alternatives.find{|alt| alt.name == alternative_name}
+            alternative = experiment.alternatives.find { |alt| alt.name == alternative_name }
             alternative.record_extra_info(key, value) if alternative
           end
         end
@@ -112,24 +114,36 @@ module Split
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
-    def ab_active_experiments()
+    def ab_active_experiments
       ab_user.active_experiments
     rescue => e
       raise unless Split.configuration.db_failover
       Split.configuration.db_failover_on_db_error.call(e)
     end
 
-
     def override_present?(experiment_name)
-      override_alternative(experiment_name)
+      override_alternative_by_params(experiment_name) || override_alternative_by_cookies(experiment_name)
     end
 
     def override_alternative(experiment_name)
+      override_alternative_by_params(experiment_name) || override_alternative_by_cookies(experiment_name)
+    end
+
+    def override_alternative_by_params(experiment_name)
       defined?(params) && params[OVERRIDE_PARAM_NAME] && params[OVERRIDE_PARAM_NAME][experiment_name]
     end
 
+    def override_alternative_by_cookies(experiment_name)
+      return unless defined?(request)
+
+      if request.cookies && request.cookies.key?("split_override")
+        experiments = JSON.parse(request.cookies["split_override"]) rescue {}
+        experiments[experiment_name]
+      end
+    end
+
     def split_generically_disabled?
-      defined?(params) && params['SPLIT_DISABLE']
+      defined?(params) && params["SPLIT_DISABLE"]
     end
 
     def ab_user
@@ -145,7 +159,7 @@ module Split
     end
 
     def is_preview?
-      defined?(request) && defined?(request.headers) && request.headers['x-purpose'] == 'preview'
+      defined?(request) && defined?(request.headers) && request.headers["x-purpose"] == "preview"
     end
 
     def is_ignored_ip_address?

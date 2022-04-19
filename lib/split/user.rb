@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require 'forwardable'
+
+require "forwardable"
 
 module Split
   class User
@@ -7,7 +8,7 @@ module Split
     def_delegators :@user, :keys, :[], :[]=, :delete
     attr_reader :user
 
-    def initialize(context, adapter=nil)
+    def initialize(context, adapter = nil)
       @user = adapter || Split::Persistence.adapter.new(context)
       @cleaned_up = false
     end
@@ -26,10 +27,10 @@ module Split
     end
 
     def max_experiments_reached?(experiment_key)
-      if Split.configuration.allow_multiple_experiments == 'control'
+      if Split.configuration.allow_multiple_experiments == "control"
         experiments = active_experiments
         experiment_key_without_version = key_without_version(experiment_key)
-        count_control = experiments.count {|k,v| k == experiment_key_without_version || v == 'control'}
+        count_control = experiments.count { |k, v| k == experiment_key_without_version || v == "control" }
         experiments.size > count_control
       else
         !Split.configuration.allow_multiple_experiments &&
@@ -80,33 +81,46 @@ module Split
       end
     end
 
-    private
+    def self.find(user_id, adapter)
+      adapter = adapter.is_a?(Symbol) ? Split::Persistence::ADAPTERS[adapter] : adapter
 
-    def keys_without_experiment(keys, experiment_key)
-      if experiment_key.include?(':')
-        sub_keys = keys.reject { |k| k == experiment_key }
-        sub_keys.reject do |k|
-          sub_str = k.partition(':').last
-
-          k.match(Regexp.new("^#{experiment_key}:")) && sub_str.scan(Regexp.new("\\D")).any?
-        end
+      if adapter.respond_to?(:find)
+        User.new(nil, adapter.find(user_id))
       else
-        keys.select do |k|
-          k.match(Regexp.new("^#{experiment_key}:\\d+(:|$)")) ||
-            k.partition(':').first != experiment_key
+        nil
+      end
+    end
+
+    private
+      def keys_without_experiment(keys, experiment_key)
+        if experiment_key.include?(':')
+          sub_keys = keys.reject { |k| k == experiment_key }
+          sub_keys.reject do |k|
+            sub_str = k.partition(':').last
+
+            k.match(Regexp.new("^#{experiment_key}:")) && sub_str.scan(Regexp.new("\\D")).any?
+          end
+        else
+          keys.select do |k|
+            k.match(Regexp.new("^#{experiment_key}:\\d+(:|$)")) ||
+              k.partition(':').first != experiment_key
+          end
         end
       end
-    end
 
-    def experiment_keys(keys)
-      keys.reject do |k|
-        sub_str = k.partition(':').last
-        sub_str.scan(Regexp.new("\\D")).any?
+      def experiment_keys(keys)
+        keys.reject do |k|
+          sub_str = k.partition(':').last
+          sub_str.scan(Regexp.new("\\D")).any?
+        end
       end
-    end
 
-    def key_without_version(key)
-      key.split(/\:\d(?!\:)/)[0]
-    end
+      def keys_without_finished(keys)
+        keys.reject { |k| k.include?(":finished") }
+      end
+
+      def key_without_version(key)
+        key.split(/\:\d(?!\:)/)[0]
+      end
   end
 end
