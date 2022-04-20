@@ -19,25 +19,27 @@ describe Split::User do
   end
 
   context "#cleanup_old_versions!" do
-    let(:experiment_version) { "#{experiment.name}:1" }
-    let(:second_experiment_version) { "#{experiment.name}_another:1" }
-    let(:third_experiment_version) { "variation_of_#{experiment.name}:1" }
-    let(:user_keys) do
-      {
-        experiment_version => "blue",
-        second_experiment_version => "red",
-        third_experiment_version => "yellow"
-      }
-    end
+    context "when there are multiple variations" do
+      let(:experiment_version) { "#{experiment.name}:1" }
+      let(:second_experiment_version) { "#{experiment.name}_another:1" }
+      let(:third_experiment_version) { "variation_of_#{experiment.name}:1" }
+      let(:user_keys) do
+        {
+          experiment_version => "blue",
+          second_experiment_version => "red",
+          third_experiment_version => "yellow"
+        }
+      end
 
-    before(:each) { @subject.cleanup_old_versions!(experiment) }
+      before(:each) { @subject.cleanup_old_versions!(experiment) }
 
-    it "removes key if old experiment is found" do
-      expect(@subject.keys).not_to include(experiment_version)
-    end
+      it "removes key if old experiment is found" do
+        expect(@subject.keys).not_to include(experiment_version)
+      end
 
-    it "does not remove other keys" do
-      expect(@subject.keys).to include(second_experiment_version, third_experiment_version)
+      it "does not remove other keys" do
+        expect(@subject.keys).to include(second_experiment_version, third_experiment_version)
+      end
     end
 
     context 'current version does not have number' do
@@ -219,8 +221,8 @@ describe Split::User do
         allow(experiment).to receive(:start_time).and_return(Date.today)
         allow(experiment).to receive(:has_winner?).and_return(false)
         @subject.cleanup_old_experiments!
-        expect(@subject.keys).to include("link_color:1")
-        expect(@subject.keys).to include("link_color:1:finished")
+        expect(@subject.keys).to include("link_color")
+        expect(@subject.keys).to include("link_color:finished")
       end
     end
 

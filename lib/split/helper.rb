@@ -13,7 +13,7 @@ module Split
           experiment.save
           raise(Split::InvalidExperimentsFormatError) unless (Split.configuration.experiments || {}).fetch(experiment.name.to_sym, {})[:combined_experiments].nil?
           trial = Trial.new(user: ab_user, experiment: experiment,
-              override: override_alternative(experiment.name), exclude: exclude_visitor? && !is_qualified?,
+              override: override_alternative(experiment.name), exclude: exclude_visitor? || !is_qualified?,
               disabled: split_generically_disabled?)
           alt = trial.choose!(self)
           alt ? alt.name : nil
