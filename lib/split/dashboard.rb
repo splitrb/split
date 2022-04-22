@@ -26,7 +26,7 @@ module Split
       @metrics = Split::Metric.all
 
       # Display Rails Environment mode (or Rack version if not using Rails)
-      if Object.const_defined?("Rails")
+      if Object.const_defined?("Rails") && Rails.respond_to?(:env)
         @current_env = Rails.env.titlecase
       else
         @current_env = "Rack: #{Rack.version}"
