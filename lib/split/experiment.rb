@@ -9,6 +9,7 @@ module Split
     attr_accessor :alternative_probabilities
     attr_accessor :metadata
     attr_accessor :friendly_name
+    attr_accessor :cohorting_block
 
     attr_reader :alternatives
     attr_reader :resettable
@@ -17,6 +18,7 @@ module Split
     DEFAULT_OPTIONS = {
       :resettable => true,
       :retain_user_alternatives_after_reset => false,
+      :cohorting_block => ["control", "alternative"]
     }
 
     def initialize(name, options = {})
@@ -43,6 +45,7 @@ module Split
       self.metadata = options_with_defaults[:metadata]
       self.friendly_name = options_with_defaults[:friendly_name] || @name
       self.retain_user_alternatives_after_reset = options_with_defaults[:retain_user_alternatives_after_reset]
+      self.cohorting_block = options_with_defaults[:cohorting_block]
     end
 
     def extract_alternatives_from_options(options)
@@ -64,6 +67,7 @@ module Split
           options[:algorithm] = exp_config[:algorithm]
           options[:friendly_name] = exp_config[:friendly_name]
           options[:retain_user_alternatives_after_reset] = exp_config[:retain_user_alternatives_after_reset]
+          options[:cohorting_block] = exp_config[:cohorting_block]
         end
       end
 
@@ -232,6 +236,10 @@ module Split
       "#{name}:friendly_name"
     end
 
+    def cohorting_block_key
+      "#{name}:cohorting_block"
+    end
+
     def resettable?
       resettable
     end
@@ -266,6 +274,7 @@ module Split
 
       options = {
         retain_user_alternatives_after_reset: exp_config['retain_user_alternatives_after_reset'],
+        cohorting_block: load_cohorting_block_from_redis,
         resettable: exp_config['resettable'],
         algorithm: exp_config['algorithm'],
         friendly_name: load_friendly_name_from_redis,
@@ -446,6 +455,10 @@ module Split
       redis.get(friendly_name_key)
     end
 
+    def load_cohorting_block_from_redis
+      redis.lrange(cohorting_block_key, 0, -1)
+    end
+
     def load_alternatives_from_configuration
       alts = Split.configuration.experiment_for(@name)[:alternatives]
       raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
@@ -492,6 +505,9 @@ module Split
       goals_collection.save
       redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
       redis.set(friendly_name_key, self.friendly_name)
+      self.cohorting_block.each do |entry|
+        redis.lpush(cohorting_block_key, entry)
+      end
     end
 
     def remove_experiment_configuration

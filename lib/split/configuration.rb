@@ -164,7 +164,8 @@ module Split
           algorithm: value_for(settings, :algorithm),
           resettable: value_for(settings, :resettable),
           friendly_name: value_for(settings, :friendly_name),
-          retain_user_alternatives_after_reset:  value_for(settings, :retain_user_alternatives_after_reset)
+          retain_user_alternatives_after_reset:  value_for(settings, :retain_user_alternatives_after_reset),
+          cohorting_block: value_for(settings, :cohorting_block)
         }
 
         experiment_data.each do |name, value|

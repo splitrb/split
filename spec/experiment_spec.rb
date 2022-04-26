@@ -128,6 +128,11 @@ describe Split::Experiment do
       expect(experiment.retain_user_alternatives_after_reset).to be_truthy
     end
 
+    it "should be possible to make an experiment with a cohorting_block" do
+      experiment = Split::Experiment.new("basket_text", :alternatives => ["Basket", "Cart"], :cohorting_block => ["Basket", "Cart"])
+      expect(experiment.cohorting_block).to eq(["Basket", "Cart"])
+    end
+
     it "sets friendly_name" do
       experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :friendly_name => "foo")
       expect(experiment.friendly_name).to eq("foo")
@@ -149,6 +154,7 @@ describe Split::Experiment do
       it 'assigns default values to the experiment' do
         expect(Split::Experiment.new(experiment_name).resettable).to eq(true)
         expect(Split::Experiment.new(experiment_name).retain_user_alternatives_after_reset).to eq(false)
+        expect(Split::Experiment.new(experiment_name).cohorting_block).to match_array ['control', 'alternative']
       end
 
       it "sets friendly_name" do
@@ -183,6 +189,15 @@ describe Split::Experiment do
       e = Split::ExperimentCatalog.find("basket_text")
       expect(e).to eq(experiment)
       expect(e.retain_user_alternatives_after_reset).to be_truthy
+    end
+
+    it "should persist cohorting_block" do
+      experiment = Split::Experiment.new("basket_text", :alternatives => ['Basket', "Cart"], :cohorting_block => ["Basket", "Cart"])
+      experiment.save
+
+      e = Split::ExperimentCatalog.find("basket_text")
+      expect(e).to eq(experiment)
+      expect(e.cohorting_block).to match_array ["Basket", "Cart"]
     end
 
     describe '#metadata' do

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'redis'
 
+require 'split/algorithms/systematic_sampling'
 require 'split/algorithms/block_randomization'
 require 'split/algorithms/weighted_sample'
 require 'split/algorithms/whiplash'
