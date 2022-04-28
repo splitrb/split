@@ -75,8 +75,7 @@ describe Split::User do
 
     context 'current version has number' do
       before do
-        experiment.reset
-        experiment.reset
+        2.times { experiment.reset }
       end
 
       describe 'when the user is in the experiment without version number' do
@@ -127,50 +126,53 @@ describe Split::User do
   end 
 
   context '#cleanup_old_experiments!' do
-    let(:user_keys) do
-      {
-        'link_color' => 'blue',
-        'link_color:finished' => true,
-        'link_color:time_of_assignment' => Time.now.to_s,
-      }
-    end
+    describe "when the user is in the experiment without version number" do
+      let(:user_keys) do
+        {
+          'link_color' => 'blue',
+          'link_color:finished' => true,
+          'link_color:time_of_assignment' => Time.now.to_s,
+          'link_color:external_key' => "value",
+        }
+      end
 
-    it 'removes keys if experiment is not found' do
-      @subject.cleanup_old_experiments!
+      it 'removes keys if experiment is not found' do
+        @subject.cleanup_old_experiments!
 
-      expect(@subject.keys).to be_empty
-    end
+        expect(@subject.keys).to be_empty
+      end
 
-    it 'removes keys if experiment has a winner' do
-      allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
-      allow(experiment).to receive(:has_winner?).and_return(true)
-      allow(experiment).to receive(:start_time).and_return(Date.today)
-      
-      @subject.cleanup_old_experiments!
-      
-      expect(@subject.keys).to be_empty
-    end
+      it 'removes keys if experiment has a winner' do
+        allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+        allow(experiment).to receive(:has_winner?).and_return(true)
+        allow(experiment).to receive(:start_time).and_return(Date.today)
 
-    it 'removes keys if experiment has not started yet' do
-      allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
-      allow(experiment).to receive(:has_winner?).and_return(false)
-      allow(experiment).to receive(:start_time).and_return(nil)
-      
-      @subject.cleanup_old_experiments!
-      
-      expect(@subject.keys).to be_empty
-    end
+        @subject.cleanup_old_experiments!
 
-    it 'keeps keys if the experiment has no winner and has started' do
-      allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
-      allow(experiment).to receive(:has_winner?).and_return(false)
-      allow(experiment).to receive(:start_time).and_return(Date.today)
-      
-      @subject.cleanup_old_experiments!
-      
-      expect(@subject.keys).to include("link_color")
-      expect(@subject.keys).to include("link_color:finished")
-      expect(@subject.keys).to include("link_color:time_of_assignment")
+        expect(@subject.keys).to be_empty
+      end
+
+      it 'removes keys if experiment has not started yet' do
+        allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+        allow(experiment).to receive(:has_winner?).and_return(false)
+        allow(experiment).to receive(:start_time).and_return(nil)
+
+        @subject.cleanup_old_experiments!
+
+        expect(@subject.keys).to be_empty
+      end
+
+      it 'keeps keys if the experiment has no winner and has started' do
+        allow(Split::ExperimentCatalog).to receive(:find).with('link_color').and_return(experiment)
+        allow(experiment).to receive(:has_winner?).and_return(false)
+        allow(experiment).to receive(:start_time).and_return(Date.today)
+
+        @subject.cleanup_old_experiments!
+
+        expect(@subject.keys).to include("link_color")
+        expect(@subject.keys).to include("link_color:finished")
+        expect(@subject.keys).to include("link_color:time_of_assignment")
+      end
     end
 
     describe "when the user is in the experiment with version number" do
@@ -180,6 +182,12 @@ describe Split::User do
           'link_color:1:finished' => true,
           'link_color:1:time_of_assignment' => Time.now.to_s,
         }
+      end
+
+      it 'removes keys if the experiment is not found' do
+        @subject.cleanup_old_experiments!
+
+        expect(@subject.keys).to be_empty
       end
 
       it 'keeps keys when the experiment has no winner and has started' do
@@ -192,6 +200,32 @@ describe Split::User do
         expect(@subject.keys).to include("link_color:1")
         expect(@subject.keys).to include("link_color:1:finished")
         expect(@subject.keys).to include("link_color:1:time_of_assignment")
+      end
+    end
+
+    describe "when the user is in two experiments with similar names" do
+      let(:user_keys) do
+        {
+          'link_color' => 'blue',
+          'link_color:finished' => true,
+          'link_color:time_of_assignment' => Time.now.to_s,
+          'link_color_v2' => 'blue',
+          'link_color_v2:finished' => true,
+          'link_color_v2:time_of_assignment' => Time.now.to_s,
+        }
+      end
+
+      it 'only delete the keys for non-existent experiment' do
+        experiment = Split::Experiment.new('link_color_v2')
+        alternatives = %w[control blue]
+        Split::ExperimentCatalog.find_or_create("link_color_v2", alternatives)
+        experiment.start
+
+        @subject.cleanup_old_experiments!
+
+        expect(@subject.keys).to include("link_color_v2")
+        expect(@subject.keys).to include("link_color_v2:finished")
+        expect(@subject.keys).to include("link_color_v2:time_of_assignment")
       end
     end
 
@@ -227,7 +261,7 @@ describe Split::User do
             'link_color' => 'blue',
             'link_color:finished' => true,
             'link_color:time_of_assignment' => Time.now.to_s,
-            'link_color:eligibility' => "ELIGIBLE",
+            'link_color:external_key' => "value",
           }
         end
 
@@ -246,7 +280,7 @@ describe Split::User do
             'link_color:1' => 'blue',
             'link_color:1:finished' => true,
             'link_color:1:time_of_assignment' => Time.now.to_s,
-            'link_color:1:eligibility' => "ELIGIBLE",
+            'link_color:1:external_key' => "value",
           }
         end
 
@@ -296,7 +330,7 @@ describe Split::User do
             'link_shape' => 'control',
             'link_shape:finished' => true,
             'link_shape:time_of_assignment' => Time.now.to_s,
-            'link_shape:eligibility' => "ELIGIBLE",
+            'link_shape:external_key' => "value",
           }
         end
 
@@ -311,11 +345,11 @@ describe Split::User do
             'link_color' => 'blue',
             'link_color:finished' => true,
             'link_color:time_of_assignment' => Time.now.to_s,
-            'link_color:eligibility' => "ELIGIBLE",
+            'link_color:external_key' => "value",
             'link_shape' => 'control',
             'link_shape:finished' => true,
             'link_shape:time_of_assignment' => Time.now.to_s,
-            'link_shape:eligibility' => "ELIGIBLE",
+            'link_shape:external_key' => "value",
           }
         end
 
@@ -333,11 +367,11 @@ describe Split::User do
           'link_color' => 'blue',
           'link_color:finished' => true,
           'link_color:time_of_assignment' => Time.now.to_s,
-          'link_color:eligibility' => "ELIGIBLE",
+          'link_color:external_key' => "value",
           'link_shape' => 'blue',
           'link_shape:finished' => true,
           'link_shape:time_of_assignment' => Time.now.to_s,
-          'link_shape:eligibility' => "ELIGIBLE",
+          'link_shape:external_key' => "value",
         }
       end
 
@@ -360,7 +394,7 @@ describe Split::User do
           'link_color' => 'blue',
           'link_color:finished' => true,
           'link_color:time_of_assignment' => Time.now.to_s,
-          'link_color:eligibility' => "ELIGIBLE",
+          'link_color:external_key' => "value",
         }
       end
 
@@ -395,7 +429,7 @@ describe Split::User do
           'link_color:1' => 'blue',
           'link_color:1:finished' => true,
           'link_color:1:time_of_assignment' => Time.now.to_s,
-          'link_color:1:eligibility' => "ELIGIBLE",
+          'link_color:1:external_key' => "value",
         }
       end
       before do
@@ -468,6 +502,99 @@ describe Split::User do
         it "returns the current experiment key" do
           expect(@subject.alternative_key_for_experiment(experiment)).to eq("link_color:2")
         end
+      end
+    end
+  end
+
+  context "#all_fields_for_experiment_key" do
+    context "when user has experiment fields" do
+      let(:user_keys) do
+        {
+          'link_color' => 'blue',
+          'link_color:finished' => true,
+          'link_color:time_of_assignment' => Time.now.to_s,
+          'link_color:external_key' => "value",
+          'link_color_v2' => 'blue',
+          'link_color:1' => 'blue',
+          'lk_cl' => 'blue',
+        }
+      end
+
+      it "returns only the experiment fields" do
+        expect(@subject.all_fields_for_experiment_key(experiment.key)).to eq(
+                        %w[link_color link_color:finished link_color:time_of_assignment link_color:external_key])
+      end
+    end
+
+    context "when user has versioned experiment fields" do
+      let(:user_keys) do
+        {
+          'link_color:1' => 'blue',
+          'link_color:1:finished' => true,
+          'link_color:1:time_of_assignment' => Time.now.to_s,
+          'link_color:1:external_key' => "value",
+          'link_color_v2:1' => 'blue',
+          'link_color' => 'blue',
+          'link_color:2' => 'blue',
+          'lk_cl:1' => 'blue',
+        }
+      end
+
+      it "returns only the versioned fields" do
+        expect(@subject.all_fields_for_experiment_key("link_color:1")).to eq(
+                  %w[link_color:1 link_color:1:finished link_color:1:time_of_assignment link_color:1:external_key])
+      end
+    end
+  end
+
+  context "#first_field_from_all_versions" do
+    describe "when experiment field doesn't have version" do
+      let(:user_keys) do
+        {
+          'link_color' => 'blue',
+          'link_color:external_key' => "value",
+          'link_color_v2' => 'blue',
+          'link_color:1' => 'blue',
+          'lk_cl' => 'blue',
+        }
+      end
+
+      it "returns experiment key" do
+        expect(@subject.first_field_from_all_versions(experiment)).to eq(experiment.key)
+      end
+
+      it "returns experiment field" do
+        expect(@subject.first_field_from_all_versions(experiment, "external_key")).to eq('link_color:external_key')
+      end
+
+      it "returns nil for non-existent field" do
+        expect(@subject.first_field_from_all_versions(experiment, "random_field")).to be_nil
+      end
+    end
+
+    describe "when experiment field has version" do
+      let(:user_keys) do
+        {
+          'link_color:2' => 'blue',
+          'link_color:2:external_key' => "value",
+          'link_color_v2:1' => 'blue',
+          'lk_cl:1' => 'blue',
+        }
+      end
+      before do
+        3.times { experiment.reset }
+      end
+
+      it "returns versioned experiment key" do
+        expect(@subject.first_field_from_all_versions(experiment)).to eq("link_color:2")
+      end
+
+      it "returns versioned experiment field" do
+        expect(@subject.first_field_from_all_versions(experiment, "external_key")).to eq('link_color:2:external_key')
+      end
+
+      it "returns nil for non-existent field" do
+        expect(@subject.first_field_from_all_versions(experiment, "random_field")).to be_nil
       end
     end
   end

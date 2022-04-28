@@ -46,7 +46,7 @@ module Split
           end
         end
 
-        delete_time_of_assignment_key
+        delete_experiment_context_keys
         run_callback context, Split.configuration.on_trial_complete
       end
     end
@@ -125,8 +125,11 @@ module Split
       @user_experiment_key ||= @user.alternative_key_for_experiment(@experiment)
     end
 
-    def delete_time_of_assignment_key
-      @user.delete("#{user_experiment_key}:time_of_assignment")
+    def delete_experiment_context_keys
+      keys = @user.all_fields_for_experiment_key(user_experiment_key)
+      keys.each do |key|
+        @user.delete(key) unless key == user_experiment_key || key == Experiment.finished_key(user_experiment_key)
+      end
     end
 
     def save_time_that_user_is_assigned

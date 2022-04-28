@@ -14,12 +14,18 @@ module Split
 
     def cleanup_old_experiments!
       return if @cleaned_up
-      experiment_keys(user.keys).each do |key|
-        experiment = ExperimentCatalog.find key_without_version(key)
-        if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
+      exp_to_delete = {}
+
+      user.keys.each do |key|
+        exp_name = experiment_name(key)
+
+        unless exp_to_delete.include?(exp_name)
+          experiment = ExperimentCatalog.find exp_name
+          exp_to_delete[exp_name] = experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
+        end
+
+        if exp_to_delete[exp_name]
           user.delete key
-          user.delete Experiment.finished_key(key)
-          user.delete "#{key}:time_of_assignment"
         end
       end
       @cleaned_up = true
@@ -55,32 +61,39 @@ module Split
     end
 
     def alternative_key_for_experiment(experiment)
-      if experiment.version > 0
-        keys = user.keys
+      user_experiment_key = first_field_from_all_versions(experiment)
+      #default to current experiment key when one isn't found
+      user_experiment_key || experiment.key
+    end
 
-        #default to current experiment key when one isn't found
-        user_experiment_key = experiment.key
+    def all_fields_for_experiment_key(experiment_key)
+      user.keys - keys_without_experiment(user.keys, experiment_key)
+    end
 
-        #first version is not colon delimited 
-        if keys.include?(experiment.name)
-          user_experiment_key = experiment.name
-        else
-          experiment.version.times do |version_number|
-            key = "#{experiment.name}:#{version_number+1}"
-            if keys.include?(key)
-              user_experiment_key = key
-              break
-            end
+    def first_field_from_all_versions(experiment, exp_attribute = "")
+      keys = user.keys
+      exp_attribute = ":#{exp_attribute}" unless exp_attribute.empty?
+      result = nil
+
+      if keys.include?(experiment.name + exp_attribute)
+        result = experiment.name + exp_attribute
+      else
+        experiment.version.times do |version_number|
+          key = "#{experiment.name}:#{version_number+1}" + exp_attribute
+          if keys.include?(key)
+            result = key
+            break
           end
         end
-
-        user_experiment_key
-      else
-        experiment.key
       end
+
+      result
     end
 
     private
+    def experiment_name(key)
+      key.partition(':').first
+    end
 
     def keys_without_experiment(keys, experiment_key)
       if experiment_key.include?(':')

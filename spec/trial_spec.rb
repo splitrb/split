@@ -351,9 +351,10 @@ describe Split::Trial do
       trial.choose!
     end
 
-    it "removes the time_of_assignment key for that experiment" do
+    it "removes the context keys for that experiment" do
+      user[experiment.key + ":external_key"] = "value"
       trial.complete!
-      expect(user[experiment.key + ":time_of_assignment"]).to be nil
+      expect(user.keys).to eq [experiment.key]
     end
 
     it "does not not convert when the user is not within the conversion time frame and experiment key is not the same as the user key" do
