@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "bundler",     ">= 1.17"
   s.add_development_dependency "simplecov",   "~> 0.15"
-  s.add_development_dependency "rack-test",   "~> 1.1"
+  s.add_development_dependency "rack-test",   "~> 2.0"
   s.add_development_dependency "rake",        "~> 13"
   s.add_development_dependency "rspec",       "~> 3.7"
   s.add_development_dependency "pry",         "~> 0.10"
