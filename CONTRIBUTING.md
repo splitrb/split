@@ -25,7 +25,7 @@ Want to contribute to Split? That's great! Here are a couple of guidelines that 
 
 ## Setup instructions
 
-You can find in-depth instructions to install in our [README](https://github.com/splitrb/split/blob/master/README.md).
+You can find in-depth instructions to install in our [README](https://github.com/splitrb/split/blob/main/README.md).
 
 *Note*: Split requires Ruby 1.9.2 or higher.
 
