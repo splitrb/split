@@ -90,6 +90,9 @@ module Split
       redis.hset(experiment_config_key, :retain_user_alternatives_after_reset, retain_user_alternatives_after_reset)
       redis.hset(experiment_config_key, :resettable, resettable)
       redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
+
+      #binding.pry
+
       self
     end
 

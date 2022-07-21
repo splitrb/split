@@ -55,13 +55,19 @@ module Split
     # method is guaranteed to only run once, and will skip the alternative choosing process if run
     # a second time.
     def choose!(context = nil)
+
       @user.cleanup_old_experiments!
       # Only run the process once
+
       return alternative if @alternative_choosen
+
 
       user_experiment_key = @experiment.retain_user_alternatives_after_reset ? @user.alternative_key_for_experiment(@experiment) : @experiment.key
       new_participant = @user[user_experiment_key].nil?
       if override_is_alternative?
+
+
+
         self.alternative = @options[:override]
         if should_store_alternative? && !@user[user_experiment_key]
           self.alternative.increment_participation
@@ -72,11 +78,11 @@ module Split
         self.alternative = @experiment.winner
       else
         cleanup_old_versions unless experiment.retain_user_alternatives_after_reset
-
         if exclude_user?
           self.alternative = @experiment.control
         else
           self.alternative = @user[user_experiment_key]
+
           if alternative.nil?
             if @experiment.cohorting_disabled?
               self.alternative = @experiment.control
@@ -86,18 +92,27 @@ module Split
               # Increment the number of participants since we are actually choosing a new alternative
               self.alternative.increment_participation
 
+              binding.pry
+
               save_time_that_user_is_assigned
+
+              binding.pry
+
               run_callback context, Split.configuration.on_trial_choose
             end
           end
         end
       end
 
+      binding.pry
+
       new_participant_and_cohorting_disabled = new_participant && @experiment.cohorting_disabled?
 
       @user[user_experiment_key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || new_participant_and_cohorting_disabled
+
       @alternative_choosen = true
       run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled? || new_participant_and_cohorting_disabled
+
       alternative
     end
 
@@ -133,6 +148,7 @@ module Split
     end
 
     def save_time_that_user_is_assigned
+      binding.pry
       @user["#{user_experiment_key}:time_of_assignment"] = Time.now.to_s
     end
 

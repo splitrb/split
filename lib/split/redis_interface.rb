@@ -7,6 +7,8 @@ module Split
     end
 
     def persist_list(list_name, list_values)
+      binding.pry
+
       max_index = list_length(list_name) - 1
       list_values.each_with_index do |value, index|
         if index > max_index
@@ -20,6 +22,8 @@ module Split
     end
 
     def add_to_list(list_name, value)
+      binding.pry
+
       redis.rpush(list_name, value)
     end
 
@@ -32,6 +36,8 @@ module Split
     end
 
     def remove_last_item_from_list(list_name)
+      binding.pry
+
       redis.rpop(list_name)
     end
 
@@ -40,6 +46,8 @@ module Split
     end
 
     def add_to_set(set_name, value)
+      binding.pry
+
       redis.sadd(set_name, value) unless redis.sismember(set_name, value)
     end
 
