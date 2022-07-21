@@ -7,7 +7,6 @@ module Split
       attr_reader :redis_key
 
       def initialize(context, key = nil)
-        binding.pry
         if key
           @redis_key = "#{self.class.config[:namespace]}:#{key}"
         elsif lookup_by = self.class.config[:lookup_by]

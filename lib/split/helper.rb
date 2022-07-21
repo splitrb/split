@@ -7,36 +7,16 @@ module Split
 
     def ab_test(metric_descriptor, control = nil, *alternatives)
       begin
-
-        # here is where ab_test gets called
-        #binding.pry
-
-
         experiment = ExperimentCatalog.find_or_initialize(metric_descriptor, control, *alternatives)
         alternative = if Split.configuration.enabled && !exclude_visitor?
-
-          # this is usually true
-
           experiment.save
-
-          #binding.pry
-
-
           raise(Split::InvalidExperimentsFormatError) unless (Split.configuration.experiments || {}).fetch(experiment.name.to_sym, {})[:combined_experiments].nil?
-
-          #binding.pry
 
           trial = Trial.new(:user => ab_user, :experiment => experiment,
               :override => override_alternative(experiment.name), :exclude => !is_qualified?,
               :disabled => split_generically_disabled?)
 
-          #binding.pry
-
-          # THIS IS THE STEP WHERE THE PERSISTENCE OBJECT GETS CREATED
           alt = trial.choose!(self)
-
-          #binding.pry
-
           alt ? alt.name : nil
         else
           control_variable(experiment.control)

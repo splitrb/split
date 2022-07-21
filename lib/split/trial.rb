@@ -66,8 +66,6 @@ module Split
       new_participant = @user[user_experiment_key].nil?
       if override_is_alternative?
 
-
-
         self.alternative = @options[:override]
         if should_store_alternative? && !@user[user_experiment_key]
           self.alternative.increment_participation
@@ -92,11 +90,7 @@ module Split
               # Increment the number of participants since we are actually choosing a new alternative
               self.alternative.increment_participation
 
-              binding.pry
-
               save_time_that_user_is_assigned
-
-              binding.pry
 
               run_callback context, Split.configuration.on_trial_choose
             end
@@ -104,7 +98,6 @@ module Split
         end
       end
 
-      binding.pry
 
       new_participant_and_cohorting_disabled = new_participant && @experiment.cohorting_disabled?
 
@@ -148,7 +141,6 @@ module Split
     end
 
     def save_time_that_user_is_assigned
-      binding.pry
       @user["#{user_experiment_key}:time_of_assignment"] = Time.now.to_s
     end
 
