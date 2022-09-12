@@ -85,7 +85,7 @@ module Split
         persist_experiment_configuration
       end
 
-      redis.hmset(experiment_config_key, :resettable, resettable,
+      redis.hmset(experiment_config_key, :resettable, resettable.to_s,
                                          :algorithm, algorithm.to_s)
       self
     end
@@ -408,12 +408,12 @@ module Split
 
     def disable_cohorting
       @cohorting_disabled = true
-      redis.hset(experiment_config_key, :cohorting, true)
+      redis.hset(experiment_config_key, :cohorting, true.to_s)
     end
 
     def enable_cohorting
       @cohorting_disabled = false
-      redis.hset(experiment_config_key, :cohorting, false)
+      redis.hset(experiment_config_key, :cohorting, false.to_s)
     end
 
     protected

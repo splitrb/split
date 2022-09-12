@@ -166,7 +166,7 @@ module Split
     end
 
     def reset
-      Split.redis.hmset key, "participant_count", 0, "completed_count", 0, "recorded_info", nil
+      Split.redis.hmset key, "participant_count", 0, "completed_count", 0, "recorded_info", nil.to_s
       unless goals.empty?
         goals.each do |g|
           field = "completed_count:#{g}"

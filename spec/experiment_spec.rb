@@ -68,7 +68,7 @@ describe Split::Experiment do
       experiment_start_time = Time.parse("Sat Mar 03 14:01:03")
       expect(Time).to receive(:now).twice.and_return(experiment_start_time)
       experiment.save
-      Split.redis.hset(:experiment_start_times, experiment.name, experiment_start_time)
+      Split.redis.hset(:experiment_start_times, experiment.name, experiment_start_time.to_s)
 
       expect(Split::ExperimentCatalog.find("basket_text").start_time).to eq(experiment_start_time)
     end
