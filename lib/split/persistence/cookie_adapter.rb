@@ -70,7 +70,8 @@ module Split
         def hash
           @hash ||= if cookies = @cookies[:split.to_s]
             begin
-              JSON.parse(cookies)
+              parsed = JSON.parse(cookies)
+              parsed.is_a?(Hash) ? parsed : {}
             rescue JSON::ParserError
               {}
             end
