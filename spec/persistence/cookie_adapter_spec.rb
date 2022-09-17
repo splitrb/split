@@ -14,10 +14,24 @@ describe Split::Persistence::CookieAdapter do
       end
 
       it "handles invalid JSON" do
-        context.request.cookies[:split] = {
-          value: '{"foo":2,',
-          expires: Time.now
-        }
+        context.request.cookies["split"] = "{\"foo\":2,"
+
+        expect(subject["my_key"]).to be_nil
+        subject["my_key"] = "my_value"
+        expect(subject["my_key"]).to eq("my_value")
+      end
+
+      it "ignores valid JSON of invalid type (integer)" do
+        context.request.cookies["split"] = "2"
+
+        expect(subject["my_key"]).to be_nil
+        subject["my_key"] = "my_value"
+        expect(subject["my_key"]).to eq("my_value")
+      end
+
+      it "ignores valid JSON of invalid type (array)" do
+        context.request.cookies["split"] = "[\"foo\", \"bar\"]"
+
         expect(subject["my_key"]).to be_nil
         subject["my_key"] = "my_value"
         expect(subject["my_key"]).to eq("my_value")
