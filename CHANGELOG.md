@@ -1,3 +1,26 @@
+# 4.0.2 (December 2nd, 2022)
+
+Bugfixes:
+- Stop crashing on non-hash json (@knarewski, #697)
+- Handle when Rails is partially loaded as a Gem (@TSMMark, #687)
+
+Features:
+- Add support for redis-client, which does not automatically cast types to strings (@knarewski, #696)
+- Add ability to initialize experiments (@robin-phung, #673)
+
+Misc:
+- Fix default branch name and gem metadata indentation (@ursm, #693)
+- Update actions/checkout to v3 (@andrehjr, #683)
+- Enforce double quotes (@andrehjr, #682)
+- Fix Rubocop Style/* Offenses (@andrehjr, #681)
+- Enable rubocop on Github Actions (@andrehjr, #680)
+- Fix all Layout issues on the project (@andrehjr, #679)
+- Fix Style/HashSyntax offenses (@andrehjr, #678)
+- Remove usage of deprecated implicit block expectation from specs (@andrehjr, #677)
+- Remove appraisals configuration (@andrehjr, #676)
+- Add Ruby 3.1 (@andrehjr, #675)
+- Encapsulate Split::Algorithms at our own module to avoid explicit calling rubystats everywhere (@andrehjr, #674)
+
 ## 4.0.1 (December 30th, 2021)
 
 Bugfixes:
