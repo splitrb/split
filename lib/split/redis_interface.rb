@@ -20,6 +20,8 @@ module Split
     end
 
     def add_to_set(set_name, value)
+      return redis.sadd?(set_name, value) if redis.respond_to?(:sadd?)
+
       redis.sadd(set_name, value)
     end
 
