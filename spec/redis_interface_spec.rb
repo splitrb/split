@@ -40,5 +40,15 @@ describe Split::RedisInterface do
       add_to_set
       expect(Split.redis.sismember(set_name, "something")).to be true
     end
+
+    context "when a Redis version is used that supports the 'sadd?' method" do
+      before { expect(Split.redis).to receive(:respond_to?).with(:sadd?).and_return(true) }
+
+      it "will use this method instead of 'sadd'" do
+        expect(Split.redis).to receive(:sadd?).with(set_name, "something")
+        expect(Split.redis).not_to receive(:sadd).with(set_name, "something")
+        add_to_set
+      end
+    end
   end
 end
