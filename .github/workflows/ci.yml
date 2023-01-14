@@ -37,6 +37,8 @@ jobs:
           - gemfile: 7.0.gemfile
             ruby: '3.1'
 
+          - gemfile: 7.0.gemfile
+            ruby: '3.2'
 
     runs-on: ubuntu-latest
 
