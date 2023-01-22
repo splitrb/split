@@ -11,6 +11,7 @@ SimpleCov.start
 require "split"
 require "ostruct"
 require "yaml"
+require "pry"
 
 Dir["./spec/support/*.rb"].each { |f| require f }
 
