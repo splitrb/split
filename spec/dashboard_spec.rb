@@ -279,4 +279,16 @@ describe Split::Dashboard do
 
     expect(last_response.body).to include("<small>Unknown</small>")
   end
+
+  it "should be explode with experiments with invalid data" do
+    red_link.participant_count = 1
+    red_link.set_completed_count(10)
+
+    blue_link.participant_count = 3
+    blue_link.set_completed_count(2)
+
+    get "/"
+
+    expect(last_response).to be_ok
+  end
 end
