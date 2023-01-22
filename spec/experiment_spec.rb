@@ -576,6 +576,17 @@ describe Split::Experiment do
       expect(p_goal1).not_to be_within(0.04).of(p_goal2)
     end
 
+    it "should not calculate when data is not valid for beta distribution" do
+      experiment = Split::ExperimentCatalog.find_or_create("scientists", "einstein", "bohr")
+
+      experiment.alternatives.each do |alternative|
+        alternative.participant_count = 9
+        alternative.set_completed_count(10)
+      end
+
+      expect { experiment.calc_winning_alternatives }.to_not raise_error
+    end
+
     it "should return nil and not re-calculate probabilities if they have already been calculated today" do
       experiment = Split::ExperimentCatalog.find_or_create({ "link_color3" => ["purchase", "refund"] }, "blue", "red", "green")
       expect(experiment.calc_winning_alternatives).not_to be nil

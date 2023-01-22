@@ -270,7 +270,16 @@ module Split
       set_alternatives_and_options(options)
     end
 
+    def can_calculate_winning_alternatives?
+      self.alternatives.all? do |alternative|
+        alternative.participant_count >= 0 &&
+        (alternative.participant_count >= alternative.completed_count)
+      end
+    end
+
     def calc_winning_alternatives
+      return unless can_calculate_winning_alternatives?
+
       # Cache the winning alternatives so we recalculate them once per the specified interval.
       intervals_since_epoch =
         Time.now.utc.to_i / Split.configuration.winning_alternative_recalculation_interval
