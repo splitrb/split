@@ -33,6 +33,7 @@ Gem::Specification.new do |s|
   s.add_dependency "redis",           ">= 4.2"
   s.add_dependency "sinatra",         ">= 1.2.6"
   s.add_dependency "rubystats",       ">= 0.3.0"
+  s.add_dependency "matrix"
 
   s.add_development_dependency "bundler",     ">= 1.17"
   s.add_development_dependency "simplecov",   "~> 0.15"
