@@ -11,6 +11,7 @@ module Split
       if list_values.length > 0
         redis.multi do |multi|
           tmp_list = "#{list_name}_tmp"
+          tmp_list += redis_namespace_used? ? "{#{Split.redis.namespace}:#{list_name}}" : "{#{list_name}}"
           multi.rpush(tmp_list, list_values)
           multi.rename(tmp_list, list_name)
         end
@@ -27,5 +28,9 @@ module Split
 
     private
       attr_accessor :redis
+
+      def redis_namespace_used?
+        Redis.const_defined?("Namespace") && Split.redis.is_a?(Redis::Namespace)
+      end
   end
 end
