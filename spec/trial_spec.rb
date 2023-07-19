@@ -185,6 +185,120 @@ describe Split::Trial do
           expect_alternative(trial, alternatives)
         end
       end
+
+      context "when the user is in a previous version of the experiment and retain_user_alternatives_after_reset is true" do
+        before do
+          user[experiment.name] = "basket"
+
+          experiment.retain_user_alternatives_after_reset = true
+          experiment.increment_version
+        end
+
+        it "does not clean up previous version of the experiment" do
+          expect(user[experiment.name]).to eq("basket")
+
+          trial.choose!
+
+          expect(user[experiment.name]).to eq("basket")
+        end
+
+        it "does not create new version of the experiment" do
+          expect(user[experiment.key]).to be nil
+
+          trial.choose!
+
+          expect(user[experiment.key]).to be nil
+        end
+
+        it "does not increment the participant count" do
+          original_count = experiment.participant_count
+
+          trial.choose!
+
+          expect(experiment.participant_count).to eql(original_count)
+        end
+      end
+
+      context "when the user is in a previous version of the experiment and retain_user_alternatives_after_reset is false" do
+         before do
+          user[experiment.name] = "basket"
+
+          experiment.retain_user_alternatives_after_reset = false
+          experiment.increment_version
+        end
+
+        it "cleans up old version of the experiment" do
+          expect(user[experiment.name]).to eq("basket")
+
+          trial.choose!
+
+          expect(user[experiment.name]).to be nil
+        end
+
+        it "creates new version of the experiment" do
+          expect(user[experiment.key]).to be nil
+
+          trial.choose!
+
+          expect(["basket", "cart"]).to include(user[experiment.key])
+        end
+
+        it "increments the participant count" do
+          original_count = experiment.participant_count
+
+          trial.choose!
+
+          expect(experiment.participant_count).to eql(original_count + 1)
+        end
+      end
+
+      context "when the user is in current version of the experiment and retain_user_alternatives_after_reset is true" do
+        before do
+          user[experiment.name] = "basket"
+
+          experiment.retain_user_alternatives_after_reset = true
+        end
+
+        it "does not increment the participant count" do
+          original_count = experiment.participant_count
+
+          trial.choose!
+
+          expect(experiment.participant_count).to eql(original_count)
+        end
+
+         it "does not clean up previous version of the experiment" do
+          expect(user[experiment.key]).to eq("basket")
+
+          trial.choose!
+
+          expect(user[experiment.key]).to eq("basket")
+        end
+      end
+
+      context "when the user is in current version of the experiment and retain_user_alternatives_after_reset is false" do
+        before do
+          user[experiment.name] = "basket"
+
+          experiment.retain_user_alternatives_after_reset = false
+        end
+
+        it "does not increment the participant count" do
+          original_count = experiment.participant_count
+
+          trial.choose!
+
+          expect(experiment.participant_count).to eql(original_count)
+        end
+
+        it "does not clean up previous version of the experiment" do
+          expect(user[experiment.key]).to eq("basket")
+
+          trial.choose!
+
+          expect(user[experiment.key]).to eq("basket")
+        end
+      end
     end
 
     context "when user is a new participant" do
@@ -230,6 +344,56 @@ describe Split::Trial do
   end
 
   describe "#complete!" do
+    let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+
+    before do
+      allow(Split.configuration).to receive(:experiments).and_return(experiment.name => { "window_of_time_for_conversion_in_minutes" => 60 })
+
+      trial.choose!
+    end
+
+    it "removes the context keys for that experiment" do
+      user[experiment.key + ":external_key"] = "value"
+      trial.complete!
+      expect(user.keys).to eq [experiment.key]
+    end
+
+    it "does not not convert when the user is not within the conversion time frame and experiment key is not the same as the user key" do
+      allow(Time).to receive(:now).and_return(Time.now + 60*120)
+      experiment.increment_version # this will change the experiment key to "basket_text:1"
+
+      old_completed_count = trial.alternative.completed_count
+
+      trial.complete!
+      expect(trial.alternative.completed_count).to be(old_completed_count)
+
+    end
+
+    it "does not convert when the user is not within the conversion time frame and experiment key is the same as the user key" do
+      old_completed_count = trial.alternative.completed_count
+
+      allow(Time).to receive(:now).and_return(Time.now + 60*120)
+
+      trial.complete!
+      expect(trial.alternative.completed_count).to be(old_completed_count)
+    end
+
+    it "does not converts when the user is within the conversion time frame and experiment key is not the same as the user key" do
+      experiment.increment_version # this will change the experiment key to "basket_text:1"
+
+      old_completed_count = trial.alternative.completed_count
+
+      trial.complete!
+      expect(trial.alternative.completed_count).to be(old_completed_count)
+    end
+
+    it "converts when the user is within the conversion time frame and experiment key is the same as the user key" do
+      old_completed_count = trial.alternative.completed_count
+
+      trial.complete!
+      expect(trial.alternative.completed_count).to be(old_completed_count+1)
+    end
+
     context "when there are no goals" do
       let(:trial) { Split::Trial.new(user: user, experiment: experiment) }
       it "should complete the trial" do
@@ -249,6 +413,71 @@ describe Split::Trial do
         old_completed_counts = goals.map { |goal| [goal, trial.alternative.completed_count(goal)] }.to_h
         trial.complete!
         goals.each { | goal | expect(trial.alternative.completed_count(goal)).to eq(old_completed_counts[goal] + 1) }
+      end
+    end
+
+    context "when there is 1 goal of type string" do
+      let(:goal) { "goal" }
+      let(:trial) { Split::Trial.new(:user => user, :experiment => experiment, :goals => goal) }
+      it "increments the completed count corresponding to the goal" do
+        trial.choose!
+        old_completed_count = trial.alternative.completed_count(goal)
+        trial.complete!
+        expect(trial.alternative.completed_count(goal)).to eq(old_completed_count + 1)
+      end
+    end
+  end
+
+  describe "#within_conversion_time_frame?" do
+    let(:trial) { Split::Trial.new(:user => user, :experiment => experiment) }
+
+    it "memoizes the result" do
+      allow(Split.configuration).to receive(:experiments).and_return(experiment.name => { "window_of_time_for_conversion_in_minutes" => 60 })
+      trial.choose!
+
+      expect(Time).to receive(:parse).once.and_call_original
+
+      trial.within_conversion_time_frame?
+      trial.within_conversion_time_frame?
+    end
+
+    context "when window of time for conversion in minutes is configured" do
+      before do
+        allow(Split.configuration).to receive(:experiments).and_return(experiment.name => { "window_of_time_for_conversion_in_minutes" => 60 })
+        trial.choose!
+      end
+
+      it "returns false when user time of assignment is nil" do
+        user["#{experiment.key}:time_of_assignment"] = nil
+
+        expect(trial.within_conversion_time_frame?).to be_falsey
+      end
+    end
+
+      it "returns false when user time of assignment is empty" do
+        user["#{experiment.key}:time_of_assignment"] = ""
+
+        expect(trial.within_conversion_time_frame?).to be_falsey
+      end
+
+      it "returns false when user is not within the conversion time frame" do
+        allow(Time).to receive(:now).and_return(Time.now + 60*120)
+
+        expect(trial.within_conversion_time_frame?).to be_falsey
+      end
+
+      it "returns true when user is within the conversion time frame" do
+        expect(trial.within_conversion_time_frame?).to be_truthy
+      end
+    end
+
+    context "when window of time for conversion in minutes is not configured" do
+      before do
+        trial.choose!
+      end
+
+      it "returns true" do
+        expect(trial.within_conversion_time_frame?).to be_truthy
       end
     end
 

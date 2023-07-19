@@ -189,7 +189,6 @@ describe Split::Dashboard do
 
     it "calls disable of cohorting when action is disable" do
       post "/update_cohorting?experiment=#{experiment.name}", { "cohorting_action": "disable" }
-
       expect(experiment.cohorting_disabled?).to eq true
     end
 

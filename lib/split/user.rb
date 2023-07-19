@@ -15,11 +15,18 @@ module Split
 
     def cleanup_old_experiments!
       return if @cleaned_up
-      keys_without_finished(user.keys).each do |key|
-        experiment = ExperimentCatalog.find key_without_version(key)
-        if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
+      exp_to_delete = {}
+
+      user.keys.each do |key|
+        exp_name = experiment_name(key)
+
+        unless exp_to_delete.include?(exp_name)
+          experiment = ExperimentCatalog.find exp_name
+          exp_to_delete[exp_name] = experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
+        end
+
+        if exp_to_delete[exp_name]
           user.delete key
-          user.delete Experiment.finished_key(key)
         end
       end
       @cleaned_up = true
@@ -44,7 +51,7 @@ module Split
 
     def active_experiments
       experiment_pairs = {}
-      keys_without_finished(user.keys).each do |key|
+      experiment_keys(user.keys).each do |key|
         Metric.possible_experiments(key_without_version(key)).each do |experiment|
           if !experiment.has_winner?
             experiment_pairs[key_without_version(key)] = user[key]
@@ -64,9 +71,62 @@ module Split
       end
     end
 
+    def alternative_key_for_experiment(experiment)
+      user_experiment_key = first_field_from_all_versions(experiment)
+      #default to current experiment key when one isn't found
+      user_experiment_key || experiment.key
+    end
+
+    def all_fields_for_experiment_key(experiment_key)
+      user.keys - keys_without_experiment(user.keys, experiment_key)
+    end
+
+    def first_field_from_all_versions(experiment, exp_attribute = "")
+      keys = user.keys
+      exp_attribute = ":#{exp_attribute}" unless exp_attribute.empty?
+      result = nil
+
+      if keys.include?(experiment.name + exp_attribute)
+        result = experiment.name + exp_attribute
+      else
+        experiment.version.times do |version_number|
+          key = "#{experiment.name}:#{version_number+1}" + exp_attribute
+          if keys.include?(key)
+            result = key
+            break
+          end
+        end
+      end
+
+      result
+    end
+
     private
+      def experiment_name(key)
+        key.partition(':').first
+      end
+
       def keys_without_experiment(keys, experiment_key)
-        keys.reject { |k| k.match(Regexp.new("^#{experiment_key}(:finished)?$")) }
+        if experiment_key.include?(':')
+          sub_keys = keys.reject { |k| k == experiment_key }
+          sub_keys.reject do |k|
+            sub_str = k.partition(':').last
+
+            k.match(Regexp.new("^#{experiment_key}:")) && sub_str.scan(Regexp.new("\\D")).any?
+          end
+        else
+          keys.select do |k|
+            k.match(Regexp.new("^#{experiment_key}:\\d+(:|$)")) ||
+              k.partition(':').first != experiment_key
+          end
+        end
+      end
+
+      def experiment_keys(keys)
+        keys.reject do |k|
+          sub_str = k.partition(':').last
+          sub_str.scan(Regexp.new("\\D")).any?
+        end
       end
 
       def keys_without_finished(keys)

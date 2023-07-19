@@ -15,6 +15,17 @@ Split is heavily inspired by the [Abingo](https://github.com/ryanb/abingo) and [
 
 Split is designed to be hacker friendly, allowing for maximum customisation and extensibility.
 
+## Clio Modifications
+
+Clio determined that the usage of SimpleRandom within Split was a licensing risk given that SimpleRandom is CDDL and Split is MIT.
+This fork exists so we can use Split without encountering licensing difficulties. Specifically we have removed SimpleRandom as a dependency
+ and any references to it in the code:
+
+- Whiplash algorithm module
+- Probability of winners
+
+Ideally the master Split repository will replace SimpleRandom with a suitably-licensed library at which point Clio will discontinue this fork. 
+
 ## Install
 
 ### Requirements

@@ -48,6 +48,15 @@ module Split
       return false if active_experiments[experiment.name].nil?
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
+
+      if experiment.retain_user_alternatives_after_reset
+        user_experiment_key = ab_user.alternative_key_for_experiment(experiment)
+        user_experiment_finished_key =  Experiment.finished_key(user_experiment_key)
+      else
+        user_experiment_key = experiment.key
+        user_experiment_finished_key = experiment.finished_key
+      end
+
       if ab_user[experiment.finished_key] && !should_reset
         true
       else
@@ -64,7 +73,7 @@ module Split
         if should_reset
           reset!(experiment)
         else
-          ab_user[experiment.finished_key] = true
+          ab_user[user_experiment_finished_key] = true
         end
       end
     end
@@ -179,6 +188,12 @@ module Split
 
     def control_variable(control)
       Hash === control ? control.keys.first.to_s : control.to_s
+    end
+
+    private
+
+    def is_qualified?
+      self.respond_to?(:ab_test_user_qualified?, true) ? self.send(:ab_test_user_qualified?) : true
     end
   end
 end

@@ -36,6 +36,10 @@ describe Split::Experiment do
       expect(experiment.resettable).to be_truthy
     end
 
+    it "should not retain user alternatives after reset by default" do
+      expect(experiment.retain_user_alternatives_after_reset).to be_falsey
+    end
+
     it "should save to redis" do
       experiment.save
       expect(Split.redis.exists?("basket_text")).to be true
@@ -120,12 +124,23 @@ describe Split::Experiment do
       expect(experiment.resettable).to be_falsey
     end
 
+    it "should be possible to make an experiment retain user alternatives after reset" do
+      experiment = Split::Experiment.new("basket_text", :alternatives => ["Basket", "Cart"], :retain_user_alternatives_after_reset => true)
+      expect(experiment.retain_user_alternatives_after_reset).to be_truthy
+    end
+
+    it "sets friendly_name" do
+      experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :friendly_name => "foo")
+      expect(experiment.friendly_name).to eq("foo")
+    end
+
     context "from configuration" do
       let(:experiment_name) { :my_experiment }
       let(:experiments) do
         {
           experiment_name => {
             alternatives: ["Control Opt", "Alt one"]
+            friendly_name: "foo"
           }
         }
       end
@@ -134,6 +149,18 @@ describe Split::Experiment do
 
       it "assigns default values to the experiment" do
         expect(Split::Experiment.new(experiment_name).resettable).to eq(true)
+        expect(Split::Experiment.new(experiment_name).retain_user_alternatives_after_reset).to eq(false)
+      end
+
+      it "sets friendly_name" do
+        expect(Split::Experiment.new(experiment_name).friendly_name).to eq("foo")
+      end
+    end
+
+    context 'when no friendly name is defined' do
+      it "defaults to experiment name" do
+        experiment = Split::Experiment.new('basket_text', :alternatives => ['Basket', "Cart"], :resettable => false)
+        expect(experiment.friendly_name).to eql("basket_text")
       end
     end
   end
@@ -146,6 +173,15 @@ describe Split::Experiment do
       e = Split::ExperimentCatalog.find("basket_text")
       expect(e).to eq(experiment)
       expect(e.resettable).to be_falsey
+    end
+
+    it "should persist retain_user_alternatives_after_reset in redis" do
+      experiment = Split::Experiment.new("basket_text", :alternatives => ['Basket', "Cart"], :retain_user_alternatives_after_reset => true)
+      experiment.save
+
+      e = Split::ExperimentCatalog.find("basket_text")
+      expect(e).to eq(experiment)
+      expect(e.retain_user_alternatives_after_reset).to be_truthy
     end
 
     describe "#metadata" do
@@ -371,6 +407,34 @@ describe Split::Experiment do
     it "should use the user specified algorithm for this experiment if specified" do
       experiment.algorithm = Split::Algorithms::Whiplash
       expect(experiment.algorithm).to eq(Split::Algorithms::Whiplash)
+    end
+  end
+
+  describe "#retain_user_alternatives_after_reset=" do
+    let(:experiment) { Split::ExperimentCatalog.find_or_create("link_color", "blue", "red", "green") }
+
+    it "should accept and return true if given string true" do
+      experiment.retain_user_alternatives_after_reset = "true"
+
+      expect(experiment.retain_user_alternatives_after_reset).to be true
+    end
+
+    it "should accept and return true if given true" do
+      experiment.retain_user_alternatives_after_reset = true
+
+      expect(experiment.retain_user_alternatives_after_reset).to be true
+    end
+
+    it "should accept and return false if given anything but true" do
+      experiment.retain_user_alternatives_after_reset = "invalid boolean"
+
+      expect(experiment.retain_user_alternatives_after_reset).to be false
+    end
+
+    it "should accept and return false if given false" do
+      experiment.retain_user_alternatives_after_reset = false
+
+      expect(experiment.retain_user_alternatives_after_reset).to be false
     end
   end
 

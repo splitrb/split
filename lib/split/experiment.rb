@@ -6,12 +6,15 @@ module Split
     attr_accessor :goals
     attr_accessor :alternative_probabilities
     attr_accessor :metadata
+    attr_accessor :friendly_name
 
     attr_reader :alternatives
     attr_reader :resettable
+    attr_reader :retain_user_alternatives_after_reset
 
     DEFAULT_OPTIONS = {
-      resettable: true
+      resettable: true,
+      retain_user_alternatives_after_reset: false,
     }
 
     def self.find(name)
@@ -43,6 +46,8 @@ module Split
       self.resettable = options_with_defaults[:resettable]
       self.algorithm = options_with_defaults[:algorithm]
       self.metadata = options_with_defaults[:metadata]
+      self.friendly_name = options_with_defaults[:friendly_name] || @name
+      self.retain_user_alternatives_after_reset = options_with_defaults[:retain_user_alternatives_after_reset]
     end
 
     def extract_alternatives_from_options(options)
@@ -62,6 +67,8 @@ module Split
           options[:metadata] = load_metadata_from_configuration
           options[:resettable] = exp_config[:resettable]
           options[:algorithm] = exp_config[:algorithm]
+          options[:friendly_name] = exp_config[:friendly_name]
+          options[:retain_user_alternatives_after_reset] = exp_config[:retain_user_alternatives_after_reset]
         end
       end
 
@@ -85,8 +92,9 @@ module Split
         persist_experiment_configuration
       end
 
-      redis.hmset(experiment_config_key, :resettable, resettable.to_s,
-                                         :algorithm, algorithm.to_s)
+      redis.hset(experiment_config_key, :retain_user_alternatives_after_reset, retain_user_alternatives_after_reset)
+      redis.hset(experiment_config_key, :resettable, resettable)
+      redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
       self
     end
 
@@ -120,6 +128,10 @@ module Split
 
     def resettable=(resettable)
       @resettable = resettable.is_a?(String) ? resettable == "true" : resettable
+    end
+
+    def retain_user_alternatives_after_reset=(value)
+      @retain_user_alternatives_after_reset = value.is_a?(String) ? value == 'true' : value
     end
 
     def alternatives=(alts)
@@ -226,6 +238,10 @@ module Split
       "#{name}:metadata"
     end
 
+    def friendly_name_key
+      "#{name}:friendly_name"
+    end
+
     def resettable?
       resettable
     end
@@ -260,8 +276,10 @@ module Split
       exp_config = redis.hgetall(experiment_config_key)
 
       options = {
+        retain_user_alternatives_after_reset: exp_config["retain_user_alternatives_after_reset"],
         resettable: exp_config["resettable"],
         algorithm: exp_config["algorithm"],
+        friendly_name: load_friendly_name_from_redis,
         alternatives: load_alternatives_from_redis,
         goals: Split::GoalsCollection.new(@name).load_from_redis,
         metadata: load_metadata_from_redis
@@ -425,6 +443,23 @@ module Split
       redis.hset(experiment_config_key, :cohorting, false.to_s)
     end
 
+    def cohorting_disabled?
+      @cohorting_disabled ||= begin
+        value = redis.hget(experiment_config_key, :cohorting)
+        value.nil? ? false : value.downcase == "true"
+      end
+    end
+
+    def disable_cohorting
+      @cohorting_disabled = true
+      redis.hset(experiment_config_key, :cohorting, true)
+    end
+
+    def enable_cohorting
+      @cohorting_disabled = false
+      redis.hset(experiment_config_key, :cohorting, false)
+    end
+
     protected
       def experiment_config_key
         "experiment_configurations/#{@name}"
@@ -461,6 +496,14 @@ module Split
         end
       end
 
+      def load_friendly_name_from_configuration
+        Split.configuration.experiment_for(@name)[:friendly_name]
+      end
+
+      def load_friendly_name_from_redis
+        redis.get(friendly_name_key)
+      end
+
     private
       def redis
         Split.redis
@@ -480,6 +523,7 @@ module Split
         else
           delete_metadata
         end
+        redis.set(friendly_name_key, self.friendly_name)
       end
 
       def remove_experiment_configuration
