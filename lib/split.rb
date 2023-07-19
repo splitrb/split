@@ -1,27 +1,30 @@
 # frozen_string_literal: true
-require 'redis'
 
-require 'split/algorithms/block_randomization'
-require 'split/algorithms/weighted_sample'
-require 'split/algorithms/whiplash'
-require 'split/alternative'
-require 'split/configuration'
-require 'split/encapsulated_helper'
-require 'split/exceptions'
-require 'split/experiment'
-require 'split/experiment_catalog'
-require 'split/extensions/string'
-require 'split/goals_collection'
-require 'split/helper'
-require 'split/combined_experiments_helper'
-require 'split/metric'
-require 'split/persistence'
-require 'split/redis_interface'
-require 'split/trial'
-require 'split/user'
-require 'split/version'
-require 'split/zscore'
-require 'split/engine' if defined?(Rails)
+require "redis"
+
+require "split/algorithms"
+require "split/algorithms/block_randomization"
+require "split/algorithms/weighted_sample"
+require "split/algorithms/whiplash"
+require "split/alternative"
+require "split/cache"
+require "split/configuration"
+require "split/encapsulated_helper"
+require "split/exceptions"
+require "split/experiment"
+require "split/experiment_catalog"
+require "split/extensions/string"
+require "split/goals_collection"
+require "split/helper"
+require "split/combined_experiments_helper"
+require "split/metric"
+require "split/persistence"
+require "split/redis_interface"
+require "split/trial"
+require "split/user"
+require "split/version"
+require "split/zscore"
+require "split/engine" if defined?(Rails)
 
 module Split
   extend self
@@ -35,9 +38,9 @@ module Split
   #      `Redis::DistRedis`, or `Redis::Namespace`.
   def redis=(server)
     @redis = if server.is_a?(String)
-      Redis.new(:url => server, :thread_safe => true)
+      Redis.new(url: server)
     elsif server.is_a?(Hash)
-      Redis.new(server.merge(:thread_safe => true))
+      Redis.new(server)
     elsif server.respond_to?(:smembers)
       server
     else
@@ -64,13 +67,17 @@ module Split
     self.configuration ||= Configuration.new
     yield(configuration)
   end
+
+  def cache(namespace, key, &block)
+    Split::Cache.fetch(namespace, key, &block)
+  end
 end
 
 # Check to see if being run in a Rails application.  If so, wait until before_initialize to run configuration so Gems that create ENV variables have the chance to initialize first.
 if defined?(::Rails)
-  class Railtie < Rails::Railtie
-    config.before_initialize { Split.configure {} }
+  class Split::Railtie < Rails::Railtie
+    config.before_initialize { Split.configure { } }
   end
 else
-  Split.configure {}
+  Split.configure { }
 end

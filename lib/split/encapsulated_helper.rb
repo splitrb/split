@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "split/helper"
 
 # Split's helper exposes all kinds of methods we don't want to
@@ -14,7 +15,6 @@ require "split/helper"
 #
 module Split
   module EncapsulatedHelper
-
     class ContextShim
       include Split::Helper
       public :ab_test, :ab_finished
@@ -28,15 +28,14 @@ module Split
       end
     end
 
-    def ab_test(*arguments,&block)
-      split_context_shim.ab_test(*arguments,&block)
+    def ab_test(*arguments, &block)
+      split_context_shim.ab_test(*arguments, &block)
     end
 
     private
-
-    # instantiate and memoize a context shim in case of multiple ab_test* calls
-    def split_context_shim
-      @split_context_shim ||= ContextShim.new(self)
-    end
+      # instantiate and memoize a context shim in case of multiple ab_test* calls
+      def split_context_shim
+        @split_context_shim ||= ContextShim.new(self)
+      end
   end
 end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require 'forwardable'
+
+require "forwardable"
 
 module Split
   class User
@@ -7,7 +8,7 @@ module Split
     def_delegators :@user, :keys, :[], :[]=, :delete
     attr_reader :user
 
-    def initialize(context, adapter=nil)
+    def initialize(context, adapter = nil)
       @user = adapter || Split::Persistence.adapter.new(context)
       @cleaned_up = false
     end
@@ -32,10 +33,10 @@ module Split
     end
 
     def max_experiments_reached?(experiment_key)
-      if Split.configuration.allow_multiple_experiments == 'control'
+      if Split.configuration.allow_multiple_experiments == "control"
         experiments = active_experiments
         experiment_key_without_version = key_without_version(experiment_key)
-        count_control = experiments.count {|k,v| k == experiment_key_without_version || v == 'control'}
+        count_control = experiments.count { |k, v| k == experiment_key_without_version || v == "control" }
         experiments.size > count_control
       else
         !Split.configuration.allow_multiple_experiments &&
@@ -44,7 +45,7 @@ module Split
     end
 
     def cleanup_old_versions!(experiment)
-      keys = user.keys.select { |k| k.match(Regexp.new("^#{experiment.name}(:|$)")) }
+      keys = user.keys.select { |k| key_without_version(k) == experiment.name }
       keys_without_experiment(keys, experiment.key).each { |key| user.delete(key) }
     end
 
@@ -58,6 +59,16 @@ module Split
         end
       end
       experiment_pairs
+    end
+
+    def self.find(user_id, adapter)
+      adapter = adapter.is_a?(Symbol) ? Split::Persistence::ADAPTERS[adapter] : adapter
+
+      if adapter.respond_to?(:find)
+        User.new(nil, adapter.find(user_id))
+      else
+        nil
+      end
     end
 
     def alternative_key_for_experiment(experiment)
@@ -91,35 +102,39 @@ module Split
     end
 
     private
-    def experiment_name(key)
-      key.partition(':').first
-    end
+      def experiment_name(key)
+        key.partition(':').first
+      end
 
-    def keys_without_experiment(keys, experiment_key)
-      if experiment_key.include?(':')
-        sub_keys = keys.reject { |k| k == experiment_key }
-        sub_keys.reject do |k|
+      def keys_without_experiment(keys, experiment_key)
+        if experiment_key.include?(':')
+          sub_keys = keys.reject { |k| k == experiment_key }
+          sub_keys.reject do |k|
+            sub_str = k.partition(':').last
+
+            k.match(Regexp.new("^#{experiment_key}:")) && sub_str.scan(Regexp.new("\\D")).any?
+          end
+        else
+          keys.select do |k|
+            k.match(Regexp.new("^#{experiment_key}:\\d+(:|$)")) ||
+              k.partition(':').first != experiment_key
+          end
+        end
+      end
+
+      def experiment_keys(keys)
+        keys.reject do |k|
           sub_str = k.partition(':').last
-
-          k.match(Regexp.new("^#{experiment_key}:")) && sub_str.scan(Regexp.new("\\D")).any?
-        end
-      else
-        keys.select do |k|
-          k.match(Regexp.new("^#{experiment_key}:\\d+(:|$)")) ||
-            k.partition(':').first != experiment_key
+          sub_str.scan(Regexp.new("\\D")).any?
         end
       end
-    end
 
-    def experiment_keys(keys)
-      keys.reject do |k|
-        sub_str = k.partition(':').last
-        sub_str.scan(Regexp.new("\\D")).any?
+      def keys_without_finished(keys)
+        keys.reject { |k| k.include?(":finished") }
       end
-    end
 
-    def key_without_version(key)
-      key.split(/\:\d(?!\:)/)[0]
-    end
+      def key_without_version(key)
+        key.split(/\:\d(?!\:)/)[0]
+      end
   end
 end

@@ -1,3 +1,62 @@
+# 4.0.2 (December 2nd, 2022)
+
+Bugfixes:
+- Stop crashing on non-hash json (@knarewski, #697)
+- Handle when Rails is partially loaded as a Gem (@TSMMark, #687)
+
+Features:
+- Add support for redis-client, which does not automatically cast types to strings (@knarewski, #696)
+- Add ability to initialize experiments (@robin-phung, #673)
+
+Misc:
+- Fix default branch name and gem metadata indentation (@ursm, #693)
+- Update actions/checkout to v3 (@andrehjr, #683)
+- Enforce double quotes (@andrehjr, #682)
+- Fix Rubocop Style/* Offenses (@andrehjr, #681)
+- Enable rubocop on Github Actions (@andrehjr, #680)
+- Fix all Layout issues on the project (@andrehjr, #679)
+- Fix Style/HashSyntax offenses (@andrehjr, #678)
+- Remove usage of deprecated implicit block expectation from specs (@andrehjr, #677)
+- Remove appraisals configuration (@andrehjr, #676)
+- Add Ruby 3.1 (@andrehjr, #675)
+- Encapsulate Split::Algorithms at our own module to avoid explicit calling rubystats everywhere (@andrehjr, #674)
+
+## 4.0.1 (December 30th, 2021)
+
+Bugfixes:
+- ab_test must return metadata on error or if split is disabled/excluded user (@andrehjr, #622)
+- Fix versioned experiments when used with allow_multiple_experiments=control (@andrehjr, #613)
+- Only block Pinterest bot (@huoxito, #606)
+- Respect experiment defaults when loading experiments in initializer. (@mattwd7, #599)
+- Removes metadata key when it updated to nil (@andrehjr, #633)
+- Force experiment does not count for metrics (@andrehjr, #637)
+- Fix cleanup_old_versions! misbehaviour (@serggl, #661)
+
+Features:
+- Make goals accessible via on_trial_complete callbacks (@robin-phung, #625)
+- Replace usage of SimpleRandom with RubyStats(Used for Beta Distribution RNG) (@andrehjr, #616)
+- Introduce enable/disable experiment cohorting (@robin-phung, #615)
+- Add on_experiment_winner_choose callback (@GenaMinenkov, #574)
+- Add Split::Cache to reduce load on Redis (@rdh, #648)
+- Caching based optimization in the experiment#save path (@amangup, #652)
+- Adds config option for cookie domain (@joedelia, #664)
+
+Misc:
+- Drop support for Ruby < 2.5 (@andrehjr, #627)
+- Drop support for Rails < 5 (@andrehjr, #607)
+- Bump minimum required redis to 4.2 (@andrehjr, #628)
+- Removed repeated loading from config (@robin-phung, #619)
+- Simplify RedisInterface usage when persisting Experiment alternatives (@andrehjr, #632)
+- Remove redis_url impl. Deprecated on version 2.2 (@andrehjr, #631)
+- Remove thread_safe config as redis-rb is thread_safe by default (@andrehjr, #630)
+- Fix typo of in `Split::Trial` class variable (TomasBarry, #644)
+- Single HSET to update values, instead of multiple ones (@andrehjr, #640)
+- Use Redis#hmset to keep compatibility with Redis < 4.0 (@andrehjr, #659)
+- Remove 'set' parsing for alternatives. Sets were used as storage and deprecated on 0.x (@andrehjr, #639)
+- Adding documentation related to what is stored on cookies. (@andrehjr, #634)
+- Keep railtie defined under the Split gem namespace (@avit, #666)
+- Update RSpec helper to support block syntax (@clowder, #665)
+
 ## 3.4.1 (November 12th, 2019)
 
 Bugfixes:

@@ -1,19 +1,21 @@
-require 'spec_helper'
-require 'split/experiment_catalog'
-require 'split/experiment'
-require 'split/user'
+# frozen_string_literal: true
+
+require "spec_helper"
+require "split/experiment_catalog"
+require "split/experiment"
+require "split/user"
 
 describe Split::User do
-  let(:user_keys) { { 'link_color' => 'blue' } }
-  let(:context) { double(:session => { split:  user_keys }) }
-  let(:experiment) { Split::Experiment.new('link_color') }
+  let(:user_keys) { { "link_color" => "blue" } }
+  let(:context) { double(session: { split:  user_keys }) }
+  let(:experiment) { Split::Experiment.new("link_color") }
 
   before(:each) do
     @subject = described_class.new(context)
   end
 
-  it 'delegates methods correctly' do
-    expect(@subject['link_color']).to eq(@subject.user['link_color'])
+  it "delegates methods correctly" do
+    expect(@subject["link_color"]).to eq(@subject.user["link_color"])
   end
 
   describe '#cleanup_old_versions!' do
@@ -123,7 +125,28 @@ describe Split::User do
         end
       end
     end
-  end 
+  end
+
+  # context "#cleanup_old_versions!" do
+  #   let(:experiment_version) { "#{experiment.name}:1" }
+  #   let(:second_experiment_version) { "#{experiment.name}_another:1" }
+  #   let(:third_experiment_version) { "variation_of_#{experiment.name}:1" }
+  #   let(:user_keys) do
+  #     {
+  #       experiment_version => "blue",
+  #       second_experiment_version => "red",
+  #       third_experiment_version => "yellow"
+  #     }
+  #   before(:each) { @subject.cleanup_old_versions!(experiment) }
+
+  #   it "removes key if old experiment is found" do
+  #     expect(@subject.keys).not_to include(experiment_version)
+  #   end
+
+  #   it "does not remove other keys" do
+  #     expect(@subject.keys).to include(second_experiment_version, third_experiment_version)
+  #   end
+  # end
 
   context '#cleanup_old_experiments!' do
     describe "when the user is in the experiment without version number" do
@@ -229,7 +252,7 @@ describe Split::User do
       end
     end
 
-    context 'when already cleaned up' do
+    context "when already cleaned up" do
       before do
         @subject.cleanup_old_experiments!
       end
@@ -488,7 +511,7 @@ describe Split::User do
         end
       end
 
-      context "user has the same key as the current version of the experiment" do 
+      context "user has the same key as the current version of the experiment" do
         let(:user_keys) { { "link_color:2" => "blue" } }
 
         it "returns the current experiment key" do
@@ -496,7 +519,7 @@ describe Split::User do
         end
       end
 
-      context "user does not have any key for the experiment" do 
+      context "user does not have any key for the experiment" do
         let(:user_keys) { { } }
 
         it "returns the current experiment key" do
@@ -599,6 +622,22 @@ describe Split::User do
     end
   end
 
+  context "allows user to be loaded from adapter" do
+    it "loads user from adapter (RedisAdapter)" do
+      user = Split::Persistence::RedisAdapter.new(nil, 112233)
+      user["foo"] = "bar"
+
+      ab_user = Split::User.find(112233, :redis)
+
+      expect(ab_user["foo"]).to eql("bar")
+    end
+
+    it "returns nil if adapter does not implement a finder method" do
+      ab_user = Split::User.find(112233, :dual_adapter)
+      expect(ab_user).to be_nil
+    end
+  end
+
   context "instantiated with custom adapter" do
     let(:custom_adapter) { double(:persistence_adapter) }
 
@@ -610,5 +649,4 @@ describe Split::User do
       expect(@subject.user).to eq(custom_adapter)
     end
   end
-
 end

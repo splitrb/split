@@ -1,6 +1,7 @@
 # frozen_string_literal: true
+
 require "spec_helper"
-require 'rack/test'
+require "rack/test"
 
 describe Split::Persistence::CookieAdapter do
   subject { described_class.new(context) }
@@ -13,10 +14,24 @@ describe Split::Persistence::CookieAdapter do
       end
 
       it "handles invalid JSON" do
-        context.request.cookies[:split] = {
-          :value => '{"foo":2,',
-          :expires => Time.now
-        }
+        context.request.cookies["split"] = "{\"foo\":2,"
+
+        expect(subject["my_key"]).to be_nil
+        subject["my_key"] = "my_value"
+        expect(subject["my_key"]).to eq("my_value")
+      end
+
+      it "ignores valid JSON of invalid type (integer)" do
+        context.request.cookies["split"] = "2"
+
+        expect(subject["my_key"]).to be_nil
+        subject["my_key"] = "my_value"
+        expect(subject["my_key"]).to eq("my_value")
+      end
+
+      it "ignores valid JSON of invalid type (array)" do
+        context.request.cookies["split"] = "[\"foo\", \"bar\"]"
+
         expect(subject["my_key"]).to be_nil
         subject["my_key"] = "my_value"
         expect(subject["my_key"]).to eq("my_value")
@@ -56,7 +71,7 @@ describe Split::Persistence::CookieAdapter do
     end
 
     it "ensure other added cookies are not overriden" do
-      context.response.set_cookie 'dummy', 'wow'
+      context.response.set_cookie "dummy", "wow"
       subject["foo"] = "FOO"
       expect(context.response.headers["Set-Cookie"]).to include("dummy=wow")
       expect(context.response.headers["Set-Cookie"]).to include("split=")
@@ -77,7 +92,7 @@ describe Split::Persistence::CookieAdapter do
         controller.send(:"request=", ActionDispatch::Request.new({}))
       end
 
-      response = ActionDispatch::Response.new(200, {}, '').tap do |res|
+      response = ActionDispatch::Response.new(200, {}, "").tap do |res|
         res.request = controller.request
       end
 
@@ -100,7 +115,7 @@ describe Split::Persistence::CookieAdapter do
       expect(subject["foo"]).to eq("FOO")
       expect(subject["bar"]).to eq("BAR")
       cookie_jar = context.request.env["action_dispatch.cookies"]
-      expect(cookie_jar['split']).to eq("{\"foo\":\"FOO\",\"bar\":\"BAR\"}")
+      expect(cookie_jar["split"]).to eq('{"foo":"FOO","bar":"BAR"}')
     end
   end
 end

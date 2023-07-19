@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe Split::Persistence::DualAdapter do
-  let(:context) { 'some context' }
+  let(:context) { "some context" }
 
   let(:logged_in_adapter_instance) { double }
   let(:logged_in_adapter) do
@@ -14,8 +14,8 @@ describe Split::Persistence::DualAdapter do
     Class.new.tap { |c| allow(c).to receive(:new) { logged_out_adapter_instance } }
   end
 
-  context 'when fallback_to_logged_out_adapter is false' do
-    context 'when logged in' do
+  context "when fallback_to_logged_out_adapter is false" do
+    context "when logged in" do
       subject do
         described_class.with_config(
           logged_in: lambda { |context| true },
@@ -25,32 +25,32 @@ describe Split::Persistence::DualAdapter do
         ).new(context)
       end
 
-      it '#[]=' do
-        expect(logged_in_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
+      it "#[]=" do
+        expect(logged_in_adapter_instance).to receive(:[]=).with("my_key", "my_value")
         expect_any_instance_of(logged_out_adapter).not_to receive(:[]=)
-        subject['my_key'] = 'my_value'
+        subject["my_key"] = "my_value"
       end
 
-      it '#[]' do
-        expect(logged_in_adapter_instance).to receive(:[]).with('my_key') { 'my_value' }
+      it "#[]" do
+        expect(logged_in_adapter_instance).to receive(:[]).with("my_key") { "my_value" }
         expect_any_instance_of(logged_out_adapter).not_to receive(:[])
-        expect(subject['my_key']).to eq('my_value')
+        expect(subject["my_key"]).to eq("my_value")
       end
 
-      it '#delete' do
-        expect(logged_in_adapter_instance).to receive(:delete).with('my_key') { 'my_value' }
+      it "#delete" do
+        expect(logged_in_adapter_instance).to receive(:delete).with("my_key") { "my_value" }
         expect_any_instance_of(logged_out_adapter).not_to receive(:delete)
-        expect(subject.delete('my_key')).to eq('my_value')
+        expect(subject.delete("my_key")).to eq("my_value")
       end
 
-      it '#keys' do
-        expect(logged_in_adapter_instance).to receive(:keys) { ['my_value'] }
+      it "#keys" do
+        expect(logged_in_adapter_instance).to receive(:keys) { ["my_value"] }
         expect_any_instance_of(logged_out_adapter).not_to receive(:keys)
-        expect(subject.keys).to eq(['my_value'])
+        expect(subject.keys).to eq(["my_value"])
       end
     end
 
-    context 'when logged out' do
+    context "when logged out" do
       subject do
         described_class.with_config(
           logged_in: lambda { |context| false },
@@ -60,34 +60,34 @@ describe Split::Persistence::DualAdapter do
         ).new(context)
       end
 
-      it '#[]=' do
+      it "#[]=" do
         expect_any_instance_of(logged_in_adapter).not_to receive(:[]=)
-        expect(logged_out_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
-        subject['my_key'] = 'my_value'
+        expect(logged_out_adapter_instance).to receive(:[]=).with("my_key", "my_value")
+        subject["my_key"] = "my_value"
       end
 
-      it '#[]' do
+      it "#[]" do
         expect_any_instance_of(logged_in_adapter).not_to receive(:[])
-        expect(logged_out_adapter_instance).to receive(:[]).with('my_key') { 'my_value' }
-        expect(subject['my_key']).to eq('my_value')
+        expect(logged_out_adapter_instance).to receive(:[]).with("my_key") { "my_value" }
+        expect(subject["my_key"]).to eq("my_value")
       end
 
-      it '#delete' do
+      it "#delete" do
         expect_any_instance_of(logged_in_adapter).not_to receive(:delete)
-        expect(logged_out_adapter_instance).to receive(:delete).with('my_key') { 'my_value' }
-        expect(subject.delete('my_key')).to eq('my_value')
+        expect(logged_out_adapter_instance).to receive(:delete).with("my_key") { "my_value" }
+        expect(subject.delete("my_key")).to eq("my_value")
       end
 
-      it '#keys' do
+      it "#keys" do
         expect_any_instance_of(logged_in_adapter).not_to receive(:keys)
-        expect(logged_out_adapter_instance).to receive(:keys) { ['my_value', 'my_value2'] }
-        expect(subject.keys).to eq(['my_value', 'my_value2'])
+        expect(logged_out_adapter_instance).to receive(:keys) { ["my_value", "my_value2"] }
+        expect(subject.keys).to eq(["my_value", "my_value2"])
       end
     end
   end
 
-  context 'when fallback_to_logged_out_adapter is true' do
-    context 'when logged in' do
+  context "when fallback_to_logged_out_adapter is true" do
+    context "when logged in" do
       subject do
         described_class.with_config(
           logged_in: lambda { |context| true },
@@ -97,33 +97,33 @@ describe Split::Persistence::DualAdapter do
         ).new(context)
       end
 
-      it '#[]=' do
-        expect(logged_in_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
-        expect(logged_out_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
-        expect(logged_out_adapter_instance).to receive(:[]).with('my_key') { nil }
-        subject['my_key'] = 'my_value'
+      it "#[]=" do
+        expect(logged_in_adapter_instance).to receive(:[]=).with("my_key", "my_value")
+        expect(logged_out_adapter_instance).to receive(:[]=).with("my_key", "my_value")
+        expect(logged_out_adapter_instance).to receive(:[]).with("my_key") { nil }
+        subject["my_key"] = "my_value"
       end
 
-      it '#[]' do
-        expect(logged_in_adapter_instance).to receive(:[]).with('my_key') { 'my_value' }
+      it "#[]" do
+        expect(logged_in_adapter_instance).to receive(:[]).with("my_key") { "my_value" }
         expect_any_instance_of(logged_out_adapter).not_to receive(:[])
-        expect(subject['my_key']).to eq('my_value')
+        expect(subject["my_key"]).to eq("my_value")
       end
 
-      it '#delete' do
-        expect(logged_in_adapter_instance).to receive(:delete).with('my_key') { 'my_value' }
-        expect(logged_out_adapter_instance).to receive(:delete).with('my_key') { 'my_value' }
-        expect(subject.delete('my_key')).to eq('my_value')
+      it "#delete" do
+        expect(logged_in_adapter_instance).to receive(:delete).with("my_key") { "my_value" }
+        expect(logged_out_adapter_instance).to receive(:delete).with("my_key") { "my_value" }
+        expect(subject.delete("my_key")).to eq("my_value")
       end
 
-      it '#keys' do
-        expect(logged_in_adapter_instance).to receive(:keys) { ['my_value'] }
-        expect(logged_out_adapter_instance).to receive(:keys) { ['my_value', 'my_value2'] }
-        expect(subject.keys).to eq(['my_value', 'my_value2'])
+      it "#keys" do
+        expect(logged_in_adapter_instance).to receive(:keys) { ["my_value"] }
+        expect(logged_out_adapter_instance).to receive(:keys) { ["my_value", "my_value2"] }
+        expect(subject.keys).to eq(["my_value", "my_value2"])
       end
     end
 
-    context 'when logged out' do
+    context "when logged out" do
       subject do
         described_class.with_config(
           logged_in: lambda { |context| false },
@@ -133,39 +133,39 @@ describe Split::Persistence::DualAdapter do
         ).new(context)
       end
 
-      it '#[]=' do
+      it "#[]=" do
         expect_any_instance_of(logged_in_adapter).not_to receive(:[]=)
-        expect(logged_out_adapter_instance).to receive(:[]=).with('my_key', 'my_value')
-        expect(logged_out_adapter_instance).to receive(:[]).with('my_key') { nil }
-        subject['my_key'] = 'my_value'
+        expect(logged_out_adapter_instance).to receive(:[]=).with("my_key", "my_value")
+        expect(logged_out_adapter_instance).to receive(:[]).with("my_key") { nil }
+        subject["my_key"] = "my_value"
       end
 
-      it '#[]' do
+      it "#[]" do
         expect_any_instance_of(logged_in_adapter).not_to receive(:[])
-        expect(logged_out_adapter_instance).to receive(:[]).with('my_key') { 'my_value' }
-        expect(subject['my_key']).to eq('my_value')
+        expect(logged_out_adapter_instance).to receive(:[]).with("my_key") { "my_value" }
+        expect(subject["my_key"]).to eq("my_value")
       end
 
-      it '#delete' do
-        expect(logged_in_adapter_instance).to receive(:delete).with('my_key') { 'my_value' }
-        expect(logged_out_adapter_instance).to receive(:delete).with('my_key') { 'my_value' }
-        expect(subject.delete('my_key')).to eq('my_value')
+      it "#delete" do
+        expect(logged_in_adapter_instance).to receive(:delete).with("my_key") { "my_value" }
+        expect(logged_out_adapter_instance).to receive(:delete).with("my_key") { "my_value" }
+        expect(subject.delete("my_key")).to eq("my_value")
       end
 
-      it '#keys' do
-        expect(logged_in_adapter_instance).to receive(:keys) { ['my_value'] }
-        expect(logged_out_adapter_instance).to receive(:keys) { ['my_value', 'my_value2'] }
-        expect(subject.keys).to eq(['my_value', 'my_value2'])
+      it "#keys" do
+        expect(logged_in_adapter_instance).to receive(:keys) { ["my_value"] }
+        expect(logged_out_adapter_instance).to receive(:keys) { ["my_value", "my_value2"] }
+        expect(subject.keys).to eq(["my_value", "my_value2"])
       end
     end
   end
 
-  describe 'when errors in config' do
+  describe "when errors in config" do
     before { described_class.config.clear }
-    let(:some_proc) { ->{} }
+    let(:some_proc) { -> { } }
 
-    it 'when no logged in adapter' do
-      expect{
+    it "when no logged in adapter" do
+      expect {
         described_class.with_config(
           logged_in: some_proc,
           logged_out_adapter: logged_out_adapter
@@ -173,8 +173,8 @@ describe Split::Persistence::DualAdapter do
       }.to raise_error(StandardError, /:logged_in_adapter/)
     end
 
-    it 'when no logged out adapter' do
-      expect{
+    it "when no logged out adapter" do
+      expect {
         described_class.with_config(
           logged_in: some_proc,
           logged_in_adapter: logged_in_adapter
@@ -182,8 +182,8 @@ describe Split::Persistence::DualAdapter do
       }.to raise_error(StandardError, /:logged_out_adapter/)
     end
 
-    it 'when no logged in detector' do
-      expect{
+    it "when no logged in detector" do
+      expect {
         described_class.with_config(
           logged_in_adapter: logged_in_adapter,
           logged_out_adapter: logged_out_adapter

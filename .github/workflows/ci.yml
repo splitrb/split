@@ -1,0 +1,74 @@
+name: split
+
+on: [push]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - gemfile: 5.2.gemfile
+            ruby: 2.5
+
+          - gemfile: 5.2.gemfile
+            ruby: 2.6
+
+          - gemfile: 5.2.gemfile
+            ruby: 2.7
+
+          - gemfile: 6.0.gemfile
+            ruby: 2.5
+
+          - gemfile: 6.0.gemfile
+            ruby: 2.6
+
+          - gemfile: 6.0.gemfile
+            ruby: 2.7
+
+          - gemfile: 6.0.gemfile
+            ruby: '3.0'
+
+          - gemfile: 6.1.gemfile
+            ruby: '3.0'
+
+          - gemfile: 7.0.gemfile
+            ruby: '3.0'
+
+          - gemfile: 7.0.gemfile
+            ruby: '3.1'
+
+
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Install dependencies
+        run: |
+          bundle config set gemfile "${GITHUB_WORKSPACE}/gemfiles/${{ matrix.gemfile }}"
+          bundle install --jobs 4 --retry 3
+
+      - name: Display Ruby version
+        run: ruby -v
+
+      - name: Test
+        run: bundle exec rspec
+        env:
+          REDIS_URL: redis:6379
+
+      - name: Rubocop
+        run: bundle exec rubocop
