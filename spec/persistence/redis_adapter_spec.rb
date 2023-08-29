@@ -73,9 +73,9 @@ describe Split::Persistence::RedisAdapter do
     before { Split::Persistence::RedisAdapter.with_config(lookup_by: "lookup") }
 
     describe "#[] and #[]=" do
-      it "should set and return the value for given key" do
-        subject["my_key"] = "my_value"
-        expect(subject["my_key"]).to eq("my_value")
+      it "should convert to string, set and return the value for given key" do
+        subject["my_key"] = true
+        expect(subject["my_key"]).to eq("true")
       end
     end
 
