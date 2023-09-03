@@ -807,10 +807,16 @@ conduct experiments that are not tied to a web session.
 ```ruby
 # create a new experiment
 experiment = Split::ExperimentCatalog.find_or_create('color', 'red', 'blue')
+
+# find the user
+user = Split::User.find(user_id, :redis)
+
 # create a new trial
-trial = Split::Trial.new(:experiment => experiment)
+trial = Split::Trial.new(user: user, experiment: experiment)
+
 # run trial
 trial.choose!
+
 # get the result, returns either red or blue
 trial.alternative.name
 
