@@ -558,6 +558,42 @@ describe Split::Helper do
     end
   end
 
+
+  describe "ab_record_extra_info" do
+    context "for an experiment that the user participates in" do
+      before(:each) do
+        @experiment_name = "link_color"
+        @alternatives = ["blue", "red"]
+        @experiment = Split::ExperimentCatalog.find_or_create(@experiment_name, *@alternatives)
+        @alternative_name = ab_test(@experiment_name, *@alternatives)
+      end
+
+      it "records extra data for a given experiment" do
+        alternative = Split::Alternative.new(@alternative_name, "link_color")
+
+        ab_record_extra_info(@experiment_name, "some_data", 10)
+
+        expect(alternative.extra_info).to eql({ "some_data" => 10 })
+      end
+
+      it "records extra data for a given experiment" do
+        alternative = Split::Alternative.new(@alternative_name, "link_color")
+
+        ab_record_extra_info(@experiment_name, "some_data")
+
+        expect(alternative.extra_info).to eql({ "some_data" => 1 })
+      end
+
+      it "records extra data for a given experiment" do
+        alternative = Split::Alternative.new(@alternative_name, "link_color")
+
+        ab_record_extra_info(@experiment_name, "some_data", nil)
+
+        expect(alternative.extra_info).to eql({})
+      end
+    end
+  end
+
   describe "conversions" do
     it "should return a conversion rate for an alternative" do
       alternative_name = ab_test("link_color", "blue", "red")

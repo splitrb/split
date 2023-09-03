@@ -16,7 +16,8 @@
   summary_texts = {}
   extra_columns.each do |column|
     extra_infos = experiment.alternatives.map(&:extra_info).select{|extra_info| extra_info && extra_info[column] }
-    if extra_infos[0][column].kind_of?(Numeric)
+
+    if extra_infos.length > 0 && extra_infos.all? { |extra_info| extra_info[column].kind_of?(Numeric) }
       summary_texts[column] = extra_infos.inject(0){|sum, extra_info| sum += extra_info[column]}
     else
       summary_texts[column] = "N/A"
