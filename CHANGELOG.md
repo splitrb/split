@@ -1,3 +1,18 @@
+# 4.0.3 (November 15rd, 2023)
+
+Bugfixes:
+- Do not throw error if alternativas have data that can lead to negative numbers for probability calculation (@andrehjr, #703)
+- Do not persist invalid extra_info on ab_record_extra_info. (@trostli @andrehjr, #717)
+- CROSSSLOT keys issue fix when using redis cluster (@naveen-chidhambaram, #710)
+- Convert value to string before saving it in RedisAdapter (@Jealrock, #714)
+- Fix deprecation warning with Redis 4.8.0 (@martingregoire, #701)
+
+Misc:
+- Add matrix as a default dependency (@andrehjr, #705)
+- Add Ruby 3.2 to Github Actions (@andrehjr, #702)
+- Update documentation regarding finding users outside a web session (@andrehjr, #716)
+- Update actions/checkout to v4 (@andrehjr, #718)
+
 # 4.0.2 (December 2nd, 2022)
 
 Bugfixes:
