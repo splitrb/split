@@ -1,4 +1,4 @@
-# 4.0.3 (November 15rd, 2023)
+# 4.0.3 (November 15th, 2023)
 
 Bugfixes:
 - Do not throw error if alternativas have data that can lead to negative numbers for probability calculation (@andrehjr, #703)
