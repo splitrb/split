@@ -23,7 +23,7 @@ module Split
       end
 
       def [](field)
-        Split.redis.hget(redis_key, field)
+        Split.redis2.hget(redis_key, field)
       end
 
       def []=(field, value)
@@ -37,7 +37,7 @@ module Split
       end
 
       def keys
-        Split.redis.hkeys(redis_key)
+        Split.redis2.hkeys(redis_key)
       end
 
       def self.find(user_id)

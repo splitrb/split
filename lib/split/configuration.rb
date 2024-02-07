@@ -28,6 +28,7 @@ module Split
     attr_accessor :beta_probability_simulations
     attr_accessor :winning_alternative_recalculation_interval
     attr_accessor :redis
+    attr_accessor :redis2
     attr_accessor :dashboard_pagination_default_per_page
     attr_accessor :cache
 
@@ -233,6 +234,7 @@ module Split
       @beta_probability_simulations = 10000
       @winning_alternative_recalculation_interval = 60 * 60 * 24 # 1 day
       @redis = ENV.fetch(ENV.fetch("REDIS_PROVIDER", "REDIS_URL"), "redis://localhost:6379")
+      @redis2 = ENV['REDIS_REPLICA_URL'] || @redis
       @dashboard_pagination_default_per_page = 10
     end
 

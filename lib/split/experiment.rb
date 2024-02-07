@@ -16,7 +16,7 @@ module Split
 
     def self.find(name)
       Split.cache(:experiments, name) do
-        return unless Split.redis.exists?(name)
+        return unless Split.redis2.exists?(name)
         Experiment.new(name).tap { |exp| exp.load_from_redis }
       end
     end
@@ -134,7 +134,7 @@ module Split
 
     def winner
       Split.cache(:experiment_winner, name) do
-        experiment_winner = redis.hget(:experiment_winner, name)
+        experiment_winner = redis2.hget(:experiment_winner, name)
         if experiment_winner
           Split::Alternative.new(experiment_winner, name)
         else
@@ -174,7 +174,7 @@ module Split
 
     def start_time
       Split.cache(:experiment_start_times, @name) do
-        t = redis.hget(:experiment_start_times, @name)
+        t = redis2.hget(:experiment_start_times, @name)
         if t
           # Check if stored time is an integer
           if t =~ /^[-+]?[0-9]+$/
@@ -199,7 +199,7 @@ module Split
     end
 
     def version
-      @version ||= (redis.get("#{name}:version").to_i || 0)
+      @version ||= (redis2.get("#{name}:version").to_i || 0)
     end
 
     def increment_version
@@ -257,7 +257,7 @@ module Split
     end
 
     def load_from_redis
-      exp_config = redis.hgetall(experiment_config_key)
+      exp_config = redis2.hgetall(experiment_config_key)
 
       options = {
         resettable: exp_config["resettable"],
@@ -396,7 +396,7 @@ module Split
     end
 
     def calc_time
-      redis.hget(experiment_config_key, :calc_time).to_i
+      redis2.hget(experiment_config_key, :calc_time).to_i
     end
 
     def jstring(goal = nil)
@@ -410,7 +410,7 @@ module Split
 
     def cohorting_disabled?
       @cohorting_disabled ||= begin
-        value = redis.hget(experiment_config_key, :cohorting)
+        value = redis2.hget(experiment_config_key, :cohorting)
         value.nil? ? false : value.downcase == "true"
       end
     end
@@ -435,7 +435,7 @@ module Split
       end
 
       def load_metadata_from_redis
-        meta = redis.get(metadata_key)
+        meta = redis2.get(metadata_key)
         JSON.parse(meta) unless meta.nil?
       end
 
@@ -450,7 +450,7 @@ module Split
       end
 
       def load_alternatives_from_redis
-        alternatives = redis.lrange(@name, 0, -1)
+        alternatives = redis2.lrange(@name, 0, -1)
         alternatives.map do |alt|
           alt = begin
                   JSON.parse(alt)
@@ -464,6 +464,10 @@ module Split
     private
       def redis
         Split.redis
+      end
+
+      def redis2
+        Split.redis2
       end
 
       def redis_interface

@@ -8,7 +8,7 @@ module Split
     end
 
     def load_from_redis
-      Split.redis.lrange(goals_key, 0, -1)
+      Split.redis2.lrange(goals_key, 0, -1)
     end
 
     def load_from_configuration

@@ -29,7 +29,7 @@ module Split
 
     def p_winner(goal = nil)
       field = set_prob_field(goal)
-      @p_winner = Split.redis.hget(key, field).to_f
+      @p_winner = Split.redis2.hget(key, field).to_f
     end
 
     def set_p_winner(prob, goal = nil)
@@ -38,7 +38,7 @@ module Split
     end
 
     def participant_count
-      Split.redis.hget(key, "participant_count").to_i
+      Split.redis2.hget(key, "participant_count").to_i
     end
 
     def participant_count=(count)
@@ -47,7 +47,7 @@ module Split
 
     def completed_count(goal = nil)
       field = set_field(goal)
-      Split.redis.hget(key, field).to_i
+      Split.redis2.hget(key, field).to_i
     end
 
     def all_completed_count
@@ -127,7 +127,7 @@ module Split
     end
 
     def extra_info
-      data = Split.redis.hget(key, "recorded_info")
+      data = Split.redis2.hget(key, "recorded_info")
       if data && data.length > 1
         begin
           JSON.parse(data)

@@ -49,12 +49,27 @@ module Split
     end
   end
 
+  def redis2=(server)
+    @redis2 = if server.is_a?(String)
+      Redis.new(url: server)
+    elsif server.respond_to?(:smembers)
+      server
+    end
+  end
+
   # Returns the current Redis connection. If none has been created, will
   # create a new one.
   def redis
     return @redis if @redis
     self.redis = self.configuration.redis
     self.redis
+  end
+
+  # replica redis connection
+  def redis2
+    return @redis2 if @redis2
+    self.redis2 = self.configuration.redis2
+    self.redis2
   end
 
   # Call this method to modify defaults in your initializers.

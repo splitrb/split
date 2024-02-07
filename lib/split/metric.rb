@@ -14,7 +14,7 @@ module Split
     end
 
     def self.load_from_redis(name)
-      metric = Split.redis.hget(:metrics, name)
+      metric = Split.redis2.hget(:metrics, name)
       if metric
         experiment_names = metric.split(",")
 
@@ -54,7 +54,7 @@ module Split
     end
 
     def self.all
-      redis_metrics = Split.redis.hgetall(:metrics).collect do |key, value|
+      redis_metrics = Split.redis2.hgetall(:metrics).collect do |key, value|
         find(key)
       end
       configuration_metrics = Split.configuration.metrics.collect do |key, value|
