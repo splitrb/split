@@ -23,6 +23,14 @@ module Split
         @context = context
       end
 
+      def params
+        request.params if request_present?
+      end
+
+      def request
+        @context.request if @context.respond_to?(:request)
+      end
+
       def ab_user
         @ab_user ||= Split::User.new(@context)
       end
