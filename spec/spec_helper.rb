@@ -56,7 +56,7 @@ def build_request(
 )
   r = OpenStruct.new
   r.user_agent = ua
-  r.ip = "192.168.1.1"
+  r.ip = ip
   r.params = params
   r.cookies = cookies
   r
