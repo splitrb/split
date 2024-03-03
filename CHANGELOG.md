@@ -1,3 +1,11 @@
+# 4.0.4 (March 3rd, 2024)
+
+Bugfixes:
+- Better integration for EncapsulatedHelper when needing params/request info (@henrique-ft, #721 and #723)
+
+Misc:
+- Make specs compatible with newer Rack versions (@andrehjr,  #722)
+
 # 4.0.3 (November 15th, 2023)
 
 Bugfixes:
