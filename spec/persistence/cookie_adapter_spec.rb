@@ -67,14 +67,14 @@ describe Split::Persistence::CookieAdapter do
     it "puts multiple experiments in a single cookie" do
       subject["foo"] = "FOO"
       subject["bar"] = "BAR"
-      expect(context.response.headers["Set-Cookie"]).to match(/\Asplit=%7B%22foo%22%3A%22FOO%22%2C%22bar%22%3A%22BAR%22%7D; path=\/; expires=[a-zA-Z]{3}, \d{2} [a-zA-Z]{3} \d{4} \d{2}:\d{2}:\d{2} [A-Z]{3}\Z/)
+      expect(Array(context.response.headers["Set-Cookie"])).to include(/\Asplit=%7B%22foo%22%3A%22FOO%22%2C%22bar%22%3A%22BAR%22%7D; path=\/; expires=[a-zA-Z]{3}, \d{2} [a-zA-Z]{3} \d{4} \d{2}:\d{2}:\d{2} [A-Z]{3}\Z/)
     end
 
     it "ensure other added cookies are not overriden" do
       context.response.set_cookie "dummy", "wow"
       subject["foo"] = "FOO"
-      expect(context.response.headers["Set-Cookie"]).to include("dummy=wow")
-      expect(context.response.headers["Set-Cookie"]).to include("split=")
+      expect(Array(context.response.headers["Set-Cookie"])).to include(/dummy=wow/)
+      expect(Array(context.response.headers["Set-Cookie"])).to include(/split=/)
     end
   end
 
