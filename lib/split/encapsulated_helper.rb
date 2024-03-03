@@ -24,7 +24,7 @@ module Split
       end
 
       def params
-        request.params if request_present?
+        request.params if request && request.respond_to?(:params)
       end
 
       def request

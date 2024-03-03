@@ -163,11 +163,11 @@ module Split
     end
 
     def params_present?
-      defined?(params) && params != nil
+      defined?(params) && params
     end
 
     def request_present?
-      defined?(request) && request != nil
+      defined?(request) && request
     end
 
     def active_experiments

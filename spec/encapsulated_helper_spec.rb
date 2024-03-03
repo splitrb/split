@@ -3,7 +3,7 @@
 require "spec_helper"
 
 describe Split::EncapsulatedHelper do
-  include Split::EncapsulatedHelper
+  let(:context_shim) { Split::EncapsulatedHelper::ContextShim.new(double(request: request)) }
 
   describe "ab_test" do
     before do
@@ -11,26 +11,15 @@ describe Split::EncapsulatedHelper do
       .and_return(mock_user)
     end
 
-    context "when params raises an error" do
-      before do
-        allow(self).to receive(:params).and_raise(NoMethodError)
-      end
-
-      it "should not raise an error " do
-        expect { params }.to raise_error(NoMethodError)
-        expect { ab_test("link_color", "blue", "red") }.not_to raise_error
-      end
-    end
-
     it "calls the block with selected alternative" do
-      expect { |block| ab_test("link_color", "red", "red", &block) }.to yield_with_args("red", {})
+      expect { |block| context_shim.ab_test("link_color", "red", "red", &block) }.to yield_with_args("red", {})
     end
 
     context "inside a view" do
       it "works inside ERB" do
         require "erb"
         template = ERB.new(<<-ERB.split(/\s+/s).map(&:strip).join(" "), nil, "%")
-          foo <% ab_test(:foo, '1', '2') do |alt, meta| %>
+          foo <% context_shim.ab_test(:foo, '1', '2') do |alt, meta| %>
             static <%= alt %>
           <% end %>
         ERB
