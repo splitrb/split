@@ -121,11 +121,11 @@ module Split
     end
 
     def override_alternative_by_params(experiment_name)
-      defined?(params) && params[OVERRIDE_PARAM_NAME] && params[OVERRIDE_PARAM_NAME][experiment_name]
+      params_present? && params[OVERRIDE_PARAM_NAME] && params[OVERRIDE_PARAM_NAME][experiment_name]
     end
 
     def override_alternative_by_cookies(experiment_name)
-      return unless defined?(request)
+      return unless request_present?
 
       if request.cookies && request.cookies.key?("split_override")
         experiments = JSON.parse(request.cookies["split_override"]) rescue {}
@@ -134,7 +134,7 @@ module Split
     end
 
     def split_generically_disabled?
-      defined?(params) && params["SPLIT_DISABLE"]
+      params_present? && params["SPLIT_DISABLE"]
     end
 
     def ab_user
@@ -142,24 +142,32 @@ module Split
     end
 
     def exclude_visitor?
-      defined?(request) && (instance_exec(request, &Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?)
+      request_present? && (instance_exec(request, &Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || is_preview?)
     end
 
     def is_robot?
-      defined?(request) && request.user_agent =~ Split.configuration.robot_regex
+      request_present? && request.user_agent =~ Split.configuration.robot_regex
     end
 
     def is_preview?
-      defined?(request) && defined?(request.headers) && request.headers["x-purpose"] == "preview"
+      request_present? && defined?(request.headers) && request.headers["x-purpose"] == "preview"
     end
 
     def is_ignored_ip_address?
       return false if Split.configuration.ignore_ip_addresses.empty?
 
       Split.configuration.ignore_ip_addresses.each do |ip|
-        return true if defined?(request) && (request.ip == ip || (ip.class == Regexp && request.ip =~ ip))
+        return true if request_present? && (request.ip == ip || (ip.class == Regexp && request.ip =~ ip))
       end
       false
+    end
+
+    def params_present?
+      defined?(params) && params != nil
+    end
+
+    def request_present?
+      defined?(request) && request != nil
     end
 
     def active_experiments
