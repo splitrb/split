@@ -136,13 +136,28 @@ describe Split::Configuration do
               alternatives:
                 - a
                 - b
+            combined_experiment:
+              alternatives:
+                - a
+                - b
+              combined_experiments:
+                - combined1
+                - combined2
+              resettable: false
           eos
           @config.experiments = YAML.load(experiments_yaml)
         end
 
         it "should normalize experiments" do
-          expect(@config.normalized_experiments).to eq({ my_experiment: { resettable: false, alternatives: [{ "Control Opt"=>0.67 },
-            [{ "Alt One"=>0.1 }, { "Alt Two"=>0.23 }]] }, another_experiment: { alternatives: ["a", ["b"]] } })
+          result = {
+            my_experiment: { resettable: false, alternatives: [{ "Control Opt"=>0.67 }, [{ "Alt One"=>0.1 }, { "Alt Two"=>0.23 }]] },
+            another_experiment: { alternatives: ["a", ["b"]] },
+            combined_experiment: { resettable: false, alternatives: ["a", ["b"]] },
+            combined1: { resettable: false, alternatives: ["a", ["b"]] },
+            combined2: { resettable: false, alternatives: ["a", ["b"]] }
+          }
+
+          expect(@config.normalized_experiments).to eq(result)
         end
 
         it "should recognize metrics" do
