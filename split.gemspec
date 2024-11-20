@@ -20,7 +20,8 @@ Gem::Specification.new do |s|
     "source_code_uri" => "https://github.com/splitrb/split",
     "bug_tracker_uri" => "https://github.com/splitrb/split/issues",
     "wiki_uri" => "https://github.com/splitrb/split/wiki",
-    "mailing_list_uri" => "https://groups.google.com/d/forum/split-ruby"
+    "mailing_list_uri" => "https://groups.google.com/d/forum/split-ruby",
+    "funding_uri" => "https://opencollective.com/split"
   }
 
   s.required_ruby_version = ">= 2.5.0"
