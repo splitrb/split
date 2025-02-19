@@ -47,8 +47,9 @@ module Split
         end
 
         def set_cookie_via_rack(key, value)
-          delete_cookie_header!(@response.header, key, value)
-          Rack::Utils.set_cookie_header!(@response.header, key, value)
+          headers = @response.respond_to?(:header) ? @response.header : @response.headers
+          delete_cookie_header!(headers, key, value)
+          Rack::Utils.set_cookie_header!(headers, key, value)
         end
 
         # Use Rack::Utils#make_delete_cookie_header after Rack 2.0.0
