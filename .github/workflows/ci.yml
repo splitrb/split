@@ -7,15 +7,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - gemfile: 5.2.gemfile
-            ruby: 2.5
-
-          - gemfile: 5.2.gemfile
-            ruby: 2.6
-
-          - gemfile: 5.2.gemfile
-            ruby: 2.7
-
           - gemfile: 6.0.gemfile
             ruby: 2.5
 

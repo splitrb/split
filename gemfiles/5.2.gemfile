@@ -1,7 +1,0 @@
-source "https://rubygems.org"
-
-gem "rubocop", require: false
-gem "codeclimate-test-reporter"
-gem "rails", "~> 5.2"
-
-gemspec path: "../"
