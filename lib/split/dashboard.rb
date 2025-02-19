@@ -29,7 +29,8 @@ module Split
       if Object.const_defined?("Rails") && Rails.respond_to?(:env)
         @current_env = Rails.env.titlecase
       else
-        @current_env = "Rack: #{Rack.version}"
+        rack_version = Rack.respond_to?(:version) ? Rack.version : Rack.release
+        @current_env = "Rack: #{rack_version}"
       end
       erb :index
     end
