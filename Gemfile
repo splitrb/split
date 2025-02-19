@@ -6,4 +6,4 @@ gemspec
 
 gem "rubocop", require: false
 gem "codeclimate-test-reporter"
-gem 'rack', '< 3'
+gem "rack", "< 3"
