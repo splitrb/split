@@ -6,6 +6,6 @@ gemspec
 
 gem "rubocop", require: false
 gem "codeclimate-test-reporter"
-gem "concurrent-ruby", "< 1.3.5"
+gem "concurrent-ruby", "< 1.3.6"
 
 gem "rails", "~> #{ENV.fetch('RAILS_VERSION', '8.0')}"
