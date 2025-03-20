@@ -19,6 +19,13 @@ module Split
       :retain_user_alternatives_after_reset => false,
     }
 
+    def self.find(name)
+      Split.cache(:experiments, name) do
+        return unless Split.redis.exists?(name)
+        Experiment.new(name).tap { |exp| exp.load_from_redis }
+      end
+    end
+
     def initialize(name, options = {})
       options = DEFAULT_OPTIONS.merge(options)
 
