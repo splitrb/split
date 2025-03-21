@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'forwardable'
+require "forwardable"
 
 module Split
   class User
@@ -32,10 +32,10 @@ module Split
     end
 
     def max_experiments_reached?(experiment_key)
-      if Split.configuration.allow_multiple_experiments == 'control'
+      if Split.configuration.allow_multiple_experiments == "control"
         experiments = active_experiments
         experiment_key_without_version = key_without_version(experiment_key)
-        count_control = experiments.count {|k,v| k == experiment_key_without_version || v == 'control'}
+        count_control = experiments.count { |k,v| k == experiment_key_without_version || v == "control" }
         experiments.size > count_control
       else
         !Split.configuration.allow_multiple_experiments &&
@@ -62,7 +62,7 @@ module Split
 
     def alternative_key_for_experiment(experiment)
       user_experiment_key = first_field_from_all_versions(experiment)
-      #default to current experiment key when one isn't found
+      # default to current experiment key when one isn't found
       user_experiment_key || experiment.key
     end
 
