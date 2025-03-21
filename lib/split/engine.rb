@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Split
   class Engine < ::Rails::Engine
     initializer "split" do |app|

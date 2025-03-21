@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require 'split/dashboard/paginator'
+
+require "split/dashboard/paginator"
 
 module Split
   module DashboardPaginationHelpers
@@ -29,58 +30,57 @@ module Split
     end
 
     private
+      def show_first_page_tag?
+        page_number > 2
+      end
 
-    def show_first_page_tag?
-      page_number > 2
-    end
+      def first_page_tag
+        %Q(<a href="#{url.chop}?page=1&per=#{pagination_per}">1</a>)
+      end
 
-    def first_page_tag
-      %Q(<a href="#{url.chop}?page=1&per=#{pagination_per}">1</a>)
-    end
+      def show_first_ellipsis_tag?
+        page_number >= 4
+      end
 
-    def show_first_ellipsis_tag?
-      page_number >= 4
-    end
+      def ellipsis_tag
+        "<span>...</span>"
+      end
 
-    def ellipsis_tag
-      '<span>...</span>'
-    end
+      def show_prev_page_tag?
+        page_number > 1
+      end
 
-    def show_prev_page_tag?
-      page_number > 1
-    end
+      def prev_page_tag
+        %Q(<a href="#{url.chop}?page=#{page_number - 1}&per=#{pagination_per}">#{page_number - 1}</a>)
+      end
 
-    def prev_page_tag
-      %Q(<a href="#{url.chop}?page=#{page_number - 1}&per=#{pagination_per}">#{page_number - 1}</a>)
-    end
+      def current_page_tag
+        "<span><b>#{page_number}</b></span>"
+      end
 
-    def current_page_tag
-      "<span><b>#{page_number}</b></span>"
-    end
+      def show_next_page_tag?(collection)
+        (page_number * pagination_per) < collection.count
+      end
 
-    def show_next_page_tag?(collection)
-      (page_number * pagination_per) < collection.count
-    end
+      def next_page_tag
+        %Q(<a href="#{url.chop}?page=#{page_number + 1}&per=#{pagination_per}">#{page_number + 1}</a>)
+      end
 
-    def next_page_tag
-      %Q(<a href="#{url.chop}?page=#{page_number + 1}&per=#{pagination_per}">#{page_number + 1}</a>)
-    end
+      def show_last_ellipsis_tag?(collection)
+        (total_pages(collection) - page_number) >= 3
+      end
 
-    def show_last_ellipsis_tag?(collection)
-      (total_pages(collection) - page_number) >= 3
-    end
+      def total_pages(collection)
+        collection.count / pagination_per + ((collection.count % pagination_per).zero? ? 0 : 1)
+      end
 
-    def total_pages(collection)
-      collection.count / pagination_per + ((collection.count % pagination_per).zero? ? 0 : 1)
-    end
+      def show_last_page_tag?(collection)
+        page_number < (total_pages(collection) - 1)
+      end
 
-    def show_last_page_tag?(collection)
-      page_number < (total_pages(collection) - 1)
-    end
-
-    def last_page_tag(collection)
-      total = total_pages(collection)
-      %Q(<a href="#{url.chop}?page=#{total}&per=#{pagination_per}">#{total}</a>)
-    end
+      def last_page_tag(collection)
+        total = total_pages(collection)
+        %Q(<a href="#{url.chop}?page=#{total}&per=#{pagination_per}">#{total}</a>)
+      end
   end
 end

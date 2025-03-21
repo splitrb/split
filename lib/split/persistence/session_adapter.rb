@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 module Split
   module Persistence
     class SessionAdapter
-
       def initialize(context)
         @session = context.session
         @session[:split] ||= {}
@@ -23,7 +23,6 @@ module Split
       def keys
         @session[:split].keys
       end
-
     end
   end
 end

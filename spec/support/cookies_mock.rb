@@ -1,6 +1,6 @@
 # frozen_string_literal: true
-class CookiesMock
 
+class CookiesMock
   def initialize
     @cookies = {}
   end
@@ -16,5 +16,4 @@ class CookiesMock
   def delete(key)
     @cookies.delete(key)
   end
-
 end

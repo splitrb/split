@@ -19,6 +19,13 @@ module Split
       :retain_user_alternatives_after_reset => false,
     }
 
+    def self.find(name)
+      Split.cache(:experiments, name) do
+        return unless Split.redis.exists?(name)
+        Experiment.new(name).tap { |exp| exp.load_from_redis }
+      end
+    end
+
     def initialize(name, options = {})
       options = DEFAULT_OPTIONS.merge(options)
 
@@ -87,9 +94,10 @@ module Split
         persist_experiment_configuration
       end
 
-      redis.hset(experiment_config_key, :retain_user_alternatives_after_reset, retain_user_alternatives_after_reset)
-      redis.hset(experiment_config_key, :resettable, resettable)
-      redis.hset(experiment_config_key, :algorithm, algorithm.to_s)
+      redis.hmset(experiment_config_key,
+                 :resettable, resettable.to_s,
+                 :algorithm, algorithm.to_s,
+                 :retain_user_alternatives_after_reset, retain_user_alternatives_after_reset.to_s)
       self
     end
 
@@ -122,11 +130,11 @@ module Split
     end
 
     def resettable=(resettable)
-      @resettable = resettable.is_a?(String) ? resettable == 'true' : resettable
+      @resettable = resettable.is_a?(String) ? resettable == "true" : resettable
     end
 
     def retain_user_alternatives_after_reset=(value)
-      @retain_user_alternatives_after_reset = value.is_a?(String) ? value == 'true' : value
+      @retain_user_alternatives_after_reset = value.is_a?(String) ? value == "true" : value
     end
 
     def alternatives=(alts)
@@ -265,9 +273,9 @@ module Split
       exp_config = redis.hgetall(experiment_config_key)
 
       options = {
-        retain_user_alternatives_after_reset: exp_config['retain_user_alternatives_after_reset'],
-        resettable: exp_config['resettable'],
-        algorithm: exp_config['algorithm'],
+        retain_user_alternatives_after_reset: exp_config["retain_user_alternatives_after_reset"],
+        resettable: exp_config["resettable"],
+        algorithm: exp_config["algorithm"],
         friendly_name: load_friendly_name_from_redis,
         alternatives: load_alternatives_from_redis,
         goals: Split::GoalsCollection.new(@name).load_from_redis,
@@ -277,7 +285,16 @@ module Split
       set_alternatives_and_options(options)
     end
 
+    def can_calculate_winning_alternatives?
+      self.alternatives.all? do |alternative|
+        alternative.participant_count >= 0 &&
+        (alternative.participant_count >= alternative.completed_count)
+      end
+    end
+
     def calc_winning_alternatives
+      return unless can_calculate_winning_alternatives?
+
       # Cache the winning alternatives so we recalculate them once per the specified interval.
       intervals_since_epoch =
         Time.now.utc.to_i / Split.configuration.winning_alternative_recalculation_interval
@@ -488,9 +505,14 @@ module Split
 
     def persist_experiment_configuration
       redis_interface.add_to_set(:experiments, name)
-      redis_interface.persist_list(name, @alternatives.map{|alt| {alt.name => alt.weight}.to_json})
+      redis_interface.persist_list(name, @alternatives.map { |alt| { alt.name => alt.weight }.to_json })
       goals_collection.save
-      redis.set(metadata_key, @metadata.to_json) unless @metadata.nil?
+
+      if @metadata
+        redis.set(metadata_key, @metadata.to_json)
+      else
+        delete_metadata
+      end
       redis.set(friendly_name_key, self.friendly_name)
     end
 

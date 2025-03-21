@@ -14,7 +14,7 @@ module Split
       @user             = attrs.delete(:user)
       @options          = attrs
 
-      @alternative_choosen = false
+      @alternative_chosen = false
     end
 
     def metadata
@@ -31,7 +31,7 @@ module Split
       @alternative = if alternative.kind_of?(Split::Alternative)
         alternative
       else
-        @experiment.alternatives.find{|a| a.name == alternative }
+        @experiment.alternatives.find { |a| a.name == alternative }
       end
     end
 
@@ -42,7 +42,7 @@ module Split
           if Array(goals).empty?
             alternative.increment_completion
           else
-            Array(goals).each {|g| alternative.increment_completion(g) }
+            Array(goals).each { |g| alternative.increment_completion(g) }
           end
         end
 
@@ -57,7 +57,7 @@ module Split
     def choose!(context = nil)
       @user.cleanup_old_experiments!
       # Only run the process once
-      return alternative if @alternative_choosen
+      return alternative if @alternative_chosen
 
       user_experiment_key = @experiment.retain_user_alternatives_after_reset ? @user.alternative_key_for_experiment(@experiment) : @experiment.key
       new_participant = @user[user_experiment_key].nil?
@@ -71,7 +71,7 @@ module Split
       elsif @experiment.has_winner?
         self.alternative = @experiment.winner
       else
-        cleanup_old_versions unless experiment.retain_user_alternatives_after_reset
+        cleanup_old_versions unless @experiment.retain_user_alternatives_after_reset
 
         if exclude_user?
           self.alternative = @experiment.control
@@ -96,7 +96,7 @@ module Split
       new_participant_and_cohorting_disabled = new_participant && @experiment.cohorting_disabled?
 
       @user[user_experiment_key] = alternative.name unless @experiment.has_winner? || !should_store_alternative? || new_participant_and_cohorting_disabled
-      @alternative_choosen = true
+      @alternative_chosen = true
       run_callback context, Split.configuration.on_trial unless @options[:disabled] || Split.configuration.disabled? || new_participant_and_cohorting_disabled
       alternative
     end
@@ -111,7 +111,7 @@ module Split
           return true if window_of_time_for_conversion_in_minutes.nil?
 
           time_of_assignment = @user["#{user_experiment_key}:time_of_assignment"]
-          
+
           return false if time_of_assignment.nil? || time_of_assignment.empty?
 
           (Time.now - Time.parse(time_of_assignment))/60 <= window_of_time_for_conversion_in_minutes
