@@ -259,6 +259,7 @@ module Split
       end
       reset_winner
       redis.srem(:experiments, name)
+      redis.hdel(experiment_config_key, :cohorting)
       remove_experiment_cohorting
       remove_experiment_configuration
       Split.configuration.on_experiment_delete.call(self)

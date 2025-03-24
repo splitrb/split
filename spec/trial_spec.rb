@@ -185,6 +185,124 @@ describe Split::Trial do
           expect_alternative(trial, alternatives)
         end
       end
+
+      context "when the user is in a previous version of the experiment" do
+        context "and retain_user_alternatives_after_reset is true" do
+          before do
+            user[experiment.name] = "basket"
+
+            experiment.retain_user_alternatives_after_reset = true
+            experiment.increment_version
+          end
+
+          it "does not clean up previous version of the experiment" do
+            expect(user[experiment.name]).to eq("basket")
+
+            trial.choose!
+
+            expect(user[experiment.name]).to eq("basket")
+          end
+
+          it "does not create new version of the experiment" do
+            expect(user[experiment.key]).to be nil
+
+            trial.choose!
+
+            expect(user[experiment.key]).to be nil
+          end
+
+          it "does not increment the participant count" do
+            original_count = experiment.participant_count
+
+            trial.choose!
+
+            expect(experiment.participant_count).to eql(original_count)
+          end
+        end
+
+        context "and retain_user_alternatives_after_reset is false" do
+          before do
+            user[experiment.name] = "basket"
+
+            experiment.retain_user_alternatives_after_reset = false
+            experiment.increment_version
+          end
+
+          it "cleans up old version of the experiment" do
+            expect(user[experiment.name]).to eq("basket")
+
+            trial.choose!
+
+            expect(user[experiment.name]).to be nil
+          end
+
+          it "creates new version of the experiment" do
+            expect(user[experiment.key]).to be nil
+
+            trial.choose!
+
+            expect(["basket", "cart"]).to include(user[experiment.key])
+          end
+
+          it "increments the participant count" do
+            original_count = experiment.participant_count
+
+            trial.choose!
+
+            expect(experiment.participant_count).to eql(original_count + 1)
+          end
+        end
+      end
+
+      context "when the user is in current version of the experiment" do
+        context "and retain_user_alternatives_after_reset is true" do
+          before do
+            user[experiment.name] = "basket"
+
+            experiment.retain_user_alternatives_after_reset = true
+          end
+
+          it "does not increment the participant count" do
+            original_count = experiment.participant_count
+
+            trial.choose!
+
+            expect(experiment.participant_count).to eql(original_count)
+          end
+
+          it "does not clean up previous version of the experiment" do
+            expect(user[experiment.key]).to eq("basket")
+
+            trial.choose!
+
+            expect(user[experiment.key]).to eq("basket")
+          end
+        end
+
+        context "and retain_user_alternatives_after_reset is false" do
+          before do
+            user[experiment.name] = "basket"
+
+            experiment.retain_user_alternatives_after_reset = false
+          end
+
+          it "does not increment the participant count" do
+            original_count = experiment.participant_count
+
+            trial.choose!
+
+            expect(experiment.participant_count).to eql(original_count)
+          end
+
+          it "does not clean up previous version of the experiment" do
+            expect(user[experiment.key]).to eq("basket")
+
+            trial.choose!
+
+            expect(user[experiment.key]).to eq("basket")
+          end
+        end
+      end
     end
 
     context "when user is a new participant" do
