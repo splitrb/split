@@ -1,3 +1,15 @@
+# main
+
+Bugfixes:
+- Handle when Rails is partially loaded as a Gem. (@bjacobs09,  #727)
+- Fix Rack compatibility with versions > 3 (@andrehjr, #729)
+
+Misc:
+- Add funding_uri to gemspec (@andrew, #726)
+- Drop Rails 5.x Support (@andrehjr, #728)
+- Drop Rails 6.0 and Ruby < 2.6 (@andrehjr, #729)
+- Add support for Ruby 3.5+ (@andrehjr, #737)
+
 # 4.0.4 (March 3rd, 2024)
 
 Bugfixes:
