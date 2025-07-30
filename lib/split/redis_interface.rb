@@ -30,7 +30,7 @@ module Split
       attr_accessor :redis
 
       def redis_namespace_used?
-        Redis.const_defined?("Namespace") && Split.redis.is_a?(Redis::Namespace)
+        defined?(Redis::Namespace) && Split.redis.is_a?(Redis::Namespace)
       end
   end
 end

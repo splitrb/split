@@ -670,7 +670,7 @@ describe Split::Helper do
 
   describe "when user is a robot" do
     before(:each) do
-      @request = OpenStruct.new(user_agent: "Googlebot/2.1 (+http://www.google.com/bot.html)")
+      @request = build_request(user_agent: "Googlebot/2.1 (+http://www.google.com/bot.html)")
     end
 
     describe "ab_test" do
@@ -768,7 +768,7 @@ describe Split::Helper do
   describe "when ip address is ignored" do
     context "individually" do
       before(:each) do
-        @request = OpenStruct.new(ip: "81.19.48.130")
+        @request = build_request(ip: "81.19.48.130")
         Split.configure do |c|
           c.ignore_ip_addresses << "81.19.48.130"
         end
@@ -779,7 +779,7 @@ describe Split::Helper do
 
     context "for a range" do
       before(:each) do
-        @request = OpenStruct.new(ip: "81.19.48.129")
+        @request = build_request(ip: "81.19.48.129")
         Split.configure do |c|
           c.ignore_ip_addresses << /81\.19\.48\.[0-9]+/
         end
@@ -790,7 +790,7 @@ describe Split::Helper do
 
     context "using both a range and a specific value" do
       before(:each) do
-        @request = OpenStruct.new(ip: "81.19.48.128")
+        @request = build_request(ip: "81.19.48.128")
         Split.configure do |c|
           c.ignore_ip_addresses << "81.19.48.130"
           c.ignore_ip_addresses << /81\.19\.48\.[0-9]+/
@@ -802,7 +802,7 @@ describe Split::Helper do
 
     context "when ignored other address" do
       before do
-        @request = OpenStruct.new(ip: "1.1.1.1")
+        @request = build_request(ip: "1.1.1.1")
         Split.configure do |c|
           c.ignore_ip_addresses << "81.19.48.130"
         end
@@ -819,7 +819,7 @@ describe Split::Helper do
 
   describe "when user is previewing" do
     before(:each) do
-      @request = OpenStruct.new(headers: { "x-purpose" => "preview" })
+      @request = build_request(headers: { "x-purpose" => "preview" })
     end
 
     it_behaves_like "a disabled test"

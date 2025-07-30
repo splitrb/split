@@ -9,7 +9,6 @@ require "simplecov"
 SimpleCov.start
 
 require "split"
-require "ostruct"
 require "yaml"
 require "pry"
 
@@ -48,16 +47,20 @@ def request
   @request ||= build_request
 end
 
+DummyRequest = Struct.new(:user_agent, :ip, :params, :cookies, :headers)
+
 def build_request(
-  ua: "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; de-de) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27",
+  user_agent: "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; de-de) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27",
   ip: "192.168.1.1",
   params: {},
-  cookies: {}
+  cookies: {},
+  headers: {}
 )
-  r = OpenStruct.new
-  r.user_agent = ua
+  r = DummyRequest.new
+  r.user_agent = user_agent
   r.ip = ip
   r.params = params
   r.cookies = cookies
+  r.headers = headers
   r
 end
