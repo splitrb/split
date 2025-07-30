@@ -116,7 +116,13 @@ module Split
 
     def experiments=(experiments)
       raise InvalidExperimentsFormatError.new("Experiments must be a Hash") unless experiments.respond_to?(:keys)
-      @experiments = experiments
+      @experiments = experiments.clone
+      experiments.each do |name, settings|
+        value_for(settings, :combined_experiments)&.each do |combined_name|
+          @experiments[combined_name] =
+            settings.reject { |k, v| [:combined_experiments, "combined_experiments"].include?(k) }
+        end
+      end
     end
 
     def disabled?
