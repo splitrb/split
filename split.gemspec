@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
     "funding_uri" => "https://opencollective.com/split"
   }
 
-  s.required_ruby_version = ">= 2.5.0"
+  s.required_ruby_version = ">= 2.7.0"
   s.required_rubygems_version = ">= 2.0.0"
 
   s.files         = `git ls-files`.split("\n")
