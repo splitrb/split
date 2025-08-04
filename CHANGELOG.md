@@ -1,4 +1,4 @@
-# main
+# 4.0.5 (Aug 3rd, 2025)
 
 Bugfixes:
 - Handle when Rails is partially loaded as a Gem. (@bjacobs09,  #727)
