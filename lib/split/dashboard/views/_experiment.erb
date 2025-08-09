@@ -125,7 +125,7 @@
               Loser
             <% end %>
           <% else %>
-            <form action="<%= url('experiment') + '?experiment=' + experiment.name %>" method='post' onclick="return confirmWinner()">
+            <form action="<%= url('experiment') + '?experiment=' + experiment.name %>" method='post' class="split winner">
               <input type='hidden' name='alternative' value='<%= h alternative.name %>'>
               <input type="submit" value="Use this" class="green">
             </form>

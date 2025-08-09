@@ -1,15 +1,15 @@
 <% if experiment.has_winner? %>
-  <form action="<%= url "/reopen?experiment=#{experiment.name}" %>" method='post' onclick="return confirmReopen()">
+  <form action="<%= url "/reopen?experiment=#{experiment.name}" %>" method='post' class="split reopen">
     <input type="submit" value="Reopen Experiment">
   </form>
 <% else %>
   <% if experiment.cohorting_disabled? %>
-    <form action="<%= url "/update_cohorting?experiment=#{experiment.name}" %>" method='post' onclick="return confirmEnableCohorting()">
+    <form action="<%= url "/update_cohorting?experiment=#{experiment.name}" %>" method='post' class="split enable-cohorting">
       <input type="hidden" name="cohorting_action" value="enable">
       <input type="submit" value="Enable Cohorting" class="green">
     </form>
   <% else %>
-    <form action="<%= url "/update_cohorting?experiment=#{experiment.name}" %>" method='post' onclick="return confirmDisableCohorting()">
+    <form action="<%= url "/update_cohorting?experiment=#{experiment.name}" %>" method='post' class="split disable-cohorting">
       <input type="hidden" name="cohorting_action" value="disable">
       <input type="submit" value="Disable Cohorting" class="red">
     </form>
@@ -17,7 +17,7 @@
 <% end %>
 <span class="divider">|</span>
 <% if experiment.start_time %>
-  <form action="<%= url "/reset?experiment=#{experiment.name}" %>" method='post' onclick="return confirmReset()">
+  <form action="<%= url "/reset?experiment=#{experiment.name}" %>" method='post' class="split reset">
     <input type="submit" value="Reset Data">
   </form>
 <% else%>
@@ -25,7 +25,7 @@
     <input type="submit" value="Start">
   </form>
 <% end %>
-<form action="<%= url "/experiment?experiment=#{experiment.name}" %>" method='post' onclick="return confirmDelete()">
+<form action="<%= url "/experiment?experiment=#{experiment.name}" %>" method='post' class="split delete">
   <input type="hidden" name="_method" value="delete"/>
   <input type="submit" value="Delete" class="red">
 </form>
