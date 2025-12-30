@@ -18,11 +18,15 @@ describe Split::EncapsulatedHelper do
     context "inside a view" do
       it "works inside ERB" do
         require "erb"
-        template = ERB.new(<<-ERB.split(/\s+/s).map(&:strip).join(" "), nil, "%")
-          foo <% context_shim.ab_test(:foo, '1', '2') do |alt, meta| %>
-            static <%= alt %>
-          <% end %>
+
+        html = <<-ERB.split(/\s+/s).map(&:strip).join(" ")
+        foo <% context_shim.ab_test(:foo, '1', '2') do |alt, meta| %>
+          static <%= alt %>
+        <% end %>
         ERB
+
+        template = ERB.new(html, trim_mode: "%")
+
         expect(template.result(binding)).to match(/foo  static \d/)
       end
     end
