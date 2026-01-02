@@ -447,11 +447,11 @@ module Split
       end
 
       def experiment_configuration_has_changed?
-        existing_experiment = Experiment.find(@name)
+        stored_data = @redis_storage.load
 
-        existing_experiment.alternatives.map(&:to_s) != @alternatives.map(&:to_s) ||
-          existing_experiment.goals != @goals ||
-          existing_experiment.metadata != @metadata
+        stored_data[:alternatives].map(&:to_s) != @alternatives.map(&:to_s) ||
+          stored_data[:goals] != @goals ||
+          stored_data[:metadata] != @metadata
       end
 
       def goals_collection
