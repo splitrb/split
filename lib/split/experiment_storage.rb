@@ -57,11 +57,9 @@ module Split
       def load_alternatives
         alts = Split.configuration.experiment_for(@name)[:alternatives]
         raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
-        if alts.is_a?(Hash)
-          alts.keys
-        else
-          alts.flatten
-        end
+
+        alts = alts.keys if alts.is_a?(Hash)
+        alts.flatten
       end
 
       def load_metadata
