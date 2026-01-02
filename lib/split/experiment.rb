@@ -97,7 +97,7 @@ module Split
     end
 
     def new_record?
-      ExperimentCatalog.find(name).nil?
+      !@redis_storage.exists?
     end
 
     def ==(obj)
