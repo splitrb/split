@@ -83,8 +83,12 @@ module Split
         persist_experiment_configuration
       end
 
-      redis.hmset(experiment_config_key, :resettable, resettable.to_s,
-                                         :algorithm, algorithm.to_s)
+      stored_data = @redis_storage.load
+      if stored_data[:resettable] != resettable.to_s ||
+         stored_data[:algorithm] != algorithm.to_s
+        redis.hmset(experiment_config_key, :resettable, resettable.to_s,
+                                           :algorithm, algorithm.to_s)
+      end
       self
     end
 
