@@ -175,7 +175,7 @@ module Split
     end
 
     def start_time
-      Split.cache(:experiment_start_times, @name) do
+      @start_time ||= Split.cache(:experiment_start_times, @name) do
         t = redis.hget(:experiment_start_times, @name)
         if t
           # Check if stored time is an integer
