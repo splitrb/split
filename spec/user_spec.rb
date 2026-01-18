@@ -48,16 +48,17 @@ describe Split::User do
     end
 
     it "removes key if experiment has a winner" do
-      allow(Split::ExperimentCatalog).to receive(:find).with("link_color").and_return(experiment)
-      allow(experiment).to receive(:start_time).and_return(Date.today)
-      allow(experiment).to receive(:has_winner?).and_return(true)
+      experiment = Split::ExperimentCatalog.find_or_create("link_color", "red", "blue")
+      experiment.start
+      experiment.winner = "red"
+
+      expect(experiment.has_winner?).to be_truthy
       @subject.cleanup_old_experiments!
       expect(@subject.keys).to be_empty
     end
 
     it "removes key if experiment has not started yet" do
-      allow(Split::ExperimentCatalog).to receive(:find).with("link_color").and_return(experiment)
-      allow(experiment).to receive(:has_winner?).and_return(false)
+      expect(Split::ExperimentCatalog.find("link_color")).to be_nil
       @subject.cleanup_old_experiments!
       expect(@subject.keys).to be_empty
     end
@@ -66,11 +67,12 @@ describe Split::User do
       let(:user_keys) { { "link_color" => "blue", "link_color:finished" => true } }
 
       it "does not remove finished key for experiment without a winner" do
-        allow(Split::ExperimentCatalog).to receive(:find).with("link_color").and_return(experiment)
-        allow(Split::ExperimentCatalog).to receive(:find).with("link_color:finished").and_return(nil)
-        allow(experiment).to receive(:start_time).and_return(Date.today)
-        allow(experiment).to receive(:has_winner?).and_return(false)
+        experiment = Split::ExperimentCatalog.find_or_create("link_color", "red", "blue")
+        experiment.start
+
+        expect(experiment.has_winner?).to be_falsey
         @subject.cleanup_old_experiments!
+
         expect(@subject.keys).to include("link_color")
         expect(@subject.keys).to include("link_color:finished")
       end

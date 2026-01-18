@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "split/experiment_storage"
+
 module Split
   class Experiment
     attr_accessor :name
@@ -26,6 +28,9 @@ module Split
 
       @name = name.to_s
 
+      @config_storage = ExperimentStorage::ConfigStorage.new(name)
+      @redis_storage = ExperimentStorage::RedisStorage.new(name)
+
       extract_alternatives_from_options(options)
     end
 
@@ -50,22 +55,15 @@ module Split
 
       if alts.length == 1
         if alts[0].is_a? Hash
-          alts = alts[0].map { |k, v| { k => v } }
-        end
-      end
-
-      if alts.empty?
-        exp_config = Split.configuration.experiment_for(name)
-        if exp_config
-          alts = load_alternatives_from_configuration
-          options[:goals] = Split::GoalsCollection.new(@name).load_from_configuration
-          options[:metadata] = load_metadata_from_configuration
-          options[:resettable] = exp_config[:resettable]
-          options[:algorithm] = exp_config[:algorithm]
+          alts[0].map! { |k, v| { k => v } }
         end
       end
 
       options[:alternatives] = alts
+
+      if alts.empty? && @config_storage.exists?
+        options.merge!(@config_storage.load)
+      end
 
       set_alternatives_and_options(options)
 
@@ -85,8 +83,12 @@ module Split
         persist_experiment_configuration
       end
 
-      redis.hmset(experiment_config_key, :resettable, resettable.to_s,
-                                         :algorithm, algorithm.to_s)
+      stored_data = @redis_storage.load
+      if stored_data[:resettable] != resettable.to_s ||
+         stored_data[:algorithm] != algorithm.to_s
+        redis.hmset(experiment_config_key, :resettable, resettable.to_s,
+                                           :algorithm, algorithm.to_s)
+      end
       self
     end
 
@@ -99,7 +101,7 @@ module Split
     end
 
     def new_record?
-      ExperimentCatalog.find(name).nil?
+      !@redis_storage.exists?
     end
 
     def ==(obj)
@@ -173,7 +175,7 @@ module Split
     end
 
     def start_time
-      Split.cache(:experiment_start_times, @name) do
+      @start_time ||= Split.cache(:experiment_start_times, @name) do
         t = redis.hget(:experiment_start_times, @name)
         if t
           # Check if stored time is an integer
@@ -257,17 +259,7 @@ module Split
     end
 
     def load_from_redis
-      exp_config = redis.hgetall(experiment_config_key)
-
-      options = {
-        resettable: exp_config["resettable"],
-        algorithm: exp_config["algorithm"],
-        alternatives: load_alternatives_from_redis,
-        goals: Split::GoalsCollection.new(@name).load_from_redis,
-        metadata: load_metadata_from_redis
-      }
-
-      set_alternatives_and_options(options)
+      set_alternatives_and_options(@redis_storage.load)
     end
 
     def can_calculate_winning_alternatives?
@@ -430,37 +422,6 @@ module Split
         "experiment_configurations/#{@name}"
       end
 
-      def load_metadata_from_configuration
-        Split.configuration.experiment_for(@name)[:metadata]
-      end
-
-      def load_metadata_from_redis
-        meta = redis.get(metadata_key)
-        JSON.parse(meta) unless meta.nil?
-      end
-
-      def load_alternatives_from_configuration
-        alts = Split.configuration.experiment_for(@name)[:alternatives]
-        raise ArgumentError, "Experiment configuration is missing :alternatives array" unless alts
-        if alts.is_a?(Hash)
-          alts.keys
-        else
-          alts.flatten
-        end
-      end
-
-      def load_alternatives_from_redis
-        alternatives = redis.lrange(@name, 0, -1)
-        alternatives.map do |alt|
-          alt = begin
-                  JSON.parse(alt)
-                rescue
-                  alt
-                end
-          Split::Alternative.new(alt, @name)
-        end
-      end
-
     private
       def redis
         Split.redis
@@ -490,11 +451,11 @@ module Split
       end
 
       def experiment_configuration_has_changed?
-        existing_experiment = Experiment.find(@name)
+        stored_data = @redis_storage.load
 
-        existing_experiment.alternatives.map(&:to_s) != @alternatives.map(&:to_s) ||
-          existing_experiment.goals != @goals ||
-          existing_experiment.metadata != @metadata
+        stored_data[:alternatives].map(&:to_s) != @alternatives.map(&:to_s) ||
+          stored_data[:goals] != @goals ||
+          stored_data[:metadata] != @metadata
       end
 
       def goals_collection
