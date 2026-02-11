@@ -261,6 +261,11 @@ describe Split::Experiment do
       experiment.winner = "green"
     end
 
+    it "should clear the cache for the experiment" do
+      expect(Split::Cache).to receive(:clear_key).with(experiment.name)
+      experiment.winner = "red"
+    end
+
     context "when has_winner state is memoized" do
       before { expect(experiment).to_not have_winner }
 
