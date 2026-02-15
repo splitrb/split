@@ -4,6 +4,7 @@ AllCops:
   SuggestExtensions: false
   Exclude:
     - 'gemfiles/**/*'
+    - 'vendor/**/*'
 
 Style/AndOr:
   Enabled: true
