@@ -54,10 +54,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-
-      - name: Install dependencies
-        run: |
-          bundle install --jobs 4 --retry 3
+          bundler-cache: true
 
       - name: Display Ruby version
         run: ruby -v
