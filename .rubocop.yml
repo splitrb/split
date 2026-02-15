@@ -1,10 +1,11 @@
+inherit_mode:
+  merge:
+    - Exclude
+
 AllCops:
   TargetRubyVersion: 2.5
   DisabledByDefault: true
   SuggestExtensions: false
-  Exclude:
-    - 'gemfiles/**/*'
-    - 'vendor/**/*'
 
 Style/AndOr:
   Enabled: true
