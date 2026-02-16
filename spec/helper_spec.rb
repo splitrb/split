@@ -476,6 +476,24 @@ describe Split::Helper do
       expect(ab_user[experiment.key]).to eq(alternative)
       expect(ab_user[experiment.finished_key]).to eq(true)
     end
+
+    context "combined experiment" do
+      it "passes reset option" do
+        Split.configuration.experiments = {
+          combined: {
+            alternatives: ["one", "two"],
+            combined_experiments: [:combined1],
+            resettable: false,
+          },
+        }
+        alternative = ab_test(:combined1)
+        experiment = Split::ExperimentCatalog.find :combined1
+
+        ab_finished :combined1
+        expect(ab_user[experiment.key]).to eq(alternative)
+        expect(ab_user[experiment.finished_key]).to eq(true)
+      end
+    end
   end
 
   context "finished with metric name" do
