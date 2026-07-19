@@ -127,6 +127,19 @@ describe Split::Helper do
       expect(alternative).to eq("blue")
     end
 
+    it "should allow the alternative to be forced by a cookie" do
+      @request = build_request(cookies: { "split_override" => '{ "link_color": "red" }' })
+
+      expect(ab_test("link_color", "blue", "red")).to eq("red")
+    end
+
+    it "should ignore a malformed split_override cookie and assign normally" do
+      @request = build_request(cookies: { "split_override" => "{ this is not valid json" })
+
+      expect { ab_test("link_color", "blue", "red") }.not_to raise_error
+      expect(["blue", "red"]).to include(ab_user["link_color"])
+    end
+
     it "should not store the split when a param forced alternative" do
       @params = { "ab_test" => { "link_color" => "blue" } }
       expect(ab_user).not_to receive(:[]=)
@@ -611,6 +624,51 @@ describe Split::Helper do
         expect(alternative.extra_info).to eql({})
       end
     end
+
+    context "for an experiment that the user is not participating in" do
+      before do
+        Split::ExperimentCatalog.find_or_create("link_color", "blue", "red")
+      end
+
+      it "does not record extra data for any alternative" do
+        ab_record_extra_info("link_color", "some_data", 10)
+
+        expect(Split::Alternative.new("blue", "link_color").extra_info).to eql({})
+        expect(Split::Alternative.new("red", "link_color").extra_info).to eql({})
+      end
+    end
+
+    context "when the visitor is excluded" do
+      before do
+        Split::ExperimentCatalog.find_or_create("link_color", "blue", "red")
+        @request = build_request(user_agent: "Googlebot/2.1 (+http://www.google.com/bot.html)")
+      end
+
+      it "does not record extra data" do
+        ab_record_extra_info("link_color", "some_data", 10)
+
+        expect(Split::Alternative.new("blue", "link_color").extra_info).to eql({})
+        expect(Split::Alternative.new("red", "link_color").extra_info).to eql({})
+      end
+    end
+
+    context "when redis is not available" do
+      before do
+        expect(Split).to receive(:redis).and_raise(Errno::ECONNREFUSED)
+      end
+
+      it "raises the error when db_failover is off" do
+        Split.configuration.db_failover = false
+        expect { ab_record_extra_info("link_color", "some_data", 10) }.to raise_error(Errno::ECONNREFUSED)
+      end
+
+      it "calls db_failover_on_db_error when db_failover is on" do
+        Split.configuration.db_failover = true
+        expect(Split.configuration.db_failover_on_db_error).to receive(:call).with(instance_of(Errno::ECONNREFUSED))
+
+        expect { ab_record_extra_info("link_color", "some_data", 10) }.not_to raise_error
+      end
+    end
   end
 
   describe "conversions" do
@@ -684,6 +742,40 @@ describe Split::Helper do
       expect(active_experiments.count).to eq 1
       expect(active_experiments.first[0]).to eq "ghi"
       expect(active_experiments.first[1]).to eq another_alternative
+    end
+  end
+
+  describe "ab_active_experiments" do
+    it "returns the experiments the user is actively participating in" do
+      Split.configure do |config|
+        config.allow_multiple_experiments = true
+      end
+      alternative = ab_test("def", "4", "5", "6")
+      another_alternative = ab_test("ghi", "7", "8", "9")
+
+      experiments = ab_active_experiments
+      expect(experiments.count).to eq 2
+      expect(experiments["def"]).to eq alternative
+      expect(experiments["ghi"]).to eq another_alternative
+    end
+
+    context "when redis is not available" do
+      before do
+        ab_test("link_color", "blue", "red")
+        allow(Split).to receive(:redis).and_raise(Errno::ECONNREFUSED)
+      end
+
+      it "raises the error when db_failover is off" do
+        Split.configuration.db_failover = false
+        expect { ab_active_experiments }.to raise_error(Errno::ECONNREFUSED)
+      end
+
+      it "calls db_failover_on_db_error when db_failover is on" do
+        Split.configuration.db_failover = true
+        expect(Split.configuration.db_failover_on_db_error).to receive(:call).with(Errno::ECONNREFUSED)
+
+        expect { ab_active_experiments }.not_to raise_error
+      end
     end
   end
 
@@ -915,7 +1007,7 @@ describe Split::Helper do
 
   context "when redis is not available" do
     before(:each) do
-      expect(Split).to receive(:redis).at_most(5).times.and_raise(Errno::ECONNREFUSED.new)
+      allow(Split).to receive(:redis).and_raise(Errno::ECONNREFUSED)
     end
 
     context "and db_failover config option is turned off" do
