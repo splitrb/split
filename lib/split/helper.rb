@@ -45,7 +45,7 @@ module Split
     end
 
     def finish_experiment(experiment, options = { reset: true })
-      return false if active_experiments[experiment.name].nil?
+      return false if ab_user[experiment.key].nil?
       return true if experiment.has_winner?
       should_reset = experiment.resettable? && options[:reset]
       if ab_user[experiment.finished_key] && !should_reset
