@@ -24,6 +24,18 @@ module Split
       end
     end
 
+    def self.find_many(names)
+      names = Array(names)
+      return [] if names.empty?
+
+      data = ExperimentStorage::RedisStorage.load_many(names)
+      names.each_index.filter_map do |i|
+        experiment = new(names[i])
+        experiment.set_alternatives_and_options(data[i])
+        experiment unless experiment.alternatives.empty?
+      end
+    end
+
     def initialize(name, options = {})
       options = DEFAULT_OPTIONS.merge(options)
 
