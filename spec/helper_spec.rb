@@ -402,6 +402,25 @@ describe Split::Helper do
         expect(ab_user.keys).to be_empty
       end
 
+      context "when an override is present for the experiment" do
+        it "should not increment the completed counter" do
+          @params = { "ab_test" => { @experiment_name => @alternative_name } }
+
+          expect {
+            ab_finished(@experiment_name)
+          }.not_to change { Split::Alternative.new(@alternative_name, @experiment_name).completed_count }
+        end
+
+        it "should not touch the user's participation" do
+          @params = { "ab_test" => { @experiment_name => @alternative_name } }
+
+          ab_finished(@experiment_name)
+
+          expect(ab_user[@experiment.key]).to eq(@alternative_name)
+          expect(ab_user[@experiment.finished_key]).to be_nil
+        end
+      end
+
       context "when on_trial_complete is set" do
         before { Split.configuration.on_trial_complete = :some_method }
         it "should call the method" do
