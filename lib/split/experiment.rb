@@ -176,17 +176,27 @@ module Split
     end
 
     def start_time
-      @start_time ||= Split.cache(:experiment_start_times, @name) do
-        t = redis.hget(:experiment_start_times, @name)
-        if t
-          # Check if stored time is an integer
-          if t =~ /^[-+]?[0-9]+$/
-            Time.at(t.to_i)
-          else
-            Time.parse(t)
-          end
-        end
+      return @start_time if defined?(@start_time)
+
+      @start_time = Split.cache(:experiment_start_times, @name) do
+        parse_start_time(redis.hget(:experiment_start_times, @name))
       end
+    end
+
+    def prefetch_trial_state!
+      winner_name, raw_start_time, raw_version, raw_cohorting =
+        redis.pipelined do |pipe|
+          pipe.hget(:experiment_winner, name)
+          pipe.hget(:experiment_start_times, @name)
+          pipe.get("#{name}:version")
+          pipe.hget(experiment_config_key, :cohorting)
+        end
+
+      @has_winner = !winner_name.nil?
+      @start_time = parse_start_time(raw_start_time)
+      @version = raw_version.to_i
+      @cohorting_disabled = raw_cohorting.nil? ? false : raw_cohorting.downcase == "true"
+      self
     end
 
     def next_alternative
@@ -402,10 +412,9 @@ module Split
     end
 
     def cohorting_disabled?
-      @cohorting_disabled ||= begin
-        value = redis.hget(experiment_config_key, :cohorting)
-        value.nil? ? false : value.downcase == "true"
-      end
+      return @cohorting_disabled if defined?(@cohorting_disabled)
+      value = redis.hget(experiment_config_key, :cohorting)
+      @cohorting_disabled = value.nil? ? false : value.downcase == "true"
     end
 
     def disable_cohorting
@@ -424,6 +433,17 @@ module Split
       end
 
     private
+      def parse_start_time(t)
+        return if t.nil?
+
+        # Check if stored time is an integer
+        if t =~ /^[-+]?[0-9]+$/
+          Time.at(t.to_i)
+        else
+          Time.parse(t)
+        end
+      end
+
       def redis
         Split.redis
       end
