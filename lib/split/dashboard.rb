@@ -19,9 +19,9 @@ module Split
     helpers Split::DashboardPaginationHelpers
 
     get "/" do
-      # Display experiments without a winner at the top of the dashboard
-      @experiments = Split::ExperimentCatalog.all_active_first
-      @unintialized_experiments = Split.configuration.experiments.keys - @experiments.map(&:name)
+      @experiment_names = Split::ExperimentCatalog.all_active_first_names
+      @experiments = Split::Experiment.find_many(paginated(@experiment_names))
+      @unintialized_experiments = Split.configuration.experiments.keys - @experiment_names
 
       @metrics = Split::Metric.all
 

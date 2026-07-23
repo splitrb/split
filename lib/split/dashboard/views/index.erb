@@ -1,4 +1,4 @@
-<% if @experiments.any? %>
+<% if @experiment_names.any? %>
   <p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
 
   <div class="dashboard-controls">
@@ -8,7 +8,7 @@
     <input type="button" id="clear-filter" value="Clear filters" />
   </div>
 
-  <% paginated(@experiments).each do |experiment| %>
+  <% @experiments.each do |experiment| %>
     <% if experiment.goals.empty? %>
       <%= erb :_experiment, :locals => {:goal => nil, :experiment => experiment} %>
     <% else %>
@@ -20,7 +20,7 @@
   <% end %>
 
   <div class="pagination">
-    <%= pagination(@experiments) %>
+    <%= pagination(@experiment_names) %>
   </div>
 <% else %>
   <p class="intro">No experiments have started yet, you need to define them in your code and introduce them to your users.</p>

@@ -9,14 +9,16 @@ module Split
 
     # Return experiments without a winner (considered "active") first
     def self.all_active_first
-      experiments = all
-      return experiments if experiments.empty?
+      Split::Experiment.find_many(all_active_first_names)
+    end
 
-      # Winners live in one shared hash keyed by experiment name, so a single
-      # hgetall partitions the whole list instead of one winner read each.
+    def self.all_active_first_names
+      names = experiment_names
+      return names if names.empty?
+
       winners = Split.redis.hgetall(:experiment_winner)
-      active, finished = experiments.partition { |e| !winners.key?(e.name) }
-      active.sort_by(&:name) + finished.sort_by(&:name)
+      active, finished = names.partition { |name| !winners.key?(name) }
+      active.sort + finished.sort
     end
 
     def self.experiment_names
