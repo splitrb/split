@@ -126,6 +126,19 @@ Split.configure do |config|
 end
 ```
 
+The recalculation is triggered while rendering the dashboard, which can make it
+slow when many experiments are due for recalculation at once. On busy
+installations you can turn the on-dashboard calculation off and instead run it
+from a background job (e.g. `Split::ExperimentCatalog.all.each(&:calc_winning_alternatives)`):
+
+```ruby
+Split.configure do |config|
+  config.dashboard_calculate_winning_alternatives = false
+end
+```
+
+The dashboard will then display the most recently calculated probabilities.
+
 ## Extras
 
 ### Weighted alternatives
