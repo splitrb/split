@@ -18,8 +18,9 @@ module Split
 
     def self.find(name)
       Split.cache(:experiments, name) do
-        return unless Split.redis.exists?(name)
-        Experiment.new(name).tap { |exp| exp.load_from_redis }
+        experiment = Experiment.new(name)
+        experiment.load_from_redis
+        experiment unless experiment.alternatives.empty?
       end
     end
 

@@ -80,29 +80,22 @@ module Split
         redis.exists?(@name)
       end
 
-      def load_alternatives
-        alternatives = redis.lrange(@name, 0, -1)
-        alternatives.map do |alt|
-          alt = begin
-                  JSON.parse(alt)
-                rescue
-                  alt
-                end
-          Split::Alternative.new(alt, @name)
+      def load!
+        raw_config, raw_alternatives, raw_metadata, raw_goals = redis.pipelined do |pipe|
+          pipe.hgetall(experiment_config_key)
+          pipe.lrange(@name, 0, -1)
+          pipe.get(metadata_key)
+          pipe.lrange(goals_key, 0, -1)
         end
-      end
+        config = raw_config.transform_keys(&:to_sym)
 
-      def load_metadata
-        meta = redis.get(metadata_key)
-        JSON.parse(meta) unless meta.nil?
-      end
-
-      def load_goals
-        Split::GoalsCollection.new(@name).load_from_redis
-      end
-
-      def load_experiment
-        redis.hgetall(experiment_config_key).transform_keys(&:to_sym)
+        {
+          resettable: config[:resettable],
+          algorithm: config[:algorithm],
+          alternatives: build_alternatives(raw_alternatives),
+          goals: raw_goals,
+          metadata: parse_metadata(raw_metadata)
+        }
       end
 
       def experiment_config_key
@@ -113,9 +106,28 @@ module Split
         "#{name}:metadata"
       end
 
+      def goals_key
+        "#{name}:goals"
+      end
+
       private
         def redis
           Split.redis
+        end
+
+        def build_alternatives(raw_alternatives)
+          raw_alternatives.map do |alt|
+            alt = begin
+                    JSON.parse(alt)
+                  rescue
+                    alt
+                  end
+            Split::Alternative.new(alt, @name)
+          end
+        end
+
+        def parse_metadata(raw_metadata)
+          JSON.parse(raw_metadata) unless raw_metadata.nil?
         end
     end
   end
