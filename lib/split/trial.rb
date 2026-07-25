@@ -56,6 +56,8 @@ module Split
       # Only run the process once
       return alternative if @alternative_chosen
 
+      @experiment.prefetch_trial_state!
+
       new_participant = @user[@experiment.key].nil?
       if override_is_alternative?
         self.alternative = @options[:override]
