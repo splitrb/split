@@ -51,4 +51,27 @@ describe Split::ExperimentCatalog do
       expect(subject.find("non_existent_experiment")).to be_nil
     end
   end
+
+  describe ".all" do
+    it "returns every registered experiment" do
+      subject.find_or_create("link_color", "blue", "red")
+      subject.find_or_create("button_size", "small", "big")
+
+      expect(subject.all.map(&:name)).to match_array(%w[link_color button_size])
+    end
+
+    it "is empty when nothing is registered" do
+      expect(subject.all).to eq([])
+    end
+  end
+
+  describe ".all_active_first" do
+    it "lists experiments without a winner first, each group sorted by name" do
+      subject.find_or_create("b_active", "1", "2")
+      subject.find_or_create("a_active", "1", "2")
+      subject.find_or_create("c_finished", "1", "2").winner = "1"
+
+      expect(subject.all_active_first.map(&:name)).to eq(%w[a_active b_active c_finished])
+    end
+  end
 end
