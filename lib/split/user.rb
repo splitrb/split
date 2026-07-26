@@ -15,13 +15,25 @@ module Split
 
     def cleanup_old_experiments!
       return if @cleaned_up
-      keys_without_finished(user.keys).each do |key|
-        experiment = Experiment.new key_without_version(key)
-        if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
-          user.delete key
-          user.delete Experiment.finished_key(key)
+      keys = keys_without_finished(user.keys)
+      names = keys.map { |key| key_without_version(key) }
+
+      unless names.empty?
+        winners, start_times = Split.redis.pipelined do |pipe|
+          pipe.hmget(:experiment_winner, *names)
+          pipe.hmget(:experiment_start_times, *names)
+        end
+
+        keys.each_with_index do |key, index|
+          has_winner = !winners[index].nil?
+          not_started = start_times[index].nil?
+          if has_winner || not_started
+            user.delete key
+            user.delete Experiment.finished_key(key)
+          end
         end
       end
+
       @cleaned_up = true
     end
 
@@ -43,10 +55,17 @@ module Split
     end
 
     def active_experiments
+      experiments_by_key = keys_without_finished(user.keys).each_with_object({}) do |key, memo|
+        memo[key] = Metric.possible_experiments(key_without_version(key))
+      end
+
+      names = experiments_by_key.values.flatten.map(&:name).uniq
+      winners = names.empty? ? {} : names.zip(Split.redis.hmget(:experiment_winner, *names)).to_h
+
       experiment_pairs = {}
-      keys_without_finished(user.keys).each do |key|
-        Metric.possible_experiments(key_without_version(key)).each do |experiment|
-          if !experiment.has_winner?
+      experiments_by_key.each do |key, experiments|
+        experiments.each do |experiment|
+          unless winners[experiment.name]
             experiment_pairs[key_without_version(key)] = user[key]
           end
         end
