@@ -88,6 +88,34 @@ describe Split::User do
         @subject.cleanup_old_experiments!
       end
     end
+
+    context "with many experiments" do
+      let(:user_keys) do
+        {
+          "with_winner" => "red",
+          "not_started" => "red",
+          "active" => "red"
+        }
+      end
+
+      before do
+        with_winner = Split::ExperimentCatalog.find_or_create("with_winner", "red", "blue")
+        with_winner.start
+        with_winner.winner = "red"
+
+        Split::ExperimentCatalog.find_or_create("active", "red", "blue").start
+      end
+
+      it "keeps active experiments while dropping finished/not-started ones" do
+        @subject.cleanup_old_experiments!
+
+        expect(@subject.keys).to eq(["active"])
+      end
+
+      it "batches the winner/start-time lookups into a single roundtrip" do
+        expect { @subject.cleanup_old_experiments! }.to make_redis_calls(1)
+      end
+    end
   end
 
   context "allows user to be loaded from adapter" do

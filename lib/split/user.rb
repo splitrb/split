@@ -15,13 +15,25 @@ module Split
 
     def cleanup_old_experiments!
       return if @cleaned_up
-      keys_without_finished(user.keys).each do |key|
-        experiment = Experiment.new key_without_version(key)
-        if experiment.nil? || experiment.has_winner? || experiment.start_time.nil?
-          user.delete key
-          user.delete Experiment.finished_key(key)
+      keys = keys_without_finished(user.keys)
+      names = keys.map { |key| key_without_version(key) }
+
+      unless names.empty?
+        winners, start_times = Split.redis.pipelined do |pipe|
+          pipe.hmget(:experiment_winner, *names)
+          pipe.hmget(:experiment_start_times, *names)
+        end
+
+        keys.each_with_index do |key, index|
+          has_winner = !winners[index].nil?
+          not_started = start_times[index].nil?
+          if has_winner || not_started
+            user.delete key
+            user.delete Experiment.finished_key(key)
+          end
         end
       end
+
       @cleaned_up = true
     end
 
