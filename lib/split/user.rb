@@ -55,10 +55,17 @@ module Split
     end
 
     def active_experiments
+      experiments_by_key = keys_without_finished(user.keys).each_with_object({}) do |key, memo|
+        memo[key] = Metric.possible_experiments(key_without_version(key))
+      end
+
+      names = experiments_by_key.values.flatten.map(&:name).uniq
+      winners = names.empty? ? {} : names.zip(Split.redis.hmget(:experiment_winner, *names)).to_h
+
       experiment_pairs = {}
-      keys_without_finished(user.keys).each do |key|
-        Metric.possible_experiments(key_without_version(key)).each do |experiment|
-          if !experiment.has_winner?
+      experiments_by_key.each do |key, experiments|
+        experiments.each do |experiment|
+          unless winners[experiment.name]
             experiment_pairs[key_without_version(key)] = user[key]
           end
         end

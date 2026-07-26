@@ -118,6 +118,27 @@ describe Split::User do
     end
   end
 
+  context "#active_experiments" do
+    let(:user_keys) { { "with_winner" => "red", "active" => "red" } }
+
+    before do
+      with_winner = Split::ExperimentCatalog.find_or_create("with_winner", "red", "blue")
+      with_winner.start
+      with_winner.winner = "red"
+
+      Split::ExperimentCatalog.find_or_create("active", "red", "blue").start
+    end
+
+    it "excludes experiments that already have a winner" do
+      expect(@subject.active_experiments).to eq("active" => "red")
+    end
+
+    it "fetches every experiment's winner in a single call" do
+      expect(Split.redis).to receive(:hmget).with(:experiment_winner, any_args).once.and_call_original
+      @subject.active_experiments
+    end
+  end
+
   context "allows user to be loaded from adapter" do
     it "loads user from adapter (RedisAdapter)" do
       user = Split::Persistence::RedisAdapter.new(nil, 112233)
