@@ -636,11 +636,15 @@ the experiment name:
 ab_finished(:my_metric)
 ```
 
-You can also create a new metric by instantiating and saving a new Metric object.
+You can also create a new metric by instantiating and saving a new Metric
+object. A metric groups one or more experiments (`Split::Experiment` objects)
+under a name and is persisted to Redis:
 
 ```ruby
-Split::Metric.new(:my_metric)
-Split::Metric.save
+signup   = Split::ExperimentCatalog.find_or_create("signup_form", "control", "blue")
+checkout = Split::ExperimentCatalog.find_or_create("checkout_flow", "control", "one_page")
+
+Split::Metric.new(name: :conversion, experiments: [signup, checkout]).save
 ```
 
 #### Goals

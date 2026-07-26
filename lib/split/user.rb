@@ -56,7 +56,7 @@ module Split
 
     def active_experiments
       experiments_by_key = keys_without_finished(user.keys).each_with_object({}) do |key, memo|
-        memo[key] = Metric.possible_experiments(key_without_version(key))
+        memo[key] = experiments_for(key_without_version(key))
       end
 
       names = experiments_by_key.values.flatten.map(&:name).uniq
@@ -94,6 +94,20 @@ module Split
 
       def key_without_version(key)
         key.split(/\:\d(?!\:)/)[0]
+      end
+
+      def experiments_for(name)
+        if metrics_defined?
+          Metric.possible_experiments(name)
+        else
+          Array(Experiment.find(name))
+        end
+      end
+
+      def metrics_defined?
+        return @metrics_defined if defined?(@metrics_defined)
+        @metrics_defined =
+          Split.configuration.metrics.any? || Split.redis.exists?(:metrics)
       end
   end
 end

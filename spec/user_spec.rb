@@ -137,6 +137,18 @@ describe Split::User do
       expect(Split.redis).to receive(:hmget).with(:experiment_winner, any_args).once.and_call_original
       @subject.active_experiments
     end
+
+    it "resolves experiments directly, without per-key metric lookups, when no metrics are defined" do
+      expect(Split::Metric).not_to receive(:possible_experiments)
+      expect(@subject.active_experiments).to eq("active" => "red")
+    end
+
+    it "still honors a metric persisted only in Redis" do
+      Split::Metric.new(name: :conversion, experiments: [Split::ExperimentCatalog.find("active")]).save
+
+      expect(Split::Metric).to receive(:possible_experiments).at_least(:once).and_call_original
+      expect(@subject.active_experiments).to eq("active" => "red")
+    end
   end
 
   context "allows user to be loaded from adapter" do
