@@ -13,6 +13,14 @@ module Split
         @data ||= load!
       end
 
+      def reload
+        @data = nil
+      end
+
+      def new_record?
+        load[:alternatives].empty?
+      end
+
       def load!
         experiment_config = load_experiment
         alternatives = load_alternatives

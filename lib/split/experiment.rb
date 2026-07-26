@@ -102,7 +102,7 @@ module Split
     end
 
     def new_record?
-      !@redis_storage.exists?
+      @redis_storage.new_record?
     end
 
     def ==(obj)
@@ -462,6 +462,8 @@ module Split
         else
           delete_metadata
         end
+
+        @redis_storage.reload
       end
 
       def remove_experiment_configuration
@@ -469,6 +471,7 @@ module Split
         goals_collection.delete
         delete_metadata
         redis.del(@name)
+        @redis_storage.reload
       end
 
       def experiment_configuration_has_changed?
