@@ -4,7 +4,7 @@
   <% experiment_class = "experiment" %>
 <% end %>
 
-<% experiment.calc_winning_alternatives %>
+<% experiment.calc_winning_alternatives if Split.configuration.dashboard_calculate_winning_alternatives %>
 <%
   extra_columns = []
   experiment.alternatives.each do |alternative|

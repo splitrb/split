@@ -88,13 +88,29 @@ module Split
         redis.exists?(@name)
       end
 
-      def load!
-        raw_config, raw_alternatives, raw_metadata, raw_goals = redis.pipelined do |pipe|
-          pipe.hgetall(experiment_config_key)
-          pipe.lrange(@name, 0, -1)
-          pipe.get(metadata_key)
-          pipe.lrange(goals_key, 0, -1)
+      def self.load_many(names)
+        storages = names.map { |name| new(name) }
+        reads = nil
+        Split.redis.pipelined do |pipe|
+          reads = storages.map { |storage| storage.pipeline_read(pipe) }
         end
+        storages.zip(reads).map { |storage, futures| storage.build_from_raw(*futures.map(&:value)) }
+      end
+
+      def load!
+        self.class.load_many([@name]).first
+      end
+
+      def pipeline_read(pipe)
+        [
+          pipe.hgetall(experiment_config_key),
+          pipe.lrange(@name, 0, -1),
+          pipe.get(metadata_key),
+          pipe.lrange(goals_key, 0, -1)
+        ]
+      end
+
+      def build_from_raw(raw_config, raw_alternatives, raw_metadata, raw_goals)
         config = raw_config.transform_keys(&:to_sym)
 
         {

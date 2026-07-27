@@ -151,6 +151,21 @@ describe Split::Dashboard do
         expect(last_response.body).to_not include("Reopen Experiment")
       end
     end
+
+    describe "winning alternative calculation" do
+      before { experiment }
+
+      it "recalculates winning alternatives by default" do
+        expect_any_instance_of(Split::Experiment).to receive(:calc_winning_alternatives)
+        get "/"
+      end
+
+      it "skips the calculation when dashboard_calculate_winning_alternatives is false" do
+        Split.configuration.dashboard_calculate_winning_alternatives = false
+        expect_any_instance_of(Split::Experiment).to_not receive(:calc_winning_alternatives)
+        get "/"
+      end
+    end
   end
 
   describe "reopen experiment" do

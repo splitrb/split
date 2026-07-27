@@ -29,6 +29,7 @@ module Split
     attr_accessor :winning_alternative_recalculation_interval
     attr_accessor :redis
     attr_accessor :dashboard_pagination_default_per_page
+    attr_accessor :dashboard_calculate_winning_alternatives
     attr_accessor :cache
 
     attr_reader :experiments
@@ -234,6 +235,7 @@ module Split
       @winning_alternative_recalculation_interval = 60 * 60 * 24 # 1 day
       @redis = ENV.fetch(ENV.fetch("REDIS_PROVIDER", "REDIS_URL"), "redis://localhost:6379")
       @dashboard_pagination_default_per_page = 10
+      @dashboard_calculate_winning_alternatives = true
     end
 
     private
