@@ -415,15 +415,6 @@ module Split
       redis.hget(experiment_config_key, :calc_time).to_i
     end
 
-    def jstring(goal = nil)
-      js_id = if goal.nil?
-        name
-      else
-        name + "-" + goal
-      end
-      js_id.gsub("/", "--")
-    end
-
     def cohorting_disabled?
       return @cohorting_disabled if defined?(@cohorting_disabled)
       value = redis.hget(experiment_config_key, :cohorting)

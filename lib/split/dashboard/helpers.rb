@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "bigdecimal"
+
 module Split
   module DashboardHelpers
     def h(text)
@@ -7,15 +9,44 @@ module Split
     end
 
     def url(*path_parts)
-      [ path_prefix, path_parts ].join("/").squeeze("/")
+      [ request.env["SCRIPT_NAME"], path_parts ].join("/").squeeze("/")
     end
 
-    def path_prefix
-      request.env["SCRIPT_NAME"]
-    end
-
-    def number_to_percentage(number, precision = 2)
+    def number_to_percentage(number)
       round(number * 100)
+    end
+
+    AlternativeRow = Struct.new(:alternative, :info, :participants, :unfinished, :completed)
+
+    def alternative_rows(experiment, goal = nil)
+      experiment.alternatives.map do |alternative|
+        AlternativeRow.new(
+          alternative,
+          alternative.extra_info || {},
+          alternative.participant_count,
+          alternative.unfinished_count,
+          alternative.completed_count(goal)
+        )
+      end
+    end
+
+    def extra_info_totals(infos)
+      infos.flat_map(&:keys).uniq.to_h do |column|
+        values = infos.map { |info| info[column] }.compact
+        [column, values.any? && values.all?(Numeric) ? values.sum : "N/A"]
+      end
+    end
+
+    def conversion_delta_tag(experiment, alternative, goal = nil)
+      return "" if alternative.control?
+
+      control_rate = experiment.control.conversion_rate(goal)
+      rate = alternative.conversion_rate(goal)
+      return "" if control_rate <= 0 || rate == control_rate
+
+      css = rate > control_rate ? "better" : "worse"
+      sign = rate > control_rate ? "+" : ""
+      %(<span class="#{css}">#{sign}#{number_to_percentage(rate / control_rate - 1)}%</span>)
     end
 
     def round(number, precision = 2)

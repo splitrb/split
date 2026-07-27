@@ -8,13 +8,13 @@
     <input type="button" id="clear-filter" value="Clear filters" />
   </div>
 
-  <% @experiments.each do |experiment| %>
+  <% @experiments.each_with_index do |experiment, index| %>
     <% if experiment.goals.empty? %>
-      <%= erb :_experiment, :locals => {:goal => nil, :experiment => experiment} %>
+      <%= erb :_experiment, :locals => {:goal => nil, :experiment => experiment, :index => index} %>
     <% else %>
       <%= erb :_experiment_with_goal_header, :locals => {:experiment => experiment} %>
-      <% experiment.goals.each do |g| %>
-        <%= erb :_experiment, :locals => {:goal => g, :experiment => experiment} %>
+      <% experiment.goals.each_with_index do |g, goal_index| %>
+        <%= erb :_experiment, :locals => {:goal => g, :experiment => experiment, :index => "#{index}-#{goal_index}"} %>
       <% end %>
     <% end %>
   <% end %>

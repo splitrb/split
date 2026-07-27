@@ -306,4 +306,53 @@ describe Split::Dashboard do
 
     expect(last_response).to be_ok
   end
+
+  context "confidence toggle classes" do
+    it "gives each experiment its own index" do
+      Split::ExperimentCatalog.find_or_create("link_color", "blue", "red")
+      Split::ExperimentCatalog.find_or_create("button_size", "small", "big")
+
+      get "/"
+
+      expect(last_response.body).to include('id="dropdown-experiment-0"')
+      expect(last_response.body).to include('id="dropdown-experiment-1"')
+    end
+
+    it "gives each goal of an experiment its own index" do
+      experiment_with_goals
+
+      get "/"
+
+      expect(last_response.body).to include('id="dropdown-experiment-0-0"')
+      expect(last_response.body).to include('id="dropdown-experiment-0-1"')
+    end
+
+    it "keeps the toggle classes and options in sync" do
+      experiment
+
+      get "/"
+
+      expect(last_response.body).to include('<option value="confidence-experiment-0">')
+      expect(last_response.body).to include('<option value="probability-experiment-0">')
+      expect(last_response.body).to include('class="box-experiment-0 confidence-experiment-0"')
+      expect(last_response.body).to include('class="box-experiment-0 probability-experiment-0"')
+    end
+
+    it "tags the goal header so it filters with its experiment" do
+      experiment_with_goals
+
+      get "/"
+
+      expect(last_response.body).to include('<div class="experiment" data-name="link_color" data-complete="false">')
+    end
+
+    it "does not leak experiment names into the toggle classes" do
+      Split::ExperimentCatalog.find_or_create("pricing (US)", "a", "b")
+
+      get "/"
+
+      expect(last_response.body).to include('class="box-experiment-0 confidence-experiment-0"')
+      expect(last_response.body).not_to include("box-pricing")
+    end
+  end
 end

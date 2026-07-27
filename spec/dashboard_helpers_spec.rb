@@ -40,4 +40,40 @@ describe Split::DashboardHelpers do
       end
     end
   end
+
+  describe "#extra_info_totals" do
+    it "sums columns whose values are all numeric" do
+      infos = [{ "revenue" => 10, "clicks" => 2 }, { "revenue" => 5, "clicks" => 3 }]
+
+      expect(extra_info_totals(infos)).to eq("revenue" => 15, "clicks" => 5)
+    end
+
+    it "reports N/A for non-numeric columns" do
+      infos = [{ "note" => "first" }, { "note" => "second" }]
+
+      expect(extra_info_totals(infos)).to eq("note" => "N/A")
+    end
+
+    it "reports N/A when a column mixes numbers with anything else" do
+      infos = [{ "revenue" => 10 }, { "revenue" => "unknown" }]
+
+      expect(extra_info_totals(infos)).to eq("revenue" => "N/A")
+    end
+
+    it "reports N/A when a column has no values at all" do
+      infos = [{ "revenue" => nil }, {}]
+
+      expect(extra_info_totals(infos)).to eq("revenue" => "N/A")
+    end
+
+    it "unions columns across alternatives in first-seen order" do
+      infos = [{ "b" => 1 }, { "a" => 2, "b" => 3 }]
+
+      expect(extra_info_totals(infos).keys).to eq(["b", "a"])
+    end
+
+    it "is empty when no alternative recorded extra info" do
+      expect(extra_info_totals([{}, {}])).to eq({})
+    end
+  end
 end
