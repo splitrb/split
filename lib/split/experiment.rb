@@ -57,7 +57,7 @@ module Split
       )
 
       self.alternatives = options_with_defaults[:alternatives]
-      self.goals = options_with_defaults[:goals]
+      self.goals = options_with_defaults[:goals] || []
       self.resettable = options_with_defaults[:resettable]
       self.algorithm = options_with_defaults[:algorithm]
       self.metadata = options_with_defaults[:metadata]
