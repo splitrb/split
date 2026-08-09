@@ -592,5 +592,12 @@ describe Split::Experiment do
       expect(experiment.calc_winning_alternatives).not_to be nil
       expect(experiment.calc_winning_alternatives).to be nil
     end
+
+    it "reads only the recalculation timestamp when the interval has not elapsed" do
+      experiment = Split::ExperimentCatalog.find_or_create({ "link_color4" => ["purchase"] }, "blue", "red", "green")
+      experiment.calc_winning_alternatives
+
+      expect { experiment.calc_winning_alternatives }.to make_redis_calls(1)
+    end
   end
 end
