@@ -145,6 +145,7 @@ module Split
           Split::Alternative.new(alternative, @name)
         end
       end
+      @alternatives.each { |alternative| alternative.experiment = self }
     end
 
     def winner

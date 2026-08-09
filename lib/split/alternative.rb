@@ -6,6 +6,7 @@ module Split
     attr_accessor :experiment_name
     attr_accessor :weight
     attr_accessor :recorded_info
+    attr_writer :experiment
 
     def initialize(name, experiment_name)
       @experiment_name = experiment_name
@@ -100,7 +101,7 @@ module Split
     end
 
     def experiment
-      Split::ExperimentCatalog.find(experiment_name)
+      @experiment ||= Split::ExperimentCatalog.find(experiment_name)
     end
 
     def z_score(goal = nil)
