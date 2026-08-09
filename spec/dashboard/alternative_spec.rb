@@ -9,7 +9,7 @@ describe Split::DashboardAlternative do
   let(:alternative) { experiment.alternatives[1] }
 
   def view_for(alternative)
-    Split::DashboardAlternative.new(alternative, experiment)
+    Split::DashboardExperiment.new(experiment).alternatives.find { |view| view.name == alternative.name }
   end
 
   describe "#conversion_delta" do
