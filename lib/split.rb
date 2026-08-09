@@ -30,6 +30,8 @@ module Split
   extend self
   attr_accessor :configuration
 
+  OVERRIDE_COOKIE_NAME = "split_override"
+
   # Accepts:
   #   1. A redis URL (valid for `Redis.new(url: url)`)
   #   2. an options hash compatible with `Redis.new`

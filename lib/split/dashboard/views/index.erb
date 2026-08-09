@@ -1,3 +1,39 @@
+<% overrides = active_overrides %>
+<% unless overrides.empty? %>
+  <div class="overrides">
+    <div class="overrides-header">
+      <h2>Overrides active in this browser</h2>
+      <form action="<%= url "/clear_overrides" %>" method='post'>
+        <input type="submit" value="Clear all" class="red">
+      </form>
+    </div>
+
+    <p class="overrides-intro">
+      These pin <strong>your own</strong> visits to a fixed alternative. Other users are unaffected.
+      <% if Split.configuration.store_override %>
+        Your visits are still counted as participants.
+      <% else %>
+        Your visits are <strong>not counted</strong> as participants, so these experiments can read
+        zero below even though the page rendered an alternative for you.
+      <% end %>
+    </p>
+
+    <ul class="overrides-list">
+      <% overrides.sort.each do |experiment_name, alternative_name| %>
+        <li>
+          <span class="overrides-pair">
+            <%= h experiment_name %> &rarr; <strong><%= h alternative_name.to_s %></strong>
+          </span>
+          <form action="<%= url "/clear_override" %>" method='post'>
+            <input type='hidden' name='experiment' value='<%= h experiment_name %>'>
+            <input type="submit" value="Clear" class="red">
+          </form>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
 <% if @experiment_names.any? %>
   <p class="intro">The list below contains all the registered experiments along with the number of test participants, completed and conversion rate currently in the system.</p>
 

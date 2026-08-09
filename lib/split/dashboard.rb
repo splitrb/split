@@ -45,9 +45,21 @@ module Split
       experiment = Split::ExperimentCatalog.find(params[:experiment])
       alternative = Split::Alternative.new(params[:alternative], experiment.name)
 
-      cookies = JSON.parse(request.cookies["split_override"]) rescue {}
-      cookies[experiment.name] = alternative.name
-      response.set_cookie("split_override", { value: cookies.to_json, path: "/" })
+      write_overrides(active_overrides.merge(experiment.name => alternative.name))
+
+      redirect url("/")
+    end
+
+    post "/clear_override" do
+      overrides = active_overrides
+      overrides.delete(params[:experiment])
+      write_overrides(overrides)
+
+      redirect url("/")
+    end
+
+    post "/clear_overrides" do
+      response.delete_cookie(Split::OVERRIDE_COOKIE_NAME, path: "/")
 
       redirect url("/")
     end

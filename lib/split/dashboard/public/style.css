@@ -38,6 +38,9 @@ th, td { text-align: left; font-weight: normal; }
   --green-hover: light-dark(#267346, #45b075);
   --better: light-dark(#16a34a, #4ade80);
   --worse: light-dark(#dc2626, #f87171);
+  --warn-bg: light-dark(#fef3c7, #3a2f12);
+  --warn-border: light-dark(#fcd34d, #6b551c);
+  --warn-text: light-dark(#92400e, #fbbf24);
   --shadow-color: light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4));
   --shadow: 0 1px 3px var(--shadow-color), 0 1px 2px var(--shadow-color);
   --radius: 8px;
@@ -203,6 +206,22 @@ a {
   font-weight: 400;
 }
 
+.experiment h2 .override {
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  font-size: 0.75em;
+  font-weight: 600;
+}
+
+.experiment table em.override-flag {
+  color: var(--warn-text);
+  font-style: normal;
+  font-weight: 600;
+}
+
 .experiment table em {
   font-style: italic;
   font-size: 0.9em;
@@ -250,9 +269,63 @@ a {
   color: var(--worse);
 }
 
+.overrides {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+}
+
+.overrides-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.overrides-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--warn-text);
+}
+
+.overrides .overrides-intro {
+  margin: 8px 0 12px;
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.overrides-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.overrides-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border: 1px solid var(--warn-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.overrides-pair {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .experiment a.button,
 .experiment button,
 .experiment input[type="submit"],
+.overrides input[type="submit"],
 .dashboard-controls input[type="submit"],
 .dashboard-controls input[type="button"] {
   padding: 6px 14px;
@@ -273,19 +346,23 @@ a {
 .experiment button:hover,
 .experiment input[type="submit"]:hover,
 .experiment input[type="submit"]:focus,
+.overrides input[type="submit"]:hover,
+.overrides input[type="submit"]:focus,
 .dashboard-controls input[type="submit"]:hover,
 .dashboard-controls input[type="button"]:hover {
   background: var(--btn-bg-hover);
 }
 
 .experiment input[type="submit"].red,
-.experiment a.button.red {
+.experiment a.button.red,
+.overrides input[type="submit"].red {
   background: var(--red);
   color: #fff;
 }
 
 .experiment input[type="submit"].red:hover,
-.experiment a.button.red:hover {
+.experiment a.button.red:hover,
+.overrides input[type="submit"].red:hover {
   background: var(--red-hover);
 }
 

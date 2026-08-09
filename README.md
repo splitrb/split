@@ -168,6 +168,8 @@ If you have an experiment called `button_color` with alternatives called `red` a
 
 will always have red buttons. This won't be stored in your session or count towards to results, unless you set the `store_override` configuration option.
 
+The dashboard's "Force for current user" button does the same thing for your browser, by setting a `split_override` cookie. Because an override is not counted, an experiment you have pinned can keep reading zero participants. The dashboard lists any overrides active in your browser at the top of the page, and lets you clear them individually or all at once.
+
 In the event you want to disable all tests without having to know the individual experiment names, add a `SPLIT_DISABLE` query parameter.
 
     http://myawesomesite.com?SPLIT_DISABLE=true

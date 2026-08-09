@@ -12,6 +12,9 @@
     <h2>
       Experiment: <%= experiment.name %>
       <% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
+      <% if (override = active_overrides[experiment.name]) %>
+        <span class='override' title='Your browser is pinned to this alternative'>Override:<%= h override.to_s %></span>
+      <% end %>
       <% unless goal.nil? %><span class='goal'>Goal:<%= goal %></span><% end %>
       <% metrics = @metrics.select {|metric| metric.experiments.include? experiment} %>
       <% unless metrics.empty? %>
@@ -51,6 +54,9 @@
           <%= alternative.name %>
           <% if alternative.control? %>
             <em>control</em>
+          <% end %>
+          <% if active_overrides[experiment.name] == alternative.name %>
+            <em class="override-flag">forced for you</em>
           <% end %>
           <form action="<%= url('force_alternative') + '?experiment=' + experiment.name %>" method='post'>
             <input type='hidden' name='alternative' value='<%= h alternative.name %>'>

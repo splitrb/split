@@ -1,11 +1,30 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
+require "json"
 
 module Split
   module DashboardHelpers
     def h(text)
       Rack::Utils.escape_html(text)
+    end
+
+    def active_overrides
+      raw = request.cookies[Split::OVERRIDE_COOKIE_NAME]
+      return {} if raw.nil? || raw.empty?
+
+      overrides = JSON.parse(raw)
+      overrides.is_a?(Hash) ? overrides : {}
+    rescue JSON::ParserError
+      {}
+    end
+
+    def write_overrides(overrides)
+      if overrides.empty?
+        response.delete_cookie(Split::OVERRIDE_COOKIE_NAME, path: "/")
+      else
+        response.set_cookie(Split::OVERRIDE_COOKIE_NAME, { value: overrides.to_json, path: "/" })
+      end
     end
 
     def url(*path_parts)
