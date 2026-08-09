@@ -3,8 +3,7 @@
   experiment_class = goal.nil? ? "experiment" : "experiment experiment_with_goal"
   experiment_goal_class = "experiment-#{index}"
 
-  rows = alternative_rows(experiment, goal)
-  extra_totals = extra_info_totals(rows.map(&:info))
+  view = Split::DashboardExperiment.new(experiment, goal)
 %>
 
 
@@ -34,7 +33,7 @@
       <th>Non-finished</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
-      <% extra_totals.each_key do |column| %>
+      <% view.extra_columns.each do |column| %>
         <th><%= column %></th>
       <% end %>
       <th>
@@ -46,8 +45,7 @@
       <th>Finish</th>
     </tr>
 
-    <% rows.each do |row| %>
-      <% alternative = row.alternative %>
+    <% view.alternatives.each do |alternative| %>
       <tr>
         <td>
           <%= alternative.name %>
@@ -59,28 +57,28 @@
             <input type="submit" value="Force for current user" class="green">
           </form>
         </td>
-        <td><%= row.participants %></td>
-        <td><%= row.unfinished %></td>
-        <td><%= row.completed %></td>
+        <td><%= alternative.participants %></td>
+        <td><%= alternative.unfinished %></td>
+        <td><%= alternative.completed %></td>
         <td>
-          <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
-          <%= conversion_delta_tag(experiment, alternative, goal) %>
+          <%= number_to_percentage(alternative.conversion_rate) %>%
+          <% if (delta = alternative.conversion_delta) %><span class="<%= delta > 0 ? "better" : "worse" %>"><%= "+" if delta > 0 %><%= number_to_percentage(delta) %>%</span><% end %>
         </td>
-        <% extra_totals.each_key do |column| %>
-          <td><%= row.info[column] %></td>
+        <% view.extra_columns.each do |column| %>
+          <td><%= alternative.extra_info[column] %></td>
         <% end %>
         <td>
           <div class="box-<%= experiment_goal_class %> confidence-<%= experiment_goal_class %>">
-            <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
+            <span title='z-score: <%= round(alternative.z_score, 3) %>'><%= confidence_level(alternative.z_score) %></span>
             <br>
           </div>
           <div class="box-<%= experiment_goal_class %> probability-<%= experiment_goal_class %>">
-            <span title="p_winner: <%= round(alternative.p_winner(goal), 3) %>"><%= number_to_percentage(round(alternative.p_winner(goal), 3)) %>%</span>
+            <span title="p_winner: <%= round(alternative.p_winner, 3) %>"><%= number_to_percentage(round(alternative.p_winner, 3)) %>%</span>
           </div>
         </td>
         <td>
           <% if experiment.has_winner? %>
-            <% if experiment.winner.name == alternative.name %>
+            <% if alternative.winner? %>
               Winner
             <% else %>
               Loser
@@ -98,11 +96,11 @@
 
     <tr class="totals">
       <td>Totals</td>
-      <td><%= rows.sum(&:participants) %></td>
-      <td><%= rows.sum(&:unfinished) %></td>
-      <td><%= rows.sum(&:completed) %></td>
+      <td><%= view.total_participants %></td>
+      <td><%= view.total_unfinished %></td>
+      <td><%= view.total_completed %></td>
       <td>N/A</td>
-      <% extra_totals.each_value do |total| %>
+      <% view.extra_totals.each_value do |total| %>
         <td><%= total %></td>
       <% end %>
       <td>N/A</td>

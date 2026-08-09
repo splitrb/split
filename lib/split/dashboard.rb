@@ -3,6 +3,7 @@
 require "sinatra/base"
 require "split"
 require "bigdecimal"
+require "split/dashboard/experiment"
 require "split/dashboard/helpers"
 require "split/dashboard/pagination_helpers"
 
