@@ -1,28 +1,9 @@
-<% unless goal.nil? %>
-  <% experiment_class = "experiment experiment_with_goal" %>
-<% else %>
-  <% experiment_class = "experiment" %>
-<% end %>
-
 <% experiment.calc_winning_alternatives if Split.configuration.dashboard_calculate_winning_alternatives %>
 <%
-  extra_columns = []
-  experiment.alternatives.each do |alternative|
-    extra_info = alternative.extra_info || {}
-    extra_columns += extra_info.keys
-  end
+  experiment_class = goal.nil? ? "experiment" : "experiment experiment_with_goal"
+  experiment_goal_class = "experiment-#{index}"
 
-  extra_columns.uniq!
-  summary_texts = {}
-  extra_columns.each do |column|
-    extra_infos = experiment.alternatives.map(&:extra_info).select{|extra_info| extra_info && extra_info[column] }
-
-    if extra_infos.length > 0 && extra_infos.all? { |extra_info| extra_info[column].kind_of?(Numeric) }
-      summary_texts[column] = extra_infos.inject(0){|sum, extra_info| sum += extra_info[column]}
-    else
-      summary_texts[column] = "N/A"
-    end
-  end
+  view = Split::DashboardExperiment.new(experiment, goal)
 %>
 
 
@@ -31,6 +12,9 @@
     <h2>
       Experiment: <%= experiment.name %>
       <% if experiment.version > 1 %><span class='version'>v<%= experiment.version %></span><% end %>
+      <% if (override = active_overrides[experiment.name]) %>
+        <span class='override' title='Your browser is pinned to this alternative'>Override:<%= h override.to_s %></span>
+      <% end %>
       <% unless goal.nil? %><span class='goal'>Goal:<%= goal %></span><% end %>
       <% metrics = @metrics.select {|metric| metric.experiments.include? experiment} %>
       <% unless metrics.empty? %>
@@ -52,80 +36,61 @@
       <th>Non-finished</th>
       <th>Completed</th>
       <th>Conversion Rate</th>
-      <% extra_columns.each do |column| %>
+      <% view.extra_columns.each do |column| %>
         <th><%= column %></th>
       <% end %>
       <th>
-        <form>
-          <select id="dropdown-<%=experiment.jstring(goal)%>" name="dropdown-<%=experiment.jstring(goal)%>">
-            <option value="confidence-<%=experiment.jstring(goal)%>">Confidence</option>
-            <option value="probability-<%=experiment.jstring(goal)%>">Probability of being Winner</option>
-          </select>
-        </form>
+        <select id="dropdown-<%= experiment_goal_class %>" name="dropdown-<%= experiment_goal_class %>">
+          <option value="confidence-<%= experiment_goal_class %>">Confidence</option>
+          <option value="probability-<%= experiment_goal_class %>">Probability of being Winner</option>
+        </select>
       </th>
       <th>Finish</th>
     </tr>
 
-    <% total_participants = total_completed = total_unfinished = 0 %>
-    <% experiment.alternatives.each do |alternative| %>
+    <% view.alternatives.each do |alternative| %>
       <tr>
         <td>
           <%= alternative.name %>
           <% if alternative.control? %>
             <em>control</em>
           <% end %>
+          <% if active_overrides[experiment.name] == alternative.name %>
+            <em class="override-flag">forced for you</em>
+          <% end %>
           <form action="<%= url('force_alternative') + '?experiment=' + experiment.name %>" method='post'>
             <input type='hidden' name='alternative' value='<%= h alternative.name %>'>
             <input type="submit" value="Force for current user" class="green">
           </form>
         </td>
-        <td><%= alternative.participant_count %></td>
-        <td><%= alternative.unfinished_count %></td>
-        <td><%= alternative.completed_count(goal) %></td>
+        <td><%= alternative.participants %></td>
+        <td><%= alternative.unfinished %></td>
+        <td><%= alternative.completed %></td>
         <td>
-          <%= number_to_percentage(alternative.conversion_rate(goal)) %>%
-          <% if experiment.control.conversion_rate(goal) > 0 && !alternative.control? %>
-            <% if alternative.conversion_rate(goal) > experiment.control.conversion_rate(goal) %>
-              <span class='better'>
-                +<%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
-              </span>
-            <% elsif alternative.conversion_rate(goal) < experiment.control.conversion_rate(goal) %>
-              <span class='worse'>
-                <%= number_to_percentage((alternative.conversion_rate(goal)/experiment.control.conversion_rate(goal))-1) %>%
-              </span>
-            <% end  %>
-          <% end %>
+          <%= number_to_percentage(alternative.conversion_rate) %>%
+          <% if (delta = alternative.conversion_delta) %><span class="<%= delta > 0 ? "better" : "worse" %>"><%= "+" if delta > 0 %><%= number_to_percentage(delta) %>%</span><% end %>
         </td>
-        <script type="text/javascript" id="sourcecode">
-          $(document).ready(function(){
-            $('.probability-<%=experiment.jstring(goal)%>').hide();
-            $('#dropdown-<%=experiment.jstring(goal)%>').change(function() {
-              $('.box-<%=experiment.jstring(goal)%>').hide();
-              $('.' + $(this).val()).show();
-            });
-          });
-        </script>
-        <% extra_columns.each do |column| %>
-          <td><%= alternative.extra_info && alternative.extra_info[column] %></td>
+        <% view.extra_columns.each do |column| %>
+          <td><%= alternative.extra_info[column] %></td>
         <% end %>
         <td>
-          <div class="box-<%=experiment.jstring(goal)%> confidence-<%=experiment.jstring(goal)%>">
-            <span title='z-score: <%= round(alternative.z_score(goal), 3) %>'><%= confidence_level(alternative.z_score(goal)) %></span>
+          <div class="box-<%= experiment_goal_class %> confidence-<%= experiment_goal_class %>">
+            <span title='z-score: <%= round(alternative.z_score, 3) %>'><%= confidence_level(alternative.z_score) %></span>
             <br>
           </div>
-          <div class="box-<%=experiment.jstring(goal)%> probability-<%=experiment.jstring(goal)%>">
-            <span title="p_winner: <%= round(alternative.p_winner(goal), 3) %>"><%= number_to_percentage(round(alternative.p_winner(goal), 3)) %>%</span>
+          <div class="box-<%= experiment_goal_class %> probability-<%= experiment_goal_class %>">
+            <span title="p_winner: <%= round(alternative.p_winner, 3) %>"><%= number_to_percentage(round(alternative.p_winner, 3)) %>%</span>
           </div>
         </td>
         <td>
           <% if experiment.has_winner? %>
-            <% if experiment.winner.name == alternative.name %>
+            <% if alternative.winner? %>
               Winner
             <% else %>
               Loser
             <% end %>
           <% else %>
-            <form action="<%= url('experiment') + '?experiment=' + experiment.name %>" method='post' onclick="return confirmWinner()">
+            <form action="<%= url('experiment') + '?experiment=' + experiment.name %>" method='post' data-confirm="This will now be returned for all users. Are you sure?">
               <input type='hidden' name='alternative' value='<%= h alternative.name %>'>
               <input type="submit" value="Use this" class="green">
             </form>
@@ -133,21 +98,16 @@
         </td>
       </tr>
 
-      <% total_participants += alternative.participant_count %>
-      <% total_unfinished += alternative.unfinished_count %>
-      <% total_completed += alternative.completed_count(goal) %>
     <% end %>
 
     <tr class="totals">
       <td>Totals</td>
-      <td><%= total_participants %></td>
-      <td><%= total_unfinished %></td>
-      <td><%= total_completed %></td>
+      <td><%= view.total_participants %></td>
+      <td><%= view.total_unfinished %></td>
+      <td><%= view.total_completed %></td>
       <td>N/A</td>
-      <% extra_columns.each do |column| %>
-        <td>
-          <%= summary_texts[column] %>
-        </td>
+      <% view.extra_totals.each_value do |total| %>
+        <td><%= total %></td>
       <% end %>
       <td>N/A</td>
       <td>N/A</td>

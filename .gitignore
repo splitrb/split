@@ -5,6 +5,7 @@ pkg/*
 *.rbc
 .idea
 coverage
+node_modules
 issues.rtf
 dump.rdb
 .gitignore

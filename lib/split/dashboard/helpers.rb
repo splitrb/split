@@ -1,20 +1,37 @@
 # frozen_string_literal: true
 
+require "bigdecimal"
+require "json"
+
 module Split
   module DashboardHelpers
     def h(text)
       Rack::Utils.escape_html(text)
     end
 
+    def active_overrides
+      raw = request.cookies[Split::OVERRIDE_COOKIE_NAME]
+      return {} if raw.nil? || raw.empty?
+
+      overrides = JSON.parse(raw)
+      overrides.is_a?(Hash) ? overrides : {}
+    rescue JSON::ParserError
+      {}
+    end
+
+    def write_overrides(overrides)
+      if overrides.empty?
+        response.delete_cookie(Split::OVERRIDE_COOKIE_NAME, path: "/")
+      else
+        response.set_cookie(Split::OVERRIDE_COOKIE_NAME, { value: overrides.to_json, path: "/" })
+      end
+    end
+
     def url(*path_parts)
-      [ path_prefix, path_parts ].join("/").squeeze("/")
+      [ request.env["SCRIPT_NAME"], path_parts ].join("/").squeeze("/")
     end
 
-    def path_prefix
-      request.env["SCRIPT_NAME"]
-    end
-
-    def number_to_percentage(number, precision = 2)
+    def number_to_percentage(number)
       round(number * 100)
     end
 

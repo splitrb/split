@@ -2,18 +2,27 @@
 <html>
 <head>
 <meta content='text/html; charset=utf-8' http-equiv='Content-Type'>
-<link href="<%= url 'reset.css' %>" media="screen" rel="stylesheet" type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript">
+  (function () {
+    try {
+      var theme = localStorage.getItem("split-theme");
+      if (theme) document.documentElement.setAttribute("data-theme", theme);
+    } catch {}
+  })();
+</script>
 <link href="<%= url 'style.css' %>" media="screen" rel="stylesheet" type="text/css">
-<script type="text/javascript" src='<%= url 'dashboard.js' %>'></script>
-<script type="text/javascript" src='<%= url 'jquery-1.11.1.min.js' %>'></script>
-<script type="text/javascript" src='<%= url 'dashboard-filtering.js' %>'></script>
+<script type="text/javascript" src='<%= url 'dashboard.js' %>' defer></script>
 <title>Split</title>
 
 </head>
 <body>
   <div class="header">
     <h1>Split Dashboard</h1>
-    <p class="environment"><%= @current_env %></p>
+    <div class="header-meta">
+      <p class="environment"><%= @current_env %></p>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode"></button>
+    </div>
   </div>
 
   <div id="main">

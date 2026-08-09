@@ -1,4 +1,4 @@
-<div class="experiment">
+<div class="experiment" data-name="<%= experiment.name %>" data-complete="<%= experiment.has_winner? %>">
   <div class="experiment-header">
       <div class='inline-controls'>
         <small><%= experiment.start_time ? experiment.start_time.strftime('%Y-%m-%d') : 'Unknown' %></small>

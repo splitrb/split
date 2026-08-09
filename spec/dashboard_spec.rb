@@ -133,6 +133,86 @@ describe Split::Dashboard do
     end
   end
 
+  describe "overrides banner" do
+    def force(experiment_name, alternative_name)
+      post "/force_alternative?experiment=#{experiment_name}", alternative: alternative_name
+    end
+
+    it "is hidden when this browser has no overrides" do
+      experiment
+      get "/"
+
+      expect(last_response.body).to_not include("Overrides active in this browser")
+    end
+
+    it "lists each forced experiment once one is set" do
+      force(experiment.name, "blue")
+      get "/"
+
+      expect(last_response.body).to include("Overrides active in this browser")
+      expect(last_response.body).to include("#{experiment.name} &rarr; <strong>blue</strong>")
+    end
+
+    it "warns that overridden visits are not counted" do
+      force(experiment.name, "blue")
+      get "/"
+
+      expect(last_response.body).to include("not counted")
+    end
+
+    it "flags the forced alternative on the experiment itself" do
+      force(experiment.name, "blue")
+      get "/"
+
+      expect(last_response.body).to include("Override:blue")
+      expect(last_response.body).to include("forced for you")
+    end
+
+    it "keeps overrides for other experiments when clearing one" do
+      other = Split::ExperimentCatalog.find_or_create("other_experiment", "small", "large")
+      force(experiment.name, "blue")
+      force(other.name, "small")
+
+      post "/clear_override", experiment: experiment.name
+      get "/"
+
+      expect(last_response.body).to_not include("#{experiment.name} &rarr;")
+      expect(last_response.body).to include("#{other.name} &rarr; <strong>small</strong>")
+    end
+
+    it "drops the banner once the last override is cleared" do
+      force(experiment.name, "blue")
+
+      post "/clear_override", experiment: experiment.name
+      get "/"
+
+      expect(last_response.body).to_not include("Overrides active in this browser")
+    end
+
+    it "clears every override at once" do
+      other = Split::ExperimentCatalog.find_or_create("other_experiment", "small", "large")
+      force(experiment.name, "blue")
+      force(other.name, "small")
+
+      post "/clear_overrides"
+      get "/"
+
+      expect(last_response.body).to_not include("Overrides active in this browser")
+    end
+
+    it "starts counting the visitor as a participant once cleared" do
+      force(experiment.name, "blue")
+      get "/my_experiment?experiment=#{experiment.name}"
+      expect(last_response.body).to include("blue")
+      expect(experiment.participant_count).to eq(0)
+
+      post "/clear_overrides"
+      get "/my_experiment?experiment=#{experiment.name}"
+
+      expect(experiment.participant_count).to eq(1)
+    end
+  end
+
   describe "index page" do
     context "with winner" do
       before { experiment.winner = "red" }
@@ -305,5 +385,54 @@ describe Split::Dashboard do
     get "/"
 
     expect(last_response).to be_ok
+  end
+
+  context "confidence toggle classes" do
+    it "gives each experiment its own index" do
+      Split::ExperimentCatalog.find_or_create("link_color", "blue", "red")
+      Split::ExperimentCatalog.find_or_create("button_size", "small", "big")
+
+      get "/"
+
+      expect(last_response.body).to include('id="dropdown-experiment-0"')
+      expect(last_response.body).to include('id="dropdown-experiment-1"')
+    end
+
+    it "gives each goal of an experiment its own index" do
+      experiment_with_goals
+
+      get "/"
+
+      expect(last_response.body).to include('id="dropdown-experiment-0-0"')
+      expect(last_response.body).to include('id="dropdown-experiment-0-1"')
+    end
+
+    it "keeps the toggle classes and options in sync" do
+      experiment
+
+      get "/"
+
+      expect(last_response.body).to include('<option value="confidence-experiment-0">')
+      expect(last_response.body).to include('<option value="probability-experiment-0">')
+      expect(last_response.body).to include('class="box-experiment-0 confidence-experiment-0"')
+      expect(last_response.body).to include('class="box-experiment-0 probability-experiment-0"')
+    end
+
+    it "tags the goal header so it filters with its experiment" do
+      experiment_with_goals
+
+      get "/"
+
+      expect(last_response.body).to include('<div class="experiment" data-name="link_color" data-complete="false">')
+    end
+
+    it "does not leak experiment names into the toggle classes" do
+      Split::ExperimentCatalog.find_or_create("pricing (US)", "a", "b")
+
+      get "/"
+
+      expect(last_response.body).to include('class="box-experiment-0 confidence-experiment-0"')
+      expect(last_response.body).not_to include("box-pricing")
+    end
   end
 end

@@ -127,8 +127,8 @@ module Split
     def override_alternative_by_cookies(experiment_name)
       return unless request_present?
 
-      if request.cookies && request.cookies.key?("split_override")
-        experiments = JSON.parse(request.cookies["split_override"]) rescue {}
+      if request.cookies && request.cookies.key?(Split::OVERRIDE_COOKIE_NAME)
+        experiments = JSON.parse(request.cookies[Split::OVERRIDE_COOKIE_NAME]) rescue {}
         experiments[experiment_name]
       end
     end

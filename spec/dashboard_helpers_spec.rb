@@ -40,4 +40,48 @@ describe Split::DashboardHelpers do
       end
     end
   end
+
+  describe "active_overrides" do
+    let(:request) { double(cookies: cookies) }
+
+    context "with no override cookie" do
+      let(:cookies) { {} }
+
+      it "is empty" do
+        expect(active_overrides).to eq({})
+      end
+    end
+
+    context "with an empty override cookie" do
+      let(:cookies) { { "split_override" => "" } }
+
+      it "is empty" do
+        expect(active_overrides).to eq({})
+      end
+    end
+
+    context "with a valid override cookie" do
+      let(:cookies) { { "split_override" => '{"link_color":"blue"}' } }
+
+      it "returns the experiment to alternative mapping" do
+        expect(active_overrides).to eq("link_color" => "blue")
+      end
+    end
+
+    context "with a malformed override cookie" do
+      let(:cookies) { { "split_override" => "not json" } }
+
+      it "is empty rather than raising" do
+        expect(active_overrides).to eq({})
+      end
+    end
+
+    context "with a cookie holding JSON that is not an object" do
+      let(:cookies) { { "split_override" => '["link_color"]' } }
+
+      it "is empty" do
+        expect(active_overrides).to eq({})
+      end
+    end
+  end
 end
