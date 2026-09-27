@@ -3,6 +3,10 @@ name: split
 on:
   push:
   pull_request:
+  schedule:
+    # Gemfile.lock is not committed, so new dependency releases can break the
+    # build without any change here. Build main weekly to catch that early.
+    - cron: "0 3 * * 1"
 
 jobs:
   test:
