@@ -1,9 +1,15 @@
 name: split
 
-on: [push]
+on:
+  push:
+  pull_request:
 
 jobs:
   test:
+    # Branches in this repository are already built on push, so only build
+    # pull requests opened from forks to avoid running the matrix twice.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+
     strategy:
       matrix:
         ruby: ["4.0", "3.4", "3.3", "3.2", "3.1"]
