@@ -247,6 +247,17 @@ describe Split::Experiment do
     it "should have no winner initially" do
       expect(experiment.winner).to be_nil
     end
+
+    it "should see a winner changed by another process when the cache setting is on" do
+      Split.configuration.cache = true
+      experiment.save
+      experiment.winner = "red"
+      expect(experiment.winner.name).to eq("red")
+
+      Split.redis.hset(:experiment_winner, "link_color", "blue")
+
+      expect(experiment.winner.name).to eq("blue")
+    end
   end
 
   describe "winner=" do
