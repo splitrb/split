@@ -25,7 +25,7 @@ jobs:
           - rails: "8.1"
             ruby: "3.1"
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.ruby == '3.1' && 'ubuntu-24.04' || 'ubuntu-latest' }}
 
     services:
       redis:
