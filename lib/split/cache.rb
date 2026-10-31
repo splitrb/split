@@ -4,23 +4,36 @@ module Split
   class Cache
     def self.clear
       @cache = nil
+      CacheInvalidator.reset
     end
 
     def self.fetch(namespace, key)
       return yield unless Split.configuration.cache
 
-      @cache ||= {}
-      @cache[namespace] ||= {}
+      # Check global invalidation
+      CacheInvalidator.check_and_clear_if_needed(self)
 
-      value = @cache[namespace][key]
+      # Take a local snapshot so a concurrent `clear` (which replaces @cache)
+      # cannot make us dereference nil mid-fetch. Worst case we write into a
+      # detached hash, which is simply an extra cache miss on the next fetch.
+      cache = (@cache ||= {})
+      namespace_cache = (cache[namespace] ||= {})
+
+      value = namespace_cache[key]
       return value if value
 
-      @cache[namespace][key] = yield
+      namespace_cache[key] = yield
     end
 
     def self.clear_key(key)
-      @cache&.keys&.each do |namespace|
-        @cache[namespace]&.delete(key)
+      # Invalidate globally for all processes
+      CacheInvalidator.invalidate
+
+      # Clear from local cache immediately. Snapshot @cache and its values
+      # so a concurrent `clear` cannot nil it out mid-iteration.
+      cache = @cache
+      cache&.values&.each do |namespace_cache|
+        namespace_cache.delete(key)
       end
     end
   end

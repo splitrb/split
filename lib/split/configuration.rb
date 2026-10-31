@@ -31,6 +31,7 @@ module Split
     attr_accessor :dashboard_pagination_default_per_page
     attr_accessor :dashboard_calculate_winning_alternatives
     attr_accessor :cache
+    attr_accessor :cache_global_ts_check_interval
 
     attr_reader :experiments
 
