@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "forwardable"
+require "json"
 
 module Split
   class DashboardExperiment
@@ -10,9 +11,7 @@ module Split
     end
 
     def alternatives
-      @alternatives ||= @experiment.alternatives.map do |alternative|
-        DashboardAlternative.new(alternative, @experiment, @goal)
-      end
+      @alternatives ||= build_alternatives
     end
 
     def extra_columns
@@ -37,48 +36,82 @@ module Split
     def total_completed
       alternatives.sum(&:completed)
     end
+
+    private
+      def build_alternatives
+        alternatives = @experiment.alternatives
+        stored = Split.redis.pipelined do |pipe|
+          alternatives.each { |alternative| pipe.hgetall(alternative.key) }
+        end
+
+        views = alternatives.zip(stored).map do |alternative, data|
+          DashboardAlternative.new(alternative, @experiment, @goal, data)
+        end
+        views.each { |view| view.control = views.first }
+      end
   end
 
   class DashboardAlternative
     extend Forwardable
     def_delegators :@alternative, :name, :control?
 
-    attr_reader :participants, :unfinished, :completed, :extra_info
+    attr_reader :participants, :unfinished, :completed, :extra_info, :p_winner
+    attr_writer :control
 
-    def initialize(alternative, experiment, goal = nil)
+    def initialize(alternative, experiment, goal, data)
       @alternative = alternative
-      @experiment = experiment
-      @goal = goal
 
-      @participants = alternative.participant_count
-      @unfinished = alternative.unfinished_count
-      @completed = alternative.completed_count(goal)
-      @extra_info = alternative.extra_info
+      @participants = data["participant_count"].to_i
+      @completed = data[alternative.set_field(goal)].to_i
+      @unfinished = @participants - all_completed(data, experiment.goals)
+      @p_winner = data[alternative.set_prob_field(goal)].to_f
+      @extra_info = parse_extra_info(data["recorded_info"])
     end
 
     def conversion_rate
-      @conversion_rate ||= @alternative.conversion_rate(@goal)
+      return 0 if participants.zero?
+
+      completed.to_f / participants
     end
 
     def conversion_delta
       return if control?
 
-      control_rate = @experiment.control.conversion_rate(@goal)
+      control_rate = @control.conversion_rate
       return if control_rate <= 0 || conversion_rate == control_rate
 
       conversion_rate / control_rate - 1
     end
 
     def z_score
-      @z_score ||= @alternative.z_score(@goal)
-    end
+      return "N/A" if control?
 
-    def p_winner
-      @p_winner ||= @alternative.p_winner(@goal)
+      rate = conversion_rate
+      control_rate = @control.conversion_rate
+      return "N/A" if rate > 1 || control_rate > 1
+
+      Split::Zscore.calculate(rate, participants, control_rate, @control.participants)
     end
 
     def winner?
-      @experiment.winner.name == name
+      @alternative.experiment.winner.name == name
     end
+
+    private
+      def all_completed(data, goals)
+        goals.reduce(data[@alternative.set_field(nil)].to_i) do |sum, goal|
+          sum + data[@alternative.set_field(goal)].to_i
+        end
+      end
+
+      def parse_extra_info(recorded_info)
+        return {} unless recorded_info && recorded_info.length > 1
+
+        begin
+          JSON.parse(recorded_info)
+        rescue
+          {}
+        end
+      end
   end
 end

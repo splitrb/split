@@ -288,31 +288,30 @@ module Split
 
     def can_calculate_winning_alternatives?
       self.alternatives.all? do |alternative|
-        alternative.participant_count >= 0 &&
-        (alternative.participant_count >= alternative.completed_count)
+        participants = alternative.participant_count
+        participants >= 0 && participants >= alternative.completed_count
       end
     end
 
     def calc_winning_alternatives
-      return unless can_calculate_winning_alternatives?
-
       # Cache the winning alternatives so we recalculate them once per the specified interval.
       intervals_since_epoch =
         Time.now.utc.to_i / Split.configuration.winning_alternative_recalculation_interval
 
-      if self.calc_time != intervals_since_epoch
-        if goals.empty?
-          self.estimate_winning_alternative
-        else
-          goals.each do |goal|
-            self.estimate_winning_alternative(goal)
-          end
+      return if self.calc_time == intervals_since_epoch
+      return unless can_calculate_winning_alternatives?
+
+      if goals.empty?
+        self.estimate_winning_alternative
+      else
+        goals.each do |goal|
+          self.estimate_winning_alternative(goal)
         end
-
-        self.calc_time = intervals_since_epoch
-
-        self.save
       end
+
+      self.calc_time = intervals_since_epoch
+
+      self.save
     end
 
     def estimate_winning_alternative(goal = nil)
