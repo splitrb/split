@@ -17,11 +17,9 @@ module Split
     }
 
     def self.find(name)
-      Split.cache(:experiments, name) do
-        experiment = Experiment.new(name)
-        experiment.load_from_redis
-        experiment unless experiment.alternatives.empty?
-      end
+      experiment = Experiment.new(name)
+      experiment.load_from_redis
+      experiment unless experiment.alternatives.empty?
     end
 
     def self.find_many(names)
@@ -149,13 +147,11 @@ module Split
     end
 
     def winner
-      Split.cache(:experiment_winner, name) do
-        experiment_winner = redis.hget(:experiment_winner, name)
-        if experiment_winner
-          Split::Alternative.new(experiment_winner, name)
-        else
-          nil
-        end
+      experiment_winner = redis.hget(:experiment_winner, name)
+      if experiment_winner
+        Split::Alternative.new(experiment_winner, name)
+      else
+        nil
       end
     end
 
@@ -181,7 +177,6 @@ module Split
     def reset_winner
       redis.hdel(:experiment_winner, name)
       @has_winner = false
-      Split::Cache.clear_key(@name)
     end
 
     def start
@@ -191,9 +186,7 @@ module Split
     def start_time
       return @start_time if defined?(@start_time)
 
-      @start_time = Split.cache(:experiment_start_times, @name) do
-        parse_start_time(redis.hget(:experiment_start_times, @name))
-      end
+      @start_time = parse_start_time(redis.hget(:experiment_start_times, @name))
     end
 
     def prefetch_trial_state!
@@ -258,7 +251,6 @@ module Split
 
     def reset
       Split.configuration.on_before_experiment_reset.call(self)
-      Split::Cache.clear_key(@name)
       alternatives.each(&:reset)
       reset_winner
       Split.configuration.on_experiment_reset.call(self)
