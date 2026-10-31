@@ -41,7 +41,7 @@ jobs:
     env:
       RAILS_VERSION: ${{ matrix.rails }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ruby/setup-ruby@v1
         with:
